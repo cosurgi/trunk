@@ -1,4 +1,5 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
+// 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 
 #include<yade/lib/base/Math.hpp>
@@ -15,6 +16,7 @@
 	#include<yade/pkg/common/OpenGLRenderer.hpp>
 #endif
 #include<yade/pkg/common/MatchMaker.hpp>
+#include<boost/serialization/complex.hpp>
 
 // move this to the miniEigen wrapper later
 
@@ -181,6 +183,7 @@ BOOST_PYTHON_MODULE(_customConverters){
 		VECTOR_SEQ_CONV(int);
 		VECTOR_SEQ_CONV(bool);
 		VECTOR_SEQ_CONV(Real);
+		VECTOR_SEQ_CONV(std::complex<Real>);
 		VECTOR_SEQ_CONV(Se3r);
 		VECTOR_SEQ_CONV(Vector2r);
 		VECTOR_SEQ_CONV(Vector2i);

@@ -128,6 +128,38 @@ class AttrEditor_Float(AttrEditor,QLineEdit):
 		try: self.trySetter(float(self.text()))
 		except ValueError: self.refresh()
 
+class AttrEditor_Complex(AttrEditor,QLineEdit):
+	def __init__(self,parent,getter,setter):
+		AttrEditor.__init__(self,getter,setter)
+		QFrame.__init__(self,parent)
+		self.rows,self.cols=1,2
+		self.setContentsMargins(0,0,0,0)
+		val=self.getter()
+		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
+		for row,col in itertools.product(range(self.rows),range(self.cols)):
+			w=QLineEdit('')
+			self.grid.addWidget(w,row,col);
+			w.textEdited.connect(self.isHot)
+			w.selectionChanged.connect(self.isHot)
+			w.editingFinished.connect(self.update)
+	def refresh(self):
+		val=self.getter()
+		for row,col in itertools.product(range(self.rows),range(self.cols)):
+			w=self.grid.itemAtPosition(row,col).widget()
+			w.setText(str(val.real if col==0 else val.imag))
+			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+	def update(self):
+		try:
+			val=self.getter()
+			w1=self.grid.itemAtPosition(0,0).widget()
+			w2=self.grid.itemAtPosition(0,1).widget()
+			if w1.isModified() or w2.isModified():
+				val=complex(float(w1.text()),float(w2.text()))
+			logging.debug('setting'+str(val))
+			self.trySetter(val)
+		except ValueError: self.refresh()
+	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
+
 class AttrEditor_Quaternion(AttrEditor,QFrame):
 	def __init__(self,parent,getter,setter):
 		AttrEditor.__init__(self,getter,setter)
@@ -276,8 +308,8 @@ class AttrEditor_Matrix3(AttrEditor_MatrixX):
 
 class Se3FakeType: pass
 
-_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,float:AttrEditor_Float,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3}
-_fundamentalInitValues={bool:True,str:'',int:0,float:0.0,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0))}
+_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3}
+_fundamentalInitValues={bool:True,str:'',int:0,float:0.0,complex:0.0j,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0))}
 
 class SerQLabel(QLabel):
 	def __init__(self,parent,label,tooltip,path):
@@ -338,7 +370,7 @@ class SerializableEditor(QFrame):
 			return m
 		vecMap={
 			'bool':bool,'int':int,'long':int,'Body::id_t':long,'size_t':long,
-			'Real':float,'float':float,'double':float,
+			'Real':float,'float':float,'double':float,'complex':complex,'std::complex<Real>':complex,
 			'Vector6r':Vector6,'Vector6i':Vector6i,'Vector3i':Vector3i,'Vector2r':Vector2,'Vector2i':Vector2i,
 			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,
 			'string':str,
