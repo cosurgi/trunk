@@ -34,6 +34,7 @@ doc/sphinx/yade.gridpfacet.rst
 .kdev4/
 *.kdev4
 *.pyc
+*.swp
 *~
 .idea
 trunk.iml
