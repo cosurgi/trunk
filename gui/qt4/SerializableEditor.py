@@ -443,7 +443,7 @@ class SerializableEditor(QFrame):
 			if '|yhidden|' in doc: continue
 			if attr in self.ignoredAttrs: continue
 # FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
-# invalid.  I think that we should rethink what base class Body contains, so
+# invalid.  I think that we should rethink what base class State contains, so                ### >>>>>>> Add qtHide: a hack to hide incompatibility DEM vs. QM
 # that in QM we would not need to use this hack to hide some variables.
 # However it is great to note that only this little 'cosmetic' hack is needed
 # to make Quantum Mechanics possible in yade
