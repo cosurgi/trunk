@@ -11,6 +11,75 @@ namespace py=boost::python;
 
 /*********************************************************************************
 *
+* Q U A N T U M   M E C H A N I C A L   B O D Y
+*
+*********************************************************************************/
+
+/*! @brief QuantumMechanicalBody contains single 'body' expressed in terms of quantum mechanics.
+ *
+ */
+class QuantumMechanicalBody: public Body
+{
+	public:
+		virtual ~QuantumMechanicalBody();
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
+			  // class name
+			QuantumMechanicalBody
+			, // base class
+			Body
+			, // class description
+			"Quantum mechanical body is a single 'body' expressed in terms of quantum mechanics."
+			, // attributes, public variables
+//# FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
+//# invalid.  I think that we should rethink what base class State contains, so
+//# that in QM we would not need to use this hack to hide some variables.
+//# However it is great to note that only this little 'cosmetic' hack is needed
+//# to make Quantum Mechanics possible in yade
+//# See also: class QuantumMechanicalState, class QuantumMechanicalBody, gui/qt4/SerializableEditor.py
+//FIXME: so in fact if we decided to fix the inheritance tree we should remove
+//following attributes from the base class
+			((string,qtHide,"chain clumpId flags qtHide",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
+			To fix the inheritance tree we should remove those attributes from the base class."))
+			, // constructor
+			, // python bindings
+		);
+};
+REGISTER_SERIALIZABLE(QuantumMechanicalBody);
+
+
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   S T A T E
+*
+*********************************************************************************/
+
+/*! @brief QuantumMechanicalState contains quantum state information
+ *
+ */
+class QuantumMechanicalState: public State
+{
+	public:
+		virtual ~QuantumMechanicalState();
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
+			  // class name
+			QuantumMechanicalState
+			, // base class
+			State
+			, // class description
+			"Quantum mechanical state."
+			, // attributes, public variables
+			((string,qtHide,"angMom angVel blockedDOFs densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
+			To fix the inheritance tree we should remove those attributes from the base class."))
+			, // constructor
+			createIndex();
+			, // python bindings
+		);
+		REGISTER_CLASS_INDEX(QuantumMechanicalState,State);
+};
+REGISTER_SERIALIZABLE(QuantumMechanicalState);
+
+/*********************************************************************************
+*
 * W A V E   F U N C T I O N   S T A T E
 *
 *********************************************************************************/
@@ -21,7 +90,7 @@ namespace py=boost::python;
  * On this grid the complex amplitude is stored, which defines the probability distribution.
  *
  */
-class WaveFunctionState: public State
+class WaveFunctionState: public QuantumMechanicalState
 {
 	public:
 		virtual ~WaveFunctionState();
@@ -36,7 +105,7 @@ class WaveFunctionState: public State
 			  // class name
 			WaveFunctionState
 			, // base class
-			State
+			QuantumMechanicalState
 			, // class description
 			"Wave function state information about a particle."
 			, // attributes, public variables
@@ -44,7 +113,6 @@ class WaveFunctionState: public State
 //			((int,size,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
 //			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
 //			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
-
 			//This is just Serialization test, FIXME: add this to self-tests
 			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
 			//((std::vector< std::vector< Real > >,table,,,,"The FFT lattice grid "))
@@ -53,7 +121,7 @@ class WaveFunctionState: public State
 			createIndex();
 			, // python bindings
 		);
-		REGISTER_CLASS_INDEX(WaveFunctionState,State);
+		REGISTER_CLASS_INDEX(WaveFunctionState,QuantumMechanicalState);
 };
 REGISTER_SERIALIZABLE(WaveFunctionState);
 
@@ -159,6 +227,8 @@ class WavePacketParameters: public Material
 			Maybe eg. fermions and bosons will derive from this class too."
 			, // attributes, public variables
 //			((bool,isWaveFunction,true,,"This is only a placeholder in WavePacketParameters, not used for anything."))
+			((string,qtHide,"density qtHide",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
+			To fix the inheritance tree we should remove those attributes from the base class."))
 			, // constructor
 			createIndex();
 	);

@@ -397,8 +397,16 @@ class SerializableEditor(QFrame):
 			val=getattr(self.ser,attr) # get the value using serattr, as it might be different from what the dictionary provides (e.g. Body.blockedDOFs)
 			t=None
 			doc=getattr(self.ser.__class__,attr).__doc__;
+			# some attributes are not shown
 			if '|yhidden|' in doc: continue
 			if attr in self.ignoredAttrs: continue
+# FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
+# invalid.  I think that we should rethink what base class State contains, so
+# that in QM we would not need to use this hack to hide some variables.
+# However it is great to note that only this little 'cosmetic' hack is needed
+# to make Quantum Mechanics possible in yade
+# See also: class QuantumMechanicalState, class QuantumMechanicalBody, gui/qt4/SerializableEditor.py
+			if hasattr(self.ser,"qtHide") and (attr in getattr(self.ser,"qtHide").split()): continue
 			if isinstance(val,list):
 				t=self.getListTypeFromDocstring(attr)
 				if not t and len(val)==0: t=(val[0].__class__,) # 1-tuple is list of the contained type
@@ -410,6 +418,7 @@ class SerializableEditor(QFrame):
 			flags=int(match.group(1)) if match else 0
 			#logging.debug('Attr %s is of type %s'%(attr,((t[0].__name__,) if isinstance(t,tuple) else t.__name__)))
 			self.entries.append(self.EntryData(name=attr,T=t))
+			#print("name: "+str(attr)+"\tflag: "+str(flags))
 	def getDocstring(self,attr=None):
 		"If attr is *None*, return docstring of the Serializable itself"
 		doc=(getattr(self.ser.__class__,attr).__doc__ if attr else self.ser.__class__.__doc__)

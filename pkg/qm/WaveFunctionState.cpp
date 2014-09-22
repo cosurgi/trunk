@@ -4,6 +4,8 @@
 #include<yade/core/Scene.hpp>
 
 YADE_PLUGIN(
+	(QuantumMechanicalBody)
+	(QuantumMechanicalState)
 	(WaveFunctionState)
 	(GaussianWavePacket)
 	(WaveFunctionGeometry)
@@ -19,6 +21,24 @@ YADE_PLUGIN(
 	(Gl1_WaveFunctionInteractionPhysics)
 	#endif	
 	);
+
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   B O D Y
+*
+*********************************************************************************/
+CREATE_LOGGER(QuantumMechanicalBody);
+// !! at least one virtual function in the .cpp file
+QuantumMechanicalBody::~QuantumMechanicalBody(){};
+
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   S T A T E
+*
+*********************************************************************************/
+CREATE_LOGGER(QuantumMechanicalState);
+// !! at least one virtual function in the .cpp file
+QuantumMechanicalState::~QuantumMechanicalState(){};
 
 /*********************************************************************************
 *
