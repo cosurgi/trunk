@@ -32,6 +32,8 @@ See older `tentative contents <http://bazaar.launchpad.net/~eudoxos/%2Bjunk/ydoc
   github.rst
 
   formulation.rst
+  
+  formulation-qm.rst
 
   yade.wrapper.rst
 

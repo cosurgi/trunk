@@ -5,4 +5,11 @@ All external articles referenced in Yade documentation.
 
 .. note:: This file is generated from :ysrc:`doc/references.bib`.
 
+Discrete Element Method
+-----------------------
 @bib2rst.bib2rst('../references.bib')@
+
+Quantum Mechanics
+-----------------
+@bib2rst.bib2rst('../references-qm.bib')@
+
