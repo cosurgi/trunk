@@ -29,6 +29,8 @@ Welcome to Yade's documentation!
   github.rst
 
   formulation.rst
+  
+  formulation-qm.rst
 
   yade.wrapper.rst
 
