@@ -92,7 +92,7 @@ class pyBodyContainer{
 		return proxee->insert(b);
 	}
 	vector<Body::id_t> appendList(vector<shared_ptr<Body> > bb){
-		/* prevent crash when adding lots of bodies (not clear why it happens exactly, bt is like this:
+		/* prevent crash when adding lots of bodies (not clear why it happens exactly, but is like this:
 
 			#3  <signal handler called>
 			#4  0x000000000052483f in boost::detail::atomic_increment (pw=0x8089) at /usr/include/boost/detail/sp_counted_base_gcc_x86.hpp:66
