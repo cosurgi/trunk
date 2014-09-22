@@ -32,6 +32,8 @@
 #include<boost/serialization/vector.hpp>
 #include<boost/serialization/map.hpp>
 #include<boost/serialization/nvp.hpp>
+#include<boost/serialization/complex.hpp>
+#include<boost/serialization/set.hpp>
 
 
 #define REGISTER_FACTORABLE(name) 						\

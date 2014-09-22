@@ -15,12 +15,8 @@
 	#include<pkg/common/GLDrawFunctors.hpp>
 	#include<pkg/common/OpenGLRenderer.hpp>
 #endif
-//<<<<<<< HEAD
-//#include<pkg/common/MatchMaker.hpp>
-//=======
+
 #include<pkg/common/MatchMaker.hpp>
-#include<boost/serialization/complex.hpp>
-//>>>>>>> Added qt4 display of std::complex<Real> in inspect
 
 // move this to the miniEigen wrapper later
 
