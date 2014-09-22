@@ -6,7 +6,6 @@
 #include <yade/core/GlobalEngine.hpp>
 #include <yade/core/Scene.hpp>
 #include <stdexcept>
-#include <boost/serialization/complex.hpp>
 
 namespace py=boost::python;
 

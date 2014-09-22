@@ -16,7 +16,6 @@
 	#include<yade/pkg/common/OpenGLRenderer.hpp>
 #endif
 #include<yade/pkg/common/MatchMaker.hpp>
-#include<boost/serialization/complex.hpp>
 
 // move this to the miniEigen wrapper later
 
