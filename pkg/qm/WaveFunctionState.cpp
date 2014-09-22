@@ -12,7 +12,7 @@ YADE_PLUGIN(
 	(WaveFunctionInteractionGeometry)
 	(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics)
 	(Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics)
-	(Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics)
+	(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics)
 	(SchrodingerKosloffPropagator)
 	#ifdef YADE_OPENGL
 	(Gl1_WaveFunctionGeometry)
@@ -89,9 +89,9 @@ void Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics::go(const 
 * L A W 2   In DEM it was used to calculate Fn and Fs between two interacting bodies
 *
 *********************************************************************************/
-CREATE_LOGGER(Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics);
+CREATE_LOGGER(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics);
 
-bool Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I){
+bool Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I){
 }
 
 

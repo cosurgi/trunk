@@ -29,8 +29,8 @@ class WaveFunctionState: public State
 		void postLoad(WaveFunctionState&)
 		{ 
 			std::cerr<<"\nWaveFunctionState postLoad\n";
-			std::cerr<<"firstRun="<<firstRun<<"\n";
-			std::cerr<<"size="<<size<<"\n";
+//			std::cerr<<"firstRun="<<firstRun<<"\n";
+//			std::cerr<<"size="<<size<<"\n";
 		}
 		// FIXME: the lattice grid here vector<........>
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
@@ -41,10 +41,10 @@ class WaveFunctionState: public State
 			, // class description
 			"Wave function state information about a particle."
 			, // attributes, public variables
-			((bool,firstRun,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((int,size,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
-			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
+//			((bool,firstRun,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
+//			((int,size,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
+//			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
+//			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
 
 			//This is just Serialization test, FIXME: add this to self-tests
 			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
@@ -159,7 +159,7 @@ class WavePacketParameters: public Material
 			electrons (muon, tau), neutrinos, etc.\n\n\
 			Maybe eg. fermions and bosons will derive from this class too."
 			, // attributes, public variables
-			((bool,isWaveFunction,true,,"This is only a placeholder in WavePacketParameters, not used for anything."))
+//			((bool,isWaveFunction,true,,"This is only a placeholder in WavePacketParameters, not used for anything."))
 			, // constructor
 			createIndex();
 	);
@@ -178,7 +178,7 @@ REGISTER_SERIALIZABLE(WavePacketParameters);
  *
  * Currently I have only free moving particle without interactions, so it is not used yet.
  *
- * Evolution of interaction is governed by Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics:
+ * Evolution of interaction is governed by Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics:
  * that includes hamiltonian elements for each interaction.
  *
  */
@@ -194,7 +194,7 @@ class WaveFunctionInteractionPhysics: public IPhys
 			, // class description
 			"Representation of a single interaction of the WaveFunction type: storage for relevant parameters."
 			, // attributes, public variables
-			((bool,nothing,true,,"only a placeholder"))
+//			((bool,nothing,true,,"only a placeholder"))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -228,7 +228,7 @@ class WaveFunctionInteractionGeometry: public IGeom
 			, // class description
 			"Geometric representation of a single interaction of the WaveFunction"
 			, // attributes, public variables
-			((bool,nothing,true,,"only a placeholder"))
+//			((bool,nothing,true,,"only a placeholder"))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -263,7 +263,7 @@ class Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysi
 			, // class description
 			"Currently does nothing"
 			, // attributes, public variables
-			((long,nothing,10,,"placeholder"))
+//			((long,nothing,10,,"placeholder"))
 		);
 };
 REGISTER_SERIALIZABLE(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics);
@@ -311,26 +311,26 @@ REGISTER_SERIALIZABLE(Ip2_Material_WavePacketParameters_WaveFunctionInteractionP
  *
  */
 
-class Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics: public LawFunctor
+class Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics: public LawFunctor
 {
 	public:
 		bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
 		FUNCTOR2D(IGeom,WaveFunctionInteractionPhysics);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics
+			Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics
 			, // base class
 			LawFunctor
 			, // class description
 			"Constitutive law for the :yref:`WaveFunction-model<WavePacketParameters>`."
 			, // attributes, public variables
-			((bool,empty,true,,"placeholder"))
+//			((bool,empty,true,,"placeholder"))
 			, // constructor
 			, // python bindings
 	);
 	DECLARE_LOGGER;
 };
-REGISTER_SERIALIZABLE(Law2_ScGeom_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics);
+REGISTER_SERIALIZABLE(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics);
 
 
 /*********************************************************************************
@@ -365,7 +365,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 			\"An accurate and efficient scheme for propagating the time dependent Schrödinger \
 			equation\", 1984."
 			, // attributes, public variables
-			((bool,empty,true,,"placeholder"))
+//			((bool,empty,true,,"placeholder"))
 			, // constructor
 			, // python bindings
 	);
