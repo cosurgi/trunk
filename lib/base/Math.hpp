@@ -171,6 +171,8 @@ template<typename Scalar> Quaternion<Scalar> operator+(Quaternion<Scalar> q1, co
 template<typename Scalar>
 struct Math{
 	static const Scalar PI;
+	static const std::complex<Scalar> I;
+	static const Scalar E;
 	static const Scalar HALF_PI;
 	static const Scalar TWO_PI;
 	static const Scalar MAX_REAL;
@@ -184,7 +186,7 @@ struct Math{
 	static Scalar SymmetricRandom(){ return 2.*(((double)rand())/((double)(RAND_MAX)))-1.; }
 	static Scalar FastInvCos0(Scalar fValue){ Scalar fRoot = sqrt(((Scalar)1.0)-fValue); Scalar fResult = -(Scalar)0.0187293; fResult *= fValue; fResult += (Scalar)0.0742610; fResult *= fValue; fResult -= (Scalar)0.2121144; fResult *= fValue; fResult += (Scalar)1.5707288; fResult *= fRoot; return fResult; }
 };
-typedef Math<Real> Mathr;
+typedef Math<Real> Mathr; //FIXME: rename Mathr to Math, and Math<Real> to Math_<Real>, or sth.like that. Then make an alias Mathr -> Math
 
 /* this was removed in eigen3, see http://forum.kde.org/viewtopic.php?f=74&t=90914 */
 template<typename MatrixT>
