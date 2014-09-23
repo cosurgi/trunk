@@ -150,6 +150,8 @@ template<class Scalar> std::ostream & operator<<(std::ostream &os, const Eigen::
 template<typename Scalar>
 struct Math{
 	static const Scalar PI;
+	static const std::complex<Scalar> I;
+	static const Scalar E;
 	static const Scalar HALF_PI;
 	static const Scalar TWO_PI;
 	static const Scalar MAX_REAL;
