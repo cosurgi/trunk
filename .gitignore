@@ -31,3 +31,6 @@ doc/sphinx/yade.polyhedra_utils.rst
 *.pyc
 *.swp
 *~
+
+yade
+
