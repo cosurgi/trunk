@@ -19,6 +19,7 @@ except ImportError:
 seqSerializableShowType=True # show type headings in serializable sequences (takes vertical space, but makes the type hyperlinked)
 
 # BUG: cursor is moved to the beginnign of the input field even if it has focus
+# Janek: I am not yet sure, but it looks like I've fixed this BUG.
 #
 # checking for focus seems to return True always and cursor is never moved
 #
@@ -122,8 +123,10 @@ class AttrEditor_Float(AttrEditor,QLineEdit):
 		self.selectionChanged.connect(self.isHot)
 		self.editingFinished.connect(self.update)
 	def refresh(self):
-		self.setText(str(self.getter()));
-		if True or not self.hasFocus(): self.home(False)
+		#if True or not self.hasFocus(): self.home(False)
+		if (not self.hasFocus()):
+			self.setText(str(self.getter()));
+			self.home(False)
 	def update(self):
 		try: self.trySetter(float(self.text()))
 		except ValueError: self.refresh()
@@ -146,8 +149,10 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-			w.setText(str(val.real if col==0 else val.imag))
-			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+			if (not w.hasFocus):
+				w.setText(str(val.real if col==0 else val.imag))
+				w.home(False) # make the left-most part visible, if the text is wider than the widget
 	def update(self):
 		try:
 			val=self.getter()
@@ -177,8 +182,11 @@ class AttrEditor_Quaternion(AttrEditor,QFrame):
 	def refresh(self):
 		val=self.getter(); axis,angle=val.toAxisAngle()
 		for i in (0,1,2,4):
-			w=self.grid.itemAt(i).widget(); w.setText(str(axis[i] if i<3 else angle));
-			if True or not w.hasFocus(): w.home(False)
+			#if True or not w.hasFocus(): w.home(False)
+			w=self.grid.itemAt(i).widget();
+			if (not w.hasFocus()):
+				w.setText(str(axis[i] if i<3 else angle));
+				w.home(False)
 	def update(self):
 		try:
 			x=[float((self.grid.itemAt(i).widget().text())) for i in (0,1,2,4)]
@@ -205,11 +213,17 @@ class AttrEditor_Se3(AttrEditor,QFrame):
 	def refresh(self):
 		pos,ori=self.getter(); axis,angle=ori.toAxisAngle()
 		for i in (0,1,2,4):
-			w=self.grid.itemAtPosition(1,i).widget(); w.setText(str(axis[i] if i<3 else angle));
-			if True or not w.hasFocus(): w.home(False)
+			#if True or not w.hasFocus(): w.home(False)
+			w=self.grid.itemAtPosition(1,i).widget();
+			if (not w.hasFocus()):
+				w.setText(str(axis[i] if i<3 else angle));
+				w.home(False)
 		for i in (0,1,2):
-			w=self.grid.itemAtPosition(0,i).widget(); w.setText(str(pos[i]));
-			if True or not w.hasFocus(): w.home(False)
+			#if True or not w.hasFocus(): w.home(False)
+			w=self.grid.itemAtPosition(0,i).widget();
+			if (not w.hasFocus()):
+				w.setText(str(pos[i]));
+				w.home(False)
 	def update(self):
 		try:
 			q=[float((self.grid.itemAtPosition(1,i).widget().text())) for i in (0,1,2,4)]
@@ -239,8 +253,10 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-			w.setText(str(val[self.idxConverter(row,col)]))
-			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+			if (not w.hasFocus):
+				w.setText(str(val[self.idxConverter(row,col)]))
+				w.home(False) # make the left-most part visible, if the text is wider than the widget
 	def update(self):
 		try:
 			val=self.getter()
