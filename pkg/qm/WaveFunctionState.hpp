@@ -15,7 +15,7 @@ namespace py=boost::python;
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalBody contains single 'body' expressed in terms of quantum mechanics.
+/*! @brief QuantumMechanicalBody contains single 'body' (a particle) expressed in terms of quantum mechanics.
  *
  */
 class QuantumMechanicalBody: public Body
@@ -28,7 +28,7 @@ class QuantumMechanicalBody: public Body
 			, // base class
 			Body
 			, // class description
-			"Quantum mechanical body is a single 'body' expressed in terms of quantum mechanics."
+			"Quantum mechanical body is a single 'body' (a particle) expressed in terms of quantum mechanics."
 			, // attributes, public variables
 //# FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
 //# invalid.  I think that we should rethink what base class State contains, so
@@ -36,9 +36,12 @@ class QuantumMechanicalBody: public Body
 //# However it is great to note that only this little 'cosmetic' hack is needed
 //# to make Quantum Mechanics possible in yade
 //# See also: class QuantumMechanicalState, class QuantumMechanicalBody, gui/qt4/SerializableEditor.py
-//FIXME: so in fact if we decided to fix the inheritance tree we should remove
-//following attributes from the base class
-			((string,qtHide,"chain clumpId flags qtHide",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
+//# Also I think this makes a possibility to make another Body for SPH model (see hacks inside Body.hpp YADE_SPH)
+//#
+//# FIXME: so in fact if we decided to fix the inheritance tree we should remove
+//#        following attributes from the base class
+			((string,qtHide,"chain clumpId flags qtHide",Attr::readonly,
+			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class."))
 			, // constructor
 			, // python bindings
@@ -68,8 +71,10 @@ class QuantumMechanicalState: public State
 			, // class description
 			"Quantum mechanical state."
 			, // attributes, public variables
-			((string,qtHide,"angMom angVel blockedDOFs densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
-			To fix the inheritance tree we should remove those attributes from the base class."))
+			((string,qtHide,"angMom angVel blockedDOFs densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,
+			"Space separated list of variables to hide in qt4 interface. \
+			To fix the inheritance tree we should remove those attributes from the base class.\
+			Yes, even mass must be removed, although it is back in few of derived classes."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -153,18 +158,70 @@ class GaussianWavePacket: public WaveFunctionState
 //.. math::\n\n\t\\omega=\\left(\\omega/.First\\left[\\text{Solve}\\left[\\hbar\\omega=\\frac{\\hbar^2 k^2}{2 m},\\omega\\right]\\right]\\right)=\\frac{\\hbar k^2}{2 m}"
 //1/(Power(E,(m*Power(x,2) + Complex(0,1)*Power(a,2)*k0*(-2*m*x + k0*t*\[HBar]))/(2*Power(a,2)*m + Complex(0,2)*t*\[HBar]))*Power(Pi,0.25)*Sqrt(a + (Complex(0,1)*t*\[HBar])/(a*m)))
 			, // attributes, public variables
-			((int,xInit,0,,"Initial position $x$ of the wavepacket"))
-			((int,tInit,0,,"Initial time $t$, assuming propagation of type exp(i(kx-ωt))"))
-			((int,k0Init,0,,"Initial wavenumber $k_0$"))
-			((int,mInit,1,,"Initial mass m"))
-			((int,aInit,1,,"Initial Gausian packet width $a$"))
-			((int,hbarInit,1,,"Planck's constant $\\hbar$"))
+//			((Real,xInit,0,,"Initial position $x$ of the wavepacket"))
+//			((Real,tInit,0,,"Initial time $t$, assuming propagation of type exp(i(kx-ωt))"))
+//			((Real,k0Init,0,,"Initial wavenumber $k_0$"))
+//			((Real,mInit,1,,"Initial mass m"))
+//			((Real,aInit,1,,"Initial Gausian packet width $a$"))
+//			((Real,hbarInit,1,,"Planck's constant $\\hbar$"))
 			, // constructor
 			createIndex();
 		);
 		REGISTER_CLASS_INDEX(GaussianWavePacket,WaveFunctionState);
 };
 REGISTER_SERIALIZABLE(GaussianWavePacket);
+
+class GaussianAnalyticalPropagatingWavePacket_1D: public QuantumMechanicalState
+{
+	public:
+		virtual ~GaussianAnalyticalPropagatingWavePacket_1D();
+		virtual std::complex<Real> waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR(
+			  // class name
+			GaussianAnalyticalPropagatingWavePacket_1D
+			, // base class
+			QuantumMechanicalState
+			, // class description
+"This is an analytically described wave packet function $\\psi$ with a Gaussian shape defined using following forumla:\
+\n\n\
+.. math::\
+\n\n\
+\tA=\\frac{\\sqrt{2\\pi}}{\\sqrt{a\\sqrt{\\pi}}}\
+\n\n\
+\tc=\\frac{A a}{\\sqrt{2 \\pi }}e^{-\\frac{a^2 (k-k_0)^2}{2}}\
+\n\n\
+\t\\omega=\\frac{\\hbar k^2}{2 m}\
+\n\n\
+\t\\psi(x,x_0,t,k_0,m,a,\\hbar)=\\frac{1}{\\sqrt{2 \\pi}}\\int_{-\\infty }^{\\infty } c(k,k_0,a) e^{i (k (x - x_0)-\\omega t)} dk=\
+\\frac{e^{-\\frac{m (x - x_0)^2+i a^2 k_0 (k_0 \\hbar t -2 m (x - x_0))}{2 a^2 m+2 i \\hbar t}}}\
+{\\sqrt[4]{\\pi } \\sqrt{a+\\frac{i \\hbar t }{a m}}}.\
+\n\n\
+It is not pre-computed, it is only evaluated anylytically upon request, given some input parameters:\n\n\
+\t$x$ --- position where the function is evaluated\n\n\
+\t$x_0$ --- initial wavepacket center $x_0=0$ at $t=0$\n\n\
+\t$t$ --- time at which the evaluation takes place (usually simulation :yref:`Omega.time`)\n\n\
+\t$k_0$ --- initial wavenumber with which the packet was created\n\n\
+\t$m$ --- mass of propagating particle\n\n\
+\t$a$ --- initial Gaussian packet width\n\n\
+\t$\\hbar$ --- Planck's constant divided by $2\\pi$\n\n\
+FIXME: Above are the arguments to the function, they are not stored in this class.\
+"
+			, // attributes, public variables
+//			((Real,x,0,,"Position $x$ in the wavepacket"))
+//			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))
+//
+//FIXME: where to store that?
+			((Real,x0,0,,"Initial wave packet center at $t=0$"))
+			((Real,k0,0,,"Initial wavenumber $k_0$"))
+			((Real,m,1,,"Particle mass"))
+			((Real,a,1,,"Initial Gausian packet width $a$"))
+			((Real,hbar,1,,"Planck's constant $h$ divided by $2\\pi$"))
+			, // constructor
+			createIndex();
+		);
+		REGISTER_CLASS_INDEX(GaussianAnalyticalPropagatingWavePacket_1D,QuantumMechanicalState);
+};
+REGISTER_SERIALIZABLE(GaussianAnalyticalPropagatingWavePacket_1D);
 
 /*********************************************************************************
 *
@@ -187,7 +244,7 @@ class WaveFunctionGeometry: public Shape
 			, // base class
 			Shape
 			, // class description
-			"Wave function geomterical (display on screen) information about a particle."
+			"Wave function geomterical (prepared, maybe precomputed, for display on screen) information about a particle."
 			, // attributes, public variables
 			, // constructor
 			createIndex();
@@ -223,7 +280,14 @@ class WavePacketParameters: public Material
 			"Actually wave function has no material. For now this class is empty only for purposes of\
 			keeping compatibility with yade. Although maybe later it may come useful to distinguish \
 			fundamental particles in the standard model: quarks (up, down, etc.),\
-			electrons (muon, tau), neutrinos, etc.\n\n\
+			electrons (muon, tau), neutrinos, etc.\n\
+			\n\
+			Important thing to note is that this Material is\
+			supposed to be shared between various different instances of particles, thus\
+			it will make sense to create material for a fundamental particle\n\
+			\n\
+			But how does this apply to the simples Schrodinger wavepacket?\n\
+			\n\
 			Maybe eg. fermions and bosons will derive from this class too."
 			, // attributes, public variables
 //			((bool,isWaveFunction,true,,"This is only a placeholder in WavePacketParameters, not used for anything."))
@@ -263,7 +327,6 @@ class WaveFunctionInteractionPhysics: public IPhys
 			, // class description
 			"Representation of a single interaction of the WaveFunction type: storage for relevant parameters."
 			, // attributes, public variables
-//			((bool,nothing,true,,"only a placeholder"))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -297,7 +360,6 @@ class WaveFunctionInteractionGeometry: public IGeom
 			, // class description
 			"Geometric representation of a single interaction of the WaveFunction"
 			, // attributes, public variables
-//			((bool,nothing,true,,"only a placeholder"))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -434,7 +496,6 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 			\"An accurate and efficient scheme for propagating the time dependent Schrödinger \
 			equation\", 1984."
 			, // attributes, public variables
-//			((bool,empty,true,,"placeholder"))
 			, // constructor
 			, // python bindings
 	);
@@ -451,27 +512,67 @@ REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 
 #ifdef YADE_OPENGL
 #include<yade/pkg/common/GLDrawFunctors.hpp>
-class Gl1_WaveFunctionGeometry: public GlShapeFunctor
+class Gl1_GaussianAnalyticalPropagatingWavePacket_1D: public GlShapeFunctor
 {
-	public: 
+	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
-		virtual ~Gl1_WaveFunctionGeometry();
+		virtual ~Gl1_GaussianAnalyticalPropagatingWavePacket_1D();
 		RENDERS(WaveFunctionGeometry);
 		DECLARE_LOGGER;
+//		YADE_CLASS_BASE_DOC_STATICATTRS( //FIXME - not recognized when static attrs are not used? ????????????????????
+//			  // class name
+//			Gl1_GaussianAnalyticalPropagatingWavePacket_1D
+//			, // base class
+//			GlShapeFunctor
+//			, // class description
+//			"Render :yref:`GaussianAnalyticalPropagatingWavePacket_1D`."
+//			, // attributes, public variables
+//			((bool,abs,true,,"Show absolute probability"))
+//			((bool,real,false,,"Show only real component"))
+//			((bool,imag,false,,"Show only imaginary component"))
+//		);
+//};
+//REGISTER_SERIALIZABLE(Gl1_GaussianAnalyticalPropagatingWavePacket_1D);
+
+//class Gl1_GaussianAnalyticalPropagatingWavePacket_1D : public GlShapeFunctor
+//{
+//	public :
+//		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
+//	RENDERS(GaussianAnalyticalPropagatingWavePacket_1D);
 		YADE_CLASS_BASE_DOC_STATICATTRS(
 			  // class name
-			Gl1_WaveFunctionGeometry
+			Gl1_GaussianAnalyticalPropagatingWavePacket_1D
 			, // base class
 			GlShapeFunctor
 			, // class description
-			"Render :yref:`WaveFunctionGeometry`."
-			, // attributes, public variables
+			"Renders :yref:`GaussianAnalyticalPropagatingWavePacket_1D` object"
+			, // static public attributes
 			((bool,abs,true,,"Show absolute probability"))
-			((bool,real,false,,"Show only real component"))
-			((bool,imag,false,,"Show only imaginary component"))
 		);
 };
-REGISTER_SERIALIZABLE(Gl1_WaveFunctionGeometry);
+REGISTER_SERIALIZABLE(Gl1_GaussianAnalyticalPropagatingWavePacket_1D);
+
+//class Gl1_WaveFunctionGeometry: public GlShapeFunctor
+//{
+//	public:
+//		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
+//		virtual ~Gl1_WaveFunctionGeometry();
+//		RENDERS(WaveFunctionGeometry);
+//		DECLARE_LOGGER;
+//		YADE_CLASS_BASE_DOC_STATICATTRS(
+//			  // class name
+//			Gl1_WaveFunctionGeometry
+//			, // base class
+//			GlShapeFunctor
+//			, // class description
+//			"Render :yref:`WaveFunctionGeometry`."
+//			, // attributes, public variables
+//			((bool,abs,true,,"Show absolute probability"))
+//			((bool,real,false,,"Show only real component"))
+//			((bool,imag,false,,"Show only imaginary component"))
+//		);
+//};
+//REGISTER_SERIALIZABLE(Gl1_WaveFunctionGeometry);
 
 
 class Gl1_WaveFunctionInteractionPhysics: public GlIPhysFunctor
