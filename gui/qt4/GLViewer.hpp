@@ -53,6 +53,9 @@ class GLViewer : public QGLViewer
 		float			cut_plane;
 		int			cut_plane_delta;
 		bool			gridSubdivide;
+		bool			displayGridNumbers;
+		bool			autoGrid;
+		Real			prevGridStep;
 		long			last;
 		int manipulatedClipPlane;
 		set<int> boundClipPlanes;

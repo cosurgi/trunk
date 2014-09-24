@@ -55,7 +55,10 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	timeDispMask=TIME_REAL|TIME_VIRT|TIME_ITER;
 	cut_plane = 0;
 	cut_plane_delta = -2;
-	gridSubdivide = false;
+	gridSubdivide = true;
+	displayGridNumbers = true;
+	autoGrid=true;
+	prevGridStep=1;
 	resize(550,550);
 	last=-1;
 	if(viewId==0) setWindowTitle("Primary view");
@@ -77,12 +80,15 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	setKeyDescription(Qt::Key_C & Qt::AltModifier,"Set scene center to median body position (same as space)");
 	setKeyDescription(Qt::Key_D,"Toggle time display mask");
 	setKeyDescription(Qt::Key_G,"Toggle grid visibility; g turns on and cycles");
+	setKeyDescription(Qt::Key_Minus,"Make grid less dense 10 times and disable automatic grid change");
+	setKeyDescription(Qt::Key_Plus, "Make grid more dense 10 times and disable automatic grid change");
+	setKeyDescription(Qt::Key_Period,"Toggle grid subdivision by 10");
+	setKeyDescription(Qt::Key_Comma,"Toggle display coordinates on grid");
 	setKeyDescription(Qt::Key_G & Qt::ShiftModifier ,"Hide grid.");
 	setKeyDescription(Qt::Key_M, "Move selected object.");
 	setKeyDescription(Qt::Key_X,"Show the xz [shift: xy] (up-right) plane (clip plane: align normal with +x)");
 	setKeyDescription(Qt::Key_Y,"Show the yx [shift: yz] (up-right) plane (clip plane: align normal with +y)");
 	setKeyDescription(Qt::Key_Z,"Show the zy [shift: zx] (up-right) plane (clip plane: align normal with +z)");
-	setKeyDescription(Qt::Key_Period,"Toggle grid subdivision by 10");
 	setKeyDescription(Qt::Key_S & Qt::AltModifier,"Save QGLViewer state to /tmp/qglviewerState.xml");
 	setKeyDescription(Qt::Key_T,"Switch orthographic / perspective camera");
 	setKeyDescription(Qt::Key_O,"Set narrower field of view");
@@ -256,6 +262,9 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		}
 	}
 	else if(e->key()==Qt::Key_Period) gridSubdivide = !gridSubdivide;
+	else if(e->key()==Qt::Key_Comma) displayGridNumbers = !displayGridNumbers;
+	else if(e->key()==Qt::Key_Plus)  {autoGrid=false;prevGridStep/=10;}
+	else if(e->key()==Qt::Key_Minus) {autoGrid=false;prevGridStep*=10;}
 	else if(e->key()==Qt::Key_Return){
 		if (Omega::instance().isRunning()) Omega::instance().pause();
 		else Omega::instance().run();

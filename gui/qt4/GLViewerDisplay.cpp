@@ -22,6 +22,7 @@
 #include<boost/algorithm/string/case_conv.hpp>
 #include<yade/lib/serialization/ObjectIO.hpp>
 #include<yade/lib/pyutil/gil.hpp>
+#include<yade/lib/opengl/GLUtils.hpp>
 
 
 #include<QtGui/qevent.h>
@@ -148,14 +149,16 @@ void GLViewer::postDraw(){
 
 	Real dispDiameter=min(wholeDiameter,max((Real)displayedSceneRadius()*2,wholeDiameter/1e3)); // limit to avoid drawing 1e5 lines with big zoom level
 	//qglviewer::Vec center=QGLViewer::camera()->sceneCenter();
-	Real gridStep=pow(10,(floor(log10(dispDiameter)-.7)));
+	Real gridStep(prevGridStep);
+	if(autoGrid) gridStep=pow(10,(floor( 0.5+log10(dispDiameter) )));
+	prevGridStep=gridStep;
 	Real scaleStep=pow(10,(floor(log10(displayedSceneRadius()*2)-.7))); // unconstrained
-	int nSegments=((int)(wholeDiameter/gridStep))+1;
-	Real realSize=nSegments*gridStep;
-	//LOG_TRACE("nSegments="<<nSegments<<",gridStep="<<gridStep<<",realSize="<<realSize);
+	int nHalfSegments=((int)(wholeDiameter/gridStep))+1;
+	Real realSize=nHalfSegments*gridStep;
+	//LOG_TRACE("nHalfSegments="<<nHalfSegments<<",gridStep="<<gridStep<<",realSize="<<realSize);
 	glPushMatrix();
 
-	nSegments *= 2; // there's an error in QGLViewer::drawGrid(), so we need to mitigate it by '* 2'
+	Real nSegments = 2*nHalfSegments;
 	// XYZ grids
 	glLineWidth(.5);
 	if(drawGrid & 1) {glColor3f(0.6,0.3,0.3); glPushMatrix(); glRotated(90.,0.,1.,0.); QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
@@ -166,7 +169,21 @@ void GLViewer::postDraw(){
 		if(drawGrid & 2) {glColor3f(0.1,0.4,0.1); glPushMatrix(); glRotated(90.,1.,0.,0.); QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
 		if(drawGrid & 4) {glColor3f(0.1,0.1,0.4); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
 	}
-	
+	if(displayGridNumbers and drawGrid){
+		for(int xyz(-nHalfSegments) ; xyz<=nHalfSegments ; xyz++)
+		{ // write text - coordinate numbers on grid
+			Real pos=xyz*gridStep;
+			ostringstream oss;
+			oss<<setprecision(4)<<pos;
+			std::string str = oss.str();
+			const Vector3r& h(Vector3r(1,1,1));
+			glColor3v(h);
+			if((drawGrid & 2) or (drawGrid & 4)) GLUtils::GLDrawText(str,Vector3r(pos,0,0),h);
+			if((drawGrid & 1) or (drawGrid & 4)) GLUtils::GLDrawText(str,Vector3r(0,pos,0),h);
+			if((drawGrid & 1) or (drawGrid & 2)) GLUtils::GLDrawText(str,Vector3r(0,0,pos),h);
+		}
+	}
+
 	// scale
 	if(drawScale){
 		Real segmentSize=scaleStep;
