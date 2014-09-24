@@ -63,7 +63,17 @@ std::complex<Real> GaussianAnalyticalPropagatingWavePacket_1D::waveFunctionValue
 	(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h)
 {
 	x -= x0;
-	return exp(-(m*x*x+Mathr::I*a*a*k0*(k0*h*t-2.0*m*x)/(2.0*a*a*m+2.0*Mathr::I*h*t)))/(pow(Mathr::PI,0.25)*(pow(a+Mathr::I*h*t/(a*m),0.25)));
+	return exp(
+		-(
+			(m*x*x+Mathr::I*a*a*k0*(k0*h*t-2.0*m*x))
+			/
+			(2.0*a*a*m+2.0*Mathr::I*h*t)
+		)
+	)
+	/
+	(
+		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*h*t/(a*m),0.5))
+	);
 };
 
 /*********************************************************************************
@@ -165,33 +175,43 @@ SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 void Gl1_GaussianAnalyticalPropagatingWavePacket_1D::go(const shared_ptr<Shape>& shape, const shared_ptr<State>& state,bool wire,const GLViewInfo&)
 {
 	//Vector3r &extents = (static_cast<Box*>(cg.get()))->extents;
-	Vector3r extents(0.1,0.2,0.3);
+//	Vector3r extents(0.1,0.2,0.3);
 	GaussianAnalyticalPropagatingWavePacket_1D* packet=dynamic_cast<GaussianAnalyticalPropagatingWavePacket_1D*>(state.get());
 //	std::cerr<<"\nGl1_GaussianAnalyticalPropagatingWavePacket_1D\n";
-	glScalef(2*extents[0],2*extents[1],2*extents[2]);
+//	glScalef(2*extents[0],2*extents[1],2*extents[2]);
 //	if (wire)
 //	{
 //		glutWireCube(1);
 //	} else {
 //		glutSolidCube(1);
 //	}
+	Vector3r col = shape->color;
+//	std::cerr << col << "\n";
 	glBegin(GL_LINE_STRIP);
-	glColor3v(shape->color);
-	for(Real x=-32.0 ; x<32.0 ; x+=0.1 )
+//	std::cerr << Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) << "\n";
+	glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // display real part in bluish color
+//	glColor3v((Vector3r(0.0,0.0,1.0))); // display real part in bluish color
+	for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
 	{
 //	(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h)
 		std::complex<Real> y = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
 		glVertex3d(x,std::real(y),0);
 	}
-	glColor3v(shape->color);
-	for(Real x=-32.0 ; x<32.0 ; x+=0.1 )
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+//	std::cerr << Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) << "\n";
+	glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display imag part in reddish color
+//	glColor3v((Vector3r(1.0,0.0,0.0))); // display real part in bluish color
+	for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
 	{
 //	(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h)
 		std::complex<Real> y = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
 		glVertex3d(x,std::imag(y),0);
 	}
-	glColor3v(shape->color);
-	for(Real x=-32.0 ; x<32.0 ; x+=0.1 )
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+	glColor3v(shape->color); // display abs in intended shape color
+	for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
 	{
 //	(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h)
 		std::complex<Real> y = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
