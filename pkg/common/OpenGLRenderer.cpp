@@ -350,7 +350,7 @@ void OpenGLRenderer::renderShape(){
 
 		// ignored in non-selection mode, use it always
 		glPushName(b->id);
-		bool highlight=(b->id==selId || (b->clumpId>=0 && b->clumpId==selId) || b->shape->highlight);
+		bool highlight=((b->id==selId || (b->clumpId>=0 && b->clumpId==selId) || b->shape->highlight) && (blinkHighlight));
 
 		glPushMatrix();
 			AngleAxisr aa(ori);

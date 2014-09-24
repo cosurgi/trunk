@@ -98,6 +98,7 @@ class OpenGLRenderer : public Serializable
 		((Vector3r,light2Color,Vector3r(0.5,0.5,0.1),,"Per-color intensity of secondary light (RGB)."))
 		((Vector3r,cellColor,Vector3r(1,1,0),,"Color of the periodic cell (RGB)."))
 		((Vector3r,bgColor,Vector3r(.2,.2,.2),,"Color of the background canvas (RGB)"))
+		((bool,blinkHighlight,true,,"Turn on/off blinking of highlighted bodies"))
 		((bool,wire,false,,"Render all bodies with wire only (faster)"))
 		((bool,light1,true,,"Turn light 1 on."))
 		((bool,light2,true,,"Turn light 2 on."))
