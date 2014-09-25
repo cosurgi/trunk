@@ -18,7 +18,7 @@ except ImportError:
 
 seqSerializableShowType=True # show type headings in serializable sequences (takes vertical space, but makes the type hyperlinked)
 
-# BUG: cursor is moved to the beginnign of the input field even if it has focus
+# BUG: cursor is moved to the beginning of the input field even if it has focus
 # Janek: I am not yet sure, but it looks like I've fixed this BUG.
 #
 # checking for focus seems to return True always and cursor is never moved
@@ -137,6 +137,7 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 		QFrame.__init__(self,parent)
 		self.rows,self.cols=1,2
 		self.setContentsMargins(0,0,0,0)
+		self.first=True
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
@@ -145,14 +146,17 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 			w.textEdited.connect(self.isHot)
 			w.selectionChanged.connect(self.isHot)
 			w.editingFinished.connect(self.update)
-	def refresh(self):
+	def refresh(self,force=False):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
+			if(self.first or force):
+				w.setText(str(val.real if col==0 else val.imag))
 			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
 			if (not w.hasFocus):
 				w.setText(str(val.real if col==0 else val.imag))
 				w.home(False) # make the left-most part visible, if the text is wider than the widget
+		self.first=False
 	def update(self):
 		try:
 			val=self.getter()
@@ -162,7 +166,8 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 				val=complex(float(w1.text()),float(w2.text()))
 			logging.debug('setting'+str(val))
 			self.trySetter(val)
-		except ValueError: self.refresh()
+		except ValueError:
+			self.refresh(force=True)
 	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
 
 class AttrEditor_Quaternion(AttrEditor,QFrame):
@@ -172,7 +177,8 @@ class AttrEditor_Quaternion(AttrEditor,QFrame):
 		self.grid=QHBoxLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
 		for i in range(4):
 			if i==3:
-				f=QFrame(self); f.setFrameShape(QFrame.VLine); f.setFrameShadow(QFrame.Sunken); f.setFixedWidth(4) # add vertical divider (axis | angle)
+				# add vertical divider (axis | angle)
+				f=QFrame(self); f.setFrameShape(QFrame.VLine); f.setFrameShadow(QFrame.Sunken); f.setFixedWidth(4)
 				self.grid.addWidget(f)
 			w=QLineEdit('')
 			self.grid.addWidget(w);
@@ -228,7 +234,9 @@ class AttrEditor_Se3(AttrEditor,QFrame):
 		try:
 			q=[float((self.grid.itemAtPosition(1,i).widget().text())) for i in (0,1,2,4)]
 			v=[float((self.grid.itemAtPosition(0,i).widget().text())) for i in (0,1,2)]
-		except ValueError: self.refresh()
+		except ValueError:
+			self.refresh()
+			return
 		qq=Quaternion(Vector3(q[0],q[1],q[2]),q[3]); qq.normalize() # from axis-angle
 		self.trySetter((v,qq)) 
 	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
@@ -241,6 +249,7 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 		self.rows,self.cols=rows,cols
 		self.idxConverter=idxConverter
 		self.setContentsMargins(0,0,0,0)
+		self.first=True
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
@@ -249,14 +258,16 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 			w.textEdited.connect(self.isHot)
 			w.selectionChanged.connect(self.isHot)
 			w.editingFinished.connect(self.update)
-	def refresh(self):
+	def refresh(self,force=False):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+			if(self.first or force):
+				w.setText(str(val[self.idxConverter(row,col)]))
 			if (not w.hasFocus):
 				w.setText(str(val[self.idxConverter(row,col)]))
 				w.home(False) # make the left-most part visible, if the text is wider than the widget
+		self.first=False
 	def update(self):
 		try:
 			val=self.getter()
@@ -265,7 +276,8 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 				if w.isModified(): val[self.idxConverter(row,col)]=float(w.text())
 			logging.debug('setting'+str(val))
 			self.trySetter(val)
-		except ValueError: self.refresh()
+		except ValueError:
+			self.refresh(force=True)
 	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
 
 class AttrEditor_MatrixXi(AttrEditor,QFrame):
