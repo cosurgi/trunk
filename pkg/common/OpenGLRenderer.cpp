@@ -182,10 +182,10 @@ void OpenGLRenderer::render(const shared_ptr<Scene>& _scene,Body::id_t selection
 	// set light sources
 	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE,1); // important: do lighting calculations on both sides of polygons
 
-	const GLfloat pos[4]	= {(float) lightPos[0], (float) lightPos[1], (float) lightPos[2],1.0};
+	const GLfloat pos[4]	= {(float) light1Pos[0], (float) light1Pos[1], (float) light1Pos[2],1.0};
 	const GLfloat ambientColor[4]={0.2,0.2,0.2,1.0};
 	const GLfloat specularColor[4]={1,1,1,1.f};
-	const GLfloat diffuseLight[4] = { (float) lightColor[0], (float) lightColor[1], (float) lightColor[2], 1.0f };
+	const GLfloat diffuseLight[4] = { (float) light1Color[0], (float) light1Color[1], (float) light1Color[2], 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION,pos);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specularColor);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientColor);

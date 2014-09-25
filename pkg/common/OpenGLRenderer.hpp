@@ -92,9 +92,9 @@ class OpenGLRenderer : public Serializable
 	YADE_CLASS_BASE_DOC_ATTRS_DEPREC_INIT_CTOR_PY(OpenGLRenderer,Serializable,"Class responsible for rendering scene on OpenGL devices.",
 		((Vector3r,dispScale,((void)"disable scaling",Vector3r::Ones()),,"Artificially enlarge (scale) dispalcements from bodies' :yref:`reference positions<State.refPos>` by this relative amount, so that they become better visible (independently in 3 dimensions). Disbled if (1,1,1)."))
 		((Real,rotScale,((void)"disable scaling",1.),,"Artificially enlarge (scale) rotations of bodies relative to their :yref:`reference orientation<State.refOri>`, so the they are better visible."))
-		((Vector3r,lightPos,Vector3r(75,130,0),,"Position of OpenGL light source in the scene."))
+		((Vector3r,light1Pos,Vector3r(75,130,0),,"Position of OpenGL light source in the scene."))
 		((Vector3r,light2Pos,Vector3r(-130,75,30),,"Position of secondary OpenGL light source in the scene."))
-		((Vector3r,lightColor,Vector3r(0.6,0.6,0.6),,"Per-color intensity of primary light (RGB)."))
+		((Vector3r,light1Color,Vector3r(0.6,0.6,0.6),,"Per-color intensity of primary light (RGB)."))
 		((Vector3r,light2Color,Vector3r(0.5,0.5,0.1),,"Per-color intensity of secondary light (RGB)."))
 		((Vector3r,cellColor,Vector3r(1,1,0),,"Color of the periodic cell (RGB)."))
 		((Vector3r,bgColor,Vector3r(.2,.2,.2),,"Color of the background canvas (RGB)"))
