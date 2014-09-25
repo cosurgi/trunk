@@ -376,7 +376,7 @@ void GLViewer::centerScene(){
 	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=1;
 	LOG_DEBUG("Scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
-	setSceneRadius(radius*1.5);
+	setSceneRadius(radius*3.0);
 	showEntireScene();
 }
 

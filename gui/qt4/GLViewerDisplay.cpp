@@ -141,7 +141,7 @@ float GLViewer::displayedSceneRadius(){
 }
 
 void GLViewer::postDraw(){
-	Real wholeDiameter=QGLViewer::camera()->sceneRadius()*2;
+	Real wholeDiameter=QGLViewer::camera()->sceneRadius();
 
 	renderer->viewInfo.sceneRadius=QGLViewer::camera()->sceneRadius();
 	qglviewer::Vec c=QGLViewer::camera()->sceneCenter();
@@ -170,18 +170,25 @@ void GLViewer::postDraw(){
 		if(drawGrid & 4) {glColor3f(0.1,0.1,0.4); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
 	}
 	if(displayGridNumbers and drawGrid){
+		const Vector3r& h(Vector3r(1,1,1));
 		for(int xyz(-nHalfSegments) ; xyz<=nHalfSegments ; xyz++)
 		{ // write text - coordinate numbers on grid
 			Real pos=xyz*gridStep;
 			ostringstream oss;
 			oss<<setprecision(4)<<pos;
 			std::string str = oss.str();
-			const Vector3r& h(Vector3r(1,1,1));
 			glColor3v(h);
 			if((drawGrid & 2) or (drawGrid & 4)) GLUtils::GLDrawText(str,Vector3r(pos,0,0),h);
 			if((drawGrid & 1) or (drawGrid & 4)) GLUtils::GLDrawText(str,Vector3r(0,pos,0),h);
 			if((drawGrid & 1) or (drawGrid & 2)) GLUtils::GLDrawText(str,Vector3r(0,0,pos),h);
 		}
+		Real pos=nHalfSegments*gridStep+gridStep*0.1;
+		if((drawGrid & 2) or (drawGrid & 4)) GLUtils::GLDrawText("X",Vector3r(pos,0,0),h);
+		if((drawGrid & 1) or (drawGrid & 4)) GLUtils::GLDrawText("Y",Vector3r(0,pos,0),h);
+		if((drawGrid & 1) or (drawGrid & 2)) GLUtils::GLDrawText("Z",Vector3r(0,0,pos),h);
+		if((drawGrid & 2) or (drawGrid & 4)) GLUtils::GLDrawText("-X",Vector3r(-pos,0,0),h);
+		if((drawGrid & 1) or (drawGrid & 4)) GLUtils::GLDrawText("-Y",Vector3r(0,-pos,0),h);
+		if((drawGrid & 1) or (drawGrid & 2)) GLUtils::GLDrawText("-Z",Vector3r(0,0,-pos),h);
 	}
 
 	// scale
