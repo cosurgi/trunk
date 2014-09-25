@@ -135,10 +135,14 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 		QFrame.__init__(self,parent)
 		self.rows,self.cols=1,2
 		self.setContentsMargins(0,0,0,0)
-##1 <<<<<<< HEAD
-##1 		self.first=True
-##1 =======
-##1 >>>>>>> Added qt4 display of std::complex<Real> in inspect
+##3 <<<<<<< HEAD
+##3 ##1 <<<<<<< HEAD
+##3 ##1 		self.first=True
+##3 ##1 =======
+##3 ##1 >>>>>>> Added qt4 display of std::complex<Real> in inspect
+##3 =======
+		self.first=True
+##3 >>>>>>> 2nd time fix bug in SerializableEditor.py and 'inspect'
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
@@ -147,33 +151,46 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 			w.textEdited.connect(self.isHot)
 			w.selectionChanged.connect(self.isHot)
 			w.editingFinished.connect(self.update)
-##1 <<<<<<< HEAD
-##1 	def refresh(self,force=False):
-##1 		val=self.getter()
-##1 		for row,col in itertools.product(range(self.rows),range(self.cols)):
-##1 			w=self.grid.itemAtPosition(row,col).widget()
-##1 			if(self.first or force):
-##1 				w.setText(str(val.real if col==0 else val.imag))
-##1 			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
-##1 			if (not w.hasFocus):
-##1 				w.setText(str(val.real if col==0 else val.imag))
-##1 				w.home(False) # make the left-most part visible, if the text is wider than the widget
-##1 		self.first=False
-##1 =======
-	def refresh(self):
+##3 <<<<<<< HEAD
+##3 ##1 <<<<<<< HEAD
+##3 ##1 	def refresh(self,force=False):
+##3 ##1 		val=self.getter()
+##3 ##1 		for row,col in itertools.product(range(self.rows),range(self.cols)):
+##3 ##1 			w=self.grid.itemAtPosition(row,col).widget()
+##3 ##1 			if(self.first or force):
+##3 ##1 				w.setText(str(val.real if col==0 else val.imag))
+##3 ##1 			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3 ##1 			if (not w.hasFocus):
+##3 ##1 				w.setText(str(val.real if col==0 else val.imag))
+##3 ##1 				w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3 ##1 		self.first=False
+##3 ##1 =======
+##3 	def refresh(self):
+##3 		val=self.getter()
+##3 		for row,col in itertools.product(range(self.rows),range(self.cols)):
+##3 			w=self.grid.itemAtPosition(row,col).widget()
+##3 ##2 <<<<<<< HEAD
+##3 ##2 			w.setText(str(val.real if col==0 else val.imag))
+##3 ##2 			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3 ##2 ##>>>>>>> Added qt4 display of std::complex<Real> in inspect
+##3 ##2 =======
+##3 =======
+	def refresh(self,force=False):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-##2 <<<<<<< HEAD
-##2 			w.setText(str(val.real if col==0 else val.imag))
-##2 			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
-##2 ##>>>>>>> Added qt4 display of std::complex<Real> in inspect
-##2 =======
+			if(self.first or force):
+				w.setText(str(val.real if col==0 else val.imag))
+##3 >>>>>>> 2nd time fix bug in SerializableEditor.py and 'inspect'
 			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
 			if (not w.hasFocus):
 				w.setText(str(val.real if col==0 else val.imag))
 				w.home(False) # make the left-most part visible, if the text is wider than the widget
-##2 >>>>>>> Fix bug in SerializableEditor.py that made editing values annoying.
+##3 <<<<<<< HEAD
+##3 ##2 >>>>>>> Fix bug in SerializableEditor.py that made editing values annoying.
+##3 =======
+		self.first=False
+##3 >>>>>>> 2nd time fix bug in SerializableEditor.py and 'inspect'
 	def update(self):
 		try:
 			val=self.getter()
@@ -183,12 +200,17 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 				val=complex(float(w1.text()),float(w2.text()))
 			logging.debug('setting'+str(val))
 			self.trySetter(val)
-##1 <<<<<<< HEAD
-##1 		except ValueError:
-##1 			self.refresh(force=True)
-##1 =======
-		except ValueError: self.refresh()
-##1 >>>>>>> Added qt4 display of std::complex<Real> in inspect
+##3 <<<<<<< HEAD
+##3 ##1 <<<<<<< HEAD
+##3 ##1 		except ValueError:
+##3 ##1 			self.refresh(force=True)
+##3 ##1 =======
+##3 		except ValueError: self.refresh()
+##3 ##1 >>>>>>> Added qt4 display of std::complex<Real> in inspect
+##3 =======
+		except ValueError:
+			self.refresh(force=True)
+##3 >>>>>>> 2nd time fix bug in SerializableEditor.py and 'inspect'
 	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
 
 class AttrEditor_Quaternion(AttrEditor,QFrame):
@@ -285,19 +307,28 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-##2 <<<<<<< HEAD
-##2 			if(self.first or force):
-##2 				w.setText(str(val[self.idxConverter(row,col)]))
-##2 			if (not w.hasFocus):
-##2 				w.setText(str(val[self.idxConverter(row,col)]))
-##2 				w.home(False) # make the left-most part visible, if the text is wider than the widget
-##2 		self.first=False
-##2 =======
-			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3<<<<<<< HEAD
+##3##2 <<<<<<< HEAD
+##3##2 			if(self.first or force):
+##3##2 				w.setText(str(val[self.idxConverter(row,col)]))
+##3##2 			if (not w.hasFocus):
+##3##2 				w.setText(str(val[self.idxConverter(row,col)]))
+##3##2 				w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3##2 		self.first=False
+##3##2 =======
+##3			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3			if (not w.hasFocus):
+##3				w.setText(str(val[self.idxConverter(row,col)]))
+##3				w.home(False) # make the left-most part visible, if the text is wider than the widget
+##3##2 >>>>>>> Fix bug in SerializableEditor.py that made editing values annoying.
+##3=======
+			if(self.first or force):
+				w.setText(str(val[self.idxConverter(row,col)]))
 			if (not w.hasFocus):
 				w.setText(str(val[self.idxConverter(row,col)]))
 				w.home(False) # make the left-most part visible, if the text is wider than the widget
-##2 >>>>>>> Fix bug in SerializableEditor.py that made editing values annoying.
+		self.first=False
+##3 >>>>>>> 2nd time fix bug in SerializableEditor.py and 'inspect'
 	def update(self):
 		try:
 			val=self.getter()
