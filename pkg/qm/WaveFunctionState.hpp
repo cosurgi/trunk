@@ -512,89 +512,56 @@ REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 
 #ifdef YADE_OPENGL
 #include<yade/pkg/common/GLDrawFunctors.hpp>
-class Gl1_GaussianAnalyticalPropagatingWavePacket_1D: public GlShapeFunctor
+class Gl1_WaveFunctionGeometry: public GlShapeFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
-		virtual ~Gl1_GaussianAnalyticalPropagatingWavePacket_1D();
+		void drawSurface(const std::vector<std::vector<Real> >& waveVals,const shared_ptr<Shape>& shape,Vector3r col);
+		virtual ~Gl1_WaveFunctionGeometry();
 		RENDERS(WaveFunctionGeometry);
 		DECLARE_LOGGER;
-//		YADE_CLASS_BASE_DOC_STATICATTRS( //FIXME - not recognized when static attrs are not used? ????????????????????
-//			  // class name
-//			Gl1_GaussianAnalyticalPropagatingWavePacket_1D
-//			, // base class
-//			GlShapeFunctor
-//			, // class description
-//			"Render :yref:`GaussianAnalyticalPropagatingWavePacket_1D`."
-//			, // attributes, public variables
-//			((bool,abs,true,,"Show absolute probability"))
-//			((bool,real,false,,"Show only real component"))
-//			((bool,imag,false,,"Show only imaginary component"))
-//		);
-//};
-//REGISTER_SERIALIZABLE(Gl1_GaussianAnalyticalPropagatingWavePacket_1D);
-
-//class Gl1_GaussianAnalyticalPropagatingWavePacket_1D : public GlShapeFunctor
-//{
-//	public :
-//		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
-//	RENDERS(GaussianAnalyticalPropagatingWavePacket_1D);
 		YADE_CLASS_BASE_DOC_STATICATTRS(
 			  // class name
-			Gl1_GaussianAnalyticalPropagatingWavePacket_1D
+			Gl1_WaveFunctionGeometry
 			, // base class
 			GlShapeFunctor
 			, // class description
-			"Renders :yref:`GaussianAnalyticalPropagatingWavePacket_1D` object"
+			"Renders :yref:`WaveFunctionGeometry` object"
 			, // static public attributes
-			((bool,abs,true,,"Show absolute probability"))
+			((bool,absolute,false,,"Show absolute probability"))
+			((bool,partReal,true,,"Show only real component"))
+			((bool,partImaginary,true,,"Show only imaginary component"))
+			((bool,probability,false,,"Show probability, which is squared absolute value"))
+			((bool,renderSmoothing,true,,"Smooth the displayed surface"))
+			((int,renderSpecular,10,,"Amount of specular light reflected by surface"))
+			((int,renderAmbient,30,,"Amount of ambient light falling on surface"))
+			((int,renderDiffuse,100,,"Amount of diffuse light reflected by surface"))
+			((int,renderShininess,50,,"Amount of shininess of the surface"))
 		);
 };
-REGISTER_SERIALIZABLE(Gl1_GaussianAnalyticalPropagatingWavePacket_1D);
+REGISTER_SERIALIZABLE(Gl1_WaveFunctionGeometry);
 
-//class Gl1_WaveFunctionGeometry: public GlShapeFunctor
+// This will come later, when I will have some interactions going on....
+//class Gl1_WaveFunctionInteractionPhysics: public GlIPhysFunctor
 //{
-//	public:
-//		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
-//		virtual ~Gl1_WaveFunctionGeometry();
-//		RENDERS(WaveFunctionGeometry);
+//	public: 
+//		virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
+//		virtual ~Gl1_WaveFunctionInteractionPhysics();
+//		RENDERS(WaveFunctionInteractionPhysics);
 //		DECLARE_LOGGER;
 //		YADE_CLASS_BASE_DOC_STATICATTRS(
 //			  // class name
-//			Gl1_WaveFunctionGeometry
+//			Gl1_WaveFunctionInteractionPhysics
 //			, // base class
-//			GlShapeFunctor
+//			GlIPhysFunctor
 //			, // class description
-//			"Render :yref:`WaveFunctionGeometry`."
+//			"Render :yref:`WaveFunctionInteractionPhysics` interactions."
 //			, // attributes, public variables
 //			((bool,abs,true,,"Show absolute probability"))
 //			((bool,real,false,,"Show only real component"))
 //			((bool,imag,false,,"Show only imaginary component"))
 //		);
 //};
-//REGISTER_SERIALIZABLE(Gl1_WaveFunctionGeometry);
-
-
-class Gl1_WaveFunctionInteractionPhysics: public GlIPhysFunctor
-{
-	public: 
-		virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
-		virtual ~Gl1_WaveFunctionInteractionPhysics();
-		RENDERS(WaveFunctionInteractionPhysics);
-		DECLARE_LOGGER;
-		YADE_CLASS_BASE_DOC_STATICATTRS(
-			  // class name
-			Gl1_WaveFunctionInteractionPhysics
-			, // base class
-			GlIPhysFunctor
-			, // class description
-			"Render :yref:`WaveFunctionInteractionPhysics` interactions."
-			, // attributes, public variables
-			((bool,abs,true,,"Show absolute probability"))
-			((bool,real,false,,"Show only real component"))
-			((bool,imag,false,,"Show only imaginary component"))
-		);
-};
-REGISTER_SERIALIZABLE(Gl1_WaveFunctionInteractionPhysics);
+//REGISTER_SERIALIZABLE(Gl1_WaveFunctionInteractionPhysics);
 #endif
 
