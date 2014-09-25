@@ -102,7 +102,8 @@ class AttrEditor_Int(AttrEditor,QSpinBox):
 		QSpinBox.__init__(self,parent)
 		self.setRange(int(-1e9),int(1e9)); self.setSingleStep(1);
 		self.valueChanged.connect(self.update)
-	def refresh(self): self.setValue(self.getter())
+	def refresh(self):
+		if (not self.hasFocus()): self.setValue(self.getter())
 	def update(self):  self.trySetter(self.value())
 
 class AttrEditor_Str(AttrEditor,QLineEdit):
@@ -112,7 +113,8 @@ class AttrEditor_Str(AttrEditor,QLineEdit):
 		self.textEdited.connect(self.isHot)
 		self.selectionChanged.connect(self.isHot)
 		self.editingFinished.connect(self.update)
-	def refresh(self): self.setText(self.getter())
+	def refresh(self):
+		if (not self.hasFocus()): self.setText(self.getter())
 	def update(self):  self.trySetter(str(self.text()))
 
 class AttrEditor_Float(AttrEditor,QLineEdit):
@@ -196,7 +198,9 @@ class AttrEditor_Quaternion(AttrEditor,QFrame):
 	def update(self):
 		try:
 			x=[float((self.grid.itemAt(i).widget().text())) for i in (0,1,2,4)]
-		except ValueError: self.refresh()
+		except ValueError:
+			self.refresh()
+			return
 		q=Quaternion(Vector3(x[0],x[1],x[2]),x[3]); q.normalize() # from axis-angle
 		self.trySetter(q) 
 	def setFocus(self): self.grid.itemAt(0).widget().setFocus()
