@@ -511,36 +511,6 @@ REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 *********************************************************************************/
 
 #ifdef YADE_OPENGL
-#include<yade/pkg/common/GLDrawFunctors.hpp>
-class Gl1_WaveFunctionGeometry: public GlShapeFunctor
-{
-	public:
-		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
-		void drawSurface(const std::vector<std::vector<Real> >& waveVals,const shared_ptr<Shape>& shape,Vector3r col);
-		virtual ~Gl1_WaveFunctionGeometry();
-		RENDERS(WaveFunctionGeometry);
-		DECLARE_LOGGER;
-		YADE_CLASS_BASE_DOC_STATICATTRS(
-			  // class name
-			Gl1_WaveFunctionGeometry
-			, // base class
-			GlShapeFunctor
-			, // class description
-			"Renders :yref:`WaveFunctionGeometry` object"
-			, // static public attributes
-			((bool,absolute,false,,"Show absolute probability"))
-			((bool,partReal,true,,"Show only real component"))
-			((bool,partImaginary,true,,"Show only imaginary component"))
-			((bool,probability,false,,"Show probability, which is squared absolute value"))
-			((bool,renderSmoothing,true,,"Smooth the displayed surface"))
-			((int,renderSpecular,10,,"Amount of specular light reflected by surface"))
-			((int,renderAmbient,30,,"Amount of ambient light falling on surface"))
-			((int,renderDiffuse,100,,"Amount of diffuse light reflected by surface"))
-			((int,renderShininess,50,,"Amount of shininess of the surface"))
-		);
-};
-REGISTER_SERIALIZABLE(Gl1_WaveFunctionGeometry);
-
 // This will come later, when I will have some interactions going on....
 //class Gl1_WaveFunctionInteractionPhysics: public GlIPhysFunctor
 //{
