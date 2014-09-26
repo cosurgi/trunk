@@ -9,7 +9,7 @@ YADE_PLUGIN(
 //	(WaveFunctionState)                            // moved to another file
 //	(GaussianWavePacket)                           // moved to another file
 //	(GaussianAnalyticalPropagatingWavePacket_1D)   // moved to another file
-//	(QuantumMechanicalGeometry)                    // moved to another file
+//	(QuantumMechanicalGeometryDisplay)                    // moved to another file
 //	(QuantumMechanicalParameters)                  // moved to another file
 	(WaveFunctionInteractionPhysics)
 	(WaveFunctionInteractionGeometry)
@@ -18,7 +18,7 @@ YADE_PLUGIN(
 	(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics)
 //	(SchrodingerKosloffPropagator)                 // moved to another file
 	#ifdef YADE_OPENGL
-//	(Gl1_QuantumMechanicalGeometry) // moved to another file
+//	(Gl1_QuantumMechanicalGeometryDisplay) // moved to another file
 //	(Gl1_WaveFunctionInteractionPhysics) // This is for later
 	#endif	
 	);

@@ -17,7 +17,7 @@
  *
  * It contains:
  * - QuantumMechanicalBound       → finding spatial collisions - FIXME - add this one
- * - QuantumMechanicalGeometry    → OpenGL graphical display, no physical related things!
+ * - QuantumMechanicalGeometryDisplay    → OpenGL graphical display, no physical related things!
  * - QuantumMechanicalParameters  → classification of indistinguishable quantum particles
  * - QuantumMechanicalState       → physical state specific to given particle instance
  *
