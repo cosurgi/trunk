@@ -4,7 +4,7 @@
 
 #include <yade/pkg/common/GLDrawFunctors.hpp>
 #include "QuantumMechanicalGeometryDisplay.hpp"
-#include "WaveFunctionState.hpp"
+//#include "QuantumMechanicalInteraction.hpp"
 
 /*********************************************************************************
 *
@@ -54,5 +54,37 @@ class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
 };
 REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalGeometryDisplay);
 
+#endif
+
+
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   O P E N   G L   D I S P L A Y
+*
+*********************************************************************************/
+
+#ifdef YADE_OPENGL
+// This will come later, when I will have some interactions going on....
+//class Gl1_QuantumMechanicalInteractionPhysics: public GlIPhysFunctor
+//{
+//	public: 
+//		virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
+//		virtual ~Gl1_QuantumMechanicalInteractionPhysics();
+//		RENDERS(QuantumMechanicalInteractionPhysics);
+//		DECLARE_LOGGER;
+//		YADE_CLASS_BASE_DOC_STATICATTRS(
+//			  // class name
+//			Gl1_QuantumMechanicalInteractionPhysics
+//			, // base class
+//			GlIPhysFunctor
+//			, // class description
+//			"Render :yref:`QuantumMechanicalInteractionPhysics` interactions."
+//			, // attributes, public variables
+//			((bool,abs,true,,"Show absolute probability"))
+//			((bool,real,false,,"Show only real component"))
+//			((bool,imag,false,,"Show only imaginary component"))
+//		);
+//};
+//REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalInteractionPhysics);
 #endif
 

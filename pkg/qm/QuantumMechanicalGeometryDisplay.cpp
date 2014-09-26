@@ -10,7 +10,7 @@ YADE_PLUGIN(
 
 /*********************************************************************************
 *
-* W A V E   F U N C T I O N   G E O M E T R Y
+* Q U A N T U M   M E C H A N I C A L   G E O M E T R Y   D I S P L A Y
 *
 *********************************************************************************/
 CREATE_LOGGER(QuantumMechanicalGeometryDisplay);

@@ -14,7 +14,7 @@ YADE_PLUGIN(
 	(Gl1_QuantumMechanicalGeometryDisplay)
 	);
 
-#include "WaveFunctionState.hpp"
+//#include "QuantumMechanicalInteraction.hpp"
 #include "QuantumMechanicalState.hpp"
 #include "QuantumMechanicalBody.hpp"
 #include <yade/pkg/common/GLDrawFunctors.hpp>
@@ -590,4 +590,26 @@ Real Gl1_QuantumMechanicalGeometryDisplay::sinc256Interpolation(Real dist)
 }
 
 #endif
+
+
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   O P E N   G L   D I S P L A Y
+*
+*********************************************************************************/
+
+#ifdef YADE_OPENGL
+
+// This will come later, when I will have some interactions going on....
+//	CREATE_LOGGER(Gl1_QuantumMechanicalInteractionPhysics);
+//	bool Gl1_QuantumMechanicalInteractionPhysics::abs=true;
+//	bool Gl1_QuantumMechanicalInteractionPhysics::real=false;
+//	bool Gl1_QuantumMechanicalInteractionPhysics::imag=false;
+//	Gl1_QuantumMechanicalInteractionPhysics::~Gl1_QuantumMechanicalInteractionPhysics(){};
+//	void Gl1_QuantumMechanicalInteractionPhysics::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame)
+//	{
+//	}
+
+#endif
+
 
