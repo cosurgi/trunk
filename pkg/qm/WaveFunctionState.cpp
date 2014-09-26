@@ -4,101 +4,24 @@
 #include <yade/core/Scene.hpp>
 
 YADE_PLUGIN(
-	(QuantumMechanicalBody)
-	(QuantumMechanicalState)
-	(WaveFunctionState)
-	(GaussianWavePacket)
-	(GaussianAnalyticalPropagatingWavePacket_1D)
-	(WaveFunctionGeometry)
-	(WavePacketParameters)
+//	(QuantumMechanicalBody)	                       // moved to another file
+//	(QuantumMechanicalState)                       // moved to another file
+//	(WaveFunctionState)                            // moved to another file
+//	(GaussianWavePacket)                           // moved to another file
+//	(GaussianAnalyticalPropagatingWavePacket_1D)   // moved to another file
+//	(QuantumMechanicalGeometry)                    // moved to another file
+//	(WavePacketParameters)                         // moved to another file
 	(WaveFunctionInteractionPhysics)
 	(WaveFunctionInteractionGeometry)
 	(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics)
 	(Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics)
 	(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics)
-	(SchrodingerKosloffPropagator)
+//	(SchrodingerKosloffPropagator)                 // moved to another file
 	#ifdef YADE_OPENGL
-//	(Gl1_WaveFunctionGeometry) // moved to another file
+//	(Gl1_QuantumMechanicalGeometry) // moved to another file
 //	(Gl1_WaveFunctionInteractionPhysics) // This is for later
 	#endif	
 	);
-
-/*********************************************************************************
-*
-* Q U A N T U M   M E C H A N I C A L   B O D Y
-*
-*********************************************************************************/
-CREATE_LOGGER(QuantumMechanicalBody);
-// !! at least one virtual function in the .cpp file
-QuantumMechanicalBody::~QuantumMechanicalBody(){};
-
-/*********************************************************************************
-*
-* Q U A N T U M   M E C H A N I C A L   S T A T E
-*
-*********************************************************************************/
-CREATE_LOGGER(QuantumMechanicalState);
-// !! at least one virtual function in the .cpp file
-QuantumMechanicalState::~QuantumMechanicalState(){};
-
-/*********************************************************************************
-*
-* W A V E   F U N C T I O N   S T A T E
-*
-*********************************************************************************/
-CREATE_LOGGER(WaveFunctionState);
-// !! at least one virtual function in the .cpp file
-WaveFunctionState::~WaveFunctionState(){};
-
-CREATE_LOGGER(GaussianWavePacket);
-// !! at least one virtual function in the .cpp file
-GaussianWavePacket::~GaussianWavePacket(){};
-
-CREATE_LOGGER(GaussianAnalyticalPropagatingWavePacket_1D);
-// !! at least one virtual function in the .cpp file
-GaussianAnalyticalPropagatingWavePacket_1D::~GaussianAnalyticalPropagatingWavePacket_1D(){};
-
-std::complex<Real> GaussianAnalyticalPropagatingWavePacket_1D::waveFunctionValue_1D_positionRepresentation(
-	Real x,    // position where wavepacket is calculated
-	Real x0,   // initial position of wavepacket centar at time t=0
-	Real t,    // time when wavepacket is evaluated
-	Real k0,   // initial wavenumber of wavepacket
-	Real m,    // particle mass
-	Real a,    // wavepacket width, sometimes called sigma, of the Gaussian distribution
-	Real hbar  // Planck's constant divided by 2pi
-)
-{
-	x -= x0;
-	return exp(
-		-(
-			(m*x*x+Mathr::I*a*a*k0*(k0*hbar*t-2.0*m*x))
-			/
-			(2.0*a*a*m+2.0*Mathr::I*hbar*t)
-		)
-	)
-	/
-	(
-		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*hbar*t/(a*m),0.5))
-	);
-};
-
-/*********************************************************************************
-*
-* W A V E   F U N C T I O N   G E O M E T R Y
-*
-*********************************************************************************/
-CREATE_LOGGER(WaveFunctionGeometry);
-// !! at least one virtual function in the .cpp file
-WaveFunctionGeometry::~WaveFunctionGeometry(){};
-
-/*********************************************************************************
-*
-* W A V E   F U N C T I O N   M A T E R I A L
-*
-*********************************************************************************/
-CREATE_LOGGER(WavePacketParameters);
-// !! at least one virtual function in the .cpp file
-WavePacketParameters::~WavePacketParameters(){};
 
 /*********************************************************************************
 *
@@ -142,16 +65,6 @@ CREATE_LOGGER(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysic
 
 bool Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I){
 }
-
-
-/*********************************************************************************
-*
-* K O S L O F F   P R O P A G A T I O N   o f   S H R O D I N G E R   E Q.
-*
-*********************************************************************************/
-CREATE_LOGGER(SchrodingerKosloffPropagator);
-// !! at least one virtual function in the .cpp file
-SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
 /*********************************************************************************
 *
