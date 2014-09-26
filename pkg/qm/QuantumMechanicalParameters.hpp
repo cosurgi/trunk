@@ -8,24 +8,27 @@
 
 /*********************************************************************************
 *
-* W A V E   F U N C T I O N   M A T E R I A L
+* Q U A N T U M   M E C H A N I C A L   P A R A M E T E R S
 *
 *********************************************************************************/
 
-/*! @brief WavePacketParameters contains information about material out of which each particle is made.
+/*! @brief QuantumMechanicalParameters contains information about material out of which each particle is made.
  *
- * Actually a wave function has no material. Although later it may come useful to categorize wavefunctions
- * as being one of fundamental indistinguishable particles in the standard model: quarks (up, down, etc.),
- * electrons (muon, tau), neutrinos, etc.
+ * It is used to categorize wavefunctions to those representing the same indistinguishable particles, like:
+ *  - quarks (up, down, etc.),
+ *  - electrons (muon, tau),
+ *  - neutrinos,
+ *  - photons,
+ *  - etc.
  *
  */
-class WavePacketParameters: public Material
+class QuantumMechanicalParameters: public Material
 {
 	public:
-		virtual ~WavePacketParameters();
+		virtual ~QuantumMechanicalParameters();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(
 			  // class name
-			WavePacketParameters
+			QuantumMechanicalParameters
 			, // base class
 			Material
 			, // class description
@@ -42,14 +45,14 @@ class WavePacketParameters: public Material
 			\n\
 			Maybe eg. fermions and bosons will derive from this class too."
 			, // attributes, public variables
-//			((bool,isWaveFunction,true,,"This is only a placeholder in WavePacketParameters, not used for anything."))
+//			((bool,isWaveFunction,true,,"This is only a placeholder in QuantumMechanicalParameters, not used for anything."))
 			((string,qtHide,"density qtHide",Attr::readonly,"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class."))
 			, // constructor
 			createIndex();
 	);
-	REGISTER_CLASS_INDEX(WavePacketParameters,Material);
+	REGISTER_CLASS_INDEX(QuantumMechanicalParameters,Material);
 };
-REGISTER_SERIALIZABLE(WavePacketParameters);
+REGISTER_SERIALIZABLE(QuantumMechanicalParameters);
 
 

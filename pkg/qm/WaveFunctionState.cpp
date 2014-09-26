@@ -10,11 +10,11 @@ YADE_PLUGIN(
 //	(GaussianWavePacket)                           // moved to another file
 //	(GaussianAnalyticalPropagatingWavePacket_1D)   // moved to another file
 //	(QuantumMechanicalGeometry)                    // moved to another file
-//	(WavePacketParameters)                         // moved to another file
+//	(QuantumMechanicalParameters)                  // moved to another file
 	(WaveFunctionInteractionPhysics)
 	(WaveFunctionInteractionGeometry)
-	(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics)
-	(Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics)
+	(Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics)
+	(Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics)
 	(Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFunctionInteractionPhysics)
 //	(SchrodingerKosloffPropagator)                 // moved to another file
 	#ifdef YADE_OPENGL
@@ -48,12 +48,12 @@ WaveFunctionInteractionGeometry::~WaveFunctionInteractionGeometry(){};
 * I N T E R A C T I O N   P H Y S I C S   constitutive parameters of the contact
 *
 *********************************************************************************/
-CREATE_LOGGER(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics);
-void Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics::go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction){
+CREATE_LOGGER(Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics);
+void Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics::go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction){
 }
 
-CREATE_LOGGER(Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics);
-void Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics::go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction){
+CREATE_LOGGER(Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics);
+void Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics::go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction){
 }
 
 /*********************************************************************************

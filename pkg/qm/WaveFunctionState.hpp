@@ -6,7 +6,7 @@
 #include <yade/core/Scene.hpp>
 #include <stdexcept>
 
-#include "QuantumMechanicalMaterial.hpp"
+#include "QuantumMechanicalParameters.hpp"
 
 
 /*********************************************************************************
@@ -84,19 +84,19 @@ REGISTER_SERIALIZABLE(WaveFunctionInteractionGeometry);
 *
 *********************************************************************************/
 
-/*! @brief When two WaveFunctionState meet the WavePacketParameters of those two is used to create
+/*! @brief When two WaveFunctionState meet the QuantumMechanicalParameters of those two is used to create
  * WaveFunctionInteractionPhysics with corresponding parameters.
  *
  */
-class Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics: public IPhysFunctor
+class Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics: public IPhysFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
-		FUNCTOR2D(WavePacketParameters,WavePacketParameters);
+		FUNCTOR2D(QuantumMechanicalParameters,QuantumMechanicalParameters);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_ATTRS(
 			  // class name
-			Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics
+			Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics
 			, // base class
 			IPhysFunctor
 			, // class description
@@ -105,33 +105,33 @@ class Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysi
 //			((long,nothing,10,,"placeholder"))
 		);
 };
-REGISTER_SERIALIZABLE(Ip2_WavePacketParameters_WavePacketParameters_WaveFunctionInteractionPhysics);
+REGISTER_SERIALIZABLE(Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_WaveFunctionInteractionPhysics);
 
 
-/*! @brief When any Material meets the WavePacketParameters a WaveFunctionInteractionPhysics is made.
+/*! @brief When any Material meets the QuantumMechanicalParameters a WaveFunctionInteractionPhysics is made.
  *
  * This can be used for infinite potential wells, where the DEM boxes serve as walls.
  *
  */
 
-class Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics: public IPhysFunctor
+class Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics: public IPhysFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
-		FUNCTOR2D(Material,WavePacketParameters);
+		FUNCTOR2D(Material,QuantumMechanicalParameters);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_ATTRS(
 			  // class name
-			Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics
+			Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics
 			, // base class
 			IPhysFunctor
 			, // class description
-			"Convert :yref:`WavePacketParameters` instance and :yref:`Material` instance to \
+			"Convert :yref:`QuantumMechanicalParameters` instance and :yref:`Material` instance to \
 			:yref:`WaveFunctionInteractionPhysics` with corresponding parameters."
 			, // attributes, public variables
 		);
 };
-REGISTER_SERIALIZABLE(Ip2_Material_WavePacketParameters_WaveFunctionInteractionPhysics);
+REGISTER_SERIALIZABLE(Ip2_Material_QuantumMechanicalParameters_WaveFunctionInteractionPhysics);
 
 
 /*********************************************************************************
@@ -161,7 +161,7 @@ class Law2_WaveFunctionInteractionGeometry_WaveFunctionInteractionPhysics_WaveFu
 			, // base class
 			LawFunctor
 			, // class description
-			"Constitutive law for the :yref:`WaveFunction-model<WavePacketParameters>`."
+			"Constitutive law for the :yref:`WaveFunction-model<QuantumMechanicalParameters>`."
 			, // attributes, public variables
 //			((bool,empty,true,,"placeholder"))
 			, // constructor

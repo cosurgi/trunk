@@ -1,19 +1,19 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
-#include "QuantumMechanicalMaterial.hpp"
+#include "QuantumMechanicalParameters.hpp"
 #include <yade/core/Scene.hpp>
 
 YADE_PLUGIN(
-	(WavePacketParameters)
+	(QuantumMechanicalParameters)
 	);
 
 /*********************************************************************************
 *
-* W A V E   F U N C T I O N   M A T E R I A L
+* Q U A N T U M   M E C H A N I C A L   P A R A M E T E R S
 *
 *********************************************************************************/
-CREATE_LOGGER(WavePacketParameters);
+CREATE_LOGGER(QuantumMechanicalParameters);
 // !! at least one virtual function in the .cpp file
-WavePacketParameters::~WavePacketParameters(){};
+QuantumMechanicalParameters::~QuantumMechanicalParameters(){};
 
 

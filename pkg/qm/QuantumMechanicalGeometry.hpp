@@ -16,6 +16,8 @@
  *
  * Things like color, or if it's a wireframe to display, etc.
  *
+ * No physical/calculations related stuff here! Only display.
+ *
  */
 class QuantumMechanicalGeometry: public Shape
 {
