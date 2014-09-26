@@ -15,6 +15,12 @@
 
 /*! @brief QuantumMechanicalBody contains single 'body' (a particle) expressed in terms of quantum mechanics.
  *
+ * It contains:
+ * - QuantumMechanicalBound       → finding spatial collisions - FIXME - add this one
+ * - QuantumMechanicalGeometry    → OpenGL graphical display, no physical related things!
+ * - QuantumMechanicalParameters  → classification of indistinguishable quantum particles
+ * - QuantumMechanicalState       → physical state specific to given particle instance
+ *
  */
 class QuantumMechanicalBody: public Body
 {
