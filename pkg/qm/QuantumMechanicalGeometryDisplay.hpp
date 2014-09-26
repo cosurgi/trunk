@@ -12,20 +12,20 @@
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalGeometry contains geometrical information used to display the particle on screen
+/*! @brief QuantumMechanicalGeometryDisplay contains geometrical information used to display the particle on screen
  *
  * Things like color, or if it's a wireframe to display, etc.
  *
  * No physical/calculations related stuff here! Only display.
  *
  */
-class QuantumMechanicalGeometry: public Shape
+class QuantumMechanicalGeometryDisplay: public Shape
 {
 	public:
-		virtual ~QuantumMechanicalGeometry();
+		virtual ~QuantumMechanicalGeometryDisplay();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(
 			  // class name
-			QuantumMechanicalGeometry
+			QuantumMechanicalGeometryDisplay
 			, // base class
 			Shape
 			, // class description
@@ -34,9 +34,9 @@ class QuantumMechanicalGeometry: public Shape
 			, // constructor
 			createIndex();
 		);
-		REGISTER_CLASS_INDEX(QuantumMechanicalGeometry,Shape);
+		REGISTER_CLASS_INDEX(QuantumMechanicalGeometryDisplay,Shape);
 };
-REGISTER_SERIALIZABLE(QuantumMechanicalGeometry);
+REGISTER_SERIALIZABLE(QuantumMechanicalGeometryDisplay);
 
 
 

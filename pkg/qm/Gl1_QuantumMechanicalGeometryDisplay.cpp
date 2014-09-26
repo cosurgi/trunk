@@ -7,11 +7,11 @@
 *********************************************************************************/
 
 #ifdef YADE_OPENGL
-#include "Gl1_QuantumMechanicalGeometry.hpp"
+#include "Gl1_QuantumMechanicalGeometryDisplay.hpp"
 #include <yade/core/Scene.hpp>
 
 YADE_PLUGIN(
-	(Gl1_QuantumMechanicalGeometry)
+	(Gl1_QuantumMechanicalGeometryDisplay)
 	);
 
 #include "WaveFunctionState.hpp"
@@ -21,20 +21,20 @@ YADE_PLUGIN(
 #include <yade/lib/opengl/OpenGLWrapper.hpp>
 #include <yade/lib/opengl/GLUtils.hpp>
 
-CREATE_LOGGER(Gl1_QuantumMechanicalGeometry);
-bool Gl1_QuantumMechanicalGeometry::absolute=true;
-bool Gl1_QuantumMechanicalGeometry::partReal=true;
-bool Gl1_QuantumMechanicalGeometry::partImaginary=true;
-bool Gl1_QuantumMechanicalGeometry::probability=true;
-bool Gl1_QuantumMechanicalGeometry::renderSmoothing=true;
-bool Gl1_QuantumMechanicalGeometry::renderInterpolate=true;
-int  Gl1_QuantumMechanicalGeometry::renderSpecular=10;
-int  Gl1_QuantumMechanicalGeometry::renderAmbient=15;
-int  Gl1_QuantumMechanicalGeometry::renderDiffuse=100;
-int  Gl1_QuantumMechanicalGeometry::renderShininess=50;
-Gl1_QuantumMechanicalGeometry::~Gl1_QuantumMechanicalGeometry(){};
+CREATE_LOGGER(Gl1_QuantumMechanicalGeometryDisplay);
+bool Gl1_QuantumMechanicalGeometryDisplay::absolute=true;
+bool Gl1_QuantumMechanicalGeometryDisplay::partReal=true;
+bool Gl1_QuantumMechanicalGeometryDisplay::partImaginary=true;
+bool Gl1_QuantumMechanicalGeometryDisplay::probability=true;
+bool Gl1_QuantumMechanicalGeometryDisplay::renderSmoothing=true;
+bool Gl1_QuantumMechanicalGeometryDisplay::renderInterpolate=true;
+int  Gl1_QuantumMechanicalGeometryDisplay::renderSpecular=10;
+int  Gl1_QuantumMechanicalGeometryDisplay::renderAmbient=15;
+int  Gl1_QuantumMechanicalGeometryDisplay::renderDiffuse=100;
+int  Gl1_QuantumMechanicalGeometryDisplay::renderShininess=50;
+Gl1_QuantumMechanicalGeometryDisplay::~Gl1_QuantumMechanicalGeometryDisplay(){};
 
-void Gl1_QuantumMechanicalGeometry::go(
+void Gl1_QuantumMechanicalGeometryDisplay::go(
 	const shared_ptr<Shape>& shape, 
 	const shared_ptr<State>& state,
 	bool wire,
@@ -175,7 +175,7 @@ void Gl1_QuantumMechanicalGeometry::go(
 */
 };
 
-void Gl1_QuantumMechanicalGeometry::calcNormalVectors(
+void Gl1_QuantumMechanicalGeometryDisplay::calcNormalVectors(
 	const std::vector<std::vector<Real> >& waveVals, // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	std::vector<std::vector<Vector3r> >& wavNormV    // normal vectors necessary for propoer OpenGL rendering of the faces
 )
@@ -223,7 +223,7 @@ void Gl1_QuantumMechanicalGeometry::calcNormalVectors(
 	}
 }
 
-void Gl1_QuantumMechanicalGeometry::prepareGlSurfaceMaterial()
+void Gl1_QuantumMechanicalGeometryDisplay::prepareGlSurfaceMaterial()
 {
 	GLfloat mat[4];
 	mat[0] = renderSpecular/100.0;
@@ -245,7 +245,7 @@ void Gl1_QuantumMechanicalGeometry::prepareGlSurfaceMaterial()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS,&sh);
 }
 
-void Gl1_QuantumMechanicalGeometry::glDrawSurface(
+void Gl1_QuantumMechanicalGeometryDisplay::glDrawSurface(
 	const std::vector<std::vector<Real> >& waveVals,      // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	const std::vector<std::vector<Vector3r> >& wavNormV,  // normal vectors necessary for proper OpenGL rendering of the faces
 	Vector3r col                                          // color in which to draw the surface
@@ -303,7 +303,7 @@ void Gl1_QuantumMechanicalGeometry::glDrawSurface(
 	glShadeModel(GL_FLAT);
 }
 		
-void Gl1_QuantumMechanicalGeometry::glDrawSurfaceInterpolated(
+void Gl1_QuantumMechanicalGeometryDisplay::glDrawSurfaceInterpolated(
 	const std::vector<std::vector<Real> >&     waveVals,      // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	const std::vector<std::vector<Vector3r> >& wavNormV,      // normal vectors necessary for proper OpenGL rendering of the faces
 	const std::vector<std::vector<Real> >&     extraWaveVals, // same, but shifted by +0.5,+0.5
@@ -442,7 +442,7 @@ void Gl1_QuantumMechanicalGeometry::glDrawSurfaceInterpolated(
 	glShadeModel(GL_FLAT);
 }
 
-Real Gl1_QuantumMechanicalGeometry::calcInterpolation_2D(
+Real Gl1_QuantumMechanicalGeometryDisplay::calcInterpolation_2D(
 	const std::vector<std::vector<Real> >& val, // a 2D matrix for which the values will be interpolated
 	Real posX,                            // position X at which to interpolate the values
 	Real posY                             // position Y at which to interpolate the values
@@ -463,7 +463,7 @@ Real Gl1_QuantumMechanicalGeometry::calcInterpolation_2D(
 	return ret;
 }
 
-Vector3r Gl1_QuantumMechanicalGeometry::calcInterpolation_2Dvector(
+Vector3r Gl1_QuantumMechanicalGeometryDisplay::calcInterpolation_2Dvector(
 	const std::vector<std::vector<Vector3r> >& val, // a 2D matrix of Vector3r for which the values will be interpolated
 	Real posX,                            // position X at which to interpolate the values
 	Real posY                             // position Y at which to interpolate the values
@@ -485,7 +485,7 @@ Vector3r Gl1_QuantumMechanicalGeometry::calcInterpolation_2Dvector(
 	return ret;
 }
 
-void Gl1_QuantumMechanicalGeometry::interpolateExtraWaveValues(
+void Gl1_QuantumMechanicalGeometryDisplay::interpolateExtraWaveValues(
 	const std::vector<std::vector<Real> >& waveVals,// a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	std::vector<std::vector<Real> >& extraWaveVals  // a 2D matrix shifted by +0.5,+0.5 from the previous one.
 )
@@ -505,7 +505,7 @@ void Gl1_QuantumMechanicalGeometry::interpolateExtraWaveValues(
 	}
 }
 
-void Gl1_QuantumMechanicalGeometry::interpolateExtraNormalVectors(
+void Gl1_QuantumMechanicalGeometryDisplay::interpolateExtraNormalVectors(
 	const std::vector<std::vector<Vector3r> >& wavNormV,// a 2D matrix of normal vectors necessary for proper OpenGL rendering of the faces
 	std::vector<std::vector<Vector3r> >& extraWavNormV  // a 2D matrix shifted by +0.5,+0.5 from the previous one
 )
@@ -525,7 +525,7 @@ void Gl1_QuantumMechanicalGeometry::interpolateExtraNormalVectors(
 	}
 }
 
-void Gl1_QuantumMechanicalGeometry::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
+void Gl1_QuantumMechanicalGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
 	Real step  =  0.1;
@@ -563,7 +563,7 @@ void Gl1_QuantumMechanicalGeometry::drawSurface(const std::vector<std::vector<Re
 
 }
 
-Real Gl1_QuantumMechanicalGeometry::spline36Interpolation(Real dist)
+Real Gl1_QuantumMechanicalGeometryDisplay::spline36Interpolation(Real dist)
 { // http://www.path.unimelb.edu.au/%7Edersch/interpolator/interpolator.html
 // this interpolation was also described in
 // J. Kozicki , J. Tejchman , "Experimental investigations of strain
@@ -581,7 +581,7 @@ Real Gl1_QuantumMechanicalGeometry::spline36Interpolation(Real dist)
 	) *(dist-2) : 0;
 }
 
-Real Gl1_QuantumMechanicalGeometry::sinc256Interpolation(Real dist)
+Real Gl1_QuantumMechanicalGeometryDisplay::sinc256Interpolation(Real dist)
 { // http://www.path.unimelb.edu.au/%7Edersch/interpolator/interpolator.html
 	const int SINC_256_RANGE = 16;
 	dist=std::abs(dist)*Mathr::PI;

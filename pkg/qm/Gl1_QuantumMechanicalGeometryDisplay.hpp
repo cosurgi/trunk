@@ -3,7 +3,7 @@
 #ifdef YADE_OPENGL
 
 #include <yade/pkg/common/GLDrawFunctors.hpp>
-#include "QuantumMechanicalGeometry.hpp"
+#include "QuantumMechanicalGeometryDisplay.hpp"
 #include "WaveFunctionState.hpp"
 
 /*********************************************************************************
@@ -12,7 +12,7 @@
 *
 *********************************************************************************/
 
-class Gl1_QuantumMechanicalGeometry: public GlShapeFunctor
+class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
@@ -28,16 +28,16 @@ class Gl1_QuantumMechanicalGeometry: public GlShapeFunctor
 		// FIXME - those two functions can be written as a single template
 		Real     calcInterpolation_2D      (const std::vector<std::vector<Real    > >& val,Real posX, Real posY);
 		Vector3r calcInterpolation_2Dvector(const std::vector<std::vector<Vector3r> >& val,Real posX, Real posY);
-		virtual ~Gl1_QuantumMechanicalGeometry();
-		RENDERS(QuantumMechanicalGeometry);
+		virtual ~Gl1_QuantumMechanicalGeometryDisplay();
+		RENDERS(QuantumMechanicalGeometryDisplay);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_STATICATTRS(
 			  // class name
-			Gl1_QuantumMechanicalGeometry
+			Gl1_QuantumMechanicalGeometryDisplay
 			, // base class
 			GlShapeFunctor
 			, // class description
-			"Renders :yref:`QuantumMechanicalGeometry` object"
+			"Renders :yref:`QuantumMechanicalGeometryDisplay` object"
 			, // static public attributes
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
 			((bool,absolute,false,,"Show absolute probability"))
@@ -52,7 +52,7 @@ class Gl1_QuantumMechanicalGeometry: public GlShapeFunctor
 			((int ,renderSpecular,10,,"Amount of specular light reflected by surface"))
 		);
 };
-REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalGeometry);
+REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalGeometryDisplay);
 
 #endif
 
