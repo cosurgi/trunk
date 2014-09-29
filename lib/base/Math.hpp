@@ -8,6 +8,10 @@
 	using Real = double;
 #endif
 
+#include <complex>
+using Complexr = std::complex<Real>;
+
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
