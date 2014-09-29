@@ -8,6 +8,9 @@
 	typedef double Real;
 #endif
 
+#include <complex>
+typedef std::complex<Real> Complexr;
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
