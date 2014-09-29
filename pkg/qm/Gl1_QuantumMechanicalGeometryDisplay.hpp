@@ -46,7 +46,7 @@ class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
 			((bool,probability,false,,"Show probability, which is squared absolute value"))
 			((int ,renderAmbient,30,,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse,100,,"Amount of diffuse light reflected by surface"))
-			((bool,renderInterpolate,true,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation"))
+			((bool,renderInterpolate,true,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
 			((int ,renderShininess,50,,"Amount of shininess of the surface"))
 			((bool,renderSmoothing,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular,10,,"Amount of specular light reflected by surface"))
