@@ -492,6 +492,7 @@ Yade also provides callback for before/after (de) serialization, virtual functio
 * converting some non-serializable internal data structure of the class (such as multi-dimensional array, hash table, array of pointers) into a serializable one (pre-processing) and fill this non-serializable structure back after deserialization (post-processing); for instance, InteractionContainer uses these hooks to ask its concrete implementation to store its contents to a unified storage (``vector<shared_ptr<Interaction> >``) before serialization and to restore from it after deserialization.
 * precomputing non-serialized attributes from the serialized values; e.g. :yref:`Facet` computes its (local) edge normals and edge lengths from vertices' coordinates.
 
+.. note:: If there is an attribute ``std::string qtHide`` declared in the class it will be used by ``QT inspect`` module to not display attributes listed as a space separated list of names in ``qtHide``. It is only about display, it does not afftect those attributes in any other way.
 
 .. _classfactory:
 
