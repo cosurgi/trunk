@@ -18,15 +18,11 @@ except ImportError:
 
 seqSerializableShowType=True # show type headings in serializable sequences (takes vertical space, but makes the type hyperlinked)
 
-# BUG: cursor is moved to the beginning of the input field even if it has focus
-# Janek: I am not yet sure, but it looks like I've fixed this BUG.
-#
-# checking for focus seems to return True always and cursor is never moved
-#
+# BUG: cursor is moved to the beginning of the input field even if it has focus.
+# Checking for focus seems to return True always and cursor is never moved
 # the 'True or' part effectively disables the condition (so that the cursor is moved always), but it might be fixed in the future somehow
-#
 # if True or w.hasFocus(): w.home(False)
-#
+# Janek: It looks like I've fixed this BUG, please do more testing.
 #
 
 def makeWrapperHref(text,className,attr=None,static=False):
@@ -433,7 +429,7 @@ class SerializableEditor(QFrame):
 			if '|yhidden|' in doc: continue
 			if attr in self.ignoredAttrs: continue
 # FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
-# invalid.  I think that we should rethink what base class State contains, so
+# invalid.  I think that we should rethink what base classes State and Body contain, so
 # that in QM we would not need to use this hack to hide some variables.
 # However it is great to note that only this little 'cosmetic' hack is needed
 # to make Quantum Mechanics possible in yade
