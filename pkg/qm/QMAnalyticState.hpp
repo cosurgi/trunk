@@ -9,40 +9,28 @@
 
 /*********************************************************************************
 *
-* Q U A N T U M   M E C H A N I C A L   S T A T E
+* Q U A N T U M   M E C H A N I C A L   A N A L Y T I C A L   S T A T E
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalState contains quantum state information
+/*! @brief QuantumMechanicalAnalyticalState contains quantum state information expressed using analytic formulas.
  *
  */
-class QuantumMechanicalState: public State
+class QuantumMechanicalAnalyticalState: public QuantumMechanicalState
 {
 	public:
-		virtual Complexr getValPos(Vector3r xyz){};          /// return complex quantum aplitude at given positional representation coordinates
-//		virtual Complexr getValInv(Vector3r xyz){};          /// return complex quantum aplitude at given wavenumber representation coordinates
-		virtual Complexr getValIJKPos(Vector3i ijk){};       /// return complex quantum aplitude at given positional grid coordinates
-//		virtual Complexr getValIJKInv(Vector3i ijk){};       /// return complex quantum aplitude at given wavenumber grid coordinates
-		virtual int      getDim(){ return dim;};             /// return number of dimensions
-		virtual Vector3r getExtentsIJK(){};                  /// return grid size
-		virtual Real     getStepPos(){};                     /// return grid step, two point distance in the mesh in positional representation
-//		virtual Real     getStepInv(){};                     /// return grid step, two point distance in the mesh in wavenumber representation
-//		virtual Vector3r getHalfSizeInv(){};                 /// return size in wavenumber representation
-
-		virtual ~QuantumMechanicalState();
+		virtual ~QuantumMechanicalAnalyticalState();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			QuantumMechanicalState
+			QuantumMechanicalAnalyticalState
 			, // base class
-			State
+			QuantumMechanicalState
 			, // class description
-			"Quantum mechanical state."
+"This is an analytic quantum mechanical state. It is expressed in terms of a mathematical function, which can be \
+pretty arbitrary. It can be used to initialize the quantum mechanical state discretized into a grid or matrix, \
+or to make comparisons between simulation results and analytical solutions. Derived classes will be specific \
+analytic solutions to various cases."
 			, // attributes, public variables
-			((string,qtHide,"angMom angVel blockedDOFs densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,
-			"Space separated list of variables to hide in qt4 interface. \
-			To fix the inheritance tree we should remove those attributes from the base class.\
-			Yes, even mass must be removed, although it is back in few of derived classes."))
-			((int     ,dim     ,,,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -73,7 +61,7 @@ REGISTER_SERIALIZABLE(QuantumMechanicalState);
  * do anything else than free propagation in space.
  *
  */
-class AnalyticPropagatingFreeGaussianWavePacketState: public QuantumMechanicalState
+class FreePropagatingGaussianWavePacket: public QuantumMechanicalAnalyticalState
 {
 };
 

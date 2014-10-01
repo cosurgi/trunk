@@ -16,9 +16,9 @@
 /*! @brief QuantumMechanicalBody contains single 'body' (a particle) expressed in terms of quantum mechanics.
  *
  * It contains:
- * - QuantumMechanicalBound            → finding spatial collisions                            - FIXME - add this one
+ * - QuantumMechanicalBound            → finding spatial collisions                            - FIXME - add this one FIXME,2 - Aabb is enough!
  * - QuantumMechanicalGeometryDisplay  → OpenGL graphical display, no physics related things!
- * - QuantumMechanicalParameters       → classification of indistinguishable quantum particles
+ * - QuantumMechanicalParameters       → classification of indistinguishable quantum particles (fermions, bosons)
  * - QuantumMechanicalState            → physical state specific to given particle instance
  *
  */
