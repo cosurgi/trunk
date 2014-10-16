@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "QMState.hpp"
 #include <yade/pkg/common/Dispatching.hpp>
 #include <yade/core/GlobalEngine.hpp>
 #include <yade/core/Scene.hpp>
@@ -13,20 +14,20 @@
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalAnalyticalState contains quantum state information expressed using analytic formulas.
+/*! @brief QMStateAnalytic contains quantum state information expressed using analytic formulas.
  *
  */
-class QuantumMechanicalAnalyticalState: public QuantumMechanicalState
+class QMStateAnalytic: public QMState
 {
 	public:
-		virtual ~QuantumMechanicalAnalyticalState();
+		virtual ~QMStateAnalytic();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			QuantumMechanicalAnalyticalState
+			QMStateAnalytic
 			, // base class
-			QuantumMechanicalState
+			QMState
 			, // class description
-"This is an analytic quantum mechanical state. It is expressed in terms of a mathematical function, which can be \
+"Analytic quantum mechanical state. It is expressed in terms of a mathematical function, which can be \
 pretty arbitrary. It can be used to initialize the quantum mechanical state discretized into a grid or matrix, \
 or to make comparisons between simulation results and analytical solutions. Derived classes will be specific \
 analytic solutions to various cases."
@@ -35,16 +36,9 @@ analytic solutions to various cases."
 			createIndex();
 			, // python bindings
 		);
-		REGISTER_CLASS_INDEX(QuantumMechanicalState,State);
+		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
 };
-REGISTER_SERIALIZABLE(QuantumMechanicalState);
-
-// FIXME:
-//		class QMDiscreteState: public QuantumMechanicalState
-//		class QMAnalyticState: public QuantumMechanicalState
-//
-
-
+REGISTER_SERIALIZABLE(QMStateAnalytic);
 
 /*********************************************************************************
 *
@@ -52,136 +46,41 @@ REGISTER_SERIALIZABLE(QuantumMechanicalState);
 * 
 *********************************************************************************/
 
-/*! @brief AnalyticPropagatingFreeGaussianWavePacketState is a free propagating wavepacket of Gaussian shape.
+/*! @brief FreeMovingGaussianWavePacket is a free propagating wavepacket of Gaussian shape.
  *
  * This class is used for testing if numerical solutions of Schrödinger
- * equation for a freely moving Gaussian wavepacket are correct.
+ * equation of a freely moving Gaussian wavepacket are correct.
  *
- * It is a analytical representation of a freely moving QM particle. It cannot
+ * It is an analytical representation of a freely moving QM particle. It cannot
  * do anything else than free propagation in space.
  *
  */
-class FreePropagatingGaussianWavePacket: public QuantumMechanicalAnalyticalState
-{
-};
 
-/*********************************************************************************
-*
-* W A V E   F U N C T I O N   S T A T E
-*
-*********************************************************************************/
-
-/*! @brief WaveFunctionState contains state information about each particle.
- *
- * A spatial position representation is used, on a lattice grid of a defined size in powers of two.
- * On this grid the complex amplitude is stored, which defines the probability distribution.
- *
- */
-class WaveFunctionState: public QuantumMechanicalState
+class FreeMovingGaussianWavePacket: public QMStateAnalytic
 {
 	public:
-		virtual ~WaveFunctionState();
-		void postLoad(WaveFunctionState&)
-		{ 
-			std::cerr<<"\nWaveFunctionState postLoad\n";
-//			std::cerr<<"firstRun="<<firstRun<<"\n";
-//			std::cerr<<"size="<<size<<"\n";
-		}
-		// FIXME: the lattice grid here vector<........>
-		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
-			  // class name
-			WaveFunctionState
-			, // base class
-			QuantumMechanicalState
-			, // class description
-			"Wave function state information about a particle."
-			, // attributes, public variables
-			((bool,firstRun,true,,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
-			((boost::shared_ptr<Analytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized. After it is used the boost::shared_ptr is deleted."))
-//			((int,size,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
-//			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
-//			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
-			//This is just Serialization test, FIXME: add this to self-tests
-			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
-			//((std::vector< std::vector< Real > >,table,,,,"The FFT lattice grid "))
-			//((std::complex<Real>,complexNum,,,,"test complex "))
-			, // constructor
-			createIndex();
-			, // python bindings
-		);
-		REGISTER_CLASS_INDEX(WaveFunctionState,QuantumMechanicalState);
-};
-REGISTER_SERIALIZABLE(WaveFunctionState);
-
-/*! @brief GaussianWavePacket is a WaveFunctionState initialized as a Gaussian wave packet.
- */
-
-class GaussianWavePacket: public WaveFunctionState
-{
-	public:
-		virtual ~GaussianWavePacket();
-		// FIXME: the lattice grid here vector<........>
-		YADE_CLASS_BASE_DOC_ATTRS_CTOR(
-			  // class name
-			GaussianWavePacket
-			, // base class
-			WaveFunctionState
-			, // class description
-"This is a wave function $\\psi$ initialized as a freely moving wave packet of Gaussian shape using following forumla:\
-\n\n\
-.. math::\n\n\tA=\\frac{\\sqrt{2\\pi}}{\\sqrt{a\\sqrt{\\pi}}}\
-\n\n\
-.. math::\n\n\tc=\\frac{A a}{\\sqrt{2 \\pi }}e^{-\\frac{a^2 (k-k_0)^2}{2}}\
-\n\n\
-.. math::\n\n\t\\omega=\\frac{\\hbar k^2}{2 m}\
-\n\n\
-.. math::\n\n\t\\psi(x,t,k_0,m,a,\\hbar)=\\frac{1}{\\sqrt{2 \\pi}}\\int_{-\\infty }^{\\infty } c(k,k_0,a) e^{i (k x-\\omega t)} dk=\
-\\frac{e^{-\\frac{m x^2+i a^2 k_0 (k_0 \\hbar t -2 m x)}{2 a^2 m+2 i \\hbar t}}}\
-{\\sqrt[4]{\\pi } \\sqrt{a+\\frac{i \\hbar t }{a m}}}.\
-\n\n\
-For higher number of dimensions the x and k are replaced with a vector, and thus reduce to a multiplication of Gaussians."
-//.. math::\n\n\t\\omega=\\left(\\omega/.First\\left[\\text{Solve}\\left[\\hbar\\omega=\\frac{\\hbar^2 k^2}{2 m},\\omega\\right]\\right]\\right)=\\frac{\\hbar k^2}{2 m}"
-//1/(Power(E,(m*Power(x,2) + Complex(0,1)*Power(a,2)*k0*(-2*m*x + k0*t*\[HBar]))/(2*Power(a,2)*m + Complex(0,2)*t*\[HBar]))*Power(Pi,0.25)*Sqrt(a + (Complex(0,1)*t*\[HBar])/(a*m)))
-			, // attributes, public variables
-//			((Real,xInit,0,,"Initial position $x$ of the wavepacket"))
-//			((Real,tInit,0,,"Initial time $t$, assuming propagation of type exp(i(kx-ωt))"))
-//			((Real,k0Init,0,,"Initial wavenumber $k_0$"))
-//			((Real,mInit,1,,"Initial mass m"))
-//			((Real,aInit,1,,"Initial Gausian packet width $a$"))
-//			((Real,hbarInit,1,,"Planck's constant $\\hbar$"))
-			, // constructor
-			createIndex();
-		);
-		REGISTER_CLASS_INDEX(GaussianWavePacket,WaveFunctionState);
-};
-REGISTER_SERIALIZABLE(GaussianWavePacket);
-
-class GaussianAnalyticalPropagatingWavePacket_1D: public QuantumMechanicalState
-{
-	public:
-		virtual ~GaussianAnalyticalPropagatingWavePacket_1D();
+		virtual ~FreeMovingGaussianWavePacket();
 //		virtual void pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& d)
 //		{
-//			std::cerr<<"\n GaussianAnalyticalPropagatingWavePacket_1D::pyHandleCustomCtorArgs\n";
+//			std::cerr<<"\n GaussianWavePacket::pyHandleCustomCtorArgs\n";
 //			std::cerr << k0 << "\n";
 //			std::cerr << "d: \n" << d  << "\n";
 //			std::cerr << "t: \n" << t  << "\n";
 //		};
-		virtual void postLoad(GaussianAnalyticalPropagatingWavePacket_1D& aaa)
+		virtual void postLoad(FreeMovingGaussianWavePacket& aaa)
 		{ 
-			std::cerr<<"\n GaussianAnalyticalPropagatingWavePacket_1D postLoad\n";
-			std::cerr << k0 << "\n";
-			std::cerr << aaa.k0 << "\n";
+			std::cerr<<"\n GaussianWavePacket postLoad\n";
+//			std::cerr << k0 << "\n";
+//			std::cerr << aaa.k0 << "\n";
 //			std::cerr<<"firstRun="<<firstRun<<"\n";
 //			std::cerr<<"size="<<size<<"\n";
 		}
 		virtual std::complex<Real> waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
-	//	YADE_CLASS_BASE_DOC_ATTRS     _CTOR(
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
-			GaussianAnalyticalPropagatingWavePacket_1D
+			FreeMovingGaussianWavePacket
 			, // base class
-			QuantumMechanicalState
+			QMStateAnalytic
 			, // class description
 "This is a wave function $\\psi$ initialized as a freely moving wave packet of Gaussian shape using following forumla:\n\n\
 This is an analytically described wave packet function $\\psi$ with a Gaussian shape defined using following forumla:\
@@ -222,15 +121,13 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			((Real,m,1,,"Particle mass"))
 			((Real,a,1,,"Initial Gausian packet width $a$, sometimes calles $\\sigma$"))
 			((Real,hbar,1,,"Planck's constant $h$ divided by $2\\pi$"))
-			, // additional initializers
-			//((k0,11))
+			, // additional initializers (for references)
 			, // constructor
 			createIndex();
-			std::cerr << k0 << "\n";
 			, // python bindings
 		);
-		REGISTER_CLASS_INDEX(GaussianAnalyticalPropagatingWavePacket_1D,QuantumMechanicalState);
+		REGISTER_CLASS_INDEX(FreeMovingGaussianWavePacket,QMStateAnalytic);
 };
-REGISTER_SERIALIZABLE(GaussianAnalyticalPropagatingWavePacket_1D);
+REGISTER_SERIALIZABLE(FreeMovingGaussianWavePacket);
 
 

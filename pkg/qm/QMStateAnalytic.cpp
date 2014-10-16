@@ -1,11 +1,11 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
-#include "QuantumMechanicalState.hpp"
+#include "QMStateAnalytic.hpp"
 #include <yade/core/Scene.hpp>
 
 YADE_PLUGIN(
-	(QuantumMechanicalAnalyticalState)
-	(FreePropagatingGaussianWavePacket)
+	(QMStateAnalytic)
+	(FreeMovingGaussianWavePacket)
 	);
 
 /*********************************************************************************
@@ -13,20 +13,20 @@ YADE_PLUGIN(
 * Q U A N T U M   M E C H A N I C A L   A N A L Y T I C A L   S T A T E
 *
 *********************************************************************************/
-CREATE_LOGGER(QuantumMechanicalAnalyticalState);
+CREATE_LOGGER(QMStateAnalytic);
 // !! at least one virtual function in the .cpp file
-QuantumMechanicalAnalyticalState::~QuantumMechanicalAnalyticalState(){};
+QMStateAnalytic::~QMStateAnalytic(){};
 
 /*********************************************************************************
 *
-* W A V E   F U N C T I O N   S T A T E
+* F R E E L Y   M O V I N G   G A U S S I A N   W A V E P A C K E T
 *
 *********************************************************************************/
-CREATE_LOGGER(GaussianAnalyticalPropagatingWavePacket_1D); // FIXME - rename, i jeszcze QuantumMechanicalDiscreteState, QMDiscreteState ?
+CREATE_LOGGER(FreeMovingGaussianWavePacket);
 // !! at least one virtual function in the .cpp file
-GaussianAnalyticalPropagatingWavePacket_1D::~GaussianAnalyticalPropagatingWavePacket_1D(){};
+FreeMovingGaussianWavePacket::~FreeMovingGaussianWavePacket(){};
 
-std::complex<Real> GaussianAnalyticalPropagatingWavePacket_1D::waveFunctionValue_1D_positionRepresentation(
+std::complex<Real> FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRepresentation(
 	Real x,    // position where wavepacket is calculated
 	Real x0,   // initial position of wavepacket centar at time t=0
 	Real t,    // time when wavepacket is evaluated
@@ -49,5 +49,4 @@ std::complex<Real> GaussianAnalyticalPropagatingWavePacket_1D::waveFunctionValue
 		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*hbar*t/(a*m),0.5))
 	);
 };
-
 

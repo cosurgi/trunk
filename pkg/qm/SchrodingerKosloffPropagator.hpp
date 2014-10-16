@@ -35,7 +35,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 			GlobalEngine
 			, // class description
 			"Engine that propagates wavefunctions according to the time evolution operator of \
-			Schrödinger equation. The propagation is done using method from H.Tal-Ezer, R.Kosloff \
+			Schrödinger equation. The propagation is done using method from H.Tal-Ezer, R.Kosloff \
 			\"An accurate and efficient scheme for propagating the time dependent Schrödinger \
 			equation\", 1984."
 			, // attributes, public variables
