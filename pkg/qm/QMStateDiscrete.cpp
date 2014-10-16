@@ -20,10 +20,10 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 {
 	std::cerr<<"\nQMStateDiscrete postLoad\n";
 	std::cerr<<"firstRun="<<firstRun<<"\n";
-	std::cerr<<"positionSize="<<positionSize<<"\n";
-	std::cerr<<"gridSize="<<gridSize<<"\n";
 	if(not firstRun) return;
 	firstRun = false;
+	std::cerr<<"positionSize="<<positionSize<<"\n";
+	std::cerr<<"gridSize="<<gridSize<<"\n";
 	stepPos= getStepPos();
 	Real step=stepPos;
 	startX = -positionSize[0]/2.0;     // FIXME - does it really have to be centered around zero?
@@ -33,36 +33,39 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	startZ = -positionSize[2]/2.0;     // FIXME - does it really have to be centered around zero?
 	endZ   =  positionSize[2]/2.0;
 	if(this->dim == 1) {
-		tablePosition      .resize(1);          // no         coordinate
-		tablePosition[0]   .resize(1);          // no         coordinate
-		tablePosition[0][0].resize(gridSize,0); // x position coordinate
+		tableValuesPosition      .resize(1);          // no         coordinate
+		tableValuesPosition[0]   .resize(1);          // no         coordinate
+		tableValuesPosition[0][0].resize(gridSize,0); // x position coordinate
 
 		// Fill the table by copying from creator
+		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
-			tablePosition[0][0][i] = creator->getValPos(Vector3r(x,0,0));
+			tableValuesPosition[0][0][i] = creator->getValPos(Vector3r(x,0,0));
+			tablePosition      [0][0][i] = x;
 		}
 	} else if(this->dim == 2) {
 		assert( positionSize[0]==positionSize[1]); // FIXME - think if it's really necessary
-		tablePosition      .resize(1);          // no         coordinate
-		tablePosition[0]   .resize(gridSize);   // x position coordinate
-		FOREACH(std::vector<Complexr>& xx, tablePosition[0]) {
+		tableValuesPosition      .resize(1);          // no         coordinate
+		tableValuesPosition[0]   .resize(gridSize);   // x position coordinate
+		FOREACH(std::vector<Complexr>& xx, tableValuesPosition[0]) {
 			xx.resize(gridSize,0);          // y position coordinate
 		};
 
 		// Fill the table by copying from creator
+		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
 			for(Real y=startY ; j<gridSize ; y+=step,j++ )
 			{
-				tablePosition[0][i][j] = creator->getValPos(Vector3r(x,y,0));
+				tableValuesPosition[0][i][j] = creator->getValPos(Vector3r(x,y,0));
 			}
 		}
 	} else if(this->dim == 3) {
 		assert( (positionSize[0]==positionSize[1]) and (positionSize[0]==positionSize[2])); // FIXME - think if it's really necessary
-		tablePosition      .resize(gridSize);  // x position coordinate
-		FOREACH(std::vector<std::vector<Complexr> >& xx, tablePosition   ) {
+		tableValuesPosition      .resize(gridSize);  // x position coordinate
+		FOREACH(std::vector<std::vector<Complexr> >& xx, tableValuesPosition   ) {
 			xx.resize(gridSize);           // y position coordinate
 			FOREACH(std::vector<Complexr>& yy, xx) {
 				yy.resize(gridSize,0); // z position coordinate
@@ -70,6 +73,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 		};
 
 		// Fill the table by copying from creator
+		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
@@ -78,7 +82,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 				int k=0;
 				for(Real z=startZ ; k<gridSize ; z+=step,k++ )
 				{
-					tablePosition[i][j][k] = creator->getValPos(Vector3r(x,y,z));
+					tableValuesPosition[i][j][k] = creator->getValPos(Vector3r(x,y,z));
 				}
 			}
 		}
@@ -96,7 +100,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 	switch(this->dim) {
 		case 1 :
 			if    ( (i>=0) and (i<gridSize))
-				return tablePosition[0][0][i];
+				return tableValuesPosition[0][0][i];
 			//else throw std::runtime_error("QMStateDiscrete::getValPos "+boost::lexical_cast<string>(i)+" outside bounds.");
 			else if(i==gridSize) return 0; // skip silently
 			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" outside bounds.";return 0;};
@@ -105,7 +109,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 		case 2 :
 			if(   ( (i>=0) and (i<gridSize))
 			  and ( (j>=0) and (j<gridSize)))
-				return tablePosition[0][i][j];
+				return tableValuesPosition[0][i][j];
 			else if(i==gridSize or j==gridSize) return 0; // skip silently
 			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" or "<<j<<" outside bounds.";return 0;};
 			//else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
@@ -115,7 +119,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 			if(   ( (i>=0) and (i<gridSize))
 			  and ( (j>=0) and (j<gridSize))
 			  and ( (k>=0) and (k<gridSize)))
-				return tablePosition[i][j][k];
+				return tableValuesPosition[i][j][k];
 			else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
 		break;
 
