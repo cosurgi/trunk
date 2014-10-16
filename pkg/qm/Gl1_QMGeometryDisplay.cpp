@@ -51,12 +51,12 @@ void Gl1_QMGeometryDisplay::go(
 	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
 	Vector3r col = geometry->color;
 // find extents to render
-	startX= -1.0*geometry->halfSize[0];
-	endX  =  1.0*geometry->halfSize[0];
-	startY= -1.0*geometry->halfSize[1];
-	endY  =  1.0*geometry->halfSize[1];
-	startZ= -1.0*geometry->halfSize[2];
-	endZ  =  1.0*geometry->halfSize[2];
+	startX= -geometry->halfSize[0];
+	endX  =  geometry->halfSize[0];
+	startY= -geometry->halfSize[1];
+	endY  =  geometry->halfSize[1];
+	startZ= -geometry->halfSize[2];
+	endZ  =  geometry->halfSize[2];
 
 	if(packetDiscrete) step=packetDiscrete->getStepPos();
 	//step  =  0.1; // FIXME - get that from QMStateDiscrete or allow use to set something for QMStateAnalytic
@@ -110,7 +110,7 @@ void Gl1_QMGeometryDisplay::go(
 // 2D SURFACE
 	std::vector<std::vector<Real> > waveVals;
 	waveVals.resize(int((endX-startX)/step)+1);
-	FOREACH(std::vector<Real>& yy, waveVals) {yy.resize(int((endX-startX)/step)+1,0);};
+	FOREACH(std::vector<Real>& xx, waveVals) {xx.resize(int((endX-startX)/step)+1,0);};
 
 	if(partReal) { // FIXME - merge those four into one loop
 		int i=0;
@@ -613,7 +613,7 @@ void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& w
 
 	std::vector<std::vector<Vector3r> > wavNormV;
 	wavNormV.resize(int((endX-startX)/step)+1);
-	FOREACH(std::vector<Vector3r>& yy, wavNormV) {yy.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
+	FOREACH(std::vector<Vector3r>& xx, wavNormV) {xx.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
 
 	calcNormalVectors(waveVals,wavNormV);
 
@@ -623,11 +623,11 @@ void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& w
 	} else {
 		std::vector<std::vector<Vector3r> > extraWavNormV;
 		extraWavNormV.resize(int((endX-startX)/step)+1);
-		FOREACH(std::vector<Vector3r>& yy, extraWavNormV) {yy.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
+		FOREACH(std::vector<Vector3r>& xx, extraWavNormV) {xx.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
 	
 		std::vector<std::vector<Real> > extraWaveVals;
 		extraWaveVals.resize(int((endX-startX)/step)+1);
-		FOREACH(std::vector<Real>& yy, extraWaveVals) {yy.resize(int((endX-startX)/step)+1,0);};
+		FOREACH(std::vector<Real>& xx, extraWaveVals) {xx.resize(int((endX-startX)/step)+1,0);};
 
 		interpolateExtraWaveValues(waveVals,extraWaveVals);
 		interpolateExtraNormalVectors(wavNormV,extraWavNormV);

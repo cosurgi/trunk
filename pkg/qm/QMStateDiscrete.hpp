@@ -25,15 +25,10 @@
 class QMStateDiscrete: public QMState
 {
 	public:
-		virtual Complexr getValPos(Vector3r xyz){};          /// return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz);                                   /// return complex quantum aplitude at given positional representation coordinates
 		virtual Real     getStepPos(){ return positionSize[0 /*FIXME*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
-		void postLoad(QMStateDiscrete&)
-		{ 
-			std::cerr<<"\nQMStateDiscrete postLoad\n";
-//			std::cerr<<"firstRun="<<firstRun<<"\n";
-//			std::cerr<<"size="<<size<<"\n";
-		}
+		void postLoad(QMStateDiscrete&);
 		// FIXME: the lattice grid here vector<........>
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
@@ -48,10 +43,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized. After it is used the boost::shared_ptr is deleted."))
 			((int,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((Vector3r,positionSize,Vector3r::Zero(),,"Wavepacket size in position representation space."))
+			((std::vector<std::vector<std::vector<Complexr> > >,tablePosition,,,,"The FFT lattice grid "))
 
-//			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
-//			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
-			//This is just Serialization test, FIXME: add this to self-tests
+			//This is just Serialization test, FIXME: add this to self-tests, like `yade -test` or `yade -check`
 			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
 			//((std::vector< std::vector< Real > >,table,,,,"The FFT lattice grid "))
 			//((std::complex<Real>,complexNum,,,,"test complex "))
@@ -61,6 +55,8 @@ or directly by filling in the discrete values in the table. It is used for numer
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
+	private:
+		Real startX,startY,startZ,endX,endY,endZ,stepPos;
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
 
