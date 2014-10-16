@@ -5,7 +5,6 @@
 
 YADE_PLUGIN(
 	(QMStateDiscrete)
-	(WaveFunctionState)
 	);
 
 /*********************************************************************************
@@ -16,13 +15,4 @@ YADE_PLUGIN(
 CREATE_LOGGER(QMStateDiscrete);
 // !! at least one virtual function in the .cpp file
 QMStateDiscrete::~QMStateDiscrete(){};
-
-/*********************************************************************************
-*
-* W A V E   F U N C T I O N   S T A T E
-*
-*********************************************************************************/
-CREATE_LOGGER(WaveFunctionState);
-// !! at least one virtual function in the .cpp file
-WaveFunctionState::~WaveFunctionState(){};
 

@@ -4,10 +4,11 @@
 
 #include <yade/pkg/common/GLDrawFunctors.hpp>
 #include "QMGeometryDisplay.hpp"
+#include <time.h>
 
 /*********************************************************************************
 *
-* W A V E   F U N C T I O N   O P E N   G L   D I S P L A Y
+* Q U A N T U M   M E C H A N I C A L   O P E N   G L   D I S P L A Y
 *
 *********************************************************************************/
 
@@ -39,17 +40,23 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			"Renders :yref:`QMGeometryDisplay` object"
 			, // static public attributes
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
-			((bool,absolute,false,,"Show absolute probability"))
-			((bool,partImaginary,true,,"Show only imaginary component"))
-			((bool,partReal,true,,"Show only real component"))
-			((bool,probability,false,,"Show probability, which is squared absolute value"))
-			((int ,renderAmbient,30,,"Amount of ambient light falling on surface"))
-			((int ,renderDiffuse,100,,"Amount of diffuse light reflected by surface"))
-			((bool,renderInterpolate,true,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
-			((int ,renderShininess,50,,"Amount of shininess of the surface"))
-			((bool,renderSmoothing,true,,"Smooth the displayed surface"))
-			((int ,renderSpecular,10,,"Amount of specular light reflected by surface"))
+			((bool,absolute         ,false,,"Show absolute probability"))
+			((bool,partImaginary    ,true,,"Show only imaginary component"))
+			((bool,partReal         ,true,,"Show only real component"))
+			((bool,probability      ,false,,"Show probability, which is squared absolute value"))
+			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
+			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
+			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
+			((int ,renderShininess  ,50,,"Amount of shininess of the surface"))
+			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
+			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
+			((Real,step             ,0.1,,"Rendering step, careful - too small will make rendering extremely slow"))
+			((Real,stepWait         ,0.1,,"Maximum rendering time in seconds. Abort if takes too long."))
 		);
+	private: // FIXME - after redundancy is removed, this should be removed too
+		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
+		bool tooLong(){return (getClock() - wallClock)>stepWait;};
+		Real startX,startY,startZ,endX,endY,endZ,wallClock;
 };
 REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
 
@@ -58,7 +65,7 @@ REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
 
 /*********************************************************************************
 *
-* Q U A N T U M   M E C H A N I C A L   O P E N   G L   D I S P L A Y
+* Q U A N T U M   I N T E R A C T I O N   O P E N   G L   D I S P L A Y
 *
 *********************************************************************************/
 

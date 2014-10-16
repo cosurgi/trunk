@@ -16,6 +16,8 @@
 
 /*! @brief QMStateAnalytic contains quantum state information expressed using analytic formulas.
  *
+ *  To allow propagation in time of these analytical solutions, the only universal attribute is current local time t
+ *  (FIXME: currently nonrelativistic approach only).
  */
 class QMStateAnalytic: public QMState
 {
@@ -32,6 +34,7 @@ pretty arbitrary. It can be used to initialize the quantum mechanical state disc
 or to make comparisons between simulation results and analytical solutions. Derived classes will be specific \
 analytic solutions to various cases."
 			, // attributes, public variables
+			((Real,t,0,,"Current local time in this packet $t=0$, FIXME: nonrelativistic approach."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -39,6 +42,8 @@ analytic solutions to various cases."
 		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
 };
 REGISTER_SERIALIZABLE(QMStateAnalytic);
+
+// FIXME: class QMStateAnalyticMixed: public QMStateAnalytic // ← to allow mixed states, eg: (φ+ψ)/√2
 
 /*********************************************************************************
 *
@@ -60,6 +65,7 @@ class FreeMovingGaussianWavePacket: public QMStateAnalytic
 {
 	public:
 		virtual ~FreeMovingGaussianWavePacket();
+		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
 //		virtual void pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& d)
 //		{
 //			std::cerr<<"\n GaussianWavePacket::pyHandleCustomCtorArgs\n";
@@ -75,7 +81,7 @@ class FreeMovingGaussianWavePacket: public QMStateAnalytic
 //			std::cerr<<"firstRun="<<firstRun<<"\n";
 //			std::cerr<<"size="<<size<<"\n";
 		}
-		virtual std::complex<Real> waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
+		virtual Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
 			FreeMovingGaussianWavePacket
@@ -111,16 +117,15 @@ FIXME: Above are the arguments to the function, they are not stored in this clas
 For higher number of dimensions the x and k are replaced with a vector, and thus reduce to a multiplication of Gaussians.\
 "
 			, // attributes, public variables
-//			((Real,x,0,,"Position $x$ in the wavepacket"))
-//			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))
-//
+//			((Real,x,0,,"Position $x$ in the wavepacket"))                                   ← this is only used for evaluation, eg.: display
+//			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))     ← this is stored in parent class
 //FIXME: where to store that?
-			((Real,x0,0,,"Initial wave packet center at $t=0$"))
-			((Real,t0,0,,"Initial wave packet center at $t=0$"))
-			((Real,k0,0,,"Initial wavenumber $k_0$"))
-			((Real,m,1,,"Particle mass"))
-			((Real,a,1,,"Initial Gausian packet width $a$, sometimes calles $\\sigma$"))
-			((Real,hbar,1,,"Planck's constant $h$ divided by $2\\pi$"))
+			((Vector3r,x0  ,Vector3r::Zero(),,"Initial wave packet center at $t=0$"))
+			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
+			((Vector3r,k0  ,Vector3r::Zero(),,"Initial wavenumber $k_0$"))
+			((Real    ,m   ,1               ,,"Particle mass"))
+			((Real    ,a   ,1               ,,"Initial Gausian packet width $a$, sometimes calles $\\sigma$"))
+			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();

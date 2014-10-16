@@ -28,11 +28,13 @@ bool Gl1_QMGeometryDisplay::partReal=true;
 bool Gl1_QMGeometryDisplay::partImaginary=true;
 bool Gl1_QMGeometryDisplay::probability=true;
 bool Gl1_QMGeometryDisplay::renderSmoothing=true;
-bool Gl1_QMGeometryDisplay::renderInterpolate=true;
+bool Gl1_QMGeometryDisplay::renderInterpolate=false;
 int  Gl1_QMGeometryDisplay::renderSpecular=10;
 int  Gl1_QMGeometryDisplay::renderAmbient=15;
 int  Gl1_QMGeometryDisplay::renderDiffuse=100;
 int  Gl1_QMGeometryDisplay::renderShininess=50;
+Real Gl1_QMGeometryDisplay::step=0.1;
+Real Gl1_QMGeometryDisplay::stepWait=0.1;
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 
 void Gl1_QMGeometryDisplay::go(
@@ -42,49 +44,67 @@ void Gl1_QMGeometryDisplay::go(
 	const GLViewInfo&
 )
 {
+	wallClock = getClock();
 	if(not(absolute or partReal or partImaginary or probability)) return; // nothing to draw
-	FreeMovingGaussianWavePacket* packet=dynamic_cast<FreeMovingGaussianWavePacket*>(state.get());
-	Vector3r col = shape->color;
-/* 1D LINES
+	QMGeometryDisplay*            geometry = dynamic_cast<QMGeometryDisplay           *>(shape.get());
+	FreeMovingGaussianWavePacket* packet   = dynamic_cast<FreeMovingGaussianWavePacket*>(state.get());
+	Vector3r col = geometry->color;
+// find extents to render
+	startX= -1.0*geometry->halfSize[0];
+	endX  =  1.0*geometry->halfSize[0];
+	startY= -1.0*geometry->halfSize[1];
+	endY  =  1.0*geometry->halfSize[1];
+	startZ= -1.0*geometry->halfSize[2];
+	endZ  =  1.0*geometry->halfSize[2];
+	//step  =  0.1; // FIXME - get that from QMStateDiscrete or allow use to set something for QMStateAnalytic
+	//if(packet->dim>1) step = 0.8;
+
+// SERIOUS FIXME - remove redundant code!
+	if(packet->dim == 1) {
+// 1D LINES
 	if(partReal) {
 		glBegin(GL_LINE_STRIP);
 		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // display partReal part in bluish color
-		for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
+		for(Real x=startX ; x<endX ; x+=step )
 		{
-			std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-			glVertex3d(x,std::real(wfval),0);
+			//std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0[0],0,packet->k0[0],packet->m,packet->a,packet->hbar);
+			glVertex3d(x,0,std::real(packet->getValPos(Vector3r(x,0,0))));
 		}
 		glEnd();
 	}
 
-	if(imag) {
+	if(partImaginary) {
 		glBegin(GL_LINE_STRIP);
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display imag part in reddish color
-		for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display partImaginary in reddish color
+		for(Real x=startX ; x<endX ; x+=step )
 		{
-			std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-			glVertex3d(x,std::imag(wfval),0);
+			glVertex3d(x,0,std::imag(packet->getValPos(Vector3r(x,0,0))));
 		}
 		glEnd();
 	}
 
-	if(abs) {
+	if(absolute) {
 		glBegin(GL_LINE_STRIP);
-		glColor3v(shape->color); // display abs in intended shape color
-		for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))) ); // display abs value in geenish color
+		for(Real x=startX ; x<endX ; x+=step )
 		{
-			std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-			glVertex3d(x,std::abs(wfval),0);
+			glVertex3d(x,0,std::abs(packet->getValPos(Vector3r(x,0,0))));
 		}
 		glEnd();
 	}
-*/
+
+	if(probability) {
+		glBegin(GL_LINE_STRIP);
+		glColor3v(shape->color); // for probability use original color
+		for(Real x=startX ; x<endX ; x+=step )
+		{
+			std::complex<Real> wfval = packet->getValPos(Vector3r(x,0,0));
+			glVertex3d(x,0,std::real((wfval)*std::conj(wfval)));
+		}
+		glEnd();
+	}
+	} else if(packet->dim == 2 and wire == false) {
 // 2D SURFACE
-	Real step=0.1;
-	Real startX= -4.0;
-	Real endX  =  4.0;
-	Real startY= -4.0;
-	Real endY  =  4.0;
 	std::vector<std::vector<Real> > waveVals;
 	waveVals.resize(int((endX-startX)/step)+1);
 	FOREACH(std::vector<Real>& yy, waveVals) {yy.resize(int((endX-startX)/step)+1,0);};
@@ -96,11 +116,11 @@ void Gl1_QMGeometryDisplay::go(
 			int j=0;
 			for(Real y=startY ; y<=endY ; y+=step,j++ )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				waveVals[i][j]=std::real(wfvalx0*wfvaly0);
+				waveVals[i][j]=std::real(packet->getValPos(Vector3r(x,y,0)));
 			}
+			if(tooLong()) break;
 		}
+		// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
 		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
 	}
 	if(partImaginary) {
@@ -110,12 +130,11 @@ void Gl1_QMGeometryDisplay::go(
 			int j=0;
 			for(Real y=startY ; y<=endY ; y+=step,j++ )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				waveVals[i][j]=std::imag(wfvalx0*wfvaly0);
+				waveVals[i][j]=std::imag(packet->getValPos(Vector3r(x,y,0)));
 			}
+			if(tooLong()) break;
 		}
-		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))); // display imag part in reddish color
+		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))); // display partImaginary in reddish color
 	}
 	if(absolute) {
 		int i=0;
@@ -124,12 +143,11 @@ void Gl1_QMGeometryDisplay::go(
 			int j=0;
 			for(Real y=startY ; y<=endY ; y+=step,j++ )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				waveVals[i][j]=std::abs(wfvalx0*wfvaly0);
+				waveVals[i][j]=std::abs(packet->getValPos(Vector3r(x,y,0)));
 			}
+			if(tooLong()) break;
 		}
-		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))); // display abs value in geenish color
+		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))); // display absolute value in geenish color
 	}
 	if(probability) {
 		int i=0;
@@ -138,42 +156,114 @@ void Gl1_QMGeometryDisplay::go(
 			int j=0;
 			for(Real y=startY ; y<=endY ; y+=step,j++ )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y     ,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				waveVals[i][j]=std::real( (wfvalx0*wfvaly0)*std::conj(wfvalx0*wfvaly0) );
+				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
+				waveVals[i][j]=std::real((wfval)*std::conj(wfval));
 			}
+			if(tooLong()) break;
 		}
-		drawSurface(waveVals,col);
+		drawSurface(waveVals,col); // for probability use original color
 	}
-
+	} else if(packet->dim == 2 and wire == true) {
 // 2D LINES
-/* FIXME: add parameters, auto or specified by hand startX,endX (Y,Z), dX,dY,dZ
 	if(partReal) {
-		glColor3v(shape->color); // display abs in intended shape color
-		for(Real x=-4.0 ; x<4.0 ; x+=0.1 )
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // display partReal part in bluish color
+		for(Real x=startX ; x<=endX ; x+=step/*,i++ */ )
 		{
 			glBegin(GL_LINE_STRIP);
-			for(Real y=-4.0 ; y<4.0 ; y+=0.01 )
+			for(Real y=startY ; y<=endY ; y+=step/*,j++*/ )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				glVertex3d(x    ,std::real(wfvalx0*wfvaly0),y);
+				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
+			if(tooLong()) break;
 		}
-		for(Real y=-4.0 ; y<4.0 ; y+=0.1 )
+		for(Real y=startY ; y<=endY ; y+=step )
 		{
 			glBegin(GL_LINE_STRIP);
-			for(Real x=-4.0 ; x<4.0 ; x+=0.01 )
+			for(Real x=startX ; x<=endX ; x+=step )
 			{
-				std::complex<Real> wfvalx0 = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				std::complex<Real> wfvaly0 = packet->waveFunctionValue_1D_positionRepresentation(y,packet->x0,0,packet->k0,packet->m,packet->a,packet->hbar);
-				glVertex3d(x    ,std::real(wfvalx0*wfvaly0),y);
+				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
+			if(tooLong()) break;
 		}
 	}
-*/
+	if(partImaginary) {
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display partImaginary in reddish color
+		for(Real x=startX ; x<=endX ; x+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real y=startY ; y<=endY ; y+=step )
+			{
+				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+		for(Real y=startY ; y<=endY ; y+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real x=startX ; x<=endX ; x+=step )
+			{
+				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+	}
+	if(absolute) {
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))) ); // display abs value in geenish color
+		for(Real x=startX ; x<=endX ; x+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real y=startY ; y<=endY ; y+=step )
+			{
+				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+		for(Real y=startY ; y<=endY ; y+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real x=startX ; x<=endX ; x+=step )
+			{
+				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+	}
+	if(probability) {
+		glColor3v(shape->color); // for probability use original color
+		for(Real x=startX ; x<=endX ; x+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real y=startY ; y<=endY ; y+=step )
+			{
+				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
+				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+		for(Real y=startY ; y<=endY ; y+=step )
+		{
+			glBegin(GL_LINE_STRIP);
+			for(Real x=startX ; x<=endX ; x+=step )
+			{
+				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
+				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
+			}
+			glEnd();
+			if(tooLong()) break;
+		}
+	}
+	} else if(packet->dim == 3) {
+		std::cerr << "3D plotting not ready yet\n";
+	} else {
+		std::cerr << "4D or more plotting not ready yet\n";
+	};
 };
 
 void Gl1_QMGeometryDisplay::calcNormalVectors(
@@ -182,11 +272,6 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 )
 {
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	Real step  =  0.1;
-	Real startX= -4.0;
-	Real endX  =  4.0;
-	Real startY= -4.0;
-	Real endY  =  4.0;
 	int lenX=wavNormV.size();
 	int lenY=wavNormV[0].size();
 	//FIXME - end
@@ -253,11 +338,6 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 )
 {
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	Real step  =  0.1;
-	Real startX= -4.0;
-	Real endX  =  4.0;
-	Real startY= -4.0;
-	Real endY  =  4.0;
 	int lenX=wavNormV.size();
 	int lenY=wavNormV[0].size();
 	//FIXME - end
@@ -312,15 +392,10 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	Vector3r col                                              // color in which to draw the surface
 )
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	Real step  =  0.1;
 	Real step2 = step*0.5;
 	Real step3 = step*1.5;
 	Real step4 = step*2.0;
-	Real startX= -4.0;
-	Real endX  =  4.0;
-	Real startY= -4.0;
-	Real endY  =  4.0;
+	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
 	int lenX=wavNormV.size();
 	int lenY=wavNormV[0].size();
 	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
@@ -529,11 +604,6 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	Real step  =  0.1;
-	Real startX= -4.0;
-	Real endX  =  4.0;
-	Real startY= -4.0;
-	Real endY  =  4.0;
 	int lenX=waveVals.size();
 	int lenY=waveVals[0].size();
 	// FIXME - end

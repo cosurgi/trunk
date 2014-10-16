@@ -44,7 +44,7 @@ class QMState: public State
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
 			Yes, even mass must be removed, although it is back in few of derived classes."))
-			((int     ,dim     ,,,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
+			((int     ,dim     ,,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
 			createIndex();
 			, // python bindings
