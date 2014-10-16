@@ -66,21 +66,6 @@ class FreeMovingGaussianWavePacket: public QMStateAnalytic
 	public:
 		virtual ~FreeMovingGaussianWavePacket();
 		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
-//		virtual void pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& d)
-//		{
-//			std::cerr<<"\n GaussianWavePacket::pyHandleCustomCtorArgs\n";
-//			std::cerr << k0 << "\n";
-//			std::cerr << "d: \n" << d  << "\n";
-//			std::cerr << "t: \n" << t  << "\n";
-//		};
-		virtual void postLoad(FreeMovingGaussianWavePacket& aaa)
-		{ 
-			std::cerr<<"\n GaussianWavePacket postLoad\n";
-//			std::cerr << k0 << "\n";
-//			std::cerr << aaa.k0 << "\n";
-//			std::cerr<<"firstRun="<<firstRun<<"\n";
-//			std::cerr<<"size="<<size<<"\n";
-		}
 		virtual Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name

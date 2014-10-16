@@ -42,10 +42,11 @@ class QMStateDiscrete: public QMState
 "Quantum mechanical state in a discrete representation. It can be initialized from anylytical representations \
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
-			((bool,firstRun,true,,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
+			((bool,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized. After it is used the boost::shared_ptr is deleted."))
+			((int,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+			((Vector3r,positionSize,Vector3r::Zero(),,"Wavepacket size in position representation space."))
 
-//			((int,size,4096,,"Lattice size used to describe the wave function. For FFT purposes that should be a power of 2."))
 //			((int,numSpatialDimensions,1,,"Number of spatial dimensions in which wavefunction exists"))
 //			((std::vector<std::complex<Real> >,table,,,,"The FFT lattice grid "))
 			//This is just Serialization test, FIXME: add this to self-tests
