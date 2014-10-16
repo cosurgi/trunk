@@ -4,6 +4,7 @@
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 1
 size      = 100 if dimensions==1 else 10
+halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
@@ -35,7 +36,7 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometryDisplay(halfSize=[size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1])
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
@@ -43,16 +44,16 @@ gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
-#!# ## The numerical one:
-#!# numericalBody = QuantumMechanicalBody()
-#!# # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
-#!# analyticBody.groupMask = 1
-#!# analyticBody.shape     = QuantumMechanicalGeometryDisplay(halfSize=[5,0.1,0.1])
-#!# analyticBody.material  = None
-#!# # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
-#!# # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
-#!# # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-#!# analyticBody.state     = WaveFunctionState(creator=gaussPacket,dim=1,size=[10,0,0],gridSize=2**12)
+## The numerical one:
+numericalBody = QMBody()
+# make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
+analyticBody.groupMask = 1
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize)
+analyticBody.material  = None
+# Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
+# The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
+# The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
+### analyticBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=2**12)
 
 ## Define timestep for the calculations
 O.dt=.000001
