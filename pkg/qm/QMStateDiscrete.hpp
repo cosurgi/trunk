@@ -25,6 +25,7 @@
 class QMStateDiscrete: public QMState
 {
 	public:
+		typedef std::vector<std::vector<std::vector<Complexr> > > Complexr3D;
 		virtual Complexr getValPos(Vector3r xyz);                                   /// return complex quantum aplitude at given positional representation coordinates
 		virtual Real     getStepPos(){ return positionSize[0 /*FIXME*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
@@ -39,11 +40,10 @@ class QMStateDiscrete: public QMState
 "Quantum mechanical state in a discrete representation. It can be initialized from anylytical representations \
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
-			((bool,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
+			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized. After it is used the boost::shared_ptr is deleted."))
-			((int,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((Vector3r,positionSize,Vector3r::Zero(),,"Wavepacket size in position representation space."))
-			((std::vector<std::vector<std::vector<Complexr> > >,tablePosition,,,,"The FFT lattice grid "))
+			((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+			((Vector3r  ,positionSize,Vector3r::Zero(),,"Wavepacket size in position representation space."))
 
 			//This is just Serialization test, FIXME: add this to self-tests, like `yade -test` or `yade -check`
 			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
@@ -57,6 +57,10 @@ or directly by filling in the discrete values in the table. It is used for numer
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 	private:
 		Real startX,startY,startZ,endX,endY,endZ,stepPos;
+		Complexr3D tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+		Complexr3D tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
+		Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
+		Complexr3D tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
 
