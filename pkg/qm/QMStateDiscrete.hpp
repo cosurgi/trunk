@@ -25,6 +25,8 @@
 class QMStateDiscrete: public QMState
 {
 	public:
+		virtual Complexr getValPos(Vector3r xyz){};          /// return complex quantum aplitude at given positional representation coordinates
+		virtual Real     getStepPos(){ return positionSize[0 /*FIXME*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
 		void postLoad(QMStateDiscrete&)
 		{ 

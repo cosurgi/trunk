@@ -47,13 +47,14 @@ O.bodies.append(analyticBody)
 ## The numerical one:
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
-analyticBody.groupMask = 1
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize)
-analyticBody.material  = None
+numericalBody.groupMask = 1
+numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize)
+numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-### analyticBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=2**12)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=2**12)
+O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
 O.dt=.000001

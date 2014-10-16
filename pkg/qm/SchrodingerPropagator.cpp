@@ -28,8 +28,6 @@ void SchrodingerAnalyticPropagator::action()
 		const Body::id_t& id=b->getId();
 		if(analytic) {
 			analytic->t = time;
-		} else {
-			std::cerr << "body " << id << " is not QMStateAnalytic";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }

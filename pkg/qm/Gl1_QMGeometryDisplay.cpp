@@ -46,8 +46,9 @@ void Gl1_QMGeometryDisplay::go(
 {
 	wallClock = getClock();
 	if(not(absolute or partReal or partImaginary or probability)) return; // nothing to draw
-	QMGeometryDisplay*            geometry = dynamic_cast<QMGeometryDisplay           *>(shape.get());
-	FreeMovingGaussianWavePacket* packet   = dynamic_cast<FreeMovingGaussianWavePacket*>(state.get());
+	QMGeometryDisplay* geometry       = static_cast<QMGeometryDisplay*>(shape.get());
+	QMState*           packet         = static_cast<QMState*>(state.get());
+	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
 	Vector3r col = geometry->color;
 // find extents to render
 	startX= -1.0*geometry->halfSize[0];
@@ -56,6 +57,8 @@ void Gl1_QMGeometryDisplay::go(
 	endY  =  1.0*geometry->halfSize[1];
 	startZ= -1.0*geometry->halfSize[2];
 	endZ  =  1.0*geometry->halfSize[2];
+
+	if(packetDiscrete) step=packetDiscrete->getStepPos();
 	//step  =  0.1; // FIXME - get that from QMStateDiscrete or allow use to set something for QMStateAnalytic
 	//if(packet->dim>1) step = 0.8;
 
