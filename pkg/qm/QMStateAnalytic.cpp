@@ -26,10 +26,13 @@ CREATE_LOGGER(FreeMovingGaussianWavePacket);
 // !! at least one virtual function in the .cpp file
 FreeMovingGaussianWavePacket::~FreeMovingGaussianWavePacket(){};
 
-std::complex<Real> FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRepresentation(
+Complexr FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRepresentation(
 	Real x,    // position where wavepacket is calculated
 	Real x0,   // initial position of wavepacket centar at time t=0
 	Real t,    // time when wavepacket is evaluated
+//
+//	Real k,    // wavenumber at which wavepacket is calculated - commented out, since we use position representation here
+//
 	Real k0,   // initial wavenumber of wavepacket
 	Real m,    // particle mass
 	Real a,    // wavepacket width, sometimes called sigma, of the Gaussian distribution
@@ -48,5 +51,18 @@ std::complex<Real> FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRe
 	(
 		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*hbar*t/(a*m),0.5))
 	);
+};
+		
+Complexr FreeMovingGaussianWavePacket::getValPos(Vector3r pos)
+{
+	switch(this->dim) {
+		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar);
+		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar);
+		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar)*
+				waveFunctionValue_1D_positionRepresentation(pos[2],x0[2],this->t,k0[2],m,a,hbar);
+		default: throw std::runtime_error("getValPos() works only in 1,2 or 3 dimensions.");
+	}
 };
 
