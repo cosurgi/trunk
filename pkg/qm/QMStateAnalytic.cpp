@@ -57,11 +57,16 @@ Complexr FreeMovingGaussianWavePacket::getValPos(Vector3r pos)
 {
 	switch(this->dim) {
 		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar);
+
 		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
 		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar);
+
 		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
 		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar)*
 				waveFunctionValue_1D_positionRepresentation(pos[2],x0[2],this->t,k0[2],m,a,hbar);
+				// FIXME - interesting thing: adding a new dimension is just a multiplication.
+				//         but calculating probability is multiplication by conjugate.
+				//         just as time is really just another dimension, but in Minkowski metric.
 		default: throw std::runtime_error("getValPos() works only in 1,2 or 3 dimensions.");
 	}
 };

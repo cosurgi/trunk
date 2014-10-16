@@ -36,7 +36,7 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize)
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
@@ -48,12 +48,12 @@ O.bodies.append(analyticBody)
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize)
+numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=2**12)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12 if dimensions==1 else 256))
 O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
