@@ -6,7 +6,7 @@
 #include <yade/core/Scene.hpp>
 #include <stdexcept>
 
-#include "QuantumMechanicalParameters.hpp"
+#include "QMParameters.hpp"
 
 
 /*********************************************************************************
@@ -15,21 +15,21 @@
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalInteractionPhysics should describe an interaction between two wave functions.
+/*! @brief QMInteractionPhysics should describe an interaction between two wave functions.
  *
  * Currently I have only free moving particle without interactions, so it is not used yet.
  *
- * Evolution of interaction is governed by Law2_QuantumMechanicalInteractionGeometry_QuantumMechanicalInteractionPhysics_QuantumMechanicalInteractionPhysics:
+ * Evolution of interaction is governed by Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics:
  * that includes hamiltonian elements for each interaction.
  *
  */
-class QuantumMechanicalInteractionPhysics: public IPhys
+class QMInteractionPhysics: public IPhys
 {
 	public:
-		virtual ~QuantumMechanicalInteractionPhysics();
+		virtual ~QMInteractionPhysics();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			QuantumMechanicalInteractionPhysics
+			QMInteractionPhysics
 			, // base class
 			IPhys
 			, // class description
@@ -40,9 +40,9 @@ class QuantumMechanicalInteractionPhysics: public IPhys
 			, // python bindings
 		);
 	DECLARE_LOGGER;
-	REGISTER_CLASS_INDEX(QuantumMechanicalInteractionPhysics,IPhys);
+	REGISTER_CLASS_INDEX(QMInteractionPhysics,IPhys);
 };
-REGISTER_SERIALIZABLE(QuantumMechanicalInteractionPhysics);
+REGISTER_SERIALIZABLE(QMInteractionPhysics);
 
 
 /*********************************************************************************
@@ -51,18 +51,18 @@ REGISTER_SERIALIZABLE(QuantumMechanicalInteractionPhysics);
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalInteractionGeometry should describe geometrical aspects of interaction between two wave functions.
+/*! @brief QMInteractionGeometry should describe geometrical aspects of interaction between two wave functions.
  *
  * Currently I have only free moving particle without interactions, so it is not used yet.
  *
  */
-class QuantumMechanicalInteractionGeometry: public IGeom
+class QMInteractionGeometry: public IGeom
 {
 	public:
-		virtual ~QuantumMechanicalInteractionGeometry();
+		virtual ~QMInteractionGeometry();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			QuantumMechanicalInteractionGeometry
+			QMInteractionGeometry
 			, // base class
 			IGeom
 			, // class description
@@ -73,9 +73,9 @@ class QuantumMechanicalInteractionGeometry: public IGeom
 			, // python bindings
 		);
 	DECLARE_LOGGER;
-	REGISTER_CLASS_INDEX(QuantumMechanicalInteractionGeometry,IGeom);
+	REGISTER_CLASS_INDEX(QMInteractionGeometry,IGeom);
 };
-REGISTER_SERIALIZABLE(QuantumMechanicalInteractionGeometry);
+REGISTER_SERIALIZABLE(QMInteractionGeometry);
 
 
 /*********************************************************************************
@@ -84,19 +84,19 @@ REGISTER_SERIALIZABLE(QuantumMechanicalInteractionGeometry);
 *
 *********************************************************************************/
 
-/*! @brief When two WaveFunctionState meet the QuantumMechanicalParameters of those two is used to create
- * QuantumMechanicalInteractionPhysics with corresponding parameters.
+/*! @brief When two QMState meet the QMParameters of those two is used to create
+ * QMInteractionPhysics with corresponding parameters.
  *
  */
-class Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics: public IPhysFunctor
+class Ip2_QMParameters_QMParameters_QMInteractionPhysics: public IPhysFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
-		FUNCTOR2D(QuantumMechanicalParameters,QuantumMechanicalParameters);
+		FUNCTOR2D(QMParameters,QMParameters);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_ATTRS(
 			  // class name
-			Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics
+			Ip2_QMParameters_QMParameters_QMInteractionPhysics
 			, // base class
 			IPhysFunctor
 			, // class description
@@ -105,33 +105,33 @@ class Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_QuantumMechani
 //			((long,nothing,10,,"placeholder"))
 		);
 };
-REGISTER_SERIALIZABLE(Ip2_QuantumMechanicalParameters_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics);
+REGISTER_SERIALIZABLE(Ip2_QMParameters_QMParameters_QMInteractionPhysics);
 
 
-/*! @brief When any Material meets the QuantumMechanicalParameters a QuantumMechanicalInteractionPhysics is made.
+/*! @brief When any Material meets the QMParameters a QMInteractionPhysics is made.
  *
  * This can be used for infinite potential wells, where the DEM boxes serve as walls.
  *
  */
 
-class Ip2_Material_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics: public IPhysFunctor
+class Ip2_Material_QMParameters_QMInteractionPhysics: public IPhysFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
-		FUNCTOR2D(Material,QuantumMechanicalParameters);
+		FUNCTOR2D(Material,QMParameters);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_ATTRS(
 			  // class name
-			Ip2_Material_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics
+			Ip2_Material_QMParameters_QMInteractionPhysics
 			, // base class
 			IPhysFunctor
 			, // class description
-			"Convert :yref:`QuantumMechanicalParameters` instance and :yref:`Material` instance to \
-			:yref:`QuantumMechanicalInteractionPhysics` with corresponding parameters."
+			"Convert :yref:`QMParameters` instance and :yref:`Material` instance to \
+			:yref:`QMInteractionPhysics` with corresponding parameters."
 			, // attributes, public variables
 		);
 };
-REGISTER_SERIALIZABLE(Ip2_Material_QuantumMechanicalParameters_QuantumMechanicalInteractionPhysics);
+REGISTER_SERIALIZABLE(Ip2_Material_QMParameters_QMInteractionPhysics);
 
 
 /*********************************************************************************
@@ -142,26 +142,26 @@ REGISTER_SERIALIZABLE(Ip2_Material_QuantumMechanicalParameters_QuantumMechanical
 
 /*! @brief In DEM it was used to calculate Fn and Fs between two interacting bodies,
  * so this function takes following input:
- *    QuantumMechanicalInteractionPhysics
- *    QuantumMechanicalInteractionGeometry
+ *    QMInteractionPhysics
+ *    QMInteractionGeometry
  *    Interaction
  *
  * But what will it do? Maybe Quantum Field Theory will answer that.
  *
  */
 
-class Law2_QuantumMechanicalInteractionGeometry_QuantumMechanicalInteractionPhysics_QuantumMechanicalInteractionPhysics: public LawFunctor
+class Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics: public LawFunctor
 {
 	public:
 		bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
-		FUNCTOR2D(IGeom,QuantumMechanicalInteractionPhysics);
+		FUNCTOR2D(IGeom,QMInteractionPhysics);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			Law2_QuantumMechanicalInteractionGeometry_QuantumMechanicalInteractionPhysics_QuantumMechanicalInteractionPhysics
+			Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics
 			, // base class
 			LawFunctor
 			, // class description
-			"Constitutive law for the :yref:`WaveFunction-model<QuantumMechanicalParameters>`."
+			"Constitutive law for the :yref:`WaveFunction-model<QMParameters>`."
 			, // attributes, public variables
 //			((bool,empty,true,,"placeholder"))
 			, // constructor
@@ -169,5 +169,5 @@ class Law2_QuantumMechanicalInteractionGeometry_QuantumMechanicalInteractionPhys
 	);
 	DECLARE_LOGGER;
 };
-REGISTER_SERIALIZABLE(Law2_QuantumMechanicalInteractionGeometry_QuantumMechanicalInteractionPhysics_QuantumMechanicalInteractionPhysics);
+REGISTER_SERIALIZABLE(Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics);
 

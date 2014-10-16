@@ -1,10 +1,10 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
-#include "QuantumMechanicalBody.hpp"
+#include "QMBody.hpp"
 #include <yade/core/Scene.hpp>
 
 YADE_PLUGIN(
-	(QuantumMechanicalBody)
+	(QMBody)
 	);
 
 /*********************************************************************************
@@ -12,7 +12,7 @@ YADE_PLUGIN(
 * Q U A N T U M   M E C H A N I C A L   B O D Y
 *
 *********************************************************************************/
-CREATE_LOGGER(QuantumMechanicalBody);
+CREATE_LOGGER(QMBody);
 // !! at least one virtual function in the .cpp file
-QuantumMechanicalBody::~QuantumMechanicalBody(){};
+QMBody::~QMBody(){};
 

@@ -1,12 +1,12 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
  
-#include "Bo1_QuantumMechanical_Aabb.hpp"
+#include "Bo1_QM_Aabb.hpp"
 
-YADE_PLUGIN((Bo1_QuantumMechanicalGeometryDisplay_Aabb));
+YADE_PLUGIN((Bo1_QMGeometryDisplay_Aabb));
 
-void Bo1_QuantumMechanicalGeometryDisplay_Aabb::go(const shared_ptr<Shape>& shape, shared_ptr<Bound>& bound, const Se3r& se3, const Body* b)
+void Bo1_QMGeometryDisplay_Aabb::go(const shared_ptr<Shape>& shape, shared_ptr<Bound>& bound, const Se3r& se3, const Body* b)
 {
-	QuantumMechanicalGeometryDisplay* qmGeom = static_cast<QuantumMechanicalGeometryDisplay*>(shape.get());
+	QMGeometryDisplay* qmGeom = static_cast<QMGeometryDisplay*>(shape.get());
 	if(!bound){ bound=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bound.get());
 

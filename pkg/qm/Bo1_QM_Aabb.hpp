@@ -3,22 +3,22 @@
 #pragma once
 
 #include <yade/pkg/common/Dispatching.hpp>
-#include "QuantumMechanicalGeometryDisplay.hpp"
+#include "QMGeometryDisplay.hpp"
 
-class Bo1_QuantumMechanicalGeometryDisplay_Aabb : public BoundFunctor
+class Bo1_QMGeometryDisplay_Aabb : public BoundFunctor
 {
 	public :
 		void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
-	FUNCTOR1D(QuantumMechanicalGeometryDisplay);
+	FUNCTOR1D(QMGeometryDisplay);
 	YADE_CLASS_BASE_DOC(
 		  // class name
-		Bo1_QuantumMechanicalGeometryDisplay_Aabb
+		Bo1_QMGeometryDisplay_Aabb
 		, // base class name
 		BoundFunctor
 		, // class description
-		"Functor creating :yref:`Aabb` from :yref:`QuantumMechanicalGeometryDisplay`."
+		"Functor creating :yref:`Aabb` from :yref:`QMGeometryDisplay`."
 	);
 };
 
-REGISTER_SERIALIZABLE(Bo1_QuantumMechanicalGeometryDisplay_Aabb);
+REGISTER_SERIALIZABLE(Bo1_QMGeometryDisplay_Aabb);
 

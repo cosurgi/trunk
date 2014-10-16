@@ -3,8 +3,7 @@
 #ifdef YADE_OPENGL
 
 #include <yade/pkg/common/GLDrawFunctors.hpp>
-#include "QuantumMechanicalGeometryDisplay.hpp"
-//#include "QuantumMechanicalInteraction.hpp"
+#include "QMGeometryDisplay.hpp"
 
 /*********************************************************************************
 *
@@ -12,7 +11,7 @@
 *
 *********************************************************************************/
 
-class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
+class Gl1_QMGeometryDisplay: public GlShapeFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
@@ -28,16 +27,16 @@ class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
 		// FIXME - those two functions can be written as a single template
 		Real     calcInterpolation_2D      (const std::vector<std::vector<Real    > >& val,Real posX, Real posY);
 		Vector3r calcInterpolation_2Dvector(const std::vector<std::vector<Vector3r> >& val,Real posX, Real posY);
-		virtual ~Gl1_QuantumMechanicalGeometryDisplay();
-		RENDERS(QuantumMechanicalGeometryDisplay);
+		virtual ~Gl1_QMGeometryDisplay();
+		RENDERS(QMGeometryDisplay);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_STATICATTRS(
 			  // class name
-			Gl1_QuantumMechanicalGeometryDisplay
+			Gl1_QMGeometryDisplay
 			, // base class
 			GlShapeFunctor
 			, // class description
-			"Renders :yref:`QuantumMechanicalGeometryDisplay` object"
+			"Renders :yref:`QMGeometryDisplay` object"
 			, // static public attributes
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
 			((bool,absolute,false,,"Show absolute probability"))
@@ -52,7 +51,7 @@ class Gl1_QuantumMechanicalGeometryDisplay: public GlShapeFunctor
 			((int ,renderSpecular,10,,"Amount of specular light reflected by surface"))
 		);
 };
-REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalGeometryDisplay);
+REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
 
 #endif
 
@@ -65,26 +64,26 @@ REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalGeometryDisplay);
 
 #ifdef YADE_OPENGL
 // This will come later, when I will have some interactions going on....
-//class Gl1_QuantumMechanicalInteractionPhysics: public GlIPhysFunctor
+//class Gl1_QMInteractionPhysics: public GlIPhysFunctor
 //{
 //	public: 
 //		virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
-//		virtual ~Gl1_QuantumMechanicalInteractionPhysics();
-//		RENDERS(QuantumMechanicalInteractionPhysics);
+//		virtual ~Gl1_QMInteractionPhysics();
+//		RENDERS(QMInteractionPhysics);
 //		DECLARE_LOGGER;
 //		YADE_CLASS_BASE_DOC_STATICATTRS(
 //			  // class name
-//			Gl1_QuantumMechanicalInteractionPhysics
+//			Gl1_QMInteractionPhysics
 //			, // base class
 //			GlIPhysFunctor
 //			, // class description
-//			"Render :yref:`QuantumMechanicalInteractionPhysics` interactions."
+//			"Render :yref:`QMInteractionPhysics` interactions."
 //			, // attributes, public variables
 //			((bool,abs,true,,"Show absolute probability"))
 //			((bool,real,false,,"Show only real component"))
 //			((bool,imag,false,,"Show only imaginary component"))
 //		);
 //};
-//REGISTER_SERIALIZABLE(Gl1_QuantumMechanicalInteractionPhysics);
+//REGISTER_SERIALIZABLE(Gl1_QMInteractionPhysics);
 #endif
 

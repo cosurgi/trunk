@@ -13,22 +13,22 @@
 *
 *********************************************************************************/
 
-/*! @brief QuantumMechanicalBody contains single 'body' (a particle) expressed in terms of quantum mechanics.
+/*! @brief QMBody contains single 'body' (a particle) expressed in terms of quantum mechanics.
  *
  * It contains:
  * - QuantumMechanicalBound            → finding spatial collisions                            - FIXME - add this one FIXME,2 - Aabb is enough!
- * - QuantumMechanicalGeometryDisplay  → OpenGL graphical display, no physics related things!
- * - QuantumMechanicalParameters       → classification of indistinguishable quantum particles (fermions, bosons)
- * - QuantumMechanicalState            → physical state specific to given particle instance
+ * - QMGeometryDisplay  → OpenGL graphical display, no physics related things!
+ * - QMParameters       → classification of indistinguishable quantum particles (fermions, bosons)
+ * - QMState            → physical state specific to given particle instance
  *
  */
-class QuantumMechanicalBody: public Body
+class QMBody: public Body
 {
 	public:
-		virtual ~QuantumMechanicalBody();
+		virtual ~QMBody();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			QuantumMechanicalBody
+			QMBody
 			, // base class
 			Body
 			, // class description
@@ -39,11 +39,11 @@ class QuantumMechanicalBody: public Body
 //# that in QM we would not need to use this hack to hide some variables.
 //# However it is great to note that only this little 'cosmetic' hack is needed
 //# to make Quantum Mechanics possible in yade
-//# See also: class QuantumMechanicalState, class QuantumMechanicalBody, gui/qt4/SerializableEditor.py
+//# See also: class QMState, class QMBody, gui/qt4/SerializableEditor.py
 //# Also I think this makes a possibility to make another Body for SPH model (see hacks inside Body.hpp YADE_SPH)
-//#
-//# FIXME: so in fact if we decided to fix the inheritance tree we should remove
-//#        following attributes from the base class
+///////////////////////////////////////////////////////
+//  -----→ to fix the inheritance tree we should remove
+//         following attributes from the base class
 			((string,qtHide,"chain clumpId flags qtHide",Attr::readonly,
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class."))
@@ -51,5 +51,5 @@ class QuantumMechanicalBody: public Body
 			, // python bindings
 		);
 };
-REGISTER_SERIALIZABLE(QuantumMechanicalBody);
+REGISTER_SERIALIZABLE(QMBody);
 
