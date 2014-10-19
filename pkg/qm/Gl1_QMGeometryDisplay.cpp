@@ -8,7 +8,7 @@
 
 #ifdef YADE_OPENGL
 #include "Gl1_QMGeometryDisplay.hpp"
-#include <yade/core/Scene.hpp>
+#include <core/Scene.hpp>
 
 YADE_PLUGIN(
 	(Gl1_QMGeometryDisplay)
@@ -18,9 +18,9 @@ YADE_PLUGIN(
 #include "QMState.hpp"
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscrete.hpp"
-#include <yade/pkg/common/GLDrawFunctors.hpp>
-#include <yade/lib/opengl/OpenGLWrapper.hpp>
-#include <yade/lib/opengl/GLUtils.hpp>
+#include <pkg/common/GLDrawFunctors.hpp>
+#include <lib/opengl/OpenGLWrapper.hpp>
+#include <lib/opengl/GLUtils.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
 bool Gl1_QMGeometryDisplay::absolute=true;

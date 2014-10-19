@@ -4,9 +4,9 @@
 
 #include "QMState.hpp"
 #include "QMStateAnalytic.hpp"
-#include <yade/pkg/common/Dispatching.hpp>
-#include <yade/core/GlobalEngine.hpp>
-#include <yade/core/Scene.hpp>
+#include <pkg/common/Dispatching.hpp>
+#include <core/GlobalEngine.hpp>
+#include <core/Scene.hpp>
 #include <stdexcept>
 
 /*********************************************************************************
@@ -59,9 +59,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 	private:
 		Real startX,startY,startZ,endX,endY,endZ,stepPos;
 		Complexr3D tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
-		Complexr3D tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
+		Complexr3D /*Vector3r3D*/ tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
 		Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
-		Complexr3D tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
+		Complexr3D /*Vector3r3D*/ tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
 

@@ -1,7 +1,7 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMParameters.hpp"
-#include <yade/core/Scene.hpp>
+#include <core/Scene.hpp>
 
 YADE_PLUGIN(
 	(QMParameters)

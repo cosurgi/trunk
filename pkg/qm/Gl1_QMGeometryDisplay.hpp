@@ -2,7 +2,7 @@
 #pragma once
 #ifdef YADE_OPENGL
 
-#include <yade/pkg/common/GLDrawFunctors.hpp>
+#include <pkg/common/GLDrawFunctors.hpp>
 #include "QMGeometryDisplay.hpp"
 #include <time.h>
 
