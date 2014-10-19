@@ -27,7 +27,6 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cMake")
 
-INCLUDE(FindPythonLibs)
 INCLUDE(FindPythonInterp)
 INCLUDE(FindOpenMP)
 INCLUDE(FindQt4)
@@ -64,6 +63,8 @@ ENDIF()
 #===========================================================
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++0x")
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
+#===========================================================
 
 #===========================================================
 
@@ -105,13 +106,18 @@ MESSAGE("--   Boost_LIBRARIES: " ${Boost_LIBRARIES})
 
 #===========================================================
 FIND_PACKAGE(NumPy REQUIRED)
-  INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
 
 FIND_PACKAGE(Loki REQUIRED)
-  INCLUDE_DIRECTORIES(${LOKI_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${LOKI_INCLUDE_DIR})
+
 FIND_PACKAGE(Eigen3 REQUIRED)
 FIND_PACKAGE(BZip2 REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
+
+SET(Python_ADDITIONAL_VERSIONS 2.7)
+FIND_PACKAGE(PythonLibs REQUIRED)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 #===========================================================
 
 SET(DEFAULT ON CACHE INTERNAL "Default value for enabled by default options")
@@ -168,7 +174,7 @@ ENDIF((Boost_MAJOR_VERSION EQUAL 1) OR (Boost_MAJOR_VERSION GREATER 1) AND
      ((Boost_MINOR_VERSION EQUAL 53) OR (Boost_MINOR_VERSION GREATER 53)))
 #===========================================================
 IF(ENABLE_VTK)
-  FIND_PACKAGE(VTK) 
+  FIND_PACKAGE(VTK COMPONENTS vtkCommonCore vtkIOImage vtkIOXML)
   IF(VTK_FOUND)
     INCLUDE_DIRECTORIES(${VTK_INCLUDE_DIRS})
     LINK_DIRECTORIES( ${VTK_LIBRARY_DIRS} )
@@ -422,13 +428,6 @@ ENDIF(ENABLE_GUI)
 ADD_SUBDIRECTORY("${CMAKE_SOURCE_DIR}/py")
 #===========================================================
 
-# this is only a temporary hack, headers should be installed in the build-dir directly
-# perhaps there is a proper way, have to ask
-IF(NOT EXISTS "${CMAKE_BINARY_DIR}/yade")
-  EXECUTE_PROCESS(COMMAND ln -s ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/yade)
-ENDIF ()
-#===========================================================
-
 FILE(GLOB SRC_CORE "core/*.cpp")
 FILE(GLOB_RECURSE SRC_PKG  "pkg/*.cpp")
 FILE(GLOB SRC_LIB  "lib/*.cpp")
@@ -504,7 +503,7 @@ CONFIGURE_FILE(py/__init__.py.in "${CMAKE_BINARY_DIR}/__init__.py")
 # Create header files for PFV from FlowEngine.hpp.in-template.
 # All @TEMPLATE_FLOW_NAME@ are replacing by a given names
 
-SET (TEMPLATE_FLOW_NAMES DFNFlowEngineT DummyFlowEngineT FlowEngineT FlowEngine_PeriodicInfo SoluteFlowEngineT)
+SET (TEMPLATE_FLOW_NAMES DFNFlowEngineT DummyFlowEngineT FlowEngineT FlowEngine_PeriodicInfo SoluteFlowEngineT UnsaturatedEngineT TwoPhaseFlowEngineT)
 FOREACH(TF ${TEMPLATE_FLOW_NAMES})
   SET (TEMPLATE_FLOW_NAME ${TF})
   CONFIGURE_FILE(pkg/pfv/FlowEngine.hpp.in "${CMAKE_BINARY_DIR}/pkg/pfv/FlowEngine_${TF}.hpp" @ONLY)

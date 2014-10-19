@@ -6,10 +6,10 @@
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 
-#include<yade/pkg/dem/NewtonIntegrator.hpp>
-#include<yade/core/Scene.hpp>
-#include<yade/core/Clump.hpp>
-#include<yade/lib/base/Math.hpp>
+#include<pkg/dem/NewtonIntegrator.hpp>
+#include<core/Scene.hpp>
+#include<core/Clump.hpp>
+#include<lib/base/Math.hpp>
 
 
 YADE_PLUGIN((NewtonIntegrator));
@@ -274,7 +274,7 @@ void NewtonIntegrator::set_densityScaling(bool dsc) {
 		if (ts) {
 			ts->densityScaling=dsc;
 			densityScaling=dsc;
-			LOG_WARN("GlobalStiffnessTimeStepper found in O.engines and adjusted to match this setting. Revert in the the timestepper if you don't want the scaling adjusted automatically.");
+			LOG_WARN("GlobalStiffnessTimeStepper found in O.engines and adjusted to match this setting. Revert in the timestepper if you don't want the scaling adjusted automatically.");
 			return;
 		}
 	} LOG_WARN("GlobalStiffnessTimeStepper not found in O.engines. Density scaling will have no effect unless a scaling is specified manually for some bodies");

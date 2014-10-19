@@ -6,9 +6,9 @@
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 #pragma once
-#include<yade/pkg/dem/FrictPhys.hpp>
-#include<yade/pkg/common/ElastMat.hpp>
-#include<yade/pkg/common/Dispatching.hpp>
+#include<pkg/dem/FrictPhys.hpp>
+#include<pkg/common/ElastMat.hpp>
+#include<pkg/common/Dispatching.hpp>
 
 class CapillaryPhys : public FrictPhys
 {
@@ -24,7 +24,7 @@ class CapillaryPhys : public FrictPhys
 				 ((Real,vMeniscus,0.,,"Volume of the meniscus"))
 				 ((Real,Delta1,0.,,"Defines the surface area wetted by the meniscus on the smallest grains of radius R1 (R1<R2)"))
 				 ((Real,Delta2,0.,,"Defines the surface area wetted by the meniscus on the biggest grains of radius R2 (R1<R2)"))
-				 ((Vector3r,fCap,Vector3r::Zero(),,"Capillary Force produces by the presence of the meniscus"))
+				 ((Vector3r,fCap,Vector3r::Zero(),,"Capillary force produced by the presence of the meniscus"))
 				 ((short int,fusionNumber,0.,,"Indicates the number of meniscii that overlap with this one"))
 				 ,/*deprec*/
 				 ((Fcap,fCap,"naming convention"))

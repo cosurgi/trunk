@@ -1,13 +1,13 @@
 // 2009 © Sergei Dorofeenko <sega@users.berlios.de>
 #include"ViscoelasticPM.hpp"
-#include<yade/core/State.hpp>
-#include<yade/pkg/dem/ScGeom.hpp>
-#include<yade/core/Omega.hpp>
-#include<yade/core/Scene.hpp>
-#include<yade/pkg/common/Sphere.hpp>
+#include<core/State.hpp>
+#include<pkg/dem/ScGeom.hpp>
+#include<core/Omega.hpp>
+#include<core/Scene.hpp>
+#include<pkg/common/Sphere.hpp>
 
 #ifdef YADE_SPH
-#include<yade/pkg/common/SPHEngine.hpp>
+#include<pkg/common/SPHEngine.hpp>
 #endif
 
 using std::isfinite;
@@ -256,6 +256,7 @@ void Ip2_ViscElMat_ViscElMat_ViscElPhys::Calculate_ViscElMat_ViscElMat_ViscElPhy
 	if (mat1->SPHmode and mat2->SPHmode)  {
 		phys->SPHmode=true;
 		phys->mu=(mat1->mu+mat2->mu)/2.0;
+		phys->h=(mat1->h+mat2->h)/2.0;
 	}
 	
 	phys->kernelFunctionCurrentPressure = returnKernelFunction (mat1->KernFunctionPressure, mat2->KernFunctionPressure, Grad);

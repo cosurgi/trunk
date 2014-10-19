@@ -3,12 +3,12 @@
 
 #ifdef YADE_CGAL
 
-#include<yade/core/Interaction.hpp>
-#include<yade/core/Omega.hpp>
-#include<yade/core/Scene.hpp>
-#include<yade/core/State.hpp>
-#include<yade/pkg/common/ElastMat.hpp>
-#include<yade/pkg/common/Aabb.hpp>
+#include<core/Interaction.hpp>
+#include<core/Omega.hpp>
+#include<core/Scene.hpp>
+#include<core/State.hpp>
+#include<pkg/common/ElastMat.hpp>
+#include<pkg/common/Aabb.hpp>
 #include"Polyhedra.hpp"
 
 #define _USE_MATH_DEFINES
@@ -220,6 +220,20 @@ void Polyhedra::GenerateRandomGeometry(){
 	}
 }
 
+//**************************************************************************
+/* Get polyhdral surfaces */
+vector<vector<int>> Polyhedra::GetSurfaces() const {
+	vector<vector<int>> ret(P.size_of_facets());
+	int i=0;
+	for (Polyhedron::Facet_const_iterator f = P.facets_begin(); f != P.facets_end(); f++, i++){
+		Polyhedron::Halfedge_around_facet_const_circulator h=f->facet_begin();
+		do {
+			ret[i].push_back(std::distance(P.vertices_begin(), h->vertex()));
+		} while (++h != f->facet_begin());
+	}
+	return ret;
+}
+
 
 //****************************************************************************************
 /* Destructor */
@@ -256,7 +270,7 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 /* Plotting */
 
 #ifdef YADE_OPENGL
-	#include<yade/lib/opengl/OpenGLWrapper.hpp>
+	#include<lib/opengl/OpenGLWrapper.hpp>
 	bool Gl1_Polyhedra::wire;
 	void Gl1_Polyhedra::go(const shared_ptr<Shape>& cm, const shared_ptr<State>&,bool wire2,const GLViewInfo&)
 	{

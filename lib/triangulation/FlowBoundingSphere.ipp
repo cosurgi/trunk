@@ -88,7 +88,10 @@ FlowBoundingSphere<Tesselation>::FlowBoundingSphere()
 }
 
 template <class Tesselation> 
-void FlowBoundingSphere<Tesselation>::resetNetwork() {T[currentTes].Clear();noCache=true;}
+void FlowBoundingSphere<Tesselation>::resetNetwork() {T[currentTes].Clear();this->resetLinearSystem();}
+
+template <class Tesselation> 
+void FlowBoundingSphere<Tesselation>::resetLinearSystem() {noCache=true;}
 
 template <class Tesselation>
 void FlowBoundingSphere<Tesselation>::averageRelativeCellVelocity()
@@ -421,6 +424,14 @@ void FlowBoundingSphere<Tesselation>::applyUserDefinedPressure(RTriangulation& T
 }
 
 template <class Tesselation> 
+CVector FlowBoundingSphere<Tesselation>::cellBarycenter(CellHandle& cell)
+{
+	CVector center ( 0,0,0 );
+	for ( int k=0;k<4;k++ ) center= center + 0.25* (cell->vertex(k)->point()-CGAL::ORIGIN);
+	return center;
+}
+
+template <class Tesselation> 
 void FlowBoundingSphere<Tesselation>::interpolate(Tesselation& Tes, Tesselation& NewTes)
 {
         CellHandle oldCell;
@@ -432,14 +443,12 @@ void FlowBoundingSphere<Tesselation>::interpolate(Tesselation& Tes, Tesselation&
 		if (newCell->info().fictious()==0) for ( int k=0;k<4;k++ ) center= center + 0.25* (Tes.vertex(newCell->vertex(k)->info().id())->point()-CGAL::ORIGIN);
 		else {
 			Real boundPos=0; int coord=0;
-			for ( int k=0;k<4;k++ ) {
-				if (!newCell->vertex (k)->info().isFictious) center= center+0.3333333333*(Tes.vertex(newCell->vertex(k)->info().id())->point()-CGAL::ORIGIN);
-				else {
+			for ( int k=0;k<4;k++ ) if (!newCell->vertex (k)->info().isFictious) center= center+(1./(4.-newCell->info().fictious()))*(Tes.vertex(newCell->vertex(k)->info().id())->point()-CGAL::ORIGIN);
+			for ( int k=0;k<4;k++ ) if (newCell->vertex (k)->info().isFictious) {
 					coord=boundary (newCell->vertex(k)->info().id()).coordinate;
 					boundPos=boundary (newCell->vertex(k)->info().id()).p[coord];
+					center=CVector(coord==0?boundPos:center[0],coord==1?boundPos:center[1],coord==2?boundPos:center[2]);
 				}
-			}
-			center=CVector(coord==0?boundPos:center[0],coord==1?boundPos:center[1],coord==2?boundPos:center[2]);
 		}
                 oldCell = Tri.locate(Point(center[0],center[1],center[2]));
 		newCell->info().getInfo(oldCell->info());
@@ -467,6 +476,18 @@ Real FlowBoundingSphere<Tesselation>::checkSphereFacetOverlap(const Sphere& v0, 
 }
 
 template <class Tesselation> 
+void FlowBoundingSphere<Tesselation>::setBlocked(CellHandle& cell)
+{
+	RTriangulation& Tri = T[currentTes].Triangulation();
+	if (cell->info().Pcondition=true) cell->info().p() = 0;
+	else blockedCells.push_back(cell);
+	for (int j=0; j<4; j++) {
+		(cell->info().kNorm())[j]= 0;
+		(cell->neighbor(j)->info().kNorm())[Tri.mirror_index(cell, j)]= 0;}
+}
+
+
+template <class Tesselation> 
 void FlowBoundingSphere<Tesselation>::computePermeability()
 {
 	if (debugOut)  cout << "----Computing_Permeability------" << endl;
@@ -486,6 +507,9 @@ void FlowBoundingSphere<Tesselation>::computePermeability()
 
 	for (VCellIterator cellIt=T[currentTes].cellHandles.begin(); cellIt!=T[currentTes].cellHandles.end(); cellIt++){
 		CellHandle& cell = *cellIt;
+		if (cell->info().blocked) {
+			setBlocked(cell);
+			cell->info().isvisited = !ref;}
 		Point& p1 = cell->info();
 		for (int j=0; j<4; j++) {
 			neighbourCell = cell->neighbor(j);
@@ -504,6 +528,8 @@ void FlowBoundingSphere<Tesselation>::computePermeability()
 				   W[0]->info().isFictious ? 0 : 0.5*v0.weight()*acos((v1-v0)*(v2-v0)/sqrt((v1-v0).squared_length()*(v2-v0).squared_length())),
 				   W[1]->info().isFictious ? 0 : 0.5*v1.weight()*acos((v0-v1)*(v2-v1)/sqrt((v1-v0).squared_length()*(v2-v1).squared_length())),
 				   W[2]->info().isFictious ? 0 : 0.5*v2.weight()*acos((v0-v2)*(v1-v2)/sqrt((v1-v2).squared_length()*(v2-v0).squared_length())));
+				//FIXME: it should be possible to skip completely blocked cells, currently the problem is it segfault for undefined areas
+// 				if (cell->info().blocked) continue;//We don't need permeability for blocked cells, it will be set to zero anyway
 
 				pass+=1;
 				CVector l = p1 - p2;
@@ -730,8 +756,9 @@ void FlowBoundingSphere<Tesselation>::initializePressure( double pZero )
         FiniteCellsIterator cellEnd = Tri.finite_cells_end();
 
         for (FiniteCellsIterator cell = Tri.finite_cells_begin(); cell != cellEnd; cell++){
-		cell->info().p() = pZero; cell->info().dv()=0;}
-
+		if (!cell->info().Pcondition) cell->info().p() = pZero;
+		cell->info().dv()=0;
+	}
         for (int bound=0; bound<6;bound++) {
                 int& id = *boundsIds[bound];
 		boundingCells[bound].clear();
@@ -846,7 +873,7 @@ void FlowBoundingSphere<Tesselation>::gaussSeidel(Real dt)
 		int bb=-1;
                 for (FiniteCellsIterator cell = Tri.finite_cells_begin(); cell != cellEnd; cell++) {
 			bb++;
-			if ( !cell->info().Pcondition ) {
+			if ( !cell->info().Pcondition && !cell->info().blocked) {
 		                cell2++;
 		#endif
 				if (compressible && j==0) { previousP[bb]=cell->info().p(); }
@@ -913,7 +940,6 @@ void FlowBoundingSphere<Tesselation>::gaussSeidel(Real dt)
 	} while ((dp_max/p_max) > tolerance /*&& j<4000*/ /*&& ( dp_max > tolerance )*//* &&*/ /*( j<50 )*/);
 	#endif
 	}
-
         if (debugOut) {cout << "pmax " << p_max << "; pmoy : " << p_moy << endl;
         cout << "iteration " << j <<"; erreur : " << dp_max/p_max << endl;}
 	computedOnce=true;

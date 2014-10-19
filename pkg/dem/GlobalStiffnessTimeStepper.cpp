@@ -7,14 +7,14 @@
 *************************************************************************/
 
 #include"GlobalStiffnessTimeStepper.hpp"
-#include<yade/pkg/dem/FrictPhys.hpp>
-#include<yade/pkg/dem/ScGeom.hpp>
-#include<yade/pkg/dem/DemXDofGeom.hpp>
-#include<yade/core/Interaction.hpp>
-#include<yade/core/Scene.hpp>
-#include<yade/core/Clump.hpp>
-#include<yade/pkg/dem/Shop.hpp>
-#include<yade/pkg/dem/ViscoelasticPM.hpp>
+#include<pkg/dem/FrictPhys.hpp>
+#include<pkg/dem/ScGeom.hpp>
+#include<pkg/dem/DemXDofGeom.hpp>
+#include<core/Interaction.hpp>
+#include<core/Scene.hpp>
+#include<core/Clump.hpp>
+#include<pkg/dem/Shop.hpp>
+#include<pkg/dem/ViscoelasticPM.hpp>
 
 CREATE_LOGGER(GlobalStiffnessTimeStepper);
 YADE_PLUGIN((GlobalStiffnessTimeStepper));
@@ -130,9 +130,9 @@ void GlobalStiffnessTimeStepper::computeTimeStep(Scene* ncb)
 		scene->dt=previousDt;
 		computedOnce = true;}
 	else if (!computedOnce) scene->dt=defaultDt;
-	LOG_INFO("computed timestep " << newDt <<
-			(scene->dt==newDt ? string(", applied") :
-			string(", BUT timestep is ")+boost::lexical_cast<string>(scene->dt))<<".");
+// 	LOG_INFO("computed timestep " << newDt <<
+// 			(scene->dt==newDt ? string(", applied") :
+// 			string(", BUT timestep is ")+boost::lexical_cast<string>(scene->dt))<<".");
 }
 
 void GlobalStiffnessTimeStepper::computeStiffnesses(Scene* rb){

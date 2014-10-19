@@ -51,6 +51,8 @@ class FlowBoundingSphere : public Network<_Tesselation>
 		vector<CellHandle> IPCells;
 		vector<pair<Point,Real> > imposedF;
 		vector<CellHandle> IFCells;
+		//Blocked cells, where pressure may be computed in undrained condition
+		vector<CellHandle> blockedCells;
 		//Pointers to vectors used for user defined boundary pressure
 		vector<Real> *pxpos, *ppval;
 		
@@ -93,6 +95,7 @@ class FlowBoundingSphere : public Network<_Tesselation>
 		void computePermeability();
 		virtual void gaussSeidel (Real dt=0);
 		virtual void resetNetwork();
+		virtual void resetLinearSystem();
 
 
 		double kFactor; //permeability moltiplicator
@@ -124,6 +127,7 @@ class FlowBoundingSphere : public Network<_Tesselation>
 		//return the list of constriction values
 		vector<double> getConstrictions();
 		vector<Constriction> getConstrictionsFull();
+		CVector cellBarycenter(CellHandle& cell);
 
 		void generateVoxelFile ( );
 		
@@ -155,6 +159,7 @@ class FlowBoundingSphere : public Network<_Tesselation>
 		double averagePressure();
 		int getCell (double X,double Y,double Z);
 		double boundaryFlux(unsigned int boundaryId);
+		void setBlocked(CellHandle& cell);
 		
 		vector<Real> averageFluidVelocityOnSphere(unsigned int Id_sph);
 		//Solver?
@@ -162,12 +167,12 @@ class FlowBoundingSphere : public Network<_Tesselation>
 };
 
 } //namespace CGT
-#include <yade/lib/triangulation/FlowBoundingSphere.ipp>
+#include <lib/triangulation/FlowBoundingSphere.ipp>
 #ifdef LINSOLV
-#include "yade/lib/triangulation/FlowBoundingSphereLinSolv.hpp"
+#include "lib/triangulation/FlowBoundingSphereLinSolv.hpp"
 #endif
 
 /// _____ Template Implementation ____
-// #include "yade/lib/triangulation/FlowBoundingSphereLinSolv.ipp"
+// #include "lib/triangulation/FlowBoundingSphereLinSolv.ipp"
 
 #endif //FLOW_ENGINE

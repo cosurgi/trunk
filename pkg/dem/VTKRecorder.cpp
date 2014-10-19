@@ -22,16 +22,16 @@
   #include<vtkMultiBlockDataSet.h>
 #endif
 
-#include<yade/core/Scene.hpp>
-#include<yade/pkg/common/Sphere.hpp>
-#include<yade/pkg/common/Facet.hpp>
-#include<yade/pkg/common/Box.hpp>
-#include<yade/pkg/dem/ConcretePM.hpp>
-#include<yade/pkg/dem/WirePM.hpp>
-#include<yade/pkg/dem/JointedCohesiveFrictionalPM.hpp>
-#include<yade/pkg/dem/Shop.hpp>
+#include<core/Scene.hpp>
+#include<pkg/common/Sphere.hpp>
+#include<pkg/common/Facet.hpp>
+#include<pkg/common/Box.hpp>
+#include<pkg/dem/ConcretePM.hpp>
+#include<pkg/dem/WirePM.hpp>
+#include<pkg/dem/JointedCohesiveFrictionalPM.hpp>
+#include<pkg/dem/Shop.hpp>
 #ifdef YADE_LIQMIGRATION
-	#include<yade/pkg/dem/ViscoelasticCapillarPM.hpp>
+	#include<pkg/dem/ViscoelasticCapillarPM.hpp>
 #endif
 
 YADE_PLUGIN((VTKRecorder));
@@ -661,20 +661,6 @@ void VTKRecorder::action(){
 		if (recActive[REC_BOXES]){
 			const Box* box = dynamic_cast<Box*>(b->shape.get()); 
 			if (box){
-
-				if(recActive[REC_FORCE]){
-					scene->forces.sync();
-					const Vector3r& f = scene->forces.getForce(b->getId());
-					const Vector3r& t = scene->forces.getTorque(b->getId());
-					Real ff[3] = { (Real)  f[0], (Real) f[1], (Real) f[2] };
-					Real tt[3] = { (Real)  t[0], (Real) t[1], (Real) t[2] };
-					Real fn = f.norm();
-					Real tn = t.norm();
-					boxesForceVec->InsertNextTupleValue(ff);
-					boxesForceLen->InsertNextValue(fn);
-					boxesTorqueVec->InsertNextTupleValue(tt);
-					boxesTorqueLen->InsertNextValue(tn);
-				}
 
 				Vector3r pos(scene->isPeriodic ? scene->cell->wrapShearedPt(b->state->pos) : b->state->pos);
 				Vector3r ext(box->extents);
