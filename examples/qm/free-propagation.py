@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
-dimensions= 1
+dimensions= 2
 size      = 100 if dimensions==1 else 10
 halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
