@@ -1,7 +1,7 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMInteraction.hpp"
-#include <yade/core/Scene.hpp>
+#include <core/Scene.hpp>
 
 YADE_PLUGIN(
 	(QMInteractionPhysics)

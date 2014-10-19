@@ -3,7 +3,7 @@
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscrete.hpp"
 #include "SchrodingerPropagator.hpp"
-#include <yade/core/Scene.hpp>
+#include <core/Scene.hpp>
 
 YADE_PLUGIN(
 	(SchrodingerAnalyticPropagator)

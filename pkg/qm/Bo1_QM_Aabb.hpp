@@ -2,7 +2,7 @@
  
 #pragma once
 
-#include <yade/pkg/common/Dispatching.hpp>
+#include <pkg/common/Dispatching.hpp>
 #include "QMGeometryDisplay.hpp"
 
 class Bo1_QMGeometryDisplay_Aabb : public BoundFunctor

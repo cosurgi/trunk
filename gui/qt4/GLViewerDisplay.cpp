@@ -22,6 +22,7 @@
 #include<boost/algorithm/string/case_conv.hpp>
 #include<lib/serialization/ObjectIO.hpp>
 #include<lib/pyutil/gil.hpp>
+#include<lib/opengl/GLUtils.hpp>
 
 
 #include<QtGui/qevent.h>
