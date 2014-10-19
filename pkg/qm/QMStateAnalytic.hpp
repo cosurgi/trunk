@@ -102,9 +102,7 @@ FIXME: Above are the arguments to the function, they are not stored in this clas
 For higher number of dimensions the x and k are replaced with a vector, and thus reduce to a multiplication of Gaussians.\
 "
 			, // attributes, public variables
-//			((Real,x,0,,"Position $x$ in the wavepacket"))                                   ← this is only used for evaluation, eg.: display
 //			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))     ← this is stored in parent class
-//FIXME: where to store that?
 			((Vector3r,x0  ,Vector3r::Zero(),,"Initial wave packet center at $t=0$"))
 			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
 			((Vector3r,k0  ,Vector3r::Zero(),,"Initial wavenumber $k_0$"))

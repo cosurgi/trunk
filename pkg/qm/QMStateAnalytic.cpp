@@ -40,6 +40,7 @@ Complexr FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRepresentati
 )
 {
 	x -= x0;
+	t -= t0;
 	return exp(
 		-(
 			(m*x*x+Mathr::I*a*a*k0*(k0*hbar*t-2.0*m*x))
