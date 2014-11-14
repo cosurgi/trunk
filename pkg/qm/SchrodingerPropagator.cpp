@@ -140,7 +140,13 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& ps
 	//std::vector<Complexr> psiN___1(psiN___0.size());             // ψ₁: (that's the output)
 								       // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
 	std::transform(psiN1_tmp4.begin(), psiN1_tmp4.end(), psiN1_tmp1.begin(), psiN___1.begin(), std::plus<Complexr>());
-	// FIXME - potential is missing here.
+
+	// FIXME - potential is inefficient here, and in wrong place
+	std::vector<Complexr> psiN1_potential(psiN___0.size(),0);      // ψ₁: (potential FIXME)
+	for(int j=psi->xToI(std::min(potentialStart,potentialEnd)) ; j<psi->xToI(std::max(potentialEnd,potentialStart)) ; j++) psiN1_potential[j]=dt*potential*psiN___1[j]/(hbar*R);
+	std::vector<Complexr> tmp            (psiN___0.size()  );      // ψ₁: (potential FIXME)
+	std::transform(psiN___1.begin(), psiN___1.end(), psiN1_potential.begin(), tmp.begin(), std::minus<Complexr>());
+	psiN___1=tmp; // FIXME - inefficient
 }
 
 void SchrodingerKosloffPropagator::action()
