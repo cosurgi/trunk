@@ -99,6 +99,7 @@ found in [TalEzer1984]_"
 			((Real    ,potentialStart,25    ,,"Some potential barrier")) // FIXME
 			((Real    ,potentialEnd  ,30    ,,"Some potential barrier")) // FIXME
 			((Real    ,lastError     ,0     ,,"FIXME"))
+			((int    ,steps     ,100     ,,"FIXME"))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
