@@ -171,7 +171,7 @@ void SchrodingerKosloffPropagator::action()
 			int j(0);                                                      // ψ(t+dt): psi_final=a₀ψ₀+a₁ψ₁
 			FOREACH(Complexr& psi_i, psi_final) psi_i=ak0*psi_i + ak1*psiN___1[j++];
 			
-			for(int i=2 ; i<=std::max(2*R,10.0) ; i++)
+			for(int i=2 ; i<=steps ; i++)
 			{
 				std::vector<Complexr> psi_tmp(psiN___0.size());        // ψ₂:
 				calcPsiPlus_1(psiN___1,psi_tmp,psi);                   // ψ₂: psi_tmp  =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
@@ -192,7 +192,7 @@ void SchrodingerKosloffPropagator::action()
 			FOREACH(Complexr& psi_i, psi_final) psi_i*=expiRG;             // ψ(t+dt): psi_final=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
 			psi->tableValuesPosition[0][0]=psi_final;
-			if(errorAllowed()) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << int(std::max(2*R,10.0)) << "\n";
+			if(errorAllowed()) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << steps << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }
