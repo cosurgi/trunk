@@ -98,6 +98,7 @@ found in [TalEzer1984]_"
 			((Real    ,potential,0          ,,"Some potential barrier")) // FIXME
 			((Real    ,potentialStart,25    ,,"Some potential barrier")) // FIXME
 			((Real    ,potentialEnd  ,30    ,,"Some potential barrier")) // FIXME
+			((Real    ,lastError     ,0     ,,"FIXME"))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
@@ -110,6 +111,10 @@ found in [TalEzer1984]_"
 			.def("fftTest",&SchrodingerKosloffPropagator::fftTest,"Do FFT test.")
 	);
 	DECLARE_LOGGER;
+	private:
+		// FIXME - put this in some other nice place.
+		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
+		bool errorAllowed(){if ( (getClock() - lastError)>4) {lastError=getClock(); return true;} else return false; }; // report error no more frequent than once per 4 seconds.
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 

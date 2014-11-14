@@ -165,12 +165,13 @@ void SchrodingerKosloffPropagator::action()
 			calcPsiPlus_1(psiN___0,psiN___1,psi);
 			
 			std::vector<Complexr> psi_final(psiN___0);                     // ψ(t+dt):
+			Complexr ak(0);
 			Complexr ak0=calcAKseriesCoefficient(0,R);
 			Complexr ak1=calcAKseriesCoefficient(1,R);
 			int j(0);                                                      // ψ(t+dt): psi_final=a₀ψ₀+a₁ψ₁
 			FOREACH(Complexr& psi_i, psi_final) psi_i=ak0*psi_i + ak1*psiN___1[j++];
 			
-			for(int i=2 ; i<=std::max(2*R,5.0) ; i++)
+			for(int i=2 ; i<=std::max(2*R,10.0) ; i++)
 			{
 				std::vector<Complexr> psi_tmp(psiN___0.size());        // ψ₂:
 				calcPsiPlus_1(psiN___1,psi_tmp,psi);                   // ψ₂: psi_tmp  =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
@@ -180,7 +181,7 @@ void SchrodingerKosloffPropagator::action()
 				                                                       // ψ₂: psiN___2 = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 				std::transform(psi_tmp.begin(), psi_tmp.end(), psiN___0.begin(), psiN___2.begin(), std::minus<Complexr>());
 
-				Complexr ak = calcAKseriesCoefficient(i,R);
+				ak = calcAKseriesCoefficient(i,R);
 				j=0;                                                   // ψ(t+dt):  psi_final+=a₂ψ₂
 				FOREACH(Complexr& psi_i, psi_final) psi_i+=ak*psiN___2[j++]; 
 
@@ -191,7 +192,7 @@ void SchrodingerKosloffPropagator::action()
 			FOREACH(Complexr& psi_i, psi_final) psi_i*=expiRG;             // ψ(t+dt): psi_final=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
 			psi->tableValuesPosition[0][0]=psi_final;
-			//std::cerr << id << "\n";
+			if(errorAllowed()) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << int(std::max(2*R,10.0)) << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }
