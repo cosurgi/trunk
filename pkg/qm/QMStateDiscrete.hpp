@@ -8,6 +8,7 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
+#include <time.h>
 
 /*********************************************************************************
 *
@@ -54,14 +55,40 @@ or directly by filling in the discrete values in the table. It is used for numer
 			, // constructor
 			createIndex();
 			, // python bindings
+			.def("deltaX"   ,&QMStateDiscrete::deltaX   ,"Get $\\Delta x$ - the position representation distance between two grid nodes.")
+			.def("lambdaMin",&QMStateDiscrete::lambdaMin,"Get minimum wavelength that this FFT grid can handle.")
+			.def("kMax"     ,&QMStateDiscrete::kMax     ,"Get maximum wavenumber that this FFT grid can handle.")
+			.def("kMin"     ,&QMStateDiscrete::kMin     ,"Get minimum wavenumber that this FFT grid can handle.")
+			.def("iToX"     ,&QMStateDiscrete::iToX     ,"Get $x$ coordinate for i-th node, invoke example: iToX(0)")
+			.def("iToK"     ,&QMStateDiscrete::iToK     ,"Get $k$ coordinate for i-th node, invoke example: iToK(0)")
+			.def("xToI"     ,&QMStateDiscrete::xToI     ,"Get node number for $x$ coordinate, invoke example: xToI(0)")
+			.def("kToI"     ,&QMStateDiscrete::kToI     ,"Get node number for $k$ coordinate, invoke example: kToI(0)")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
-	private:
-		Real startX,startY,startZ,endX,endY,endZ,stepPos;
+
+		// Find min/max wavelength and wavenumber for this FFT grid
+		Real deltaX(     /* Real startX ,Real endX ,Real gridSize */){return (endX-startX)/gridSize;};
+		Real lambdaMin(  /* Real startX ,Real endX ,Real gridSize */){return 2*deltaX(/*startX, endX, gridSize*/);};
+		Real kMax(       /* Real startX ,Real endX ,Real gridSize */){return Mathr::TWO_PI/lambdaMin(/*startX, endX, gridSize*/);};
+		Real kMin(       /* Real startX ,Real endX ,Real gridSize */){return -kMax(/*startX, endX, gridSize*/);};
+		// Those functions convert index 'i' to respective position or momentum on the FFT grid
+		Real iToX(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*endX                        +(gridSize-i)*startX                      )/gridSize; };
+		Real iToK(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*kMax(/*startX,endX,gridSize*/)+(gridSize-i)*kMin(/*startX,endX,gridSize*/))/gridSize; };
+		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
+		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
+
 		Complexr3D tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 		Complexr3D /*Vector3r3D*/ tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
 		Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
 		Complexr3D /*Vector3r3D*/ tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
+	private:
+		Real startX,startY,startZ,endX,endY,endZ,stepPos;
+	
+		// FIXME - put this in some other nice place.
+		Real lastError;
+		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
+		bool errorAllowed(){if ( (getClock() - lastError)>2) {lastError=getClock(); return true;} else return false; }; // report error no more frequent than once per 2 seconds.
+		
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
 

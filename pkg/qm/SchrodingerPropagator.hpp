@@ -6,6 +6,10 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
+// FIXME - Kosloff method benefits from higher precision, check 
+//   #include <boost/multiprecision/cpp_dec_float.hpp>
+//   and http://www.boost.org/doc/libs/1_54_0/libs/math/example/bessel_zeros_example_1.cpp
+#include <boost/math/special_functions/bessel.hpp>
 
 /*********************************************************************************
 *
@@ -61,13 +65,21 @@ REGISTER_SERIALIZABLE(SchrodingerAnalyticPropagator);
  * H.Tal-Ezer, R.Kosloff "An accurate and efficient scheme for propagating the
  * time dependent Schrödinger equation", 1984
  *
- * But what will it do? Maybe Quantum Field Theory will answer that.
- *
  */
 
 class SchrodingerKosloffPropagator: public GlobalEngine
 {
 	public:
+		virtual void action();
+		Real eMin() {return 0;}; // FIXME - it will have to scan the scene and find minimum potential
+		Real eMax(); // this function scans the scene and currently finds (only) maximum momentum
+		Real calcKosloffR() { return scene->dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
+		Real calcKosloffG() { return scene->dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
+		Complexr calcAKseriesCoefficient(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
+		void doFFT_1D (const std::vector<Complexr>& in,std::vector<Complexr>& out);
+		void doIFFT_1D(const std::vector<Complexr>& in,std::vector<Complexr>& out);
+		void fftTest(); // debug + testing
+		void calcPsiPlus_1(const std::vector<Complexr>& in,std::vector<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
@@ -81,8 +93,18 @@ operator  Û=exp(-iℍ̂t/ℏ), and is following: ψ=Ûψ. The wavefunction ψ
 here in SchrodingerKosloffPropagator it is calculated using Tal-Ezer and Kosloff approach \
 found in [TalEzer1984]_"
 			, // attributes, public variables
+			// FIXME - it should get moved to QMParameters (maybe?)
+			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
 			, // constructor
 			, // python bindings
+			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
+			.def("eMax"  ,&SchrodingerKosloffPropagator::eMax  ,"Get maximum energy.")
+			.def("R"     ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
+			.def("calcR" ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
+			.def("G"     ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
+			.def("calcG" ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
+			.def("ak"    ,&SchrodingerKosloffPropagator::calcAKseriesCoefficient,"Calculate $a_k$ coefficient in Chebyshev polynomial expansion.")
+			.def("fftTest",&SchrodingerKosloffPropagator::fftTest,"Do FFT test.")
 	);
 	DECLARE_LOGGER;
 };

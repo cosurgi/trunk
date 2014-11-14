@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
-dimensions= 2
+dimensions= 1
 size      = 100 if dimensions==1 else 10
 halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
@@ -22,7 +22,7 @@ O.engines=[
 		#[Ip2_FrictMat_FrictMat_FrictPhys()],
 		#[Law2_ScGeom_FrictPhys_CundallStrack()]
 	#),
-#	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(),
 # FIXME: perhaps derive FreeMovingGaussianWavePacket from something so that this below could propagate harmonic oscillator too.
 	SchrodingerAnalyticPropagator()
 ]
@@ -57,7 +57,8 @@ numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,pos
 O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
-O.dt=.000001
+#O.dt=.000001
+O.dt=.001
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
