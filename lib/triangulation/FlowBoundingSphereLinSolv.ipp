@@ -71,6 +71,7 @@ FlowBoundingSphereLinSolv<_Tesselation,FlowType>::FlowBoundingSphereLinSolv(): F
 	isLinearSystemSet=0;
 	isFullLinearSystemGSSet=0;
 	areCellsOrdered=0;//true when orderedCells is filled, turn it false after retriangulation
+	updatedRHS=false;
 	ZERO=0;
 	#ifdef TAUCS_LIB
 	T_A = &SystemMatrix;
@@ -156,7 +157,7 @@ int FlowBoundingSphereLinSolv<_Tesselation,FlowType>::setLinearSystem(Real dt)
 		orderedCells.clear();
 		const FiniteCellsIterator cellEnd = Tri.finite_cells_end();
 		for (FiniteCellsIterator cell = Tri.finite_cells_begin(); cell != cellEnd; cell++) {
-			orderedCells.push_back(cell);
+			orderedCells.push_back(cell); cell->info().index=0;
 			if (!cell->info().Pcondition && !cell->info().blocked) ++ncols;}
 //		//Segfault on 14.10, and useless overall since SuiteSparse has preconditionners (including metis)
 // 		spatial_sort(orderedCells.begin(),orderedCells.end(), CellTraits_for_spatial_sort<RTriangulation>());
@@ -200,7 +201,9 @@ int FlowBoundingSphereLinSolv<_Tesselation,FlowType>::setLinearSystem(Real dt)
 				//Add diagonal term
 				is[T_nnz] = index;
 				js[T_nnz] = index;
-				vs[T_nnz] = (cell->info().kNorm())[0]+ (cell->info().kNorm())[1]+ (cell->info().kNorm())[2]+ (cell->info().kNorm())[3];
+				vs[T_nnz]=0;
+				for (int j=0;j<4;j++) if (!cell->neighbor(j)->info().blocked) vs[T_nnz]+= (cell->info().kNorm())[j];
+// 				vs[T_nnz] = (cell->info().kNorm())[0]+ (cell->info().kNorm())[1]+ (cell->info().kNorm())[2]+ (cell->info().kNorm())[3];
 				if (fluidBulkModulus>0) vs[T_nnz] += (1.f/(dt*fluidBulkModulus*cell->info().invVoidVolume()));
 				++T_nnz;
 			}
@@ -218,13 +221,14 @@ int FlowBoundingSphereLinSolv<_Tesselation,FlowType>::setLinearSystem(Real dt)
 						vs[T_nnz] = - (cell->info().kNorm())[j];
 						T_nnz++;
 					}
-				} else if (neighbourCell->info().Pcondition) {
+				} else if (neighbourCell->info().Pcondition && !neighbourCell->info().blocked) {
 					//ADD TO b, FIXME : use updated volume change
 					T_b[index-1]+=cell->info().kNorm()[j]*neighbourCell->info().p();
 				}
 			}
 		}
 	}
+	updatedRHS = true;
 	if (!isLinearSystemSet) {
 		if (useSolver==1 || useSolver==2){
 		#ifdef TAUCS_LIB
@@ -298,7 +302,7 @@ void FlowBoundingSphereLinSolv<_Tesselation,FlowType>::copyCellsToGs (Real dt)
 }
 
 template<class _Tesselation, class FlowType>
-void FlowBoundingSphereLinSolv<_Tesselation,FlowType>::copyLinToCells() {for (int ii=1; ii<=ncols; ii++) {T_cells[ii]->info().p()=T_x[ii-1];} }
+void FlowBoundingSphereLinSolv<_Tesselation,FlowType>::copyLinToCells() {for (int ii=1; ii<=ncols; ii++) T_cells[ii]->info().p()=T_x[ii-1];}
 
 template<class _Tesselation, class FlowType>
 void FlowBoundingSphereLinSolv<_Tesselation,FlowType>::copyCellsToLin (Real dt)
@@ -512,7 +516,7 @@ template<class _Tesselation, class FlowType>
 int FlowBoundingSphereLinSolv<_Tesselation,FlowType>::eigenSolve(Real dt)
 {
 #ifdef EIGENSPARSE_LIB
-	if (!isLinearSystemSet || (isLinearSystemSet && reApplyBoundaryConditions())) ncols = setLinearSystem(dt);
+	if (!isLinearSystemSet || (isLinearSystemSet && reApplyBoundaryConditions()) || !updatedRHS) ncols = setLinearSystem(dt);
 	copyCellsToLin(dt);
 	//FIXME: we introduce new Eigen vectors, then we have to copy from/to c-arrays, can be optimized later
 	Eigen::VectorXd eb(ncols); Eigen::VectorXd ex(ncols);
