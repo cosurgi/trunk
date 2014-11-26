@@ -85,9 +85,10 @@ class TriaxialCompressionEngine : public TriaxialStressController
 		"#.  STATE_TRIAX_LIMBO: currently unused, since simulation is hard-stopped in the previous state.\n\n"
 		"Transition from COMPACTION to UNLOADING is done automatically if autoUnload==true;\n\n Transition from (UNLOADING to LOADING) or from (COMPACTION to LOADING: if UNLOADING is skipped) is done automatically if autoCompressionActivation=true; Both autoUnload and autoCompressionActivation are true by default.\n\n"
 		"\n\n.. note::\n\t Most of the algorithms used have been developed initialy for simulations reported in [Chareyre2002a]_ and [Chareyre2005]_. They have been ported to Yade in a second step and used in e.g. [Kozicki2008]_,[Scholtes2009b]_,[Jerier2010b]."
+		"\n\n.. warning::\n\t This engine is deprecated, please switch to TriaxialStressController if you expect long term support."
 		,
 		((int, warn, 0,,"counter used for sending a deprecation warning once"))
-		((Real,strainRate,0,,"target strain rate (./s)"))
+		((Real,strainRate,0,,"target strain rate (./s, >0 for compression)"))
 		((Real,currentStrainRate,0,,"current strain rate - converging to :yref:`TriaxialCompressionEngine::strainRate` (./s)"))
 		((Real,UnbalancedForce,1,,"mean resultant forces divided by mean contact force"))
 		((Real,StabilityCriterion,0.001,,"tolerance in terms of :yref:`TriaxialCompressionEngine::UnbalancedForce` to consider the packing is stable"))
@@ -98,9 +99,9 @@ class TriaxialCompressionEngine : public TriaxialStressController
 		((int,testEquilibriumInterval,20,,"interval of checks for transition between phases, higher than 1 saves computation time."))
 		((stateNum,currentState,1,,"There are 5 possible states in which TriaxialCompressionEngine can be. See above :yref:`yade.wrapper.TriaxialCompressionEngine` "))
 		((stateNum,previousState,1,,"Previous state (used to detect manual changes of the state in .xml)"))
-		((Real,sigmaIsoCompaction,1,,"Prescribed isotropic pressure during the compaction phase"))
+		((Real,sigmaIsoCompaction,1,,"Prescribed isotropic pressure during the compaction phase (< 0 for real - compressive - compaction)"))
 		((Real,previousSigmaIso,1,,"Previous value of inherited sigma_iso (used to detect manual changes of the confining pressure)"))
-		((Real,sigmaLateralConfinement,1,,"Prescribed confining pressure in the deviatoric loading; might be different from :yref:`TriaxialCompressionEngine::sigmaIsoCompaction`"))
+		((Real,sigmaLateralConfinement,1,,"Prescribed confining pressure in the deviatoric loading  (< 0 for classical compressive cases); might be different from :yref:`TriaxialCompressionEngine::sigmaIsoCompaction`"))
 		((std::string,Key,"",,"A string appended at the end of all files, use it to name simulations."))
 		((bool,noFiles,false,,"If true, no files will be generated (\\*.xml, \\*.spheres,...)"))
 		((Real,frictionAngleDegree,-1,,"Value of friction assigned just before the deviatoric loading"))
@@ -108,7 +109,7 @@ class TriaxialCompressionEngine : public TriaxialStressController
 		((Real,uniaxialEpsilonCurr,1,,"Current value of axial deformation during confined loading (is reference to strain[1])"))
 		((Real,fixedPoroCompaction,false,,"A special type of compaction with imposed final porosity :yref:`TriaxialCompressionEngine::fixedPorosity` (WARNING : can give unrealistic results!)"))
 		((Real,fixedPorosity,0,,"Value of porosity chosen by the user"))
-		((Real,maxStress,0,,"Max value of stress during the simulation (for post-processing)"))
+		((Real,maxStress,0,,"Max absolute value of axial stress during the simulation (for post-processing)"))
 		((Real,sigma_iso,0,,"prescribed confining stress (see :yref:TriaxialCompressionEngine::isAxisymetric`)"))
 		((bool,isAxisymetric,false,,"if true, sigma_iso is assigned to sigma1, 2 and 3 (applies at each iteration and overrides user-set values of s1,2,3)"))
 		,
