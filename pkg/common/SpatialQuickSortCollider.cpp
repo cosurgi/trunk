@@ -36,6 +36,7 @@ void SpatialQuickSortCollider::action()
 	}
 
 // FIXME - I don't know why but sometimes this FOREACH is not working in Quantum Mechanics. It started to work with `for(int i=0;i<bodies->size();i++)` but I don't put this here now. I suspect it's optimised away
+//         Also I was testing here a collider problem in commit "Testing FFT "+1" or "+0" and a collider problem."
 	Vector3r min,max;
 	int i=0;
 	FOREACH(const shared_ptr<Body>& b, *bodies){

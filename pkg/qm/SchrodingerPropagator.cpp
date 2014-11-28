@@ -48,27 +48,27 @@ SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {	
 	std::vector<Complexr> in(inp);
-	std::rotate(in.begin(),in.begin()+(in.size()/2-1),in.end()); // prepare input: rotate to left by (size/2-1)
+	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
 	
 	static Eigen::FFT<Real>  fft;
 	fft.fwd(out,in);                      // in mathematica that's InverseFourier[]*sqrt(N)
 	Real factor=std::sqrt(out.size());
 	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N)
 
-	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-1),out.rend()); // prepare output: rotate to right by (size/2-1)
+	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
 
 void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {
 	std::vector<Complexr> in(inp);
-	std::rotate(in.begin(),in.begin()+(in.size()/2-1),in.end()); // prepare input: rotate to left by (size/2-1)
+	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
 	
 	static Eigen::FFT<Real>  fft;
 	fft.inv(out,in);                      // in mathematica that's Fourier[]/sqrt(N)
 	Real factor=std::sqrt(out.size());
 	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N)
 	
-	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-1),out.rend()); // prepare output: rotate to right by (size/2-1)
+	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
 
 void SchrodingerKosloffPropagator::fftTest()
