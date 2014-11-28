@@ -95,11 +95,10 @@ found in [TalEzer1984]_"
 			, // attributes, public variables
 			// FIXME - it should get moved to QMParameters (maybe?)
 			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
-			((Real    ,potential,0          ,,"Some potential barrier")) // FIXME
-			((Real    ,potentialStart,25    ,,"Some potential barrier")) // FIXME
-			((Real    ,potentialEnd  ,30    ,,"Some potential barrier")) // FIXME
-			((Real    ,lastError     ,0     ,,"FIXME"))
-			((int    ,steps     ,100     ,,"FIXME"))
+	//FIXING		((Real    ,potential,0          ,,"Some potential barrier")) // FIXME
+	//FIXING		((Real    ,potentialStart,25    ,,"Some potential barrier")) // FIXME
+	//FIXING		((Real    ,potentialEnd  ,30    ,,"Some potential barrier")) // FIXME
+			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
@@ -116,6 +115,7 @@ found in [TalEzer1984]_"
 		// FIXME - put this in some other nice place.
 		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
 		bool errorAllowed(){if ( (getClock() - lastError)>4) {lastError=getClock(); return true;} else return false; }; // report error no more frequent than once per 4 seconds.
+		Real lastError;
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 

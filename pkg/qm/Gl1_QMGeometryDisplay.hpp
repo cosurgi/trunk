@@ -43,7 +43,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			((bool,absolute         ,false,,"Show absolute probability"))
 			((bool,partImaginary    ,true,,"Show only imaginary component"))
 			((bool,partReal         ,true,,"Show only real component"))
-			((bool,probability      ,false,,"Show probability, which is squared absolute value"))
+			((bool,probability      ,true,,"Show probability, which is squared absolute value"))
 			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
