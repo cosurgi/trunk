@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 #include "QMParameters.hpp"
+#include "QMGeometryDisplay.hpp"
+#include <pkg/common/Box.hpp>
 
 
 /*********************************************************************************
@@ -68,6 +70,11 @@ class QMInteractionGeometry: public IGeom
 			, // class description
 			"Geometric representation of a single interaction of the WaveFunction"
 			, // attributes, public variables
+			((std::vector<Complexr>, potentialValues , ,, "Discrete values of potential."))
+//			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
+//			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))
+//			((Vector3r , halfSize1             , ,, "Size of 1st box."))
+//			((Vector3r , halfSize2             , ,, "Size of 2nd box."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -76,6 +83,28 @@ class QMInteractionGeometry: public IGeom
 	REGISTER_CLASS_INDEX(QMInteractionGeometry,IGeom);
 };
 REGISTER_SERIALIZABLE(QMInteractionGeometry);
+
+/*********************************************************************************
+*
+* I G 2   B O X   W A V E F U N C T I O N   I N T E R A C T I O N                 (creates geometry of two overlapping entities)
+*
+*********************************************************************************/
+
+/*! @brief When QMGeometryDisplay collides with a Box (with potential) the
+ * geometry of their contact is calculated and stored in QMInteractionGeometry
+ *
+ */
+
+class Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : public IGeomFunctor
+{
+	public :
+		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
+		virtual bool goReverse(	const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
+	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometryDisplay_QMInteractionGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMInteractionGeometry` from :yref:`Box` and :yref:`QMGeometryDisplay`, representing the box overlapped onto wavefunction in positional representation.")
+	FUNCTOR2D(Box,QMGeometryDisplay);
+	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometryDisplay);
+};
+REGISTER_SERIALIZABLE(Ig2_Box_QMGeometryDisplay_QMInteractionGeometry);
 
 
 /*********************************************************************************
@@ -153,8 +182,8 @@ REGISTER_SERIALIZABLE(Ip2_Material_QMParameters_QMInteractionPhysics);
 class Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics: public LawFunctor
 {
 	public:
-		bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
-		FUNCTOR2D(IGeom,QMInteractionPhysics);
+		virtual bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
+		FUNCTOR2D(QMInteractionGeometry,QMInteractionPhysics);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics
