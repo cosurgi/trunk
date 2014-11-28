@@ -44,7 +44,8 @@ void SpatialQuickSortCollider::action()
 	{
 		const shared_ptr<Body>& b( (*(bodies))[i] );
 		if(!(b->bound)) continue;
-
+static bool l(false);
+if(!l) { std::cerr<<min<<"\n"; l=true;};
 		min = b->bound->min;
 		max = b->bound->max;
 
