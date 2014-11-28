@@ -38,25 +38,26 @@ void SpatialQuickSortCollider::action()
 	}
 
 	Vector3r min,max;
-	shared_ptr<Body> b;
-	int i=0;
-	FOREACH(const shared_ptr<Body>& b, *bodies){
-		if(!b->bound) continue;
-	   
-	   min = b->bound->min;
-	   max = b->bound->max;
+//	int i=0;
+//	FOREACH(const shared_ptr<Body>& b, *bodies){ // FIXME - I don't know why but sometimes it's not working. I suspect it's optimised away
+	for(int i=0;i<bodies->size();i++)
+	{
+		const shared_ptr<Body>& b( (*(bodies))[i] );
+		if(!(b->bound)) continue;
 
-	   rank[i]->id = b->getId();
-	   rank[i]->min = min;
-	   rank[i]->max = max;
+		min = b->bound->min;
+		max = b->bound->max;
 
-		i++;
+		rank[i]->id = b->getId();
+		rank[i]->min = min;
+		rank[i]->max = max;
+//		i++;
 	}
 	
 	const shared_ptr<InteractionContainer>& interactions=scene->interactions;
 	scene->interactions->iterColliderLastRun=scene->iter;
 
-	sort(rank.begin(), rank.end(), xBoundComparator()); // sotring along X
+	sort(rank.begin(), rank.end(), xBoundComparator()); // sorting along X
 
 	int id,id2; size_t j;
 	shared_ptr<Interaction> interaction;
