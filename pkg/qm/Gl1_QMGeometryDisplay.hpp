@@ -39,6 +39,8 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			, // class description
 			"Renders :yref:`QMGeometryDisplay` object"
 			, // static public attributes
+// FIXME,FIXME - add option to draw points of discretisation (for discretized wavefunctions, do I need to derive :
+// class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
 			((bool,absolute         ,false,,"Show absolute probability"))
 			((bool,partImaginary    ,true,,"Show only imaginary component"))

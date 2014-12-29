@@ -144,15 +144,6 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& ps
 	std::transform(psiN1_tmp4.begin(), psiN1_tmp4.end(), psiN1_tmp1.begin(), psiN___1.begin(), std::plus<Complexr>());
 	// result is in psiN___1
 
-//FIXING	// FIXME - potential is inefficient here, and in wrong place
-//FIXING	std::vector<Complexr> psiN1_potential(psiN___0.size(),0);      // ψ₁: (potential FIXME)
-//FIXING	for(int j=psi->xToI(std::min(potentialStart,potentialEnd)) ; j<psi->xToI(std::max(potentialEnd,potentialStart)) ; j++) psiN1_potential[j]=dt*potential*psiN___1[j]/(hbar*R);
-//FIXING	std::vector<Complexr> tmp            (psiN___0.size()  );      // ψ₁: (potential FIXME)
-//FIXING	std::transform(psiN___1.begin(), psiN___1.end(), psiN1_potential.begin(), tmp.begin(), std::minus<Complexr>());
-//FIXING	psiN___1=tmp; // FIXME - inefficient
-//
-//
-// FIXING this now - make a loop over all interactions to take into account potentials
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
 		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
 		if(igeom) {
@@ -189,7 +180,7 @@ void SchrodingerKosloffPropagator::action()
 			FOREACH(Complexr& psi_i, psi_final) psi_i=ak0*psi_i + ak1*psiN___1[j++];
 			
 			int i(0);
-			for(i=2 ; i<=STEPS and std::abs(ak)>1e-40 ; i++)
+			for(i=2 ; i<=STEPS /*and std::abs(ak)>1e-40*/ ; i++)
 			{
 				std::vector<Complexr> psi_tmp(psiN___0.size());        // ψ₂:
 				calcPsiPlus_1(psiN___1,psi_tmp,psi);                   // ψ₂: psi_tmp  =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
