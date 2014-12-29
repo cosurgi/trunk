@@ -12,7 +12,7 @@ gaussWidth = 1
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
 potentialHalfSize = Vector3(size,3,3)
-harmonicOrder     = 15
+potentialValue    = 0.0
 
 
 O.engines=[
@@ -30,7 +30,6 @@ O.engines=[
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerKosloffPropagator(steps=55),
-	SchrodingerAnalyticPropagator()
 ]
 
 ## Create:
@@ -40,31 +39,30 @@ O.engines=[
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-harmonicPacket         = HarmonicOscillator(dim=dimensions,order=harmonicOrder)
-analyticBody.state     = harmonicPacket
-O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a=gaussWidth,hbar=1)
+analyticBody.state     = gaussPacket
+#O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**13))
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12))
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
 potentialBody = QMBody()
 potentialBody.shape     = Box(extents=potentialHalfSize ,wire=True)
 potentialBody.material  = QMParameters()
-potentialBody.state     = QMStateBarrier(se3=[potentialCenter,Quaternion()],potentialType=1)
+potentialBody.state     = QMStateBarrier(se3=[potentialCenter,Quaternion()],potentialValue=potentialValue,potentialType=1)
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.002
+O.dt=.005
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

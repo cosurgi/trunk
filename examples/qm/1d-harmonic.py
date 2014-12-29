@@ -7,7 +7,7 @@ halfSize  = Vector3(size,0.1,0.1)
 
 # wavepacket parameters
 k0_x       = 2
-gaussWidth = 1
+gaussWidth = 0.5
 
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
