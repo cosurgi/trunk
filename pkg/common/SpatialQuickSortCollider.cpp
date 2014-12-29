@@ -37,6 +37,7 @@ void SpatialQuickSortCollider::action()
 			rank[n] = shared_ptr<AABBBound>(new AABBBound);
 	}
 
+static int l(0);
 	Vector3r min,max;
 //	int i=0;
 //	FOREACH(const shared_ptr<Body>& b, *bodies){ // FIXME - I don't know why but sometimes it's not working. I suspect it's optimised away
@@ -44,8 +45,7 @@ void SpatialQuickSortCollider::action()
 	{
 		const shared_ptr<Body>& b( (*(bodies))[i] );
 		if(!(b->bound)) continue;
-static bool l(false);
-if(!l) { std::cerr<<min<<"\n"; l=true;};
+if(l<30) { std::cerr<<min<<"\n"; l++;};
 		min = b->bound->min;
 		max = b->bound->max;
 
@@ -70,12 +70,15 @@ if(!l) { std::cerr<<min<<"\n"; l=true;};
 	    j=i;
 	    while(++j<nbElements)
 	    {
+if(l<30) { std::cerr<<"j1: "<<j<<"\n"; l++;};
 			if ( rank[j]->min[0] > max[0]) break;
+if(l<30) { std::cerr<<"j2: "<<j<<"\n"; l++;};
 			if ( rank[j]->min[1] < max[1]
 			&& rank[j]->max[1] > min[1]
 			&& rank[j]->min[2] < max[2]
 			&& rank[j]->max[2] > min[2])
 			{
+if(l<30) { std::cerr<<"j3: "<<j<<"\n"; l++;};
 				id2=rank[j]->id;
 				if ( (interaction = interactions->find(Body::id_t(id),Body::id_t(id2))) == 0)
 				{
