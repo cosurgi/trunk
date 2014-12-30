@@ -21,12 +21,13 @@ YADE_PLUGIN(
 #include <pkg/common/GLDrawFunctors.hpp>
 #include <lib/opengl/OpenGLWrapper.hpp>
 #include <lib/opengl/GLUtils.hpp>
+#include <lib/computational-geometry/MarchingCube.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
-bool Gl1_QMGeometryDisplay::absolute=true;
+bool Gl1_QMGeometryDisplay::absolute=false;
 bool Gl1_QMGeometryDisplay::partReal=true;
-bool Gl1_QMGeometryDisplay::partImaginary=true;
-bool Gl1_QMGeometryDisplay::probability=true;
+bool Gl1_QMGeometryDisplay::partImaginary=false;
+bool Gl1_QMGeometryDisplay::probability=false;
 bool Gl1_QMGeometryDisplay::renderSmoothing=true;
 bool Gl1_QMGeometryDisplay::renderInterpolate=false;
 int  Gl1_QMGeometryDisplay::renderSpecular=10;
@@ -35,6 +36,7 @@ int  Gl1_QMGeometryDisplay::renderDiffuse=100;
 int  Gl1_QMGeometryDisplay::renderShininess=50;
 Real Gl1_QMGeometryDisplay::step=0.1;
 Real Gl1_QMGeometryDisplay::stepWait=0.1;
+Real Gl1_QMGeometryDisplay::threshold3D=0.00000001;
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 
 void Gl1_QMGeometryDisplay::go(
@@ -263,7 +265,89 @@ void Gl1_QMGeometryDisplay::go(
 		}
 	}
 	} else if(packet->dim == 3) {
-		std::cerr << "3D plotting not ready yet\n";
+		// FIXME,FIXME - clean up the mess. Draw real, imag, probability, etc.....
+		MarchingCube mc;
+		int gridSize=int((endX-startX)/step);
+		Vector3r minMC(startX+step*0.5     ,startY+step*0.5     ,startZ+step*0.5     );
+		Vector3r maxMC(endX  +step*0.5     ,endY  +step*0.5     ,endZ  +step*0.5     );
+//		std::cout << "gridSize=" << gridSize << "\n"; // FIXME
+		mc.init(gridSize,gridSize,gridSize,minMC,maxMC);
+		///// mc.resizeScalarField(scalarField,sizeX,sizeY,sizeZ);	FIXME - to te linijki poniżej
+		//std::vector<std::vector<std::vector<Real> > > waveVals3D; // FIXME - marching cubes templates for different dypes, maybe complex too??
+		std::vector<std::vector<std::vector<Real> > > waveVals3D; // FIXME - marching cubes templates for different dypes, maybe complex too??
+		waveVals3D         .resize(int((endX-startX)/step)+1);  // x position coordinate
+		FOREACH(std::vector<std::vector<Real> >& xx, waveVals3D   ) {
+			xx.resize(int((endY-startY)/step)+1);           // y position coordinate
+			FOREACH(std::vector<Real>& yy, xx) {
+				yy.resize(int((endZ-startZ)/step)+1,0); // z position coordinate
+			};
+		};
+	
+	//FIXME,FIXME,FIXME
+	if(partReal) { // FIXME - merge those four into one loop
+		int i=0;
+		for(Real x=startX ; x<=endX ; x+=step,i++ )
+		{
+			int j=0;
+			for(Real y=startY ; y<=endY ; y+=step,j++ )
+			{
+				int k=0;
+				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
+				{
+					waveVals3D[i][j][k]=std::real(packet->getValPos(Vector3r(x,y,z)));
+//					std::cout << waveVals3D[i][j][k] << " ";
+				}
+//				std::cout << i << " " << j << "\n";
+			}
+//			std::cout << "\n";
+			if(tooLong()) break;
+		}
+//		std::cout << "---------------------------------------\n";
+		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
+		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
+	
+		mc.computeTriangulation(waveVals3D,threshold3D);
+		const vector<Vector3r>& triangles 	= mc.getTriangles();
+		int nbTriangles				= mc.getNbTriangles();
+		const vector<Vector3r>& normals 	= mc.getNormals();	
+//		const GLfloat pos[4]	= {-0.8,1.0,1.0,1.0};
+//		const GLfloat ambientColor[4]	= {0.5,0.5,0.5,1.0};	
+//		glLightfv(GL_LIGHT0, GL_POSITION, pos);
+//		glClearColor(0.97,0.97,0.97,1.0);
+//		glLightModelfv(GL_LIGHT_MODEL_AMBIENT,ambientColor); // 2D
+//		glEnable(GL_LIGHT0); // 2D
+		if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
+		glEnable(GL_NORMALIZE);
+		glBegin(GL_TRIANGLES);
+//		glColor3f(0.4,0.4,1.0);
+
+//		std::cout << triangles.size() << "\n";
+//		std::cout << nbTriangles      << "\n";
+//		std::cout << normals.size()   << "\n";
+
+		for(int i=0;i<3*nbTriangles;++i)
+		{
+			glNormal3v(normals[  i]);
+			glVertex3v(triangles[i]);     // * step?, scale, size? → cerr...
+			glNormal3v(normals[++i]);
+			glVertex3v(triangles[i]);
+			glNormal3v(normals[++i]);
+			glVertex3v(triangles[i]);
+		}
+		glEnd();
+		
+		//Vector3r size = max-min;                  /// FIXME - sprawdzić po co to
+//		glPushMatrix();
+//		glDisable(GL_LIGHTING);
+//		glColor3f(1.0,1.0,1.0);
+		//glScalef(size[0],size[1],size[2]);        /// FIXME - sprawdzić po co to
+//			glutWireCube(1);
+//		glEnable(GL_LIGHTING); // 2D
+//		glPopMatrix();
+	} // FIXME END - merge those four into one loop
+
+// FIXING ..... std::cerr << "3D plotting not ready yet\n";
+
 	} else {
 		std::cerr << "4D or more plotting not ready yet\n";
 	};

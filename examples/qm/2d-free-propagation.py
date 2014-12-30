@@ -3,7 +3,7 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size      = 100 if dimensions==1 else 10
+size      = 10
 halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
 ## This is a simple test:
@@ -54,7 +54,7 @@ numericalBody.material  = None
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12 if dimensions==1 else 128))
-O.bodies.append(numericalBody)
+#O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
 O.dt=.000001

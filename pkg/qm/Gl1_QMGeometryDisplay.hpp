@@ -26,6 +26,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		Real spline36Interpolation(Real dist);
 		Real sinc256Interpolation(Real dist);
 		// FIXME - those two functions can be written as a single template
+		// FIXME, FIXME → move to yade/trunk/lib/smoothing
 		Real     calcInterpolation_2D      (const std::vector<std::vector<Real    > >& val,Real posX, Real posY);
 		Vector3r calcInterpolation_2Dvector(const std::vector<std::vector<Vector3r> >& val,Real posX, Real posY);
 		virtual ~Gl1_QMGeometryDisplay();
@@ -43,9 +44,9 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 // class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
 			((bool,absolute         ,false,,"Show absolute probability"))
-			((bool,partImaginary    ,true,,"Show only imaginary component"))
+			((bool,partImaginary    ,false,,"Show only imaginary component"))
 			((bool,partReal         ,true,,"Show only real component"))
-			((bool,probability      ,true,,"Show probability, which is squared absolute value"))
+			((bool,probability      ,false,,"Show probability, which is squared absolute value"))
 			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
@@ -54,6 +55,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
 			((Real,step             ,0.1,,"Rendering step, careful - too small will make rendering extremely slow"))
 			((Real,stepWait         ,0.1,,"Maximum rendering time in seconds. Abort if takes too long."))
+			((Real,threshold3D      ,0.00000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 		);
 	private: // FIXME - after redundancy is removed, this should be removed too
 		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }

@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
-dimensions= 2
-size      = 100 if dimensions==1 else 10
-halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
+dimensions= 3
+size      = 10
+halfSize  = Vector3(size,size,size)
+#halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
@@ -40,7 +41,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=1,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2,1],m=1,a=1,hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -53,8 +54,8 @@ numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12 if dimensions==1 else 128))
-O.bodies.append(numericalBody)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12 if dimensions==1 else 32))
+#O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
 O.dt=.000001

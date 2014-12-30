@@ -165,7 +165,7 @@ Complexr HarmonicOscillator::getValPos(Vector3r pos)
 	switch(this->dim) {
 		case 1 : return quantumOscillatorWavefunction(order,pos[0])*std::exp((-Mathr::I*(order+0.5))*this->t); // FIXME,FIXME: ,x0[0],this->t,k0[0],m,a,hbar);
 
-		default: throw std::runtime_error("getValPos() works only in 1,2 or 3 dimensions.");
+		default: throw std::runtime_error("getValPos() works only in 1 dimension.");
 	}
 };
 
