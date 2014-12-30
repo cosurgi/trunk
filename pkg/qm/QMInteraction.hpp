@@ -70,7 +70,7 @@ class QMInteractionGeometry: public IGeom
 			, // class description
 			"Geometric representation of a single interaction of the WaveFunction"
 			, // attributes, public variables
-			((std::vector<Complexr>, potentialValues , ,, "Discrete values of potential."))
+			((std::vector<Complexr>, potentialValues , ,, "Discrete values of potential.")) // FIXME - 1D only? why complex?
 //			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
 //			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))
 //			((Vector3r , halfSize1             , ,, "Size of 1st box."))
