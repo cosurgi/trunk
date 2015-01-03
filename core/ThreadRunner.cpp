@@ -39,7 +39,7 @@ void ThreadRunner::call()
 	//
 	// FIXME - if several threads are blocked here and waiting, and the
 	// destructor is called we get a crash. This happens if some other
-	// thread is calling spwanSingleAction in a loop (instead of calling
+	// thread is calling spawnSingleAction in a loop (instead of calling
 	// start() and stop() as it normally should). This is currently the
 	// case of SimulationController with synchronization turned on.
 	//
