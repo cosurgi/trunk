@@ -1,4 +1,4 @@
-// 2014 © Janek Kozicki <cosurgi@gmail.com>
+// 2015 © Janek Kozicki <cosurgi@gmail.com>
 #pragma once
 
 /*! @brief This class provides two modes of operation:
