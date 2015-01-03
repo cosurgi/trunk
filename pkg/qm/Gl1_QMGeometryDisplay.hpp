@@ -25,12 +25,6 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		void glDrawSurfaceInterpolated(const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,Vector3r col);
 		void interpolateExtraWaveValues(const std::vector<std::vector<Real> >& waveVals,std::vector<std::vector<Real> >& extraWaveVals);
 		void interpolateExtraNormalVectors(const std::vector<std::vector<Vector3r> >& wavNormV,std::vector<std::vector<Vector3r> >& extraWavNormV);
-		Real spline36Interpolation(Real dist);
-		Real sinc256Interpolation(Real dist);
-		// FIXME - those two functions can be written as a single template
-		// FIXME, FIXME → move to yade/trunk/lib/smoothing
-		Real     calcInterpolation_2D      (const std::vector<std::vector<Real    > >& val,Real posX, Real posY);
-		Vector3r calcInterpolation_2Dvector(const std::vector<std::vector<Vector3r> >& val,Real posX, Real posY);
 		virtual ~Gl1_QMGeometryDisplay();
 		RENDERS(QMGeometryDisplay);
 		DECLARE_LOGGER;
