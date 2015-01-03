@@ -58,13 +58,13 @@ O.bodies.append(numericalBody)
 potentialBody1 = QMBody()
 potentialBody1.shape     = Box(extents=potentialHalfSize ,wire=True)
 potentialBody1.material  = QMParameters()
-potentialBody1.state     = QMStateBarrier(se3=[potentialCenter1,Quaternion()],potentialValue=potentialValue)
+potentialBody1.state     = QMStateBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)],potentialValue=potentialValue)
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
 potentialBody2.shape     = Box(extents=potentialHalfSize ,wire=True)
 potentialBody2.material  = QMParameters()
-potentialBody2.state     = QMStateBarrier(se3=[potentialCenter2,Quaternion()],potentialValue=potentialValue)
+potentialBody2.state     = QMStateBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)],potentialValue=potentialValue)
 O.bodies.append(potentialBody2)
 
 ## Define timestep for the calculations
