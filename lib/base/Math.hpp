@@ -1,7 +1,15 @@
 // © 2010 Václav Šmilauer <eudoxos@arcig.cz>
+// © 2015 Janek Kozicki <cosurgi@gmail.com>
 #pragma once
 
-#ifdef QUAD_PRECISION
+#ifdef FLOAT128_PRECISION
+	#if BOOST_VERSION<105400
+		#error BOOST_1_54_or_higher_is_required
+	#endif
+	#include <boost/multiprecision/float128.hpp> 
+	using namespace boost::multiprecision;
+	typedef float128 Real;
+#elif QUAD_PRECISION
 	typedef long double quad;
 	typedef quad Real;
 #else
