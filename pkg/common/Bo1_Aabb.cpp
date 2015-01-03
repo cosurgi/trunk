@@ -77,7 +77,7 @@ void Bo1_Box_Aabb::go(	const shared_ptr<Shape>& cm,
 	if(scene->isPeriodic && scene->cell->hasShear()) throw logic_error(__FILE__ " Boxes not (yet?) supported in sheared cell.");
 	
 	if(isnan(se3.orientation.x())||isnan(se3.orientation.y())||isnan(se3.orientation.z())||isnan(se3.orientation.w()))
-		throw logic_error(__FILE__ " box orientation is undefined, you should initialize it properly in python.");
+		throw runtime_error(__FILE__ " box orientation is undefined, you should initialize it properly in python.");
 
 	Matrix3r r=se3.orientation.toRotationMatrix();
 	Vector3r halfSize(Vector3r::Zero());
