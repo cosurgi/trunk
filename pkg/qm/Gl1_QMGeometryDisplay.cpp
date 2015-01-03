@@ -21,6 +21,7 @@ YADE_PLUGIN(
 #include <pkg/common/GLDrawFunctors.hpp>
 #include <lib/opengl/OpenGLWrapper.hpp>
 #include <lib/opengl/GLUtils.hpp>
+#include <lib/smoothing/Spline6Interpolate.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
 bool Gl1_QMGeometryDisplay::absolute=false;
@@ -499,7 +500,7 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 		}
 		glEnd();
 	}
-	//********************* draw back
+	//********************* draw back side of this surface
 	//glCullFace(GL_BACK); // unnecessary
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
 	for(int i=0 ; i<lenX-1 ; i++ )
@@ -599,7 +600,7 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 		}
 		glEnd();
 	}
-	//********************* draw back
+	//********************* draw back side of this surface
 	//glCullFace(GL_BACK); // unnecessary
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
 	for(int i=CHOSEN_RANGE/2 ; i<(lenX-1-CHOSEN_RANGE/2) ; i++ )
@@ -653,49 +654,6 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	glShadeModel(GL_FLAT);
 }
 
-Real Gl1_QMGeometryDisplay::calcInterpolation_2D(
-	const std::vector<std::vector<Real> >& val, // a 2D matrix for which the values will be interpolated
-	Real posX,                            // position X at which to interpolate the values
-	Real posY                             // position Y at which to interpolate the values
-)
-{
-	Real ret=0;
-	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
-	const int STA=1-CHOSEN_RANGE/2; //-2-5;
-	const int END=1+CHOSEN_RANGE/2; // 4+5;
-	int      start_x=(int)(std::floor(posX))+STA
-		,end_x  =(int)(std::floor(posX))+END
-		,start_y=(int)(std::floor(posY))+STA
-		,end_y  =(int)(std::floor(posY))+END;
-	for(int x=start_x ; x<end_x ; ++x)
-		for(int y=start_y ; y<end_y ; ++y)
-			// same FIXME here - add option to select between sinc256 and spline36
-			ret+=val[x][y]*spline36Interpolation((Real)(x)-posX)*spline36Interpolation((Real)(y)-posY);
-	return ret;
-}
-
-Vector3r Gl1_QMGeometryDisplay::calcInterpolation_2Dvector(
-	const std::vector<std::vector<Vector3r> >& val, // a 2D matrix of Vector3r for which the values will be interpolated
-	Real posX,                            // position X at which to interpolate the values
-	Real posY                             // position Y at which to interpolate the values
-)
-{
-	Vector3r ret(0,0,0);
-	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
-	const int STA=1-CHOSEN_RANGE/2; //-2-5;
-	const int END=1+CHOSEN_RANGE/2; // 4+5;
-	int      start_x=(int)(std::floor(posX))+STA
-		,end_x  =(int)(std::floor(posX))+END
-		,start_y=(int)(std::floor(posY))+STA
-		,end_y  =(int)(std::floor(posY))+END;
-	for(int x=start_x ; x<end_x ; ++x)
-		for(int y=start_y ; y<end_y ; ++y)
-			// same FIXME here - add option to select between sinc256 and spline36
-			ret+=val[x][y]*spline36Interpolation((Real)(x)-posX)*spline36Interpolation((Real)(y)-posY);
-	ret.normalize();
-	return ret;
-}
-
 void Gl1_QMGeometryDisplay::interpolateExtraWaveValues(
 	const std::vector<std::vector<Real> >& waveVals,// a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	std::vector<std::vector<Real> >& extraWaveVals  // a 2D matrix shifted by +0.5,+0.5 from the previous one.
@@ -711,7 +669,7 @@ void Gl1_QMGeometryDisplay::interpolateExtraWaveValues(
 	{
 		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2) ; j++ )
 		{
-			extraWaveVals[i][j]=calcInterpolation_2D(waveVals,i+0.5,j+0.5);
+			extraWaveVals[i][j]=spline6InterpolatePoint2D<Real,Real>(waveVals,i+0.5,j+0.5);
 		}
 	}
 }
@@ -731,7 +689,7 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 	{
 		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2) ; j++ )
 		{
-			extraWavNormV[i][j]=calcInterpolation_2Dvector(wavNormV,i+0.5,j+0.5);
+			extraWavNormV[i][j]=spline6InterpolatePoint2D<Vector3r,Real>(wavNormV,i+0.5,j+0.5);
 		}
 	}
 }
@@ -769,32 +727,6 @@ void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& w
 
 }
 
-Real Gl1_QMGeometryDisplay::spline36Interpolation(Real dist)
-{ // http://www.path.unimelb.edu.au/%7Edersch/interpolator/interpolator.html
-// this interpolation was also described in
-// J. Kozicki , J. Tejchman , "Experimental investigations of strain
-// localization in concrete using Digital Image Correlation (DIC) technique".
-// Archives of Hydro–Engineering and Environmental Mechanics , Vol. 54, No 1,
-// pages 3–24, 2007
-	const int SPLINE_36_RANGE = 6;
-	dist=std::abs(dist);
-	return dist<0 ? 0 : dist<1 ? (
-		(   13.0/11.0  * dist - 453.0/ 209.0 ) * dist -   3.0/ 209.0  
-	) * dist + 1.0 : dist<2 ? (
-		( -  6.0/11.0  * (dist-1) + 270.0/ 209.0 ) * (dist-1) - 156.0/ 209.0  
-	) *(dist-1) : dist<3 ? (
-		(    1.0/11.0  * (dist-2) -  45.0/ 209.0 ) * (dist-2) +  26.0/ 209.0  
-	) *(dist-2) : 0;
-}
-
-Real Gl1_QMGeometryDisplay::sinc256Interpolation(Real dist)
-{ // http://www.path.unimelb.edu.au/%7Edersch/interpolator/interpolator.html
-	const int SINC_256_RANGE = 16;
-	dist=std::abs(dist)*Mathr::PI;
-	if(dist==0) return 1;
-	return ( std::sin(dist) / (dist) ) * ( std::sin(dist / 8.0) / (dist/8.0) );
-}
-
 #endif
 
 
@@ -806,7 +738,7 @@ Real Gl1_QMGeometryDisplay::sinc256Interpolation(Real dist)
 
 #ifdef YADE_OPENGL
 
-// This will come later, when I will have some interactions going on....
+// This will come later, when I will have some interactions going on.... FIXME - draw potentials !!
 //	CREATE_LOGGER(Gl1_QMInteractionPhysics);
 //	bool Gl1_QMInteractionPhysics::abs=true;
 //	bool Gl1_QMInteractionPhysics::real=false;
