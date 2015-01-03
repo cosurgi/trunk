@@ -74,8 +74,11 @@ void Bo1_Box_Aabb::go(	const shared_ptr<Shape>& cm,
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bv.get());
 
-	if(scene->isPeriodic && scene->cell->hasShear()) throw logic_error(__FILE__ "Boxes not (yet?) supported in sheared cell.");
+	if(scene->isPeriodic && scene->cell->hasShear()) throw logic_error(__FILE__ " Boxes not (yet?) supported in sheared cell.");
 	
+	if(isnan(se3.orientation.x())||isnan(se3.orientation.y())||isnan(se3.orientation.z())||isnan(se3.orientation.w()))
+		throw logic_error(__FILE__ " box orientation is undefined.");
+
 	Matrix3r r=se3.orientation.toRotationMatrix();
 	Vector3r halfSize(Vector3r::Zero());
 	for( int i=0; i<3; ++i )
