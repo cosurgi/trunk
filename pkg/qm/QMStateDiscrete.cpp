@@ -39,11 +39,12 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 		tableValuesPosition[0][0].resize(gridSize,0); // x position coordinate
 
 		// Fill the table by copying from creator
-		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
+// FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
+		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			tableValuesPosition[0][0][i] = creator->getValPos(Vector3r(x,0,0));
-			tablePosition      [0][0][i] = x;
+// FIXME		tablePosition      [0][0][i] = x;
 		}
 	} else if(this->dim == 2) {
 		assert( positionSize[0]==positionSize[1]); // FIXME - think if it's really necessary
@@ -54,7 +55,8 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 		};
 
 		// Fill the table by copying from creator
-		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
+// FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
+		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
@@ -74,7 +76,8 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 		};
 
 		// Fill the table by copying from creator
-		tableWavenumber=tableValueWavenumber=tablePosition=tableValuesPosition;
+// FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
+		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
