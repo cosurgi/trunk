@@ -8,7 +8,6 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
-#include <time.h>
 
 /*********************************************************************************
 *

@@ -21,7 +21,6 @@ YADE_PLUGIN(
 #include <pkg/common/GLDrawFunctors.hpp>
 #include <lib/opengl/OpenGLWrapper.hpp>
 #include <lib/opengl/GLUtils.hpp>
-#include <lib/computational-geometry/MarchingCube.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
 bool Gl1_QMGeometryDisplay::absolute=false;
@@ -69,7 +68,7 @@ void Gl1_QMGeometryDisplay::go(
 // 1D LINES
 	if(partReal) {
 		glBegin(GL_LINE_STRIP);
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // display partReal part in bluish color
+		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // FIXME - color should be returned by some function display partReal part in bluish color
 		for(Real x=startX ; x<endX ; x+=step )
 		{
 			//std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0[0],0,packet->k0[0],packet->m,packet->a,packet->hbar);
@@ -264,7 +263,7 @@ void Gl1_QMGeometryDisplay::go(
 			if(tooLong()) break;
 		}
 	}
-	} else if(packet->dim == 3) {
+	} else if(packet->dim == 3) { // FIXME - add wire==true option, and draw just wires of triangles
 		// FIXME,FIXME - clean up the mess. Draw real, imag, probability, etc.....
 		MarchingCube mc;
 		int gridSize=int((endX-startX)/step);
@@ -294,12 +293,10 @@ void Gl1_QMGeometryDisplay::go(
 				int k=0;
 				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
 				{
-					waveVals3D[i][j][k]=std::real(packet->getValPos(Vector3r(x,y,z)));
-//					std::cout << waveVals3D[i][j][k] << " ";
+					waveVals3D[i][j][k]=std::real(packet->getValPos(Vector3r(x,y,z))); // FIXME,FIXME - jakoś inaczej przechowywać
+					// w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
 				}
-//				std::cout << i << " " << j << "\n";
 			}
-//			std::cout << "\n";
 			if(tooLong()) break;
 		}
 //		std::cout << "---------------------------------------\n";
@@ -307,50 +304,101 @@ void Gl1_QMGeometryDisplay::go(
 		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
 	
 		mc.computeTriangulation(waveVals3D,threshold3D);
-		const vector<Vector3r>& triangles 	= mc.getTriangles();
-		int nbTriangles				= mc.getNbTriangles();
-		const vector<Vector3r>& normals 	= mc.getNormals();	
-//		const GLfloat pos[4]	= {-0.8,1.0,1.0,1.0};
-//		const GLfloat ambientColor[4]	= {0.5,0.5,0.5,1.0};	
-//		glLightfv(GL_LIGHT0, GL_POSITION, pos);
-//		glClearColor(0.97,0.97,0.97,1.0);
-//		glLightModelfv(GL_LIGHT_MODEL_AMBIENT,ambientColor); // 2D
-//		glEnable(GL_LIGHT0); // 2D
-		if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
-		glEnable(GL_NORMALIZE);
-		glBegin(GL_TRIANGLES);
-//		glColor3f(0.4,0.4,1.0);
-
-//		std::cout << triangles.size() << "\n";
-//		std::cout << nbTriangles      << "\n";
-//		std::cout << normals.size()   << "\n";
-
-		for(int i=0;i<3*nbTriangles;++i)
-		{
-			glNormal3v(normals[  i]);
-			glVertex3v(triangles[i]);     // * step?, scale, size? → cerr...
-			glNormal3v(normals[++i]);
-			glVertex3v(triangles[i]);
-			glNormal3v(normals[++i]);
-			glVertex3v(triangles[i]);
-		}
-		glEnd();
-		
-		//Vector3r size = max-min;                  /// FIXME - sprawdzić po co to
-//		glPushMatrix();
-//		glDisable(GL_LIGHTING);
-//		glColor3f(1.0,1.0,1.0);
-		//glScalef(size[0],size[1],size[2]);        /// FIXME - sprawdzić po co to
-//			glutWireCube(1);
-//		glEnable(GL_LIGHTING); // 2D
-//		glPopMatrix();
+		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))  ); // FIXME - color should be returned by some function
 	} // FIXME END - merge those four into one loop
-
-// FIXING ..... std::cerr << "3D plotting not ready yet\n";
+	if(partImaginary) { // FIXME - merge those four into one loop
+		int i=0;
+		for(Real x=startX ; x<=endX ; x+=step,i++ )
+		{
+			int j=0;
+			for(Real y=startY ; y<=endY ; y+=step,j++ )
+			{
+				int k=0;
+				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
+				{
+					waveVals3D[i][j][k]=std::imag(packet->getValPos(Vector3r(x,y,z)));
+				}
+			}
+			if(tooLong()) break;
+		}
+//		std::cout << "---------------------------------------\n";
+		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
+		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
+	
+		mc.computeTriangulation(waveVals3D,threshold3D);
+		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))  ); // FIXME - color should be returned by some function
+	} // FIXME END - merge those four into one loop
+	if(absolute) { // FIXME - merge those four into one loop
+		int i=0;
+		for(Real x=startX ; x<=endX ; x+=step,i++ )
+		{
+			int j=0;
+			for(Real y=startY ; y<=endY ; y+=step,j++ )
+			{
+				int k=0;
+				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
+				{
+					waveVals3D[i][j][k]=std::abs(packet->getValPos(Vector3r(x,y,z)));
+				}
+			}
+			if(tooLong()) break;
+		}
+//		std::cout << "---------------------------------------\n";
+		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
+		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
+	
+		mc.computeTriangulation(waveVals3D,threshold3D);
+		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))  ); // FIXME - color should be returned by some function
+	} // FIXME END - merge those four into one loop
+	if(probability) { // FIXME - merge those four into one loop
+		int i=0;
+		for(Real x=startX ; x<=endX ; x+=step,i++ )
+		{
+			int j=0;
+			for(Real y=startY ; y<=endY ; y+=step,j++ )
+			{
+				int k=0;
+				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
+				{
+					waveVals3D[i][j][k]=std::real( (packet->getValPos(Vector3r(x,y,z)))*std::conj(packet->getValPos(Vector3r(x,y,z))) );
+				}
+			}
+			if(tooLong()) break;
+		}
+//		std::cout << "---------------------------------------\n";
+		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
+		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
+	
+		mc.computeTriangulation(waveVals3D,threshold3D);
+		glDrawMarchingCube(mc,           col                                       ); // FIXME - color should be returned by some function
+	} // FIXME END - merge those four into one loop
 
 	} else {
 		std::cerr << "4D or more plotting not ready yet\n";
 	};
+};
+		
+void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
+{
+	prepareGlSurfaceMaterial();
+	glColor3v(col);
+
+	const vector<Vector3r>& triangles 	= mc.getTriangles();
+	int nbTriangles				= mc.getNbTriangles();
+	const vector<Vector3r>& normals 	= mc.getNormals();	
+	if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
+	glEnable(GL_NORMALIZE);
+	glBegin(GL_TRIANGLES);
+	for(int i=0;i<3*nbTriangles;++i)
+	{
+		glNormal3v(normals[  i]);
+		glVertex3v(triangles[i]);     // * step?, scale, size? → cerr...
+		glNormal3v(normals[++i]);
+		glVertex3v(triangles[i]);
+		glNormal3v(normals[++i]);
+		glVertex3v(triangles[i]);
+	}
+	glEnd();	
 };
 
 void Gl1_QMGeometryDisplay::calcNormalVectors(
