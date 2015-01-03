@@ -2,7 +2,11 @@
 template<> const Real Math<Real>::EPSILON = DBL_EPSILON;
 template<> const Real Math<Real>::ZERO_TOLERANCE = 1e-20;
 template<> const Real Math<Real>::MAX_REAL = DBL_MAX;
+#ifdef FLOAT128_PRECISION
+template<> const Real Math<Real>::PI = 3.1415926535897932384626433832795028841971693993751058Q;
+#else
 template<> const Real Math<Real>::PI = 4.0*std::atan(1.0);
+#endif
 template<> const std::complex<Real> Math<Real>::I = std::complex<Real>(0,1);
 template<> const Real Math<Real>::E = std::exp((Real)(1.0));
 template<> const Real Math<Real>::TWO_PI = 2.0*Math<Real>::PI;
