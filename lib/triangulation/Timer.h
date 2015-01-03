@@ -17,6 +17,8 @@ using std::string;
 // or last reset. It counts only the time where it is in the running
 // state. The time information is given in seconds.
 
+// FIXME: git move lib/triangulation/Timer.h lib/time/Timer.h
+
 class Real_timer {
 private:
 	clock_t	T1;
