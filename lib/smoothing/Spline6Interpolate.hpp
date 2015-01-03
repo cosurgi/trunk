@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <cassert>
-#include <cmath>
+#include "lib/base/Math.hpp"
 
 /* Spline6 interpolation function, in 1D, 2D and 3D:
  * valueType spline6InterpolatePoint1D(const std::vector<valueType>                            & values1D, floatType posX                                )
@@ -51,7 +51,7 @@ valueType  spline6InterpolatePoint1D(
 	floatType posX
 )
 {
-	valueType ret(0);
+	valueType ret(ZeroInitializer<valueType>());
 	static const size_t CHOSEN_RANGE=6;
 	static const size_t STA=1-CHOSEN_RANGE/2;
 	static const size_t END=1+CHOSEN_RANGE/2;
@@ -72,7 +72,7 @@ valueType  spline6InterpolatePoint2D(
 	floatType posX, floatType posY
 )
 {
-	valueType ret(0);
+	valueType ret(ZeroInitializer<valueType>());
 	static const size_t CHOSEN_RANGE=6;
 	static const size_t STA=1-CHOSEN_RANGE/2;
 	static const size_t END=1+CHOSEN_RANGE/2;
@@ -98,7 +98,7 @@ valueType  spline6InterpolatePoint3D(
 	floatType posX, floatType posY, floatType posZ
 )
 {
-	valueType ret(0);
+	valueType ret(ZeroInitializer<valueType>());
 	static const size_t CHOSEN_RANGE=6;
 	static const size_t STA=1-CHOSEN_RANGE/2;
 	static const size_t END=1+CHOSEN_RANGE/2;
