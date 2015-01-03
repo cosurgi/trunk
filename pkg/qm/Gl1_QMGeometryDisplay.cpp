@@ -25,8 +25,8 @@ YADE_PLUGIN(
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
 bool Gl1_QMGeometryDisplay::absolute=false;
 bool Gl1_QMGeometryDisplay::partReal=true;
-bool Gl1_QMGeometryDisplay::partImaginary=false;
-bool Gl1_QMGeometryDisplay::probability=false;
+bool Gl1_QMGeometryDisplay::partImaginary=true;
+bool Gl1_QMGeometryDisplay::probability=true;
 bool Gl1_QMGeometryDisplay::renderSmoothing=true;
 bool Gl1_QMGeometryDisplay::renderInterpolate=false;
 int  Gl1_QMGeometryDisplay::renderSpecular=10;
@@ -45,7 +45,7 @@ void Gl1_QMGeometryDisplay::go(
 	const GLViewInfo&
 )
 {
-	wallClock = getClock();
+	timeLimit.readWallClock();
 	if(not(absolute or partReal or partImaginary or probability)) return; // nothing to draw
 	QMGeometryDisplay* geometry       = static_cast<QMGeometryDisplay*>(shape.get());
 	QMState*           packet         = static_cast<QMState*>(state.get());
@@ -122,7 +122,7 @@ void Gl1_QMGeometryDisplay::go(
 			{
 				waveVals[i][j]=std::real(packet->getValPos(Vector3r(x,y,0)));
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
 		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
@@ -136,7 +136,7 @@ void Gl1_QMGeometryDisplay::go(
 			{
 				waveVals[i][j]=std::imag(packet->getValPos(Vector3r(x,y,0)));
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))); // display partImaginary in reddish color
 	}
@@ -149,7 +149,7 @@ void Gl1_QMGeometryDisplay::go(
 			{
 				waveVals[i][j]=std::abs(packet->getValPos(Vector3r(x,y,0)));
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))); // display absolute value in geenish color
 	}
@@ -163,7 +163,7 @@ void Gl1_QMGeometryDisplay::go(
 				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
 				waveVals[i][j]=std::real((wfval)*std::conj(wfval));
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		drawSurface(waveVals,col); // for probability use original color
 	}
@@ -179,7 +179,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		for(Real y=startY ; y<=endY ; y+=step )
 		{
@@ -189,7 +189,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 	}
 	if(partImaginary) {
@@ -202,7 +202,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		for(Real y=startY ; y<=endY ; y+=step )
 		{
@@ -212,7 +212,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 	}
 	if(absolute) {
@@ -225,7 +225,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		for(Real y=startY ; y<=endY ; y+=step )
 		{
@@ -235,7 +235,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 	}
 	if(probability) {
@@ -249,7 +249,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 		for(Real y=startY ; y<=endY ; y+=step )
 		{
@@ -260,7 +260,7 @@ void Gl1_QMGeometryDisplay::go(
 				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
 			}
 			glEnd();
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 	}
 	} else if(packet->dim == 3) { // FIXME - add wire==true option, and draw just wires of triangles
@@ -297,7 +297,7 @@ void Gl1_QMGeometryDisplay::go(
 					// w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
 				}
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 //		std::cout << "---------------------------------------\n";
 		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
@@ -319,7 +319,7 @@ void Gl1_QMGeometryDisplay::go(
 					waveVals3D[i][j][k]=std::imag(packet->getValPos(Vector3r(x,y,z)));
 				}
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 //		std::cout << "---------------------------------------\n";
 		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
@@ -341,7 +341,7 @@ void Gl1_QMGeometryDisplay::go(
 					waveVals3D[i][j][k]=std::abs(packet->getValPos(Vector3r(x,y,z)));
 				}
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 //		std::cout << "---------------------------------------\n";
 		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
@@ -363,7 +363,7 @@ void Gl1_QMGeometryDisplay::go(
 					waveVals3D[i][j][k]=std::real( (packet->getValPos(Vector3r(x,y,z)))*std::conj(packet->getValPos(Vector3r(x,y,z))) );
 				}
 			}
-			if(tooLong()) break;
+			if(timeLimit.tooLong(stepWait)) break;
 		}
 //		std::cout << "---------------------------------------\n";
 		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)

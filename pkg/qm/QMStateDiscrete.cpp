@@ -18,7 +18,6 @@ QMStateDiscrete::~QMStateDiscrete(){};
 
 void QMStateDiscrete::postLoad(QMStateDiscrete&)
 {
-	lastError = 0;
 	std::cerr<<"\nQMStateDiscrete postLoad\n";
 	std::cerr<<"firstRun="<<firstRun<<"\n";
 	if(not firstRun) return;
@@ -98,6 +97,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 /// return complex quantum aplitude at given positional representation coordinates
 Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 {
+	double errorTime(2);
 	int i( (xyz[0]-startX)/stepPos ), // FIXME - maybe add interpolation?
 	    j( (xyz[1]-startY)/stepPos ),
 	    k( (xyz[2]-startZ)/stepPos );
@@ -106,7 +106,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 			if    ( (i>=0) and (i<gridSize))
 				return tableValuesPosition[0][0][i];
 			//else throw std::runtime_error("QMStateDiscrete::getValPos "+boost::lexical_cast<string>(i)+" outside bounds.");
-			else if(i==gridSize or !errorAllowed()) return 0; // skip silently
+			else if(i==gridSize or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
 			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" outside bounds.";return 0;};
 		break;
 
@@ -114,7 +114,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 			if(   ( (i>=0) and (i<gridSize))
 			  and ( (j>=0) and (j<gridSize)))
 				return tableValuesPosition[0][i][j];
-			else if(i==gridSize or j==gridSize or !errorAllowed()) return 0; // skip silently
+			else if(i==gridSize or j==gridSize or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
 			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" or "<<j<<" outside bounds.";return 0;};
 			//else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
 		break;
@@ -124,7 +124,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 			  and ( (j>=0) and (j<gridSize))
 			  and ( (k>=0) and (k<gridSize)))
 				return tableValuesPosition[i][j][k];
-			else if(i==gridSize or j==gridSize or k==gridSize or !errorAllowed()) return 0; // skip silently
+			else if(i==gridSize or j==gridSize or k==gridSize or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
 			else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
 		break;
 
