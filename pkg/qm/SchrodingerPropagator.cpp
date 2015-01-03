@@ -45,6 +45,9 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 // !! at least one virtual function in the .cpp file
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
+// for (slow & safe) 2D, check http://stackoverflow.com/questions/17194451/how-to-use-eigen-fft-with-matrixxf
+// for faster      - fftw3
+//     even faster - CUDA fftw backend
 void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {	
 	std::vector<Complexr> in(inp);
@@ -53,7 +56,7 @@ void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,st
 	static Eigen::FFT<Real>  fft;
 	fft.fwd(out,in);                      // in mathematica that's InverseFourier[]*sqrt(N)
 	Real factor=std::sqrt(out.size());
-	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N)
+	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N) // FIXME - probably unnecessary, just a constant
 
 	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
@@ -66,7 +69,7 @@ void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,st
 	static Eigen::FFT<Real>  fft;
 	fft.inv(out,in);                      // in mathematica that's Fourier[]/sqrt(N)
 	Real factor=std::sqrt(out.size());
-	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N)
+	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N) // FIXME - probably unnecessary, just a constant
 	
 	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
