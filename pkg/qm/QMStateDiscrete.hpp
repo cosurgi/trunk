@@ -8,7 +8,7 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
-#include <time.h>
+#include <lib/time/TimeLimit.hpp>
 
 /*********************************************************************************
 *
@@ -82,12 +82,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
 		//Complexr3D /*Vector3r3D*/ tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
 	private:
-		Real startX,startY,startZ,endX,endY,endZ,stepPos;
-	
-		// FIXME - put this in some other nice place.
-		Real lastError;
-		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
-		bool errorAllowed(){if ( (getClock() - lastError)>2) {lastError=getClock(); return true;} else return false; }; // report error no more frequent than once per 2 seconds.
+		Real startX,startY,startZ,endX,endY,endZ,stepPos; // FIXME ? is it necessary?
+		
+		TimeLimit timeLimit;
 		
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);

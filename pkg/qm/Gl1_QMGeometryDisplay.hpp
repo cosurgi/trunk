@@ -4,7 +4,7 @@
 
 #include <pkg/common/GLDrawFunctors.hpp>
 #include "QMGeometryDisplay.hpp"
-#include <time.h>
+#include <lib/time/TimeLimit.hpp>
 #include <lib/computational-geometry/MarchingCube.hpp>
 
 /*********************************************************************************
@@ -46,9 +46,9 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 // class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
 			((bool,absolute         ,false,,"Show absolute probability"))
-			((bool,partImaginary    ,false,,"Show only imaginary component"))
+			((bool,partImaginary    ,true,,"Show only imaginary component"))
 			((bool,partReal         ,true,,"Show only real component"))
-			((bool,probability      ,false,,"Show probability, which is squared absolute value"))
+			((bool,probability      ,true,,"Show probability, which is squared absolute value"))
 			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
@@ -59,10 +59,10 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			((Real,stepWait         ,0.1,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.00000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 		);
-	private: // FIXME - after redundancy is removed, this should be removed too
-		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
-		bool tooLong(){return (getClock() - wallClock)>stepWait;};
-		Real startX,startY,startZ,endX,endY,endZ,wallClock;
+	private:
+		TimeLimit timeLimit;
+		// FIXME - after redundancy is removed, this should be removed too
+		Real startX,startY,startZ,endX,endY,endZ;
 };
 REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
 
