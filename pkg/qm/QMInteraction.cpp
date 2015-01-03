@@ -115,7 +115,7 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 
 	igeom->potentialValues = val;
 	c->geom = igeom;
-	std::cerr <<"igeom created in QMInteraction\n";
+	std::cerr <<"####### igeom created in QMInteraction\n";
 	return true;
 }
 
@@ -146,7 +146,7 @@ void Ip2_QMParameters_QMParameters_QMInteractionPhysics::go(
 	const shared_ptr<QMParameters>& q2 = YADE_PTR_CAST<QMParameters>(pp2);
 	
 	interaction->phys = shared_ptr<QMInteractionPhysics>(new QMInteractionPhysics());
-	std::cerr <<"iphys created in QMInteraction\n";
+	std::cerr <<"####### iphys created in QMInteraction\n";
 }
 
 CREATE_LOGGER(Ip2_Material_QMParameters_QMInteractionPhysics);
