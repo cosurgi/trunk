@@ -9,6 +9,10 @@
 #include <functional>   // std::plus, std::multiplies
 #include <algorithm>    // std::transform
 
+#ifdef YADE_FFTW3
+#include <fftw3.h>
+#endif
+
 YADE_PLUGIN(
 	(SchrodingerAnalyticPropagator)
 	(SchrodingerKosloffPropagator)
@@ -46,36 +50,104 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
 // for (slow & safe) 2D, check http://stackoverflow.com/questions/17194451/how-to-use-eigen-fft-with-matrixxf
+//			FFT<float> fft;
+// 			Eigen::Matrix<float, dim_x, dim_y> in = setMatrix();
+// 			Eigen::Matrix<complex<float>, dim_x, dim_y> out;
+// 			
+// 			for (int k = 0; k < in.rows(); k++) {
+// 			    Eigen::Matrix<complex<float>, dim_x, 1> tmpOut;
+// 			    fft.fwd(tmpOut, in.row(k));
+// 			    out.row(k) = tmpOut;
+// 			}
+// 			
+// 			for (int k = 0; k < in.EIG_MAT.cols(); k++) {
+// 			    Eigen::Matrix<complex<float>, 1, dim_y> tmpOut;
+// 			    fft.fwd(tmpOut, out.col(k));
+// 			    out.col(k) = tmpOut;
+// 			}
 // for faster      - fftw3
 //     even faster - CUDA fftw backend
-void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& out)
-{	
+void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& outp)
+{
+	static bool mesg(false);
+#ifdef YADE_FFTW3
+	if(!mesg){std::cout<<"\n--> Using fftw3 library!\n\n";mesg=true;};
+
+	fftw_complex *in, *out;
+	fftw_plan p;
+	int N(inp.size());
+	in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+	p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+	
+	for(int i=0;i<N;i++) {
+		in[i][0]=std::real(inp[i]);
+		in[i][1]=std::imag(inp[i]);
+	}
+
+	fftw_execute(p);
+	
+	for(int i=0;i<N;i++) {
+		outp[i]=std::complex<Real>(out[i][0],out[i][1]);
+	}
+	
+	fftw_destroy_plan(p);
+	fftw_free(in);
+	fftw_free(out);
+//std::cout << "doFFT_1D fftw3\n";
+#else
+	if(!mesg){std::cout<<"\n--> Warning: without fftw3 library calculations are a lot slower!\n\n";mesg=true;};
 //	std::vector<Complexr> in(inp);
 // ROTATE kTable instead.
 //	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
 	// FIXME - muszę sprawdzić dokładniej, ale to  ↑  chyba dlatego ze mathematica numeruje od 1 a C++ od 0.
 	static Eigen::FFT<Real>  fft;
-	fft.fwd(out,inp);                      // in mathematica that's InverseFourier[]*sqrt(N)
+	fft.fwd(outp,inp);                      // in mathematica that's InverseFourier[]*sqrt(N)
 //	Real factor=std::sqrt(out.size());
 //	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N) // FIXME - probably unnecessary, just a constant
-
 // ROTATE kTable instead.
 //	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
+//std::cout << "doFFT_1D no fftw3\n";
+#endif
 }
 
-void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& out)
+void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& outp)
 {
+#ifdef YADE_FFTW3
+	fftw_complex *in, *out;
+	fftw_plan p;
+	int N(inp.size());
+	in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+	p = fftw_plan_dft_1d(N, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+	
+	for(int i=0;i<N;i++) {
+		in[i][0]=std::real(inp[i]);
+		in[i][1]=std::imag(inp[i]);
+	}
+
+	fftw_execute(p);
+	
+	for(int i=0;i<N;i++) {
+		outp[i]=std::complex<Real>(out[i][0],out[i][1])/((Real)(N));
+	}
+	
+	fftw_destroy_plan(p);
+	fftw_free(in);
+	fftw_free(out);	
+//std::cout << "doIFFT_1D fftw3\n";
+#else
 //	std::vector<Complexr> in(inp);
 // ROTATE kTable instead.
 //	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
-
 	static Eigen::FFT<Real>  fft;
-	fft.inv(out,inp);                      // in mathematica that's Fourier[]/sqrt(N)
+	fft.inv(outp,inp);                      // in mathematica that's Fourier[]/sqrt(N)
 //	Real factor=std::sqrt(out.size());
 //	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N) // FIXME - probably unnecessary, just a constant
-	
 // ROTATE kTable instead.
 //	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
+//std::cout << "doIFFT_1D no fftw3\n";
+#endif
 }
 
 void SchrodingerKosloffPropagator::fftTest()
@@ -100,6 +172,7 @@ void SchrodingerKosloffPropagator::fftTest()
 // debug output:
 // FIXME, FIXME - add this to yade --check or test.
 // FIXME, FIXME - this is important, because various FFT libraries divide by sqrt(N) or some other numbers.
+//////////////////// that output was when I used rotateLeft(size/2-1)
 // (10,-2.14306e-16), (20,4.71028e-16), (1,2.14306e-16), (-4,0), (5,-2.14306e-16), (6,-4.71028e-16), (1.57009e-16,2.14306e-16), (1,0), 
 // (-0.767767,3.44975), (-10.253,4.94975), (-2.76777,-6.44975), (13.7886,0), (-2.76777,6.44975), (-10.253,-4.94975), (-0.767767,-3.44975), (2.47487,0), 
 }
