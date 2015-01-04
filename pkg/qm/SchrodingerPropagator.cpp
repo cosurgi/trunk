@@ -51,27 +51,31 @@ SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {	
 	std::vector<Complexr> in(inp);
-	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
-	
+// ROTATE kTable instead.
+//	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
+	// FIXME - muszę sprawdzić dokładniej, ale to  ↑  chyba dlatego ze mathematica numeruje od 1 a C++ od 0.
 	static Eigen::FFT<Real>  fft;
 	fft.fwd(out,in);                      // in mathematica that's InverseFourier[]*sqrt(N)
 	Real factor=std::sqrt(out.size());
-	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N) // FIXME - probably unnecessary, just a constant
+//	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N) // FIXME - probably unnecessary, just a constant
 
-	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
+// ROTATE kTable instead.
+//	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
 
 void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {
 	std::vector<Complexr> in(inp);
-	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
-	
+// ROTATE kTable instead.
+//	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
+
 	static Eigen::FFT<Real>  fft;
 	fft.inv(out,in);                      // in mathematica that's Fourier[]/sqrt(N)
 	Real factor=std::sqrt(out.size());
-	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N) // FIXME - probably unnecessary, just a constant
+//	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N) // FIXME - probably unnecessary, just a constant
 	
-	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
+// ROTATE kTable instead.
+//	std::rotate(out.rbegin(),out.rbegin()+(out.size()/2-0),out.rend()); // prepare output: rotate to right by (size/2-1)
 }
 
 void SchrodingerKosloffPropagator::fftTest()
@@ -126,8 +130,12 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& ps
 		int i(0);
 		FOREACH(Real& k, kTable) k=-1.0*std::pow(psi->iToK(i++),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
 		hasTable=true;
+		std::rotate(kTable.begin(),kTable.begin()+(kTable.size()/2-0),kTable.end()); // ROTATE kTable instead.
 	}
-
+// FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
+//        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
+//        i osobno dopisać metody do odczytywanie indywidualnych punktów w ileśD ?
+//
 	std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
 	FOREACH(Complexr& psi_i, psiN1_tmp1) psi_i*=(1+G/R);           // ψ₁: psiN1_tmp1=(1+G/R)ψ₀
 	
