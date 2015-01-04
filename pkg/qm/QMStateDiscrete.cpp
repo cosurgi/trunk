@@ -20,7 +20,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 {
 	std::cerr<<"\nQMStateDiscrete postLoad\n";
 	std::cerr<<"firstRun="<<firstRun<<"\n";
-	if(not firstRun) return;
+	if(firstRun) { // initialize from creator upon firstRun
 	firstRun = false;
 	std::cerr<<"positionSize="<<positionSize<<"\n";
 	std::cerr<<"gridSize="<<gridSize<<"\n";
@@ -39,7 +39,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 
 		// Fill the table by copying from creator
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
+//		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			tableValuesPosition[0][0][i] = creator->getValPos(Vector3r(x,0,0));
@@ -55,7 +55,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 
 		// Fill the table by copying from creator
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
+//		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
@@ -76,7 +76,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 
 		// Fill the table by copying from creator
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
+//		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
 			int j=0;
@@ -92,6 +92,9 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	} else {
 		throw std::runtime_error("QMStateDiscrete() supports in 1,2 or 3 dimensions.");
 	}
+	} else { // not a firstRun, we have been just loaded from file
+	};
+	//////////////FIXME qtHide="";
 };
 
 /// return complex quantum aplitude at given positional representation coordinates

@@ -50,13 +50,13 @@ SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 //     even faster - CUDA fftw backend
 void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {	
-	std::vector<Complexr> in(inp);
+//	std::vector<Complexr> in(inp);
 // ROTATE kTable instead.
 //	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
 	// FIXME - muszę sprawdzić dokładniej, ale to  ↑  chyba dlatego ze mathematica numeruje od 1 a C++ od 0.
 	static Eigen::FFT<Real>  fft;
-	fft.fwd(out,in);                      // in mathematica that's InverseFourier[]*sqrt(N)
-	Real factor=std::sqrt(out.size());
+	fft.fwd(out,inp);                      // in mathematica that's InverseFourier[]*sqrt(N)
+//	Real factor=std::sqrt(out.size());
 //	FOREACH(Complexr& c, out ) c/=factor; // so I need to divide by sqrt(N) // FIXME - probably unnecessary, just a constant
 
 // ROTATE kTable instead.
@@ -65,13 +65,13 @@ void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,st
 
 void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& out)
 {
-	std::vector<Complexr> in(inp);
+//	std::vector<Complexr> in(inp);
 // ROTATE kTable instead.
 //	std::rotate(in.begin(),in.begin()+(in.size()/2-0),in.end()); // prepare input: rotate to left by (size/2-1)
 
 	static Eigen::FFT<Real>  fft;
-	fft.inv(out,in);                      // in mathematica that's Fourier[]/sqrt(N)
-	Real factor=std::sqrt(out.size());
+	fft.inv(out,inp);                      // in mathematica that's Fourier[]/sqrt(N)
+//	Real factor=std::sqrt(out.size());
 //	FOREACH(Complexr& c, out ) c*=factor; // so I need to multiply by sqrt(N) // FIXME - probably unnecessary, just a constant
 	
 // ROTATE kTable instead.
