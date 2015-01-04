@@ -40,6 +40,7 @@ INCLUDE(FindCGAL)
 INCLUDE(FindNumPy)
 INCLUDE(FindLoki)
 INCLUDE(FindPythonModule)
+INCLUDE(FindFFTW)
 INCLUDE(GNUInstallDirs)
 #===========================================================
 # HACK!!! If the version of gcc is 4.8 or greater, we add -ftrack-macro-expansion=0 
@@ -137,6 +138,7 @@ OPTION(ENABLE_SPH "Enable SPH" OFF)
 OPTION(ENABLE_LBMFLOW "Enable LBM engine (very experimental)" ON)
 OPTION(ENABLE_LIQMIGRATION "Enable liquid control (very experimental), see [Mani2013] for details" OFF)
 OPTION(ENABLE_MASK_ARBITRARY "Enable arbitrary precision of bitmask variables (only Body::groupMask yet implemented) (experimental). Use -DMASK_ARBITRARY_SIZE=int to set number of used bits (256 by default)" OFF)
+OPTION(ENABLE_FFTW3 "Enable libfftw3 (used by Quantum Mechanics)" ${DEFAULT})
 
 #===========================================================
 # Use Eigen3 by default
@@ -377,7 +379,26 @@ IF(ENABLE_MASK_ARBITRARY)
 ELSE(ENABLE_MASK_ARBITRARY)
   SET(DISABLED_FEATS "${DISABLED_FEATS} MASK_ARBITRARY")
 ENDIF(ENABLE_MASK_ARBITRARY)
-
+#===========================================================
+IF(ENABLE_FFTW3)
+  # FIXME - instead of 'double' default, I should put more IFs here and pick: double, long-double, float128
+  #         http://www.fftw.org/fftw3_doc/Precision.html#Precision
+  FIND_PACKAGE(FFTW COMPONENTS double)
+  IF(FFTW3_FOUND)
+    INCLUDE_DIRECTORIES(${FFTW3_INCLUDE_DIRS})
+    # FIXME - same as above different libs to link with
+    LINK_DIRECTORIES( ${FFTW3_LIBRARY_DIRS} )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_FFTW3")
+    MESSAGE(STATUS "Found FFTW3")
+    SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} FFTW3")
+  ELSE(FFTW3_FOUND)
+    MESSAGE(STATUS "FFTW3 NOT found")
+    SET(ENABLE_FFTW3 OFF)
+    SET(DISABLED_FEATS "${DISABLED_FEATS} FFTW3")
+  ENDIF(FFTW3_FOUND)
+ELSE(ENABLE_FFTW3)
+  SET(DISABLED_FEATS "${DISABLED_FEATS} FFTW3")
+ENDIF(ENABLE_FFTW3)
 #===========================================================
 
 IF (NOT INSTALL_PREFIX)
