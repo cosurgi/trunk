@@ -46,6 +46,7 @@ INCLUDE(FindCGAL)
 INCLUDE(FindNumPy)
 INCLUDE(FindLoki)
 INCLUDE(FindPythonModule)
+INCLUDE(FindFFTW)
 INCLUDE(GNUInstallDirs)
 
 
@@ -150,6 +151,7 @@ OPTION(ENABLE_POTENTIAL_BLOCKS "Enable PotentialBlocks" OFF)
 OPTION(ENABLE_DEFORM "Enable Deformation Engine" OFF)
 OPTION(CHOLMOD_GPU "Enable GPU acceleration flow engine direct solver" OFF)
 OPTION(ENABLE_THERMAL "Enable thermal engine (experimental)" OFF)
+OPTION(ENABLE_FFTW3 "Enable libfftw3 (used by Quantum Mechanics)" ${DEFAULT})
 
 #===========================================================
 # Use Eigen3 by default
@@ -450,7 +452,26 @@ IF(ENABLE_MASK_ARBITRARY)
 ELSE(ENABLE_MASK_ARBITRARY)
   SET(DISABLED_FEATS "${DISABLED_FEATS} MASK_ARBITRARY")
 ENDIF(ENABLE_MASK_ARBITRARY)
-
+#===========================================================
+IF(ENABLE_FFTW3)
+  # FIXME - instead of 'double' default, I should put more IFs here and pick: double, long-double, float128
+  #         http://www.fftw.org/fftw3_doc/Precision.html#Precision
+  FIND_PACKAGE(FFTW COMPONENTS double)
+  IF(FFTW3_FOUND)
+    INCLUDE_DIRECTORIES(${FFTW3_INCLUDE_DIRS})
+    # FIXME - same as above different libs to link with
+    LINK_DIRECTORIES( ${FFTW3_LIBRARY_DIRS} )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_FFTW3")
+    MESSAGE(STATUS "Found FFTW3")
+    SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} FFTW3")
+  ELSE(FFTW3_FOUND)
+    MESSAGE(STATUS "FFTW3 NOT found")
+    SET(ENABLE_FFTW3 OFF)
+    SET(DISABLED_FEATS "${DISABLED_FEATS} FFTW3")
+  ENDIF(FFTW3_FOUND)
+ELSE(ENABLE_FFTW3)
+  SET(DISABLED_FEATS "${DISABLED_FEATS} FFTW3")
+ENDIF(ENABLE_FFTW3)
 #===========================================================
 
 IF(ENABLE_THERMAL)
