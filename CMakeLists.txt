@@ -40,7 +40,7 @@ INCLUDE(FindCGAL)
 INCLUDE(FindNumPy)
 INCLUDE(FindLoki)
 INCLUDE(FindPythonModule)
-INCLUDE(FindFFTW)
+INCLUDE(FindFFTW3)
 INCLUDE(GNUInstallDirs)
 #===========================================================
 # HACK!!! If the version of gcc is 4.8 or greater, we add -ftrack-macro-expansion=0 
@@ -383,13 +383,16 @@ ENDIF(ENABLE_MASK_ARBITRARY)
 IF(ENABLE_FFTW3)
   # FIXME - instead of 'double' default, I should put more IFs here and pick: double, long-double, float128
   #         http://www.fftw.org/fftw3_doc/Precision.html#Precision
-  FIND_PACKAGE(FFTW COMPONENTS double)
+  #         use 'components' argument for that
+  FIND_PACKAGE(FFTW3)
   IF(FFTW3_FOUND)
     INCLUDE_DIRECTORIES(${FFTW3_INCLUDE_DIRS})
     # FIXME - same as above different libs to link with
     LINK_DIRECTORIES( ${FFTW3_LIBRARY_DIRS} )
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_FFTW3")
     MESSAGE(STATUS "Found FFTW3")
+    MESSAGE("--   fftw3_LIBRARIES: " ${FFTW3_LIBRARIES})
+    SET(LINKLIBS  "${LINKLIBS};${FFTW3_LIBRARIES};")
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} FFTW3")
   ELSE(FFTW3_FOUND)
     MESSAGE(STATUS "FFTW3 NOT found")
