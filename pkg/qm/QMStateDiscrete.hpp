@@ -27,7 +27,7 @@ class QMStateDiscrete: public QMState
 {
 	public:
 		typedef std::vector<std::vector<std::vector<Complexr> > > Complexr3D;
-		typedef std::vector<std::vector<     Vector3r         > > Vector3r3D;
+		//typedef std::vector<std::vector<     Vector3r         > > Vector3r3D;
 		virtual Complexr getValPos(Vector3r xyz);                                   /// return complex quantum aplitude at given positional representation coordinates
 		virtual Real     getStepPos(){ return positionSize[0 /*FIXME*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
