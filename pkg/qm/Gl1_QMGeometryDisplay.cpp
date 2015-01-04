@@ -339,7 +339,7 @@ void Gl1_QMGeometryDisplay::go(
 				int k=0;
 				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
 				{
-					waveVals3D[i][j][k]=std::abs(packet->getValPos(Vector3r(x,y,z)));
+					waveVals3D[i][j][k]=std::abs(packet->getValPos(Vector3r(x,y,z))); // FIXME real,imag,abs,prob...
 				}
 			}
 			if(timeLimit.tooLong(stepWait)) break;

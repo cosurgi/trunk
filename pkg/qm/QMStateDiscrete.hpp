@@ -77,6 +77,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
 		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
 
+		// FIXME - yade --test fails load/save
 		Complexr3D tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 		//Complexr3D /*Vector3r3D*/ tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
 		Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))

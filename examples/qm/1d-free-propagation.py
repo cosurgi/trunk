@@ -22,7 +22,7 @@ O.engines=[
 		#[Ip2_FrictMat_FrictMat_FrictPhys()],
 		#[Law2_ScGeom_FrictPhys_CundallStrack()]
 	#),
-	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(steps=200),
 # FIXME: perhaps derive FreeMovingGaussianWavePacket from something so that this below could propagate harmonic oscillator too.
 	SchrodingerAnalyticPropagator()
 ]
@@ -40,7 +40,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=1,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[5,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=0.5,hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -58,7 +58,7 @@ O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.001
+O.dt=.1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
