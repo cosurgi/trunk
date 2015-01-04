@@ -39,6 +39,27 @@ Real Gl1_QMGeometryDisplay::stepWait=0.1;
 Real Gl1_QMGeometryDisplay::threshold3D=0.00000001;
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 
+Gl1_QMGeometryDisplay::Gl1_QMGeometryDisplay()
+{
+	partsToDraw.resize(0);
+	partsToDraw.push_back( []()                    { return partReal;                                          } );
+	partsToDraw.push_back( []()                    { return partImaginary;                                     } );
+	partsToDraw.push_back( []()                    { return absolute;                                          } );
+	partsToDraw.push_back( []()                    { return probability;                                       } );
+
+	valueToDraw.resize(0);
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a);                                      } );
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::imag(a);                                      } );
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::abs(a);                                       } );
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a*std::conj(a));                         } );
+
+	colorToDraw.resize(0);
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))); } ); // display partReal      in bluish   color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))); } ); // display partImaginary in reddish  color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))); } ); // display abs value     in greenish color
+	colorToDraw.push_back( [](Vector3r col)        { return col;                                               } ); // for probability use      original color
+};
+
 void Gl1_QMGeometryDisplay::go(
 	const shared_ptr<Shape>& shape, 
 	const shared_ptr<State>& state,
@@ -52,7 +73,9 @@ void Gl1_QMGeometryDisplay::go(
 	QMState*           packet         = static_cast<QMState*>(state.get());
 	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
 	Vector3r col = geometry->color;
+
 // find extents to render
+// FIXME(2) maybe move that into some renderConfig class, with default values in O.body[#].shape and override in this class.
 	startX= -geometry->halfSize[0];
 	endX  =  geometry->halfSize[0];
 	startY= -geometry->halfSize[1];
@@ -60,323 +83,113 @@ void Gl1_QMGeometryDisplay::go(
 	startZ= -geometry->halfSize[2];
 	endZ  =  geometry->halfSize[2];
 
+// FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
 	if(packetDiscrete) step=packetDiscrete->getStepPos();
-	//step  =  0.1; // FIXME - get that from QMStateDiscrete or allow use to set something for QMStateAnalytic
-	//if(packet->dim>1) step = 0.8;
 
-// SERIOUS FIXME - remove redundant code!
-	if(packet->dim == 1) {
-// 1D LINES
-	if(partReal) {
-		glBegin(GL_LINE_STRIP);
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // FIXME - color should be returned by some function display partReal part in bluish color
-		for(Real x=startX ; x<endX ; x+=step )
-		{
-			//std::complex<Real> wfval = packet->waveFunctionValue_1D_positionRepresentation(x,packet->x0[0],0,packet->k0[0],packet->m,packet->a,packet->hbar);
-			glVertex3d(x,0,std::real(packet->getValPos(Vector3r(x,0,0))));
+// FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
+
+	for(int draw=0 ; draw<partsToDraw.size() ; draw++) {
+		if( partsToDraw[draw]() ) {
+			switch(packet->dim) {
+				// FIXME(2) - add following
+				// 1D phase  , 2D phase  , 3D phase
+				// 1D argand , 2D argand , 3D Dirac-Argand
+				// FIXME(2) - add drawing momentum space
+				case 1 :
+					// FIXME(2) - add points, with point density reflecting the value
+					// 1D points
+					// if(points == true) ... else ...
+					// 1D lines
+					if(true /* points == false */) {
+						glBegin(GL_LINE_STRIP);
+						glColor3v( colorToDraw[draw](col) );
+						for(Real x=startX ; x<endX ; x+=step ) {
+							glVertex3d(x,0,valueToDraw[draw] (packet->getValPos(Vector3r(x,0,0))) );
+						}
+						glEnd();
+					}
+				break;
+
+				case 2:
+					// FIXME(2) - add points, with point density reflecting the value
+					// 2D points
+					// if(points == true) ... else ...
+					// 2D lines
+					if(wire == true) {
+						glColor3v( colorToDraw[draw](col) );
+						for(Real x=startX ; x<=endX ; x+=step/*,i++ */ ) {
+							glBegin(GL_LINE_STRIP);
+							for(Real y=startY ; y<=endY ; y+=step/*,j++*/ ) {
+								glVertex3d(x,y,valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0))) );
+							}
+							glEnd();
+							if(timeLimit.tooLong(stepWait)) break;
+						}
+						for(Real y=startY ; y<=endY ; y+=step ) {
+							glBegin(GL_LINE_STRIP);
+							for(Real x=startX ; x<=endX ; x+=step ) {
+								glVertex3d(x,y,valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0))) );
+							}
+							glEnd();
+							if(timeLimit.tooLong(stepWait)) break;
+						}
+					} else {
+					// 2D surface
+						waveValues2D.resize(int((endX-startX)/step)+1); // FIXME(2) - resolve storage problems
+						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endX-startX)/step)+1,0);};
+						int i=0;
+						for(Real x=startX ; x<=endX ; x+=step,i++ ) {
+							int j=0;
+							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
+								waveValues2D[i][j]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0)));
+							}
+							if(timeLimit.tooLong(stepWait)) break;
+						}
+						// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
+						drawSurface(waveValues2D,colorToDraw[draw](col));
+					}
+				break;
+
+				case 3:
+					// FIXME(2) - add points, with point density reflecting the value
+					// 3D points
+					// if(points == true) ... else ...
+					// 3D lines
+					// 3D surface
+					if(true /* points == false */) {
+						int gridSize=int((endX-startX)/step)+1;
+						// FIXME(2) - reconsider if doing [draw] loop outside this if() slows things down - more reinitialization of mc 
+						Vector3r minMC(startX+step*0.5     ,startY+step*0.5     ,startZ+step*0.5     );
+						Vector3r maxMC(endX  +step*0.5     ,endY  +step*0.5     ,endZ  +step*0.5     );
+						mc.init(gridSize,gridSize,gridSize,minMC,maxMC);
+						// about waveValues3D FIXME(2) - resolve storage problems
+						mc.resizeScalarField(waveValues3D,gridSize,gridSize,gridSize);
+
+						int i=0;
+						for(Real x=startX ; x<=endX ; x+=step,i++ ) {
+							int j=0;
+							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
+								int k=0;
+								for(Real z=startZ ; z<=endZ ; z+=step,k++ ) {
+									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
+								}
+							}
+							if(timeLimit.tooLong(stepWait)) break;
+						}
+						mc.computeTriangulation(waveValues3D,threshold3D);
+						// FIXME(2) - drawSurface or drawWires
+						glDrawMarchingCube(mc,colorToDraw[draw](col));
+					}
+				break;
+
+				default:
+					if(timeLimit.messageAllowed(5))
+						std::cerr << "4D or more dimensions plotting is not ready yet\n";
+				break;
+			}
 		}
-		glEnd();
 	}
 
-	if(partImaginary) {
-		glBegin(GL_LINE_STRIP);
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display partImaginary in reddish color
-		for(Real x=startX ; x<endX ; x+=step )
-		{
-			glVertex3d(x,0,std::imag(packet->getValPos(Vector3r(x,0,0))));
-		}
-		glEnd();
-	}
-
-	if(absolute) {
-		glBegin(GL_LINE_STRIP);
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))) ); // display abs value in geenish color
-		for(Real x=startX ; x<endX ; x+=step )
-		{
-			glVertex3d(x,0,std::abs(packet->getValPos(Vector3r(x,0,0))));
-		}
-		glEnd();
-	}
-
-	if(probability) {
-		glBegin(GL_LINE_STRIP);
-		glColor3v(shape->color); // for probability use original color
-		for(Real x=startX ; x<endX ; x+=step )
-		{
-			std::complex<Real> wfval = packet->getValPos(Vector3r(x,0,0));
-			glVertex3d(x,0,std::real((wfval)*std::conj(wfval)));
-		}
-		glEnd();
-	}
-	} else if(packet->dim == 2 and wire == false) {
-// 2D SURFACE
-	std::vector<std::vector<Real> > waveVals;
-	waveVals.resize(int((endX-startX)/step)+1);
-	FOREACH(std::vector<Real>& xx, waveVals) {xx.resize(int((endX-startX)/step)+1,0);};
-
-	if(partReal) { // FIXME - merge those four into one loop
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				waveVals[i][j]=std::real(packet->getValPos(Vector3r(x,y,0)));
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
-		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
-	}
-	if(partImaginary) {
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				waveVals[i][j]=std::imag(packet->getValPos(Vector3r(x,y,0)));
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))); // display partImaginary in reddish color
-	}
-	if(absolute) {
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				waveVals[i][j]=std::abs(packet->getValPos(Vector3r(x,y,0)));
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))); // display absolute value in geenish color
-	}
-	if(probability) {
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
-				waveVals[i][j]=std::real((wfval)*std::conj(wfval));
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		drawSurface(waveVals,col); // for probability use original color
-	}
-	} else if(packet->dim == 2 and wire == true) {
-// 2D LINES
-	if(partReal) {
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))) ); // display partReal part in bluish color
-		for(Real x=startX ; x<=endX ; x+=step/*,i++ */ )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real y=startY ; y<=endY ; y+=step/*,j++*/ )
-			{
-				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		for(Real y=startY ; y<=endY ; y+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real x=startX ; x<=endX ; x+=step )
-			{
-				glVertex3d(x,y,std::real(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-	}
-	if(partImaginary) {
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))) ); // display partImaginary in reddish color
-		for(Real x=startX ; x<=endX ; x+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real y=startY ; y<=endY ; y+=step )
-			{
-				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		for(Real y=startY ; y<=endY ; y+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real x=startX ; x<=endX ; x+=step )
-			{
-				glVertex3d(x,y,std::imag(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-	}
-	if(absolute) {
-		glColor3v(   Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))) ); // display abs value in geenish color
-		for(Real x=startX ; x<=endX ; x+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real y=startY ; y<=endY ; y+=step )
-			{
-				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		for(Real y=startY ; y<=endY ; y+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real x=startX ; x<=endX ; x+=step )
-			{
-				glVertex3d(x,y,std::abs(packet->getValPos(Vector3r(x,y,0))));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-	}
-	if(probability) {
-		glColor3v(shape->color); // for probability use original color
-		for(Real x=startX ; x<=endX ; x+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real y=startY ; y<=endY ; y+=step )
-			{
-				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
-				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-		for(Real y=startY ; y<=endY ; y+=step )
-		{
-			glBegin(GL_LINE_STRIP);
-			for(Real x=startX ; x<=endX ; x+=step )
-			{
-				std::complex<Real> wfval = packet->getValPos(Vector3r(x,y,0));
-				glVertex3d(x,y,std::real((wfval)*std::conj(wfval)));
-			}
-			glEnd();
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-	}
-	} else if(packet->dim == 3) { // FIXME - add wire==true option, and draw just wires of triangles
-		// FIXME,FIXME - clean up the mess. Draw real, imag, probability, etc.....
-		MarchingCube mc;
-		int gridSize=int((endX-startX)/step);
-		Vector3r minMC(startX+step*0.5     ,startY+step*0.5     ,startZ+step*0.5     );
-		Vector3r maxMC(endX  +step*0.5     ,endY  +step*0.5     ,endZ  +step*0.5     );
-//		std::cout << "gridSize=" << gridSize << "\n"; // FIXME
-		mc.init(gridSize,gridSize,gridSize,minMC,maxMC);
-		///// mc.resizeScalarField(scalarField,sizeX,sizeY,sizeZ);	FIXME - to te linijki poniżej
-		//std::vector<std::vector<std::vector<Real> > > waveVals3D; // FIXME - marching cubes templates for different dypes, maybe complex too??
-		std::vector<std::vector<std::vector<Real> > > waveVals3D; // FIXME - marching cubes templates for different dypes, maybe complex too??
-		waveVals3D         .resize(int((endX-startX)/step)+1);  // x position coordinate
-		FOREACH(std::vector<std::vector<Real> >& xx, waveVals3D   ) {
-			xx.resize(int((endY-startY)/step)+1);           // y position coordinate
-			FOREACH(std::vector<Real>& yy, xx) {
-				yy.resize(int((endZ-startZ)/step)+1,0); // z position coordinate
-			};
-		};
-	
-	//FIXME,FIXME,FIXME
-	if(partReal) { // FIXME - merge those four into one loop
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				int k=0;
-				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
-				{
-					waveVals3D[i][j][k]=std::real(packet->getValPos(Vector3r(x,y,z))); // FIXME,FIXME - jakoś inaczej przechowywać
-					// w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
-				}
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-//		std::cout << "---------------------------------------\n";
-		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
-		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
-	
-		mc.computeTriangulation(waveVals3D,threshold3D);
-		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))  ); // FIXME - color should be returned by some function
-	} // FIXME END - merge those four into one loop
-	if(partImaginary) { // FIXME - merge those four into one loop
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				int k=0;
-				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
-				{
-					waveVals3D[i][j][k]=std::imag(packet->getValPos(Vector3r(x,y,z)));
-				}
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-//		std::cout << "---------------------------------------\n";
-		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
-		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
-	
-		mc.computeTriangulation(waveVals3D,threshold3D);
-		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)))  ); // FIXME - color should be returned by some function
-	} // FIXME END - merge those four into one loop
-	if(absolute) { // FIXME - merge those four into one loop
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				int k=0;
-				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
-				{
-					waveVals3D[i][j][k]=std::abs(packet->getValPos(Vector3r(x,y,z))); // FIXME real,imag,abs,prob...
-				}
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-//		std::cout << "---------------------------------------\n";
-		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
-		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
-	
-		mc.computeTriangulation(waveVals3D,threshold3D);
-		glDrawMarchingCube(mc,  Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4)))  ); // FIXME - color should be returned by some function
-	} // FIXME END - merge those four into one loop
-	if(probability) { // FIXME - merge those four into one loop
-		int i=0;
-		for(Real x=startX ; x<=endX ; x+=step,i++ )
-		{
-			int j=0;
-			for(Real y=startY ; y<=endY ; y+=step,j++ )
-			{
-				int k=0;
-				for(Real z=startZ ; z<=endZ ; z+=step,k++ )
-				{
-					waveVals3D[i][j][k]=std::real( (packet->getValPos(Vector3r(x,y,z)))*std::conj(packet->getValPos(Vector3r(x,y,z))) );
-				}
-			}
-			if(timeLimit.tooLong(stepWait)) break;
-		}
-//		std::cout << "---------------------------------------\n";
-		////// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
-		////// drawSurface(waveVals,Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)))); // display partReal part in bluish color
-	
-		mc.computeTriangulation(waveVals3D,threshold3D);
-		glDrawMarchingCube(mc,           col                                       ); // FIXME - color should be returned by some function
-	} // FIXME END - merge those four into one loop
-
-	} else {
-		std::cerr << "4D or more plotting not ready yet\n";
-	};
 };
 		
 void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
@@ -393,13 +206,26 @@ void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
 	for(int i=0;i<3*nbTriangles;++i)
 	{
 		glNormal3v(normals[  i]);
-		glVertex3v(triangles[i]);     // * step?, scale, size? → cerr...
+		glVertex3v(triangles[i]);
 		glNormal3v(normals[++i]);
 		glVertex3v(triangles[i]);
 		glNormal3v(normals[++i]);
 		glVertex3v(triangles[i]);
 	}
-	glEnd();	
+	glEnd();
+
+// FIXME(2) - maybe draw using this approach instead?  http://webhome.csc.uvic.ca/~pouryash/depot/HPC_Course/OpenGLDrawingMethods.pdf
+//glColorPointer(3, GL_FLOAT,0,mesh.vColor);
+//glEnableClientState(GL_COLOR_ARRAY);
+//glNormalPointer(GL_FLOAT, 0,mesh.vNorm);
+//glEnableClientState (GL_NORMAL_ARRAY);
+//glVertexPointer (3 , GL_FLOAT, 0, mesh.vPos);
+//glEnableClientState (GL_VERTEX_ARRAY);
+//glDrawElements (GL_TRIANGLES, ( GLsizei) mesh.  ctTriangles * 3, GL_UNSIGNED_SHORT , mesh.triangles);
+//glDisableClientState (GL_COLOR_ARRAY);
+//glDisableClientState (GL_NORMAL_ARRAY);
+//glDisableClientState (GL_VERTEX_ARRAY);
+
 };
 
 void Gl1_QMGeometryDisplay::calcNormalVectors(

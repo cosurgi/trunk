@@ -2,6 +2,7 @@
 #pragma once
 #ifdef YADE_OPENGL
 
+#include <functional>
 #include <pkg/common/GLDrawFunctors.hpp>
 #include "QMGeometryDisplay.hpp"
 #include <lib/time/TimeLimit.hpp>
@@ -25,6 +26,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		void glDrawSurfaceInterpolated(const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,Vector3r col);
 		void interpolateExtraWaveValues(const std::vector<std::vector<Real> >& waveVals,std::vector<std::vector<Real> >& extraWaveVals);
 		void interpolateExtraNormalVectors(const std::vector<std::vector<Vector3r> >& wavNormV,std::vector<std::vector<Vector3r> >& extraWavNormV);
+		Gl1_QMGeometryDisplay();
 		virtual ~Gl1_QMGeometryDisplay();
 		RENDERS(QMGeometryDisplay);
 		DECLARE_LOGGER;
@@ -55,8 +57,19 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		);
 	private:
 		TimeLimit timeLimit;
+		MarchingCube mc;
+		std::vector< std::function< bool    (                  ) > > partsToDraw;
+		std::vector< std::function< Real    (std::complex<Real>) > > valueToDraw;
+		std::vector< std::function< Vector3r(Vector3r          ) > > colorToDraw;
+
 		// FIXME - after redundancy is removed, this should be removed too
 		Real startX,startY,startZ,endX,endY,endZ;
+
+		// FIXME(2) - when storage problems are resolved, remove this
+		std::vector<std::vector<Real> >                              waveValues2D;
+		std::vector<std::vector<std::vector<Real> > >                waveValues3D;
+		// FIXME(2) - jakoś inaczej przechowywać w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
+
 };
 REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
 
