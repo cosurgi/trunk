@@ -29,6 +29,8 @@ void SpatialQuickSortCollider::action()
 	scene->interactions->eraseNonReal();
 
 	size_t nbElements=bodies->size();
+static int l(0);
+if(l<100) { std::cerr<<"nbElements="<<nbElements<<"\n"; l++;};
 	if (nbElements!=rank.size())
 	{
 		size_t n = rank.size();
@@ -38,18 +40,23 @@ void SpatialQuickSortCollider::action()
 	}
 
 	Vector3r min,max;
-	int i=0;
-	FOREACH(const shared_ptr<Body>& b, *bodies){
+//	int i=0;
+//	FOREACH(const shared_ptr<Body>& b, *bodies){ // FIXME - I don't know why but sometimes it's not working. I suspect it's optimised away
+	for(int i=0;i<bodies->size();i++)
+	{
+		const shared_ptr<Body>& b( (*(bodies))[i] );
 		if(!(b->bound)) continue;
-	   
-	   min = b->bound->min;
-	   max = b->bound->max;
+		min = b->bound->min;
+		max = b->bound->max;
 
-	   rank[i]->id = b->getId();
-	   rank[i]->min = min;
-	   rank[i]->max = max;
+bool hasNan=(isnan(min[0])||isnan(min[1])||isnan(min[2])||isnan(max[0])||isnan(max[1])||isnan(max[2]));
+if(hasNan){std::cerr<<"NAN found in bounds! Try to recalculate.\n"; boundDispatcher->scene=scene; boundDispatcher->action(); }
+if(l<100) { std::cerr<<"loop bodies min="<<min<<"  max="<<max<<"\n"; l++;};
 
-		i++;
+		rank[i]->id = b->getId();
+		rank[i]->min = min;
+		rank[i]->max = max;
+//		i++;
 	}
 	
 	const shared_ptr<InteractionContainer>& interactions=scene->interactions;
@@ -67,17 +74,25 @@ void SpatialQuickSortCollider::action()
 	    j=i;
 	    while(++j<nbElements)
 	    {
+if(l<100) { std::cerr<<"check min[i]="<<min<<"  max[i]="<<max<<"\n"; l++;};
+if(l<100) { std::cerr<<"check min[i]="<<rank[i]->min<<"  max[i]="<<rank[i]->max<<"\n"; l++;};
+if(l<100) { std::cerr<<"check min[j]="<<rank[j]->min<<"  max[j]="<<rank[j]->max<<"\n"; l++;};
+if(l<100) { std::cerr<<"j1: "<<j<<"\n"; l++;};
 			if ( rank[j]->min[0] > max[0]) break;
+if(l<100) { std::cerr<<"j2: "<<j<<"\n"; l++;};
 			if ( rank[j]->min[1] < max[1]
 			&& rank[j]->max[1] > min[1]
 			&& rank[j]->min[2] < max[2]
 			&& rank[j]->max[2] > min[2])
 			{
+if(l<100) { std::cerr<<"j3: "<<j<<"\n"; l++;};
 				id2=rank[j]->id;
+if(l<100) { std::cerr<<"id="<<id<<" id2="<<id2<<"\n"; l++;};
 				if ( (interaction = interactions->find(Body::id_t(id),Body::id_t(id2))) == 0)
 				{
 					interaction = shared_ptr<Interaction>(new Interaction(id,id2) );
 					interactions->insert(interaction);
+if(l<100) { std::cerr<<"inserted id,id2, search now:"<< (  interactions->find(Body::id_t(id),Body::id_t(id2))  ) <<"\n"; l++;};
 				}
 				interaction->iterLastSeen=scene->iter; 
 			}

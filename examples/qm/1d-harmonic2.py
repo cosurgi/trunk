@@ -16,8 +16,8 @@ harmonicOrder     = 15
 
 
 O.engines=[
-	#SpatialQuickSortCollider([
-	InsertionSortCollider([
+	SpatialQuickSortCollider([
+	#InsertionSortCollider([
 		Bo1_QMGeometryDisplay_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
