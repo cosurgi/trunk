@@ -1,5 +1,5 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
-//
+
 // define custom allocator for use with fftw3, suppoorted types are:
 //
 //    float, double, long double, float128
@@ -10,6 +10,8 @@
 //    http://www.fftw.org/fftw3_doc/
 
 #pragma once
+
+#include <memory>
 #ifdef YADE_FFTW3
 #include <fftw3.h>
 
