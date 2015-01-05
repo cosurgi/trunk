@@ -171,6 +171,10 @@ void Gl1_QMGeometryDisplay::go(
 							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
 								int k=0;
 								for(Real z=startZ ; z<=endZ ; z+=step,k++ ) {
+									// FIXME(2) - to jest kopiowanie!
+									// owszem - bez FFTW3 takie coś musi zostać, ale
+									// z nowymi kontenerami muszę móc to ominąć
+									// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
 									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
 								}
 							}

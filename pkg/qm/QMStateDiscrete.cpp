@@ -94,7 +94,7 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	}
 	} else { // not a firstRun, we have been just loaded from file
 	};
-	//////////////FIXME qtHide="";
+	//////////////FIXME qtHide="nowyKontener"; albo może nawet poprawić qtHide w klasie macierzystej, co za różnica(?) E, chyba lepiej tu, żeby było widać, że tu.
 };
 
 /// return complex quantum aplitude at given positional representation coordinates
