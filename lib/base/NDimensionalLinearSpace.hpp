@@ -10,9 +10,21 @@
 
 #pragma once
 
+#include <stdexcept>
+#include <memory>
 #include <vector>
-#include <lib/base/Math.hpp>
+///  #include "lib/base/Math.hpp"   // allow basic testing first
 
-class NDimensionalLinearSpace {
+#ifdef YADE_FFTW3
+#include <FFTW3_Allocator.hpp>
+#endif
+
+template <typename K>
+class NDimensionalDiscreteLinearSpace : private std::vector<K
+	#ifdef YADE_FFTW3
+	, FFTW3_Allocator<K>  // when FFTW3 is available, use it.
+	#endif
+	>
+{
 };
 
