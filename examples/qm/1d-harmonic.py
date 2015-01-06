@@ -29,7 +29,7 @@ O.engines=[
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
-	SchrodingerKosloffPropagator(steps=25),
+	SchrodingerKosloffPropagator(steps=100),
 ]
 
 ## Create:
@@ -62,7 +62,14 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.001
+#O.dt=.001
+#O.dt=.003
+##O.dt=.005 # FIXME - noise explosion, why? (because steps=50)
+O.dt=.005 # works with steps=100
+#O.dt=.01 # works a few cycles with steps=150
+#O.dt=.012 #is not working, even for steps=150
+#O.dt=.02 # is not working, even for steps=300
+#O.dt=.1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
