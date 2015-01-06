@@ -41,7 +41,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2,1],m=1,a=1,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2,1],m=1,a=0.5,hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -58,7 +58,13 @@ numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,pos
 #O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
-O.dt=.000001
+O.dt=.1
+
+print "==========================================="
+print "=======                             ======="
+print "=======       SINGLE step ONLY      ======="
+print "=======                             ======="
+print "==========================================="
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -66,11 +72,17 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-        O.step()
+        #O.step()
 	#qt.View()
 	qt.Controller()
-	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+	Gl1_QMGeometryDisplay().probability  =False
+	Gl1_QMGeometryDisplay().partReal     =True
+	Gl1_QMGeometryDisplay().partImaginary=False
+	Gl1_QMGeometryDisplay().step=0.3
+	Gl1_QMGeometryDisplay().stepWait=0.5
+        Gl1_QMGeometryDisplay().threshold3D=0.00001
 except ImportError:
 	pass
 #O.run(20000)
