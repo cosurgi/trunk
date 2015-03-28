@@ -379,6 +379,12 @@ class SerializableEditor(QFrame):
 		self.refreshTimer=QTimer(self)
 		self.refreshTimer.timeout.connect(self.refreshEvent)
 		self.refreshTimer.start(500)
+	def deduceType(self,val): # this might come handy later..
+		import ast
+		try:
+			return type(ast.literal_eval(str(val))) # it deduces type from a string representation of this type
+		except ValueError:
+			return str
 	def getListTypeFromDocstring(self,attr):
 		"Guess type of array by scanning docstring for :yattrtype: and parsing its argument; ugly, but works."
 		doc=getattr(self.ser.__class__,attr).__doc__
@@ -387,8 +393,13 @@ class SerializableEditor(QFrame):
 			return None
 		m=re.search(r':yattrtype:`([^`]*)`',doc)
 		if not m:
-			logging.error("Attribute %s does not contain :yattrtype:`....` (docstring is '%s'"%(attr,doc))
-			return None
+			try:
+			# we need to try anyway, because static variables cannot have a docstring:
+			# http://stackoverflow.com/questions/25386370/docstrings-for-static-properties-in-boostpython
+				return (type(getattr(self.ser.__class__,attr)[0]),) # to make it work we need at least one element in this vector
+			except:
+				logging.error("Attribute %s does not contain :yattrtype:`....` (docstring is '%s') and attempts at deducing it have failed"%(attr,doc))
+				return None
 		cxxT=m.group(1)
 		logging.debug('Got type "%s" from :yattrtype:'%cxxT)
 		def vecTest(T,cxxT):
