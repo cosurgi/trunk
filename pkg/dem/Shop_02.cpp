@@ -372,6 +372,106 @@ Matrix3r Shop::getStress(Real volume){
 	return stressTensor/volume;
 }
 
+
+
+vector<Matrix3r> Shop::getStressProfile(Real volume, int nCell, Real dz, Real zRef, vector<Real> vPartAverageX, vector<Real> vPartAverageY, vector<Real> vPartAverageZ){
+	int minZ;
+	int maxZ;
+	Real minPosZ;
+	Real maxPosZ;
+	Scene* scene=Omega::instance().getScene().get();
+	vector<Matrix3r> stressTensorProfile(nCell,Matrix3r::Zero());
+	const bool isPeriodic = scene->isPeriodic;
+
+	//
+	//Dynamic contribution to the stress tensor
+	//
+	FOREACH(const shared_ptr<Body>& b,*Omega::instance().getScene()->bodies){
+		int Np = floor((b->state->pos[2]-zRef)/dz);	//Define the layer number with 0 corresponding to zRef
+		if ((Np>=0)&&(Np<nCell)){	//To avoid non defined vPartAverage
+			//Velocity fluctuation wrt the average field
+			Vector3r vFluct = b->state->vel - Vector3r(vPartAverageX[Np],vPartAverageY[Np],vPartAverageZ[Np]); 
+			//Classical dynamical expression of the stress tensor
+			stressTensorProfile[Np]+= -1/volume*b->state->mass*vFluct*vFluct.transpose(); 
+		}
+	}
+	
+	//
+	//Love Weber contribution (same as getStress(), but with different layers)
+	//
+	FOREACH(const shared_ptr<Interaction>&I,  *scene->interactions){	// loop over the interactions 
+                if (!I->isReal()) continue;
+		shared_ptr<Body> b1 = Body::byId(I->getId1(),scene);
+		shared_ptr<Body> b2 = Body::byId(I->getId2(),scene);
+
+		if ((b1->state->blockedDOFs!=State::DOF_ALL)||(b2->state->blockedDOFs!=State::DOF_ALL)){// to remove annoying contribution from the fixed particles
+			//Layers in which the particle center is contained
+			int Np1 = floor((b1->state->pos[2] - zRef)/dz);
+			int Np2 = floor((b2->state->pos[2] - zRef)/dz);
+			//Vector between the two centers, from 2 to 1
+			Vector3r branch = b1->state->pos -b2->state->pos;
+			if (isPeriodic) branch -= scene->cell->hSize*I->cellDist.cast<Real>();//to handle periodicity
+				
+			//Contact vector (from 1 to 2)
+			NormShearPhys* nsi=YADE_CAST<NormShearPhys*> ( I->phys.get() );
+			Vector3r fContact = nsi->normalForce + nsi->shearForce;
+
+			//The contribution to the stress tensor is taken such that only the part of the branch vector 
+			//inside the cell is taken into account
+			//If the whole vector is in the cell, add the whole contribution to the cell
+			if (Np1==Np2){
+				if ((Np1>=0) && (Np1<nCell)){ 
+					stressTensorProfile[Np1]+= 1/volume*fContact*branch.transpose();
+				}
+			}
+			//Otherwise, find out the cell crossed by the branch vector and assign it the contribution from this part. 
+			else {	
+				//Find which one is above the other to prepare the loop
+				if (Np1>Np2){
+					minZ = Np2;
+					minPosZ = b2->state->pos[2]-zRef;
+					maxZ = Np1;
+					maxPosZ = b1->state->pos[2]-zRef;
+				}
+				else if (Np2>Np1) {
+					minZ = Np1;
+					minPosZ = b1->state->pos[2]-zRef;
+					maxZ = Np2;
+					maxPosZ = b2->state->pos[2]-zRef;
+				}
+		
+				Real branchS_x = pow(branch[0],2.0);
+				Real branchS_y = pow(branch[1],2.0);
+				Real branchS_z = pow(branch[2],2.0);
+
+				//Normalize the branch vector
+				branch/=sqrt(branchS_x + branchS_y+branchS_z);
+
+				//Loop over the cell containing the branch vector
+				int numLayer = minZ;
+				while (numLayer<=maxZ){
+					if ((numLayer>= 0)&&(numLayer<nCell)){
+						//Evaluate the branch height inside the cell
+						Real deltaZ = dz;
+						if (numLayer==minZ) deltaZ = dz - (minPosZ - minZ*dz);
+						else if (numLayer==maxZ) deltaZ = maxPosZ - maxZ*dz;
+						//From it, trigonometry gives us the vector contained in the cell
+						Vector3r branchVectCell = deltaZ*sqrt(1.0 + 1.0/branchS_z*(branchS_x + branchS_y))*branch;
+						//Add the contribution to the stress tensor
+						stressTensorProfile[numLayer]+= 1.0/volume*fContact*branchVectCell.transpose();
+					}
+					//Increment the layer/cell number
+					numLayer+=1;
+						
+				}
+			}
+		}
+	}
+	return stressTensorProfile;
+}
+
+
+
 Matrix3r Shop::getCapillaryStress(Real volume, bool mindlin){
 	Scene* scene=Omega::instance().getScene().get();
 	if (volume==0) volume = scene->isPeriodic?scene->cell->hSize.determinant():1;
@@ -521,4 +621,94 @@ py::tuple Shop::aabbExtrema(Real cutoff, bool centers){
 	}
 	Vector3r dim=maximum-minimum;
 	return py::make_tuple(Vector3r(minimum+.5*cutoff*dim),Vector3r(maximum-.5*cutoff*dim));
+}
+
+/*! Added function for 2D calculation: sphere volume. Optional. By Ning Guo */
+Real Shop::getSpheresVolume2D(const shared_ptr<Scene>& _scene, int mask){
+	const shared_ptr<Scene> scene=(_scene?_scene:Omega::instance().getScene());
+	Real vol=0;
+	FOREACH(shared_ptr<Body> b, *scene->bodies){
+		if (!b || !b->isDynamic()) continue;
+		Sphere* s=dynamic_cast<Sphere*>(b->shape.get());
+		if((!s) or ((mask>0) and ((b->groupMask & mask)==0))) continue;
+		vol += Mathr::PI*pow(s->radius,2);
+	}
+	return vol;
+}
+
+/*! Added function for 2D calculation: void ratio. Optional. By Ning Guo */
+Real Shop::getVoidRatio2D(const shared_ptr<Scene>& _scene, Real _zlen){
+	const shared_ptr<Scene> scene=(_scene?_scene:Omega::instance().getScene());
+	Real V;
+	if(!scene->isPeriodic){
+		throw std::invalid_argument("utils.voidratio2D applies only to aperiodic simulations.");
+	} else {
+		V=scene->cell->getVolume()/_zlen;
+	}
+	Real Vs=Shop::getSpheresVolume2D();
+	return (V-Vs)/Vs;
+}
+
+/*! Added function to get stress tensor and tangent operator tensor. By Ning Guo */
+py::tuple Shop::getStressAndTangent(Real volume, bool symmetry){
+	Scene* scene=Omega::instance().getScene().get();
+	if (volume==0) volume = scene->isPeriodic?scene->cell->hSize.determinant():1;
+	Matrix3r stress = Matrix3r::Zero();
+	Matrix6r tangent = Matrix6r::Zero();
+	const bool isPeriodic = scene->isPeriodic;
+	FOREACH(const shared_ptr<Interaction>& I, *scene->interactions){
+		if(!I->isReal()) continue;
+		shared_ptr<Body> b1 = Body::byId(I->getId1(),scene);
+		shared_ptr<Body> b2 = Body::byId(I->getId2(),scene);
+		Vector3r pos1 = Vector3r::Zero();
+		Vector3r pos2 = Vector3r::Zero();
+		if(b1->isClumpMember()) {
+			pos1 = Body::byId(b1->clumpId,scene)->state->pos;
+		}
+		else {
+			pos1 = b1->state->pos;
+		}
+		if(b2->isClumpMember()) {
+			pos2 = Body::byId(b2->clumpId,scene)->state->pos;
+		}
+		else {
+			pos2 = b2->state->pos;
+		}
+		Vector3r branch=pos1 - pos2;
+		if (isPeriodic) branch -= scene->cell->hSize*I->cellDist.cast<Real>();
+		NormShearPhys* nsi=YADE_CAST<NormShearPhys*>(I->phys.get());
+		Real kN=nsi->kn; Real kT=nsi->ks;
+		GenericSpheresContact* geom=YADE_CAST<GenericSpheresContact*>(I->geom.get());
+		const Vector3r& n=geom->normal;
+		const Vector3r& fT=nsi->shearForce;
+		const Vector3r& fTotal=nsi->normalForce+nsi->shearForce;
+		Real T=fT.norm();
+		bool hasShear=(T>0);
+		Vector3r t(Vector3r::Zero()); if(hasShear) t=fT/T;
+		stress += fTotal*branch.transpose();
+		tangent(0,0) += kN*n[0]*branch[0]*n[0]*branch[0]+kT*t[0]*branch[0]*t[0]*branch[0];
+		tangent(0,1) += kN*n[0]*branch[0]*n[1]*branch[1]+kT*t[0]*branch[0]*t[1]*branch[1];
+		tangent(0,2) += kN*n[0]*branch[0]*n[2]*branch[2]+kT*t[0]*branch[0]*t[2]*branch[2];
+                tangent(0,3) += kN*n[0]*branch[0]*(n[1]*branch[2]+n[2]*branch[1])*0.5+kT*t[0]*branch[0]*(t[1]*branch[2]+t[2]*branch[1])*0.5;
+                tangent(0,4) += kN*n[0]*branch[0]*(n[0]*branch[2]+n[2]*branch[0])*0.5+kT*t[0]*branch[0]*(t[0]*branch[2]+t[2]*branch[0])*0.5;
+                tangent(0,5) += kN*n[0]*branch[0]*(n[0]*branch[1]+n[1]*branch[0])*0.5+kT*t[0]*branch[0]*(t[0]*branch[1]+t[1]*branch[0])*0.5;
+		tangent(1,1) += kN*n[1]*branch[1]*n[1]*branch[1]+kT*t[1]*branch[1]*t[1]*branch[1];
+		tangent(1,2) += kN*n[1]*branch[1]*n[2]*branch[2]+kT*t[1]*branch[1]*t[2]*branch[2];
+                tangent(1,3) += kN*n[1]*branch[1]*(n[1]*branch[2]+n[2]*branch[1])*0.5+kT*t[1]*branch[1]*(t[1]*branch[2]+t[2]*branch[1])*0.5;
+                tangent(1,4) += kN*n[1]*branch[1]*(n[0]*branch[2]+n[2]*branch[0])*0.5+kT*t[1]*branch[1]*(t[0]*branch[2]+t[2]*branch[0])*0.5;
+                tangent(1,5) += kN*n[1]*branch[1]*(n[0]*branch[1]+n[1]*branch[0])*0.5+kT*t[1]*branch[1]*(t[0]*branch[1]+t[1]*branch[0])*0.5;
+		tangent(2,2) += kN*n[2]*branch[2]*n[2]*branch[2]+kT*t[2]*branch[2]*t[2]*branch[2];
+                tangent(2,3) += kN*n[2]*branch[2]*(n[1]*branch[2]+n[2]*branch[1])*0.5+kT*t[2]*branch[2]*(t[1]*branch[2]+t[2]*branch[1])*0.5;
+                tangent(2,4) += kN*n[2]*branch[2]*(n[0]*branch[2]+n[2]*branch[0])*0.5+kT*t[2]*branch[2]*(t[0]*branch[2]+t[2]*branch[0])*0.5;
+                tangent(2,5) += kN*n[2]*branch[2]*(n[0]*branch[1]+n[1]*branch[0])*0.5+kT*t[2]*branch[2]*(t[0]*branch[1]+t[1]*branch[0])*0.5;
+                tangent(3,3) += kN*(n[1]*branch[2]*n[1]*branch[2]+n[1]*branch[2]*n[2]*branch[1]*2+n[2]*branch[1]*n[2]*branch[1])*0.25+kT*(t[1]*branch[2]*t[1]*branch[2]+t[1]*branch[2]*t[2]*branch[1]*2+t[2]*branch[1]*t[2]*branch[1])*0.25;
+                tangent(3,4) += kN*(n[1]*branch[2]*n[0]*branch[2]+n[1]*branch[2]*n[2]*branch[0]+n[2]*branch[1]*n[0]*branch[2]+n[2]*branch[1]*n[2]*branch[0])*0.25+kT*(t[1]*branch[2]*t[0]*branch[2]+t[1]*branch[2]*t[2]*branch[0]+t[2]*branch[1]*t[0]*branch[2]+t[2]*branch[1]*t[2]*branch[0])*0.25;
+                tangent(3,5) += kN*(n[1]*branch[2]*n[0]*branch[1]+n[1]*branch[2]*n[1]*branch[0]+n[2]*branch[1]*n[0]*branch[1]+n[2]*branch[1]*n[1]*branch[0])*0.25+kT*(t[1]*branch[2]*t[0]*branch[1]+t[1]*branch[2]*t[1]*branch[0]+t[2]*branch[1]*t[0]*branch[1]+t[2]*branch[1]*t[1]*branch[0])*0.25;
+                tangent(4,4) += kN*(n[0]*branch[2]*n[0]*branch[2]+n[0]*branch[2]*n[2]*branch[0]*2+n[2]*branch[0]*n[2]*branch[0])*0.25+kT*(t[0]*branch[2]*t[0]*branch[2]+t[0]*branch[2]*t[2]*branch[0]*2+t[2]*branch[0]*t[2]*branch[0])*0.25;
+                tangent(4,5) += kN*(n[0]*branch[2]*n[0]*branch[1]+n[0]*branch[2]*n[1]*branch[0]+n[2]*branch[0]*n[0]*branch[1]+n[2]*branch[0]*n[1]*branch[0])*0.25+kT*(t[0]*branch[2]*t[0]*branch[1]+t[0]*branch[2]*t[1]*branch[0]+t[2]*branch[0]*t[0]*branch[1]+t[2]*branch[0]*t[1]*branch[0])*0.25;
+                tangent(5,5) += kN*(n[0]*branch[1]*n[0]*branch[1]+n[0]*branch[1]*n[1]*branch[0]*2+n[1]*branch[0]*n[1]*branch[0])*0.25+kT*(t[0]*branch[1]*t[0]*branch[1]+t[0]*branch[1]*t[1]*branch[0]*2+t[1]*branch[0]*t[1]*branch[0])*0.25;
+	}
+	stress/=volume;
+	tangent/=volume;
+	return py::make_tuple(stress,tangent);
 }

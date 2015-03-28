@@ -40,7 +40,7 @@ MeniscusParameters::MeniscusParameters()
         F = 0;
         delta1 = 0;
         delta2 = 0;
-};
+}
 
 MeniscusParameters::MeniscusParameters(const MeniscusParameters &source)
 {
@@ -58,18 +58,26 @@ void Law2_ScGeom_CapillaryPhys_Capillarity::action()
 	if (!scene) cerr << "scene not defined!";
 	if (!capillary) postLoad(*this);//when the script does not define arguments, postLoad is never called
 	shared_ptr<BodyContainer>& bodies = scene->bodies;
-	if (fusionDetection && !bodiesMenisciiList.initialized) bodiesMenisciiList.prepare(scene);
+	
+	//check for contact model once (assuming that contact model does not change)
+	if (!hertzInitialized){//NOTE: We are assuming that only one type is used in one simulation here
+		FOREACH(const shared_ptr<Interaction>& I, *scene->interactions){
+			if (I->isReal()) {
+				if (CapillaryPhys::getClassIndexStatic()==I->phys->getClassIndex()) hertzOn=false;
+				else if (MindlinCapillaryPhys::getClassIndexStatic()==I->phys->getClassIndex()) hertzOn=true;
+				else LOG_ERROR("The capillary law is not implemented for interactions using"<<I->phys->getClassName());
+				bodiesMenisciiList.initialized = false;//must be re-initialized after creation of first real contact in the model
+				hertzInitialized = true;
+				break;
+			}
+		}
+	}
+	
+	if (fusionDetection && !bodiesMenisciiList.initialized) bodiesMenisciiList.prepare(scene,hertzOn);
 
-	bool hertzInitialized = false;
-	FOREACH(const shared_ptr<Interaction>& interaction, *scene->interactions){ // could be done in parallel ? Was tried once, but needs maybe more comparison to assert it is OK: http://www.mail-archive.com/yade-dev@lists.launchpad.net/msg10842.html
+	FOREACH(const shared_ptr<Interaction>& interaction, *scene->interactions){ // could be done in parallel as soon as OpenMPVector class (lib/base/openmp-accu.hpp) is extended See http://www.mail-archive.com/yade-dev@lists.launchpad.net/msg10842.html and msg11238.html
 		/// interaction is real
 		if (interaction->isReal()) {
-			if (!hertzInitialized) {//NOTE: We are assuming that only one type is used in one simulation here
-				if (CapillaryPhys::getClassIndexStatic()==interaction->phys->getClassIndex()) hertzOn=false;
-				else if (MindlinCapillaryPhys::getClassIndexStatic()==interaction->phys->getClassIndex()) hertzOn=true;
-				else LOG_ERROR("The capillary law is not implemented for interactions using"<<interaction->phys->getClassName());
-			}
-			hertzInitialized = true;
 			CapillaryPhys* cundallContactPhysics=NULL;
 			MindlinCapillaryPhys* mindlinContactPhysics=NULL;
 
@@ -148,7 +156,10 @@ void Law2_ScGeom_CapillaryPhys_Capillarity::action()
 				if (!Vinterpol) {
 					if ((fusionDetection) || (hertzOn ? mindlinContactPhysics->isBroken : cundallContactPhysics->isBroken)) bodiesMenisciiList.remove(interaction);
 					if (D>0) scene->interactions->requestErase(interaction);
-					else if (Pinterpol > 0) LOG_ERROR("No meniscus found at a contact. capillaryPressure may be too large wrt. the loaded data files.") // V=0 at a contact reveals a problem if and only if uc* > 0
+					else if ((Pinterpol > 0) && (showError)) {
+						LOG_ERROR("No meniscus found at a contact. capillaryPressure may be too large wrt. the loaded data files."); // V=0 at a contact reveals a problem if and only if uc* > 0
+						showError = false;//show error message once / avoid console spam
+					}
 				}
 				/// wetting angles
 				if (!hertzOn) {
@@ -164,7 +175,14 @@ void Law2_ScGeom_CapillaryPhys_Capillarity::action()
 	}
 	if (fusionDetection) checkFusion();
 
-	FOREACH(const shared_ptr<Interaction>& interaction, *scene->interactions){ // same remark for parallel loops
+        #ifdef YADE_OPENMP
+        const long size=scene->interactions->size();
+        #pragma omp parallel for schedule(guided) num_threads(ompThreads>0 ? min(ompThreads,omp_get_max_threads()) : omp_get_max_threads())
+        for(long i=0; i<size; i++){
+            const shared_ptr<Interaction>& interaction=(*scene->interactions)[i];
+        #else
+        FOREACH(const shared_ptr<Interaction>& interaction, *scene->interactions){
+        #endif
 		if (interaction->isReal()) {
 			CapillaryPhys* cundallContactPhysics=NULL;
 			MindlinCapillaryPhys* mindlinContactPhysics=NULL;
@@ -204,9 +222,10 @@ void Law2_ScGeom_CapillaryPhys_Capillarity::checkFusion()
 {
 	//Reset fusion numbers
 	FOREACH(const shared_ptr<Interaction>& interaction, *scene->interactions){ // same remark for parallel loops, the most problematic part ?
-		if ( !interaction->isReal()) continue;
-		if (!hertzOn) static_cast<CapillaryPhys*>(interaction->phys.get())->fusionNumber=0;
-		else static_cast<MindlinCapillaryPhys*>(interaction->phys.get())->fusionNumber=0;
+		if ( interaction->isReal()) {
+			if (!hertzOn) static_cast<CapillaryPhys*>(interaction->phys.get())->fusionNumber=0;
+			else static_cast<MindlinCapillaryPhys*>(interaction->phys.get())->fusionNumber=0;
+		}
 	}
 
 	list< shared_ptr<Interaction> >::iterator firstMeniscus, lastMeniscus, currentMeniscus;
@@ -260,7 +279,7 @@ void Law2_ScGeom_CapillaryPhys_Capillarity::checkFusion()
 					if ((angle1+angle2)*Mathr::DEG_TO_RAD > normalAngle) {
 						if (!hertzOn) {++(cundallInteractionPhysics1->fusionNumber); ++(cundallInteractionPhysics2->fusionNumber);}//count +1 if 2 meniscii are overlaping
 						else {++(mindlinInteractionPhysics1->fusionNumber); ++(mindlinInteractionPhysics2->fusionNumber);}
-					};
+					}
 				}
 			}
 		}
@@ -499,13 +518,16 @@ std::ostream& operator<<(std::ostream& os, Tableau& T)
         return os;
 }
 
-BodiesMenisciiList::BodiesMenisciiList(Scene * scene)
+//what is this function for? it is never called...
+//TODO: remove?
+BodiesMenisciiList::BodiesMenisciiList(Scene * scene, bool hertzOn)
 {
 	initialized=false;
-	prepare(scene);
+	prepare(scene, hertzOn);
 }
 
-bool BodiesMenisciiList::prepare(Scene * scene)
+
+bool BodiesMenisciiList::prepare(Scene * scene, bool hertzOn)
 {
 	//cerr << "preparing bodiesInteractionsList" << endl;
 	interactionsOnBody.clear();
@@ -523,10 +545,11 @@ bool BodiesMenisciiList::prepare(Scene * scene)
 	{
 		interactionsOnBody[i].clear();
 	}
-
+	
 	FOREACH(const shared_ptr<Interaction>& I, *scene->interactions){ // parallel version using Engine::ompThreads variable not accessible, this function is not one of the Engine..
                 if (I->isReal()) {
-                    if (static_cast<CapillaryPhys*>(I->phys.get())->meniscus) insert(I);
+			if (!hertzOn) {if (static_cast<CapillaryPhys*>(I->phys.get())->meniscus) insert(I);}
+			else {if (static_cast<MindlinCapillaryPhys*>(I->phys.get())->meniscus) insert(I);}
                 }
         }
 

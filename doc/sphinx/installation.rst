@@ -97,7 +97,8 @@ Alternatively, a read-only checkout is possible via https without a GitHub accou
    
 For those behind firewall, you can download the sources from our `GitHub <https://github.com/yade>`_ repository as compressed archive.
 
-Release and trunk sources are compiled in the same way.
+Release and trunk sources are compiled in the same way. To be notified about new commits
+into the trunk, use `watch option on GitHub <https://help.github.com/articles/watching-repositories/>`_.
 
 Prerequisites
 ^^^^^^^^^^^^^
@@ -264,3 +265,12 @@ upon detecting the C and C++ compiler to use::
 
 Clang does not support OpenMP-parallelizing for the moment, that is why the 
 feature will be disabled.
+
+
+Yubuntu
+------------
+
+If you are not running Ubuntu nor Debian, there is a way to create a Yubuntu `live-usb <http://en.wikipedia.org/wiki/Live_USB>`_ on any usb mass-storage device (minimum recommended size is 5GB). It is a way to make a bootable usb-key with a preinstalled minimalist operating system (Xubuntu), including Yadedaily and Paraview.
+
+More informations about this alternative are available `here <http://geo.hmg.inpg.fr/~chareyre/pubs/yubuntu/>`_ (see the README file first).
+

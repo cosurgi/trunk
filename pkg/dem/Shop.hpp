@@ -121,6 +121,9 @@ class Shop{
 		static Matrix3r getStress(Real volume=0);
 		static Matrix3r getCapillaryStress(Real volume=0, bool mindlin=false);
 		static Matrix3r stressTensorOfPeriodicCell() { LOG_WARN("Shop::stressTensorOfPeriodicCelli is DEPRECATED: use getStress instead"); return Shop::getStress(); }
+
+		static vector<Matrix3r> getStressProfile(Real volume, int nCell, Real dz, Real zRef, vector<Real> vPartAverageX, vector<Real> vPartAverageY, vector<Real> vPartAverageZ);
+
 		//! Compute overall ("macroscopic") stress of periodic cell, returning 2 tensors
 		//! (contribution of normal and shear forces)
 		static py::tuple normalShearStressTensors(bool compressionPositive=false, bool splitNormalTensor=false, Real thresholdForce=NaN);
@@ -146,5 +149,11 @@ class Shop{
 		
 		/* \todo implement groupMask */
 		static py::tuple aabbExtrema(Real cutoff=0.0, bool centers=false);
+		
+		//! evaluation of 2D quantities
+		static Real getSpheresVolume2D(const shared_ptr<Scene>& rb=shared_ptr<Scene>(), int mask=-1);
+		static Real getVoidRatio2D(const shared_ptr<Scene>& rb=shared_ptr<Scene>(),Real zlen=1);
+		//! get stress tensor and tangent operator tensor for FEMxDEM coupling. By Ning Guo
+		static py::tuple getStressAndTangent(Real volume=0, bool symmetry=true);
 };
 

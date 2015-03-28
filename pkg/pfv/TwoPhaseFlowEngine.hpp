@@ -13,7 +13,7 @@
 
 //keep this #ifdef as long as you don't really want to realize a final version publicly, it will save compilation time for everyone else
 //when you want it compiled, you can pass -DTWOPHASEFLOW to cmake, or just uncomment the following line
-//#define TWOPHASEFLOW
+// #define TWOPHASEFLOW
 #ifdef TWOPHASEFLOW
 
 #include "FlowEngine_TwoPhaseFlowEngineT.hpp"
@@ -74,7 +74,7 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	void computePoreThroatCircleRadius();
 	double computePoreSatAtInterface(int ID);
 	void computePoreCapillaryPressure(CellHandle cell);
-	void savePhaseVtk1(const char* folder);
+	void savePhaseVtk(const char* folder);
 	void computePoreThroatRadius();
 	double computeEffPoreThroatRadius(CellHandle cell, int j);
 	double computeEffPoreThroatRadiusFine(CellHandle cell, int j);
@@ -107,11 +107,15 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	
 	CELL_SCALAR_GETTER(bool,.isWRes,cellIsWRes)
 	CELL_SCALAR_GETTER(bool,.isNWRes,cellIsNWRes)
+	CELL_SCALAR_GETTER(bool,.isTrapW,cellIsTrapW)
+	CELL_SCALAR_GETTER(bool,.isTrapNW,cellIsTrapNW)
 	CELL_SCALAR_SETTER(bool,.isNWRes,setCellIsNWRes)
 	CELL_SCALAR_GETTER(Real,.saturation,cellSaturation)
 	CELL_SCALAR_SETTER(Real,.saturation,setCellSaturation)
 	CELL_SCALAR_GETTER(int,.isFictious,cellIsFictious) //Temporary function to allow for simulations in Python
 	CELL_SCALAR_GETTER(bool,.hasInterface,cellHasInterface) //Temporary function to allow for simulations in Python
+	CELL_SCALAR_GETTER(Real,.poreBodyRadius,cellInSphereRadius) //Temporary function to allow for simulations in Python	
+	CELL_SCALAR_GETTER(Real,.poreBodyVolume,cellVoidVolume) //Temporary function to allow for simulations in Python	
 	CELL_SCALAR_SETTER(bool,.hasInterface,setCellHasInterface) //Temporary function to allow for simulations in Python
 
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(TwoPhaseFlowEngine,TwoPhaseFlowEngineT,"documentation here",
@@ -125,9 +129,11 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	,
 	.def("getCellIsFictious",&TwoPhaseFlowEngine::cellIsFictious,"get an integer to indicate which boundary this is allocated to")
 	.def("setCellIsNWRes",&TwoPhaseFlowEngine::setCellIsNWRes,"set status whether 'wetting reservoir' state")
-	.def("savePhaseVtk1",&TwoPhaseFlowEngine::savePhaseVtk1,(boost::python::arg("folder")="./phaseVtk"),"Save the saturation of local pores in vtk format. Sw(NW-pore)=0, Sw(W-pore)=1. Specify a folder name for output.")
+	.def("savePhaseVtk",&TwoPhaseFlowEngine::savePhaseVtk,(boost::python::arg("folder")="./phaseVtk"),"Save the saturation of local pores in vtk format. Sw(NW-pore)=0, Sw(W-pore)=1. Specify a folder name for output.")
 	.def("getCellIsWRes",&TwoPhaseFlowEngine::cellIsWRes,"get status wrt 'wetting reservoir' state")
 	.def("getCellIsNWRes",&TwoPhaseFlowEngine::cellIsNWRes,"get status wrt 'non-wetting reservoir' state")
+	.def("getCellIsTrapW",&TwoPhaseFlowEngine::cellIsTrapW,"get status wrt 'trapped wetting phase' state")
+	.def("getCellIsTrapNW",&TwoPhaseFlowEngine::cellIsTrapNW,"get status wrt 'trapped non-wetting phase' state")
 	.def("getCellSaturation",&TwoPhaseFlowEngine::cellSaturation,"get saturation of one pore")
 	.def("setCellSaturation",&TwoPhaseFlowEngine::setCellSaturation,"change saturation of one pore")
 	.def("computeOnePhaseFlow",&TwoPhaseFlowEngine::computeOnePhaseFlow,"compute pressure and fluxes in the W-phase")
@@ -136,6 +142,8 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	.def("getPoreThroatRadius",&TwoPhaseFlowEngine::cellporeThroatRadius,"get 4 pore throat radii")
 	.def("getNeighbors",&TwoPhaseFlowEngine::getNeighbors,"get 4 neigboring cells")
 	.def("getCellHasInterface",&TwoPhaseFlowEngine::cellHasInterface,"indicates whether a NW-W interface is present within the cell")
+	.def("getCellInSphereRadius",&TwoPhaseFlowEngine::cellInSphereRadius,"get the radius of the inscribed sphere in a pore unit")
+	.def("getCellVoidVolume",&TwoPhaseFlowEngine::cellVoidVolume,"get the volume of pore space in each pore unit")
 	.def("setCellHasInterface",&TwoPhaseFlowEngine::setCellHasInterface,"change wheter a cell has a NW-W interface")
 	)
 	DECLARE_LOGGER;
