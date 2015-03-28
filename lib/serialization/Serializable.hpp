@@ -96,8 +96,8 @@ void make_setter_postLoad(C& instance, const T& val){
 	/*docstring*/    doc)
 
 /* Huh, add_static_property does not support doc argument (add_property does); if so, use add_property for now at least... */
-#define _DEF_READWRITE_BY_VALUE_STATIC(thisClass,attr,doc)_DEF_READWRITE_BY_VALUE(thisClass,attr,doc)
-
+// >>>>>>> fix non fundamental type static variables in qt4
+#define _DEF_READWRITE_BY_VALUE_STATIC(thisClass,attr,doc) add_static_property( /*attr name*/BOOST_PP_STRINGIZE(attr), /*read access*/boost::python::make_getter(&thisClass ::attr     ,boost::python::return_value_policy<boost::python::return_by_value>()),/*write access*/boost::python::make_setter(&thisClass::attr,boost::python::return_value_policy<boost::python::return_by_value>()) ) /* _DEF_READWRITE_BY_VALUE(thisClass,attr,doc) */
 // the conditional yade::py_wrap_ref should be eliminated by compiler at compile-time, as it depends only on types, not their values
 // most of this could be written with templates, including flags (ints can be template args)
 #define _DEF_READWRITE_CUSTOM(thisClass,attr)\
@@ -116,9 +116,8 @@ if(!(_ATTR_FLG(attr) & yade::Attr::hidden)){\
 	else if (!_ref &&  _ro)           _classObj._DEF_READONLY_BY_VALUE(thisClass,_ATTR_NAM(attr),docStr.c_str()); \
 	if(_ro && _post) std::cerr<<"WARN: " BOOST_PP_STRINGIZE(thisClass) "::" _ATTR_NAM_STR(attr) " with the yade::Attr::readonly flag also uselessly sets yade::Attr::triggerPostLoad."<<std::endl; \
 }
-#define _DEF_READWRITE_CUSTOM_STATIC(thisClass,attr,doc) { \
-	_classObj.def_readwrite(BOOST_PP_STRINGIZE(attr),&thisClass::attr,doc);\
-}
+// >>>>>>> fix non fundamental type static variables in qt4
+#define _DEF_READWRITE_CUSTOM_STATIC(thisClass,attr,doc) { if(yade::py_wrap_ref<decltype(thisClass::attr)>::value) _classObj.def_readwrite(BOOST_PP_STRINGIZE(attr),&thisClass::attr,doc); else _classObj._DEF_READWRITE_BY_VALUE_STATIC(thisClass,attr,doc); }
 
 
 #define _PYSET_ATTR_DEPREC(x,thisClass,z) \
@@ -207,6 +206,8 @@ if(key==BOOST_PP_STRINGIZE(_DEPREC_OLDNAME(z))){ \
 #define _ATTR_NAME_ADD_DUMMY_FIELDS(x,y,z) ((/*type*/,z,/*default*/,/*flags*/,/*doc*/))
 
 #define _STAT_NONSTAT_ATTR_PY(thisClass,attr,doc) _DEF_READWRITE_CUSTOM_STATIC(thisClass,attr,doc) /* _DEF_READWRITE_CUSTOM(thisClass,attr,doc) */ /* duplicate static and non-static attributes do not work (they apparently trigger to-python converter being added; for now, make then non-static, that's it. */
+        /* I hope that above problem is fixed now. It came to be from the fact that python has no static variables, and docstring cannot exist for them 
+	 * http://stackoverflow.com/questions/25386370/docstrings-for-static-properties-in-boostpython , Janek*/
 #define _STATATTR_PY(x,thisClass,z) _STAT_NONSTAT_ATTR_PY(thisClass,_ATTR_NAM(z),/*docstring*/ "|ystatic| :ydefault:`" _ATTR_INI_STR(z) "` :yattrtype:`" _ATTR_TYP_STR(z) "` " _ATTR_DOC(z))
 #define _STATATTR_DECL(x,y,z) static _ATTR_TYP(z) _ATTR_NAM(z);
 #define _STATATTR_INITIALIZE(x,thisClass,z) thisClass::_ATTR_NAM(z)=_ATTR_INI(z);
