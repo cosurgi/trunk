@@ -334,10 +334,29 @@ class AttrEditor_Matrix3(AttrEditor_MatrixX):
 	def __init__(self,parent,getter,setter):
 		AttrEditor_MatrixX.__init__(self,parent,getter,setter,3,3,lambda r,c:(r,c))
 
+class AttrEditor_QComboBox(AttrEditor,QComboBox):
+	def __init__(self,parent,getter,setter):
+		AttrEditor.__init__(self,getter,setter)
+		QComboBox.__init__(self,parent)
+		self.activated.connect(self.update)
+		self.addItems(self.getter()[1:])
+		try:
+			self.setCurrentIndex(self.getter().index((self.getter()[0][8:]))-1);
+		except:
+			self.setCurrentIndex(0);
+	def refresh(self): pass
+	def update(self,v):
+		self.setter(["default "+self.getter()[v+1]]+self.getter()[1:])
+		#print "update "+str(v)+ " " +str(self.getter() )
+		pass
+
 class Se3FakeType: pass
 
-_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3}
-_fundamentalInitValues={bool:True,str:'',int:0,float:0.0,complex:0.0j,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0))}
+class DropDownMenuFakeType: pass
+
+
+_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3,DropDownMenuFakeType:AttrEditor_QComboBox}
+_fundamentalInitValues={bool:True,str:'',int:0,float:0.0,complex:0.0j,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0)),DropDownMenuFakeType:""}
 
 class SerQLabel(QLabel):
 	def __init__(self,parent,label,tooltip,path):
@@ -388,6 +407,7 @@ class SerializableEditor(QFrame):
 	def getListTypeFromDocstring(self,attr):
 		"Guess type of array by scanning docstring for :yattrtype: and parsing its argument; ugly, but works."
 		doc=getattr(self.ser.__class__,attr).__doc__
+		val=getattr(self.ser,attr)
 		if doc==None:
 			logging.error("Attribute %s has no docstring."%attr)
 			return None
@@ -396,7 +416,11 @@ class SerializableEditor(QFrame):
 			try:
 			# we need to try anyway, because static variables cannot have a docstring:
 			# http://stackoverflow.com/questions/25386370/docstrings-for-static-properties-in-boostpython
-				return (type(getattr(self.ser.__class__,attr)[0]),) # to make it work we need at least one element in this vector
+				ret = type(val[0])
+				if (ret == str) and (val[0][:7]=="default"):
+				# to enable dropdown menu in Gl1_* and without docstring I must use the vector<string> itself
+					return DropDownMenuFakeType
+				return (ret,) # to make it work we need at least one element in this vector
 			except:
 				logging.error("Attribute %s does not contain :yattrtype:`....` (docstring is '%s') and attempts at deducing it have failed"%(attr,doc))
 				return None
@@ -411,7 +435,7 @@ class SerializableEditor(QFrame):
 			'bool':bool,'int':int,'long':int,'Body::id_t':long,'size_t':long,
 			'Real':float,'float':float,'double':float,'complex':complex,'std::complex<Real>':complex,
 			'Vector6r':Vector6,'Vector6i':Vector6i,'Vector3i':Vector3i,'Vector2r':Vector2,'Vector2i':Vector2i,
-			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,
+			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,'DropDownMenu':DropDownMenuFakeType,
 			'string':str,
 			#'BodyCallback':BodyCallback,
 			'IntrCallback':IntrCallback,'BoundFunctor':BoundFunctor,'IGeomFunctor':IGeomFunctor,'IPhysFunctor':IPhysFunctor,'LawFunctor':LawFunctor,'KinematicEngine':KinematicEngine,
@@ -420,6 +444,7 @@ class SerializableEditor(QFrame):
 		for T,ret in vecMap.items():
 			if vecTest(T,cxxT):
 				logging.debug("Got type %s from cxx type %s"%(repr(ret),cxxT))
+				if (ret == str) and (len(val)>0) and (val[0][:7]=="default"): return DropDownMenuFakeType
 				return (ret,)
 		logging.error("Unable to guess python type from cxx type '%s'"%cxxT)
 		return None
@@ -522,7 +547,7 @@ class SerializableEditor(QFrame):
 		grid=QFormLayout()
 		grid.setContentsMargins(2,2,2,2)
 		grid.setVerticalSpacing(0)
-		grid.setLabelAlignment(Qt.AlignRight)
+		grid.setLabelAlignment(Qt.AlignLeft)
 		if self.showType:
 			lab=SerQLabel(self,makeSerializableLabel(self.ser,addr=True,href=True),tooltip=self.getDocstring(),path=self.path)
 			lab.setFrameShape(QFrame.Box); lab.setFrameShadow(QFrame.Sunken); lab.setLineWidth(2); lab.setAlignment(Qt.AlignHCenter); lab.linkActivated.connect(yade.qt.openUrl)

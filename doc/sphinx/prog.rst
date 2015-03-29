@@ -473,7 +473,7 @@ All (serializable) types in Yade are one of the following:
 
   This funcionality is hidden behind the macro :ref:`YADE_CLASS_BASE_DOC` used in class declaration body (header file), which takes base class and list of attributes::
 
-	YADE_CLASS_BASE_DOC_ATTRS(ThisClass,BaseClass,"class documentation",((type1,attribute1,initValue1,,"Documentation for attribute 1"))((type2,attribute2,initValue2,,"Documentation for attribute 2"));
+	YADE_CLASS_BASE_DOC_ATTRS(ThisClass,BaseClass,"class documentation",((type1,attribute1,initValue1,,"Documentation for attribute 1"))((type2,attribute2,initValue2,,"Documentation for attribute 2")));
 
   Note that attributes are encodes in double parentheses, not separated by commas. Empty attribute list can be given simply by ``YADE_CLASS_BASE_DOC_ATTRS(ThisClass,BaseClass,"documentation",)`` (the last comma is mandatory), or by omiting ``ATTRS`` from macro name and last parameter altogether.
 
@@ -493,6 +493,19 @@ Yade also provides callback for before/after (de) serialization, virtual functio
 * precomputing non-serialized attributes from the serialized values; e.g. :yref:`Facet` computes its (local) edge normals and edge lengths from vertices' coordinates.
 
 .. note:: If there is an attribute ``std::string qtHide`` declared in the class it will be used by ``QT inspect`` module to not display attributes listed as a space separated list of names in ``qtHide``. It is only about display, it does not afftect those attributes in any other way.
+
+It is possible to obtain a drop down menu (QComboBox) in qt4 interface by declaring a special attribute of type Menu like this::
+
+	#include <py/wrapper/Menu.hpp>
+	
+	//....
+	
+	YADE_CLASS_BASE_DOC_ATTRS(ThisClass,BaseClass,"class documentation",
+	        ((Menu          ,drawStyle   ,Menu({"default surface","hidden","points","wire","surface"}),,"Select drawing style in the menu")));
+
+Then the displayed options available in qt4 drop down menu interface are all except the first one. The first one is used to select a default setting. Then later, in the program use this command to see which one is selected::
+
+	if(menuSelection(drawStyle)=="wire") ....
 
 .. _classfactory:
 
