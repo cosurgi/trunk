@@ -104,7 +104,7 @@ Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 	int i( (xyz[0]-startX)/stepPos ), // FIXME - maybe add interpolation?
 	    j( (xyz[1]-startY)/stepPos ),
 	    k( (xyz[2]-startZ)/stepPos );
-	switch(this->dim) {
+	switch(this->dim) { // FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draw one too much!!
 		case 1 :
 			if    ( (i>=0) and (i<gridSize))
 				return tableValuesPosition[0][0][i];

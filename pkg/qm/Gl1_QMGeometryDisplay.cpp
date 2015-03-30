@@ -24,10 +24,11 @@ YADE_PLUGIN(
 #include <lib/smoothing/Spline6Interpolate.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
-bool Gl1_QMGeometryDisplay::absolute=false;
-bool Gl1_QMGeometryDisplay::partReal=true;
-bool Gl1_QMGeometryDisplay::partImaginary=true;
-bool Gl1_QMGeometryDisplay::probability=true;
+Menu Gl1_QMGeometryDisplay::partAbsolute={};
+Menu Gl1_QMGeometryDisplay::partReal={};
+Menu Gl1_QMGeometryDisplay::partImaginary={};
+bool Gl1_QMGeometryDisplay::partsSquared=false;
+int  Gl1_QMGeometryDisplay::partsScale=1.0;
 bool Gl1_QMGeometryDisplay::renderSmoothing=true;
 bool Gl1_QMGeometryDisplay::renderInterpolate=false;
 int  Gl1_QMGeometryDisplay::renderSpecular=10;
@@ -42,22 +43,36 @@ Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 Gl1_QMGeometryDisplay::Gl1_QMGeometryDisplay()
 {
 	partsToDraw.resize(0);
-	partsToDraw.push_back( []()                    { return partReal;                                          } );
-	partsToDraw.push_back( []()                    { return partImaginary;                                     } );
-	partsToDraw.push_back( []()                    { return absolute;                                          } );
-	partsToDraw.push_back( []()                    { return probability;                                       } );
+	partsToDraw.push_back( []()                    { return menuSelection(partReal     )!="hidden" and not partsSquared;                } );
+	partsToDraw.push_back( []()                    { return menuSelection(partImaginary)!="hidden" and not partsSquared;                } );
+	partsToDraw.push_back( []()                    { return menuSelection(partAbsolute )!="hidden" and not partsSquared;                } );
+	partsToDraw.push_back( []()                    { return menuSelection(partReal     )!="hidden" and partsSquared;                    } );
+	partsToDraw.push_back( []()                    { return menuSelection(partImaginary)!="hidden" and partsSquared;                    } );
+	partsToDraw.push_back( []()                    { return menuSelection(partAbsolute )!="hidden" and partsSquared;                    } );
+
+	drawStyle.resize(0);
+	drawStyle.push_back  ( []()                    { return menuSelection(partReal     );                      } );
+	drawStyle.push_back  ( []()                    { return menuSelection(partImaginary);                      } );
+	drawStyle.push_back  ( []()                    { return menuSelection(partAbsolute );                      } );
+	drawStyle.push_back  ( []()                    { return menuSelection(partReal     );                      } );
+	drawStyle.push_back  ( []()                    { return menuSelection(partImaginary);                      } );
+	drawStyle.push_back  ( []()                    { return menuSelection(partAbsolute );                      } );
 
 	valueToDraw.resize(0);
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a);                                      } );
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::imag(a);                                      } );
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::abs(a);                                       } );
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::pow(std::real(a),2);                          } );
+	valueToDraw.push_back( [](std::complex<Real> a){ return std::pow(std::imag(a),2);                          } );
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a*std::conj(a));                         } );
 
 	colorToDraw.resize(0);
-	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))); } ); // display partReal      in bluish   color
-	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))); } ); // display partImaginary in reddish  color
-	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,1.0,0.4))); } ); // display abs value     in greenish color
-	colorToDraw.push_back( [](Vector3r col)        { return col;                                               } ); // for probability use      original color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))); } ); // display partReal               in bluish   color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))); } ); // display partImaginary          in reddish  color
+	colorToDraw.push_back( [](Vector3r col)        { return col;                                               } ); // display abs value              original color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0))); } ); // display partReal      (squred) in bluish   color
+	colorToDraw.push_back( [](Vector3r col)        { return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4))); } ); // display partImaginary (square) in reddish  color
+	colorToDraw.push_back( [](Vector3r col)        { return col;                                               } ); // for probability use            original color
 };
 
 void Gl1_QMGeometryDisplay::go(
@@ -68,7 +83,7 @@ void Gl1_QMGeometryDisplay::go(
 )
 {
 	timeLimit.readWallClock();
-	if(not(absolute or partReal or partImaginary or probability)) return; // nothing to draw
+	if(menuSelection(partAbsolute)=="hidden" and menuSelection(partReal)=="hidden" and menuSelection(partImaginary)=="hidden") return; // nothing to draw
 	QMGeometryDisplay* geometry       = static_cast<QMGeometryDisplay*>(shape.get());
 	QMState*           packet         = static_cast<QMState*>(state.get());
 	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
@@ -88,6 +103,7 @@ void Gl1_QMGeometryDisplay::go(
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
+	Real scalingFactor = (partsScale >= 0 ? ((partsScale==0)?(1):(partsScale)) : -1.0/partsScale);
 	for(int draw=0 ; draw<partsToDraw.size() ; draw++) {
 		if( partsToDraw[draw]() ) {
 			switch(packet->dim) {
@@ -104,7 +120,7 @@ void Gl1_QMGeometryDisplay::go(
 						glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
 						for(Real x=startX ; x<endX ; x+=step ) {
-							glVertex3d(x,0,valueToDraw[draw] (packet->getValPos(Vector3r(x,0,0))) );
+							glVertex3d(x,0,valueToDraw[draw] ((packet->getValPos(Vector3r(x,0,0)))) *scalingFactor);
 						}
 						glEnd();
 					}
@@ -115,12 +131,12 @@ void Gl1_QMGeometryDisplay::go(
 					// 2D points
 					// if(points == true) ... else ...
 					// 2D lines
-					if(wire == true) {
+					if(wire == true or drawStyle[draw]()=="wire") {
 						glColor3v( colorToDraw[draw](col) );
 						for(Real x=startX ; x<=endX ; x+=step/*,i++ */ ) {
 							glBegin(GL_LINE_STRIP);
 							for(Real y=startY ; y<=endY ; y+=step/*,j++*/ ) {
-								glVertex3d(x,y,valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0))) );
+								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(stepWait)) break;
@@ -128,7 +144,7 @@ void Gl1_QMGeometryDisplay::go(
 						for(Real y=startY ; y<=endY ; y+=step ) {
 							glBegin(GL_LINE_STRIP);
 							for(Real x=startX ; x<=endX ; x+=step ) {
-								glVertex3d(x,y,valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0))) );
+								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(stepWait)) break;
@@ -141,7 +157,7 @@ void Gl1_QMGeometryDisplay::go(
 						for(Real x=startX ; x<=endX ; x+=step,i++ ) {
 							int j=0;
 							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
-								waveValues2D[i][j]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,0)));
+								waveValues2D[i][j]=valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0))))*scalingFactor;
 							}
 							if(timeLimit.tooLong(stepWait)) break;
 						}
@@ -175,6 +191,7 @@ void Gl1_QMGeometryDisplay::go(
 									// owszem - bez FFTW3 takie coś musi zostać, ale
 									// z nowymi kontenerami muszę móc to ominąć
 									// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
+//// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem with endXYZ - it draws one element too much!! (outside table bounds)
 									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
 								}
 							}
