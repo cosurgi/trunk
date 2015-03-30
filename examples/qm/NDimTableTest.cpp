@@ -140,6 +140,18 @@ int main(void){
 	D d1;
 	D d2 = std::move(d1);
 
+	std::cout << "\n\n  TESTING operators! \n\n";
+	T1.print();
+	std::cout << "T1-=4;\n";T1-=4;  T1.print();
+	std::cout << "T1+=4;\n";T1+=4;  T1.print();
+	std::cout << "T1*=4;\n";T1*=4;  T1.print();
+	std::cout << "T1/=4;\n";T1/=4;  T1.print();
+	
+	std::cout << "T1*=T1;\n";T1*=T1;  T1.print();
+//	std::cout << "T1.sqrt();\n";T1.sqrt();  T1.print();
+	std::cout << "T1/=T5;\n";T1/=T5;  T1.print();
+	std::cout << "T1+=T1;\n";T1+=T1;  T1.print();
+	std::cout << "T1-=T1;\n";T1-=T1;  T1.print();
 
 };
 

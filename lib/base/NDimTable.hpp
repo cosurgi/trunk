@@ -16,6 +16,8 @@
 #include <vector>
 #include <cassert>
 #include <boost/foreach.hpp>
+#include <algorithm>    // std::transform
+#include <cmath>
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
 #ifdef YADE_FFTW3
@@ -160,20 +162,30 @@ class NDimTable : private std::vector<K
 /* OK */	reference at(std::size_t i)                             { assert(rank_d==1); return parent::operator[](            i            ); };
 /* OK */	reference at(std::size_t i,std::size_t j)               { assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
 /* OK */	reference at(std::size_t i,std::size_t j,std::size_t k) { assert(rank_d==3); return parent::operator[](k+dim_n[2]*(j+i*dim_n[1])); };
+		const reference atSafe(const std::vector<size_t>& pos)                 const{return parent::operator[](calcPositionSafe(pos));     };
+/* OK */	const reference at(const std::vector<size_t>& pos, std::size_t start=0)const{return parent::operator[](calcPosition(pos,start));   };
+/* OK */	const reference at(std::size_t i)                            const{ assert(rank_d==1); return parent::operator[](            i            ); };
+/* OK */	const reference at(std::size_t i,std::size_t j)              const{ assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
+/* OK */	const reference at(std::size_t i,std::size_t j,std::size_t k)const{ assert(rank_d==3); return parent::operator[](k+dim_n[2]*(j+i*dim_n[1])); };
 
-		// // elementwise operations
-		// operator=
-		NDimTable& operator=(const NDimTable&)=default;
-		NDimTable& operator=(NDimTable&&)=default;
-		// operator+=
-		// operator-=
-		// // operators *= and /= implement  http://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29
-		// operator*=
-		// valarray& operator*= (const valarray& rhs);
-		// valarray& operator/= (const K val);
-		// operator/=
-		// abs()
-		// pow()
+		// elementwise operations
+		NDimTable& operator  = (const NDimTable& )=default;
+		NDimTable& operator  = (      NDimTable&&)=default;
+		NDimTable& operator += (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::plus<K>(),k));      };
+		NDimTable& operator -= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::minus<K>(),k));     }; 
+		NDimTable& operator *= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::multiplies<K>(),k));}; 
+		NDimTable& operator /= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::divides<K>(),k));   }; 
+
+		NDimTable& operator += (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::plus<K>()); };
+		NDimTable& operator -= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::minus<K>());};
+		// !!!!!!!!!!!
+		// !IMPORTANT! operators *= and /= implement  http://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29
+		NDimTable& operator *= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::multiplies<K>());};
+		NDimTable& operator /= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::divides<K>());   }; 
+
+//FIXME		NDimTable& abs()            {std::transform(this->begin(),this->end(),this->begin(),std::abs<K>());}; 
+//FIXME		NDimTable& pow (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::pow(a,k);};
+//FIXME		NDimTable& sqrt()           {std::transform(this->begin(),this->end(),this->begin(),[](const K& a){std::pow(a,0.5);});};
 
 		// // contractions (returns new container of different dimension, or works on a provided container of expected dimension)
 		// //
