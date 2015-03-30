@@ -1,6 +1,6 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 #include<py/wrapper/Menu.hpp>
-std::string menuSelection(Menu m)
+std::string menuSelection(const Menu& m)
 {
 	if(m.size()==0)
 		return "";
