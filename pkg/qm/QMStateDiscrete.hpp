@@ -9,6 +9,7 @@
 #include <core/Scene.hpp>
 #include <stdexcept>
 #include <lib/time/TimeLimit.hpp>
+#include <lib/base/NDimTable.hpp>
 
 /*********************************************************************************
 *
@@ -26,13 +27,10 @@
 class QMStateDiscrete: public QMState
 {
 	public:
-		typedef std::vector<std::vector<std::vector<Complexr> > > Complexr3D;
-		//typedef std::vector<std::vector<     Vector3r         > > Vector3r3D;
 		virtual Complexr getValPos(Vector3r xyz);                                   /// return complex quantum aplitude at given positional representation coordinates
-		virtual Real     getStepPos(){ return positionSize[0 /*FIXME*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
+		virtual Real     getStepPos(){ return positionSize[0 /*FIXME, not all are squares*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
 		void postLoad(QMStateDiscrete&);
-		// FIXME: the lattice grid here vector<........>
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			QMStateDiscrete
@@ -43,15 +41,9 @@ class QMStateDiscrete: public QMState
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
-			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized. After it is used the boost::shared_ptr is deleted."))
+			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
 			((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((Vector3r  ,positionSize,Vector3r::Zero(),,"Wavepacket size in position representation space."))
-
-			//This is just Serialization test, FIXME: add this to self-tests, like `yade -test` or `yade -check`
-			//((std::vector< Real >,arealTable,,,,"The FFT lattice grid "))
-			//((std::vector< std::vector< Real > >,table,,,,"The FFT lattice grid "))
-			//((std::complex<Real>,complexNum,,,,"test complex "))
-
+			((NDimTable::DimReal,positionSize,({0}),,"Wavepacket size in position representation space."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -77,8 +69,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
 		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
 
-		// FIXME - yade --test fails load/save ...... FIXME, FIXME ~/yade/trunk/py/tests 
-		Complexr3D tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+		NDimTable<Real> tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+		
+		//typedef std::vector<std::vector<     Vector3r         > > Vector3r3D;
 		//Complexr3D /*Vector3r3D*/ tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
 		//Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
 		//Complexr3D /*Vector3r3D*/ tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
