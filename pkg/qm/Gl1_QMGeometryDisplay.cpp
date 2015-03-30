@@ -113,17 +113,18 @@ void Gl1_QMGeometryDisplay::go(
 				// FIXME(2) - add drawing momentum space
 				case 1 :
 					// FIXME(2) - add points, with point density reflecting the value
-					// 1D points
+					// 1D points ← points scattered randomly, using density
+					// 1D nodes  ← just points at the nodes
 					// if(points == true) ... else ...
 					// 1D lines
-					if(true /* points == false */) {
-						glBegin(GL_LINE_STRIP);
+					if(drawStyle[draw]()!="points") {
+						if(drawStyle[draw]()=="nodes") glBegin(GL_POINTS); else glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
 						for(Real x=startX ; x<endX ; x+=step ) {
 							glVertex3d(x,0,valueToDraw[draw] ((packet->getValPos(Vector3r(x,0,0)))) *scalingFactor);
 						}
 						glEnd();
-					}
+					} // else "points"
 				break;
 
 				case 2:

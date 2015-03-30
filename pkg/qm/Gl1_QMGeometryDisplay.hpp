@@ -42,9 +42,9 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 // FIXME,FIXME - add option to draw points of discretisation (for discretized wavefunctions, do I need to derive :
 // class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
-			((Menu,partAbsolute     ,Menu({"default wire","hidden","points","wire","surface"}),,"Show absolute value of the wavefunction"))
-			((Menu,partImaginary    ,Menu({"default surface","hidden","points","wire","surface"}),,"Show imaginary component"))
-			((Menu,partReal         ,Menu({"default surface","hidden","points","wire","surface"}),,"Show real component"))
+			((Menu,partAbsolute     ,Menu({"default wire","hidden","nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
+			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","points","wire","surface"}),,"Show imaginary component"))
+			((Menu,partReal         ,Menu({"default surface","hidden","nodes","points","wire","surface"}),,"Show real component"))
 			((int ,partsScale       ,1.0,,"Scaling of the wavefunction. Positive number multiplies, negative divides by absolute value."))
 			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
 			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))

@@ -8,6 +8,7 @@
 
 class PeriodicEngine:  public GlobalEngine {
 	public:
+		// FIXME - use lib/time/TimeLimit.hpp
 		static Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
 		virtual ~PeriodicEngine() {}; // vtable
 		virtual bool isActivated(){
