@@ -35,11 +35,11 @@ class FFTW3_Allocator
 			typedef FFTW3_Allocator<U> other;
 		};
 
-		inline explicit FFTW3_Allocator()                         /* FIXME: should I add this?   throw()  */ {};
-		inline          ~FFTW3_Allocator()                        /* FIXME: should I add this?   throw()  */ {};
-		inline explicit FFTW3_Allocator(const FFTW3_Allocator& )  /* FIXME: should I add this?   throw()  */ {};
+		inline /*FIXME: why was it here? FIXME - it was to prevent copy-initialisation http://en.cppreference.com/w/cpp/language/explicit explicit*/ FFTW3_Allocator()                         /* FIXME: should I add this?   throw()  */ {};
+		inline          ~FFTW3_Allocator()                            /* FIXME: should I add this?   throw()  */ {};
+		inline /*FIXME: why was it here? explicit*/ FFTW3_Allocator(const FFTW3_Allocator& )  /* FIXME: should I add this?   throw()  */ {};
 		template<typename U>
-		inline explicit FFTW3_Allocator(const FFTW3_Allocator<U>&)/* FIXME: should I add this?   throw()  */ {};
+		inline /*FIXME: why was it here? explicit*/ FFTW3_Allocator(const FFTW3_Allocator<U>&)/* FIXME: should I add this?   throw()  */ {};
 
 		//    address
 		inline pointer       address(reference r      ) { return &r; } //.. FIXME: is it necessary?
@@ -74,7 +74,7 @@ template <>
 struct FFTW3_Allocator<float>::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
-		std::cout << "fftwf_malloc(n)\n";
+		std::cout << "fftwf_malloc("<<n<<")\n";
 		return fftwf_malloc(n);
 	}
 
