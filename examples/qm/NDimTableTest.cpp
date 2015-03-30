@@ -12,11 +12,16 @@ struct B : A {
 	std::string s2; 
 	int n;
 	B() =default ;
-	B(const A& other) : A(other) {}
+	B(const B& other) = default ;
+	B(const A& other) : A(other) {std::cout <<"COPY   B(const A& other)";};
 
-		// implicit move contructor B::(B&&)
-		// calls A's move constructor
-		// calls s2's move constructor
+B(B&& other): A(static_cast<A&&>(other)) { std::cout <<"MOVE  B(B&& other): A(static_cast<A&&>(other))";};
+B(A&& other): A(static_cast<A&&>(other)) { std::cout <<"MOVE  B(A&& other): A(static_cast<A&&>(other))";};
+B& operator=(const B&)=default;
+B& operator=(B&&)=default;
+		// implicit move contructor B::(B&&)        //	
+		// calls A's move constructor               //	
+		// calls s2's move constructor              //	
 		// and makes a bitwise copy of n
 };
 
@@ -61,8 +66,8 @@ int main(void){
 	dim2.push_back(5);
 	//dim2.push_back(4);
 	//dim1.push_back(2);
-	NDimTable<float> T2;
-	T2.resize(dim2);
+	std::cout << "\nCREATE T2\n";
+	NDimTable<float> T2(dim2);
 	for(int i=0 ; i<5; i++)
 				T2.at(i    )=1000*i+1000       ;
 	for(int i=0 ; i<5; i++)
@@ -82,6 +87,7 @@ int main(void){
 		for(int j=0 ; j<4 ; j++) {
 			for(int k=0 ; k<5 ; k++) {
 				std::cout << T3.at(i,j,k) << " (" << (100*i+10*j +1)*(1000*k+1000) << ")   " ;
+				assert  (    T3.at(i,j,k) ==         (100*i+10*j +1)*(1000*k+1000) );
 				//std::cout << T1.at(i,j) << " ";
 			};
 			std::cout << "\n";
@@ -93,27 +99,38 @@ int main(void){
 	T3.print();
 	
 	std::cout << "T4\n";
-//	NDimTable<float> T4;T4=T1;
-//	T1.print();
-//	T4.print();
+	NDimTable<float> T4;T4=T1;
+	T1.print();
+	T4.print();
 	
 	std::cout << "T5\n";
+	std::cout << "T1 address= "<< &T1 << "\n";
 	NDimTable<float> T5(std::move(T1));
-	T1.print();
 	T5.print();
+	T1.print(); //this must segfault, so don't do it.
+	std::cout << "T1 address= "<< &T1 << "\n";
+	std::cout << "T5 address= "<< &T5 << "\n";
+	std::cout << "restore content of T1=T5\n";
+	T1=T5;
+	std::cout << "T1 address= "<< &T1 << "\n";
+	std::cout << "T5 address= "<< &T5 << "\n";
+	T1.print(); //this must NOT segfault now.
 
 	std::cout << "\n\nTESTS from http://en.cppreference.com/w/cpp/language/move_constructor\n\n";
-	std::cout << "  Trying to move A (a1)          ";
-	A a1 = f(A()); // move-construct from rvalue temporary
+	std::cout << "  Trying to move A (a1) // move-construct from rvalue temporary         ";
+	A a1 = f(A(dim1));                        // move-construct from rvalue temporary
 	std::cout << "  Trying to move A (a2)          ";
 	A a2 = std::move(a1); // move-construct from xvalue
 
-	std::cout << "  Trying to move B               ";
-	B b1;
+	std::cout << "  Trying to create A (first create)  ";
+	A a4(dim1);
+	std::cout << "  Trying to create B (first create)  ";
+	B b1(dim1);
+//	std::cout << "!! FIXME - 'move failed! rank:2' above!\n\n"; // FIXED by adding  B(A&& other): A(static_cast<A&&>(other)) 
 	std::cout << "  Before move, b1 = \"" << b1 << "\"\n";
 	B b2 = std::move(b1); // calls implicit move ctor
-	std::cout << "  After move, b1 = \"" << b1 << "\"\n";
 	std::cout << "  After move, b2 = \"" << b2 << "\"\n";
+	std::cout << "  After move, b1 = \"" << b1 << "\"\n";
 
 	std::cout << "  Trying to move C               ";
 	C c1;

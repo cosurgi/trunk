@@ -74,11 +74,12 @@ template <>
 struct FFTW3_Allocator<float>::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
-		std::cout << "fftwf_malloc("<<n<<")\n";
+		std::cout << "----- fftwf_malloc("<<n<<")\n";
 		return fftwf_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwf_FREE\n";
 		fftwf_free(p);
 	}
 };

@@ -108,8 +108,7 @@ class NDimTable : private std::vector<K
 	public:
 		//friend bool unitTesting<typename K>(const NDimTable<K>&);
 		// empty constructor
-		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0)
-		{}; //http://en.cppreference.com/w/cpp/container/vector/vector
+		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0) {}; //http://en.cppreference.com/w/cpp/container/vector/vector
 		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0)) { resize(d     ); };
 		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0)) { resize(d,init); };
 		// copy constructor
@@ -120,10 +119,10 @@ class NDimTable : private std::vector<K
 		};
 		// move constructor
 		NDimTable(NDimTable&& other)
-			: parent(std::move<parent>(static_cast<parent&>(other))), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
+			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
 		{
 			std::cerr << "moved! rank:" << rank_d << "\n";
-			//other={};
+			other={};
 		};
 		// tensor product constructor
 		// careful - it's a vector of pointers. It's intended to be initialised with references
@@ -164,6 +163,8 @@ class NDimTable : private std::vector<K
 
 		// // elementwise operations
 		// operator=
+		NDimTable& operator=(const NDimTable&)=default;
+		NDimTable& operator=(NDimTable&&)=default;
 		// operator+=
 		// operator-=
 		// // operators *= and /= implement  http://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29
