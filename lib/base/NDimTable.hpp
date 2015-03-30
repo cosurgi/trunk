@@ -47,6 +47,7 @@ class NDimTable : private std::vector<K
 		typedef std::vector<std::size_t>  DimN;
 		typedef std::vector<value_type>   DimReal;
 	private:
+	// Attributes
 		std::size_t                rank_d;      // rank, ᵈ
 		DimN                       dim_n;       // array dimensions are n⁰ × n¹ × n² × … × nᵈ⁻¹
 								// NOTE: actually for a tensor all nⁱ are equal, because that's the number
@@ -107,15 +108,25 @@ class NDimTable : private std::vector<K
 	public:
 		//friend bool unitTesting<typename K>(const NDimTable<K>&);
 		// empty constructor
-		NDimTable() : parent(std::size_t(0))
+		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0)
 		{}; //http://en.cppreference.com/w/cpp/container/vector/vector
 		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0)) { resize(d     ); };
 		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0)) { resize(d,init); };
 		// copy constructor
 		NDimTable(const NDimTable& other) 
 			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
-		{};
+		{
+			std::cerr << "move failed! rank:" << rank_d << "\n";
+		};
+		// move constructor
+		NDimTable(NDimTable&& other)
+			: parent(std::move<parent>(static_cast<parent&>(other))), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
+		{
+			std::cerr << "moved! rank:" << rank_d << "\n";
+			//other={};
+		};
 		// tensor product constructor
+		// careful - it's a vector of pointers. It's intended to be initialised with references
 		NDimTable(const std::vector<const NDimTable*>& others)
 			: parent(std::size_t(0))
 		{
@@ -130,6 +141,10 @@ class NDimTable : private std::vector<K
 /* OK */	void resize(const std::vector<std::size_t>& d, value_type init) {
 			calcDimRankTotal(d);
 			parent::resize(total,init);
+		};
+/* OK */	void resize(const NDimTable& other) {
+			calcDimRankTotal(other.dim_n);
+			parent::resize(total);
 		};
 
 		// capacity
@@ -201,8 +216,9 @@ class NDimTable : private std::vector<K
 		// };
 
 	private:
-/* OK */	void increment(std::vector<std::size_t>& pos_i)
+/* OK */	int increment(std::vector<std::size_t>& pos_i) const
 		{
+			int number_of_times_it_carried_over(0);
 			bool done(false);
 			std::size_t rank_i(rank_d-1);
 			// increment last index (last index varies fastest)
@@ -210,6 +226,7 @@ class NDimTable : private std::vector<K
 			// now carry over, if it goes higher than dim_n[rank_i]
 			while( pos_i[rank_i] >= dim_n[rank_i] )
 			{
+				number_of_times_it_carried_over++;
 				if(rank_i == 0) {
 					pos_i[rank_i  ]=0;
 					break;
@@ -218,6 +235,7 @@ class NDimTable : private std::vector<K
 					pos_i[rank_i  ]++;
 				}
 			};
+			return number_of_times_it_carried_over;
 		};
 	public:
 		// tensor product
@@ -251,8 +269,29 @@ class NDimTable : private std::vector<K
 			}
 		};
 
+		void print(std::ostream& os) const
+		{
+			if(rank_d==0) return;
+			std::vector<std::size_t> pos_i(rank_d,0);
+			for(std::size_t total_i=0;total_i < total; total_i++)
+			{
+				os << parent::operator[](total_i) << " ";
+				int n(increment(pos_i));
+				for(int i=0;i<n;i++)
+					os << "\n";
+			}
+		}
+		void print() const { print(std::cout);};
+
 		// FFTW3, here or there?
                 //        There is a separate class for complex<K>, which provides FFT and IFFT
+};
+
+template<typename K>
+std::ostream& operator<<(std::ostream& os, const NDimTable<K>& o)
+{
+	o.print(os);
+	return os;
 };
 
 // dobra, klasa zaczyna działać.
