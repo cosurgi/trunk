@@ -6,6 +6,9 @@ dimensions= 2
 size      = 10
 halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
+## scale up the graphics
+Gl1_QMGeometryDisplay().partsScale=40
+
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
 ## - it is compared with the same movement, but calculated analytically
@@ -40,7 +43,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=0.5,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=2,hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 

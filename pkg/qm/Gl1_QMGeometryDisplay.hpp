@@ -7,6 +7,7 @@
 #include "QMGeometryDisplay.hpp"
 #include <lib/time/TimeLimit.hpp>
 #include <lib/computational-geometry/MarchingCube.hpp>
+#include <py/wrapper/Menu.hpp>
 
 /*********************************************************************************
 *
@@ -41,10 +42,11 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 // FIXME,FIXME - add option to draw points of discretisation (for discretized wavefunctions, do I need to derive :
 // class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
 			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
-			((bool,absolute         ,false,,"Show absolute probability"))
-			((bool,partImaginary    ,true,,"Show only imaginary component"))
-			((bool,partReal         ,true,,"Show only real component"))
-			((bool,probability      ,true,,"Show probability, which is squared absolute value"))
+			((Menu,partAbsolute     ,Menu({"default wire","hidden","points","wire","surface"}),,"Show absolute value of the wavefunction"))
+			((Menu,partImaginary    ,Menu({"default surface","hidden","points","wire","surface"}),,"Show imaginary component"))
+			((Menu,partReal         ,Menu({"default surface","hidden","points","wire","surface"}),,"Show real component"))
+			((int ,partsScale       ,1.0,,"Scaling of the wavefunction. Positive number multiplies, negative divides by absolute value."))
+			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
 			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
@@ -59,6 +61,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		TimeLimit timeLimit;
 		MarchingCube mc;
 		std::vector< std::function< bool    (                  ) > > partsToDraw;
+		std::vector< std::function< string  (                  ) > > drawStyle;
 		std::vector< std::function< Real    (std::complex<Real>) > > valueToDraw;
 		std::vector< std::function< Vector3r(Vector3r          ) > > colorToDraw;
 
