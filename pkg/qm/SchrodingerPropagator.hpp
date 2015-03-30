@@ -112,10 +112,7 @@ found in [TalEzer1984]_"
 	);
 	DECLARE_LOGGER;
 	private:
-		// FIXME - put this in some other nice place.
-		Real getClock(){ timeval tp; gettimeofday(&tp,NULL); return tp.tv_sec+tp.tv_usec/1e6; }
-		bool errorAllowed(){if ( (getClock() - lastError)>4) {lastError=getClock(); return true;} else return false; }; // report error no more frequent than once per 4 seconds.
-		Real lastError;
+		TimeLimit timeLimit;
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 

@@ -29,7 +29,7 @@ O.engines=[
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
-	SchrodingerKosloffPropagator(steps=100),
+	SchrodingerKosloffPropagator(steps=-1),
 ]
 
 ## Create:

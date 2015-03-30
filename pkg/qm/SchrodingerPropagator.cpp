@@ -8,6 +8,7 @@
 #include <unsupported/Eigen/FFT>
 #include <functional>   // std::plus, std::multiplies
 #include <algorithm>    // std::transform
+#include <limits>
 
 #ifdef YADE_FFTW3
 #include <fftw3.h>
@@ -242,9 +243,11 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& ps
 
 void SchrodingerKosloffPropagator::action()
 {
+	timeLimit.readWallClock();
 	Real R   = calcKosloffR(); // FIXME -  that's duplicate here
 	Real G   = calcKosloffG(); // FIXME -  that's duplicate here
-	int STEPS(steps<0 ? std::max(3*R,5.0) : steps);
+	Real R13 = 1.3*R;
+	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
 
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
@@ -264,7 +267,8 @@ void SchrodingerKosloffPropagator::action()
 			FOREACH(Complexr& psi_i, psi_final) psi_i=ak0*psi_i + ak1*psiN___1[j++];
 			
 			int i(0);
-			for(i=2 ; i<=STEPS /*and std::abs(ak)>1e-40*/ ; i++)
+			// never stop when i<R*1.3, unless steps is positive. Auto stop based on std::numeric_limits<Real>::min()
+			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
 				std::vector<Complexr> psi_tmp(psiN___0.size());        // ψ₂:
 				calcPsiPlus_1(psiN___1,psi_tmp,psi);                   // ψ₂: psi_tmp  =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
@@ -273,7 +277,7 @@ void SchrodingerKosloffPropagator::action()
 				std::vector<Complexr> psiN___2(psiN___0.size());       // ψ₂:
 				                                                       // ψ₂: psiN___2 = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 				std::transform(psi_tmp.begin(), psi_tmp.end(), psiN___0.begin(), psiN___2.begin(), std::minus<Complexr>());
-
+				// FIXME - all ak can be precalculated, because R=const
 				ak = calcAKseriesCoefficient(i,R);
 				j=0;                                                   // ψ(t+dt):  psi_final+=a₂ψ₂
 				FOREACH(Complexr& psi_i, psi_final) psi_i+=ak*psiN___2[j++]; 
@@ -283,9 +287,9 @@ void SchrodingerKosloffPropagator::action()
 			}
 			Complexr expiRG = std::exp(-1.0*Mathr::I*(R+G));
 			FOREACH(Complexr& psi_i, psi_final) psi_i*=expiRG;             // ψ(t+dt): psi_final=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
-
+			//std::cerr << "middle ak " << ak << "\n";
 			psi->tableValuesPosition[0][0]=psi_final;
-			if(errorAllowed()) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << i-1 << "/" << STEPS << "\n";
+			if(timeLimit.messageAllowed(4)) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << i-1 << "/" << steps << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }
