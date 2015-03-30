@@ -17,7 +17,7 @@
 #include<string>
 #include<vector>
 typedef            std::vector<std::string>   Menu;
-std::string menuSelection(Menu m);
+std::string menuSelection(const Menu& m);
 
 // NOTE: it is simplest way to do this just by typedef. The caveat is that any
 // vector<string> type might potentially become a dropdown menu in the qt4
