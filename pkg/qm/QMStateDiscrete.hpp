@@ -55,6 +55,8 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("iToK"     ,&QMStateDiscrete::iToK     ,"Get $k$ coordinate for i-th node, invoke example: iToK(0)")
 			.def("xToI"     ,&QMStateDiscrete::xToI     ,"Get node number for $x$ coordinate, invoke example: xToI(0)")
 			.def("kToI"     ,&QMStateDiscrete::kToI     ,"Get node number for $k$ coordinate, invoke example: kToI(0)")
+			.def("valAti"   ,&QMStateDiscrete::valAti   ,"val")
+			.def("maxI"     ,&QMStateDiscrete::maxI     ,"size")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
@@ -68,6 +70,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real iToK(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*kMax(/*startX,endX,gridSize*/)+(gridSize-i)*kMin(/*startX,endX,gridSize*/))/gridSize; };
 		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
 		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
+
+		Complexr   valAti(int i){return tableValuesPosition[0][0][i];};
+		int        maxI()       {return tableValuesPosition[0][0].size();};
 
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 		

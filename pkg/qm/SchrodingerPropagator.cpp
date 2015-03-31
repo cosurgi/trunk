@@ -202,10 +202,9 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
 	static NDimTable<Real    > kTable(psiN___0.dim());          // k FIXME: kTable should be prepared only once
 	if(! hasTable){
-		int i(0);
-		FOREACH(Real& k, kTable) k=-1.0*std::pow(psi->iToK(i++),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
+		int i(kTable.size()/2); // rotate kTable instead
+		FOREACH(Real& k, kTable) k=-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
 		hasTable=true;
-		std::rotate(kTable.begin(),kTable.begin()+(kTable.size()/2-0),kTable.end()); // ROTATE kTable instead.
 	}
 // FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
 //        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
