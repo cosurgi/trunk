@@ -112,7 +112,7 @@ void SchrodingerKosloffPropagator::doFFT_1D (const std::vector<Complexr>& inp,st
 #endif
 }
 
-void SchrodingerKosloffPropagator::doIFFT_1D(const std::vector<Complexr>& inp,std::vector<Complexr>& outp)
+void SchrodingerKosloffPropagator::doIFFT_1D(const NDimTable<Complexr>& inp,NDimTable<Complexr>& outp)
 {
 #ifdef YADE_FFTW3
 	fftw_complex *in, *out;
@@ -190,7 +190,8 @@ Real SchrodingerKosloffPropagator::eMax()
 	return ret;
 }
 
-void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& psiN___0,std::vector<Complexr>& psiN___1,/*FIXME - remove*/QMStateDiscrete* psi)
+void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN___0,NDimTable<Complexr>& psiN___1,
+	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
 	Real dt=scene->dt;
@@ -198,8 +199,8 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const std::vector<Complexr>& ps
 	Real G   = calcKosloffG();
 
 	// FIXME,FIXME ↓
-	static bool hasTable(false);                                   // k FIXME: kTable should be prepared only once
-	static std::vector<Real    > kTable(psiN___0.size());          // k FIXME: kTable should be prepared only once
+	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
+	static NDimTable<Real    > kTable(psiN___0.dim());          // k FIXME: kTable should be prepared only once
 	if(! hasTable){
 		int i(0);
 		FOREACH(Real& k, kTable) k=-1.0*std::pow(psi->iToK(i++),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
