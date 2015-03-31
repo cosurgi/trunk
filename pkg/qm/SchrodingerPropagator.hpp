@@ -76,10 +76,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		Real calcKosloffR() { return scene->dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG() { return scene->dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
 		Complexr calcAKseriesCoefficient(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
-		void doFFT_1D (const std::vector<Complexr>& in,std::vector<Complexr>& out);
-		void doIFFT_1D(const std::vector<Complexr>& in,std::vector<Complexr>& out);
-		void fftTest(); // debug + testing
-		void calcPsiPlus_1(const std::vector<Complexr>& in,std::vector<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
+		void calcPsiPlus_1(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
@@ -108,7 +105,6 @@ found in [TalEzer1984]_"
 			.def("G"     ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
 			.def("calcG" ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
 			.def("ak"    ,&SchrodingerKosloffPropagator::calcAKseriesCoefficient,"Calculate $a_k$ coefficient in Chebyshev polynomial expansion.")
-			.def("fftTest",&SchrodingerKosloffPropagator::fftTest,"Do FFT test.")
 	);
 	DECLARE_LOGGER;
 	private:

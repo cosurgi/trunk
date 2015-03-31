@@ -1,5 +1,5 @@
-#./NDimTableTest > test.tmp 2>&1
-#diff -s test.tmp NDimTableTest_correct_output.txt
+./NDimTableTest > test.tmp 2>&1
+diff -s test.tmp NDimTableTest_correct_output.txt
 new tensor rank=2
 new tensor dim_n: 3, 4, 
 new tensor total=12
@@ -318,6 +318,18 @@ moved! rank:2
 -0.808 -0.888 -0.968 -1.048 
 -1.608 -1.688 -1.768 -1.848 
 
+----- fftwf_malloc(48)
+move failed! rank:2
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+conversion! rank:2
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+----- fftwf_FREE
 ----- fftwf_FREE
 ----- fftwf_FREE
 ----- fftwf_FREE

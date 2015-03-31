@@ -71,7 +71,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
 		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
 
-		Complexr   valAti(int i){return tableValuesPosition.at(i);};
+		const Complexr& valAti(int i){return tableValuesPosition.at(i);};
 		int        maxI()       {return tableValuesPosition.size0(0);};
 
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"

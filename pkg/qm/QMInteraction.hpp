@@ -88,7 +88,7 @@ class QMInteractionGeometry: public IGeom
 // FIXME (!1)	/*FIXME? Complexr*/ Real valAtIdx(NDimTable<Real>::DimN    idx){};
 // FIXME (!1)	/*FIXME? Complexr*/ Real valAtPos(NDimTable<Real>::DimReal pos){};
 
-		NDimTable<Real> potentialValues;     // Discrete values of potential
+		NDimTable<Complexr> potentialValues;     // Discrete values of potential
 
 };
 REGISTER_SERIALIZABLE(QMInteractionGeometry);
