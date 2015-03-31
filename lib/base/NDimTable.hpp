@@ -310,7 +310,78 @@ class NDimTable : private std::vector<K
 		void print() const { print(std::cout);};
 
 		// FFTW3, here or there?
-                //        There is a separate class for complex<K>, which provides FFT and IFFT
+
+		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
+		{
+std::cerr << " ............ i9  \n";
+			(*this)=inp; // FIXME - jakoś inaczej
+std::cerr << " ............ i10  \n";
+			#ifdef YADE_FFTW3
+			fftw_complex *in, *out;
+			fftw_plan p;
+			int N(inp.size0(0));
+			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+std::cerr << " ............ i11  \n";
+			
+			for(int i=0;i<N;i++) {
+				in[i][0]=std::real(inp.at(i));
+				in[i][1]=std::imag(inp.at(i));
+			}
+		
+std::cerr << " ............ i12  \n";
+			fftw_execute(p);
+std::cerr << " ............ i13  \n";
+			
+			for(int i=0;i<N;i++) {
+				this->at(i)=std::complex<Real>(out[i][0],out[i][1]);
+			}
+std::cerr << " ............ i14  \n";
+			
+			fftw_destroy_plan(p);
+			fftw_free(in);
+			fftw_free(out);
+			#else
+			#error fftw3 library is needed
+			#endif
+		};
+		
+		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
+		{
+std::cerr << " ............ i9  \n";
+			(*this)=inp; // FIXME - jakoś inaczej
+std::cerr << " ............ i10  \n";
+			#ifdef YADE_FFTW3
+			fftw_complex *in, *out;
+			fftw_plan p;
+			int N(inp.size0(0));
+			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+std::cerr << " ............ i11  \n";
+			p = fftw_plan_dft_1d(N, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+			
+			for(int i=0;i<N;i++) {
+				in[i][0]=std::real(inp.at(i));
+				in[i][1]=std::imag(inp.at(i));
+			}
+std::cerr << " ............ 12  \n";
+		
+			fftw_execute(p);
+			
+			for(int i=0;i<N;i++) {
+				this->at(i)=std::complex<Real>(out[i][0],out[i][1])/((Real)(N));
+			}
+			
+			fftw_destroy_plan(p);
+			fftw_free(in);
+			fftw_free(out);	
+			//std::cout << "doIFFT_1D fftw3\n";
+			#else
+			#error fftw3 library is needed
+			#endif
+		}
+
 };
 
 template<typename K>
@@ -343,6 +414,12 @@ template<typename K, typename L> NDimTable<K> operator/(const NDimTable<K>& a,co
 // teraz, żebym mógł chociaż cokolwiek policzyć, to muszę zrobić klasę dla liczb zespolonych z FFT, IFFT
 
 
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 /*
 		void doFFT_1D (const std::vector<Complexr>& in,std::vector<Complexr>& out);
 		void doIFFT_1D(const std::vector<Complexr>& in,std::vector<Complexr>& out);
@@ -476,5 +553,5 @@ void SchrodingerKosloffPropagator::fftTest()
 // (10,-2.14306e-16), (20,4.71028e-16), (1,2.14306e-16), (-4,0), (5,-2.14306e-16), (6,-4.71028e-16), (1.57009e-16,2.14306e-16), (1,0), 
 // (-0.767767,3.44975), (-10.253,4.94975), (-2.76777,-6.44975), (13.7886,0), (-2.76777,6.44975), (-10.253,-4.94975), (-0.767767,-3.44975), (2.47487,0), 
 }
-
 */
+

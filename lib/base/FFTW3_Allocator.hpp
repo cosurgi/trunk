@@ -86,9 +86,37 @@ struct FFTW3_Allocator<float>::FFTW3_Memory
 	}
 };
 
+/// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for float precision.
+template <>
+struct FFTW3_Allocator<std::complex<float> >::FFTW3_Memory
+{
+	static void* malloc(size_t n) { 
+		std::cout << "----- fftwf_malloc("<<n<<")\n";
+		return fftwf_malloc(n);
+	}
+
+	static void free(void *p) {
+		std::cout << "----- fftwf_FREE\n";
+		fftwf_free(p);
+	}
+};
+
 /// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for double precision.
 template <>
 struct FFTW3_Allocator<double>::FFTW3_Memory
+{
+	static void* malloc(size_t n) {
+		return fftw_malloc(n);
+	}
+
+	static void free(void *p) {
+		fftw_free(p);
+	}
+};
+
+/// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for double precision.
+template <>
+struct FFTW3_Allocator<std::complex<double> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
 		return fftw_malloc(n);
@@ -112,11 +140,36 @@ struct FFTW3_Allocator<long double>::FFTW3_Memory
 	}
 };
 
+/// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for long double precision.
+template <>
+struct FFTW3_Allocator<std::complex<long double> >::FFTW3_Memory
+{
+	static void* malloc(size_t n) {
+		return fftwl_malloc(n);
+	}
+
+	static void free(void *p) {
+		fftwl_free(p);
+	}
+};
+
 #ifdef FLOAT128_PRECISION
 #include <boost/multiprecision/float128.hpp> 
 /// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for float128 precision.
 template <>
 struct FFTW3_Allocator<float128>::FFTW3_Memory
+{
+	static void* malloc(size_t n) {
+		return fftwq_malloc(n);
+	}
+
+	static void free(void *p) {
+		fftwq_free(p);
+	}
+};
+/// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for float128 precision.
+template <>
+struct FFTW3_Allocator<std::complex<float128> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
 		return fftwq_malloc(n);

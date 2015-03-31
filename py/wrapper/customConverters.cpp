@@ -181,6 +181,7 @@ BOOST_PYTHON_MODULE(_customConverters){
 	// register 2-way conversion between c++ vector and python homogeneous sequence (list/tuple) of corresponding type
 	#define VECTOR_SEQ_CONV(Type) custom_vector_from_seq<Type>();  boost::python::to_python_converter<std::vector<Type>, custom_vector_to_list<Type> >();
 		VECTOR_SEQ_CONV(int);
+		VECTOR_SEQ_CONV(std::size_t);
 		VECTOR_SEQ_CONV(bool);
 		VECTOR_SEQ_CONV(Real);
 		VECTOR_SEQ_CONV(std::complex<Real>);
