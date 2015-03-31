@@ -18,6 +18,8 @@
 #include <boost/foreach.hpp>
 #include <algorithm>    // std::transform
 #include <cmath>
+#include <complex>
+
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
 #ifdef YADE_FFTW3
@@ -171,21 +173,25 @@ class NDimTable : private std::vector<K
 		// elementwise operations
 		NDimTable& operator  = (const NDimTable& )=default;
 		NDimTable& operator  = (      NDimTable&&)=default;
-		NDimTable& operator += (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::plus<K>(),k));      };
-		NDimTable& operator -= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::minus<K>(),k));     }; 
-		NDimTable& operator *= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::multiplies<K>(),k));}; 
-		NDimTable& operator /= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::bind2nd(std::divides<K>(),k));   }; 
+		NDimTable& operator -  (          ) {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return  -v;});  return *this;}; 
+		NDimTable& operator += (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v+k;});  return *this;};
+		NDimTable& operator -= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v-k;});  return *this;}; 
+		NDimTable& operator *= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v*k;});  return *this;}; 
+		NDimTable& operator /= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v/k;});  return *this;}; 
 
-		NDimTable& operator += (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::plus<K>()); };
-		NDimTable& operator -= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::minus<K>());};
+		NDimTable& operator += (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::plus<K>());      return *this;};
+		NDimTable& operator -= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::minus<K>());     return *this;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! operators *= and /= implement  http://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29
-		NDimTable& operator *= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::multiplies<K>());};
-		NDimTable& operator /= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::divides<K>());   }; 
+		NDimTable& operator *= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::multiplies<K>());return *this;};
+		NDimTable& operator /= (const NDimTable& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),std::divides<K>());   return *this;}; 
 
-//FIXME		NDimTable& abs()            {std::transform(this->begin(),this->end(),this->begin(),std::abs<K>());}; 
-//FIXME		NDimTable& pow (const K& k) {std::transform(this->begin(),this->end(),this->begin(),std::pow(a,k);};
-//FIXME		NDimTable& sqrt()           {std::transform(this->begin(),this->end(),this->begin(),[](const K& a){std::pow(a,0.5);});};
+		// !!!!!!!!!!!
+		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
+		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;}; 
+		NDimTable& pow(const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
+		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};
+		NDimTable& conj()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::conj(v   );}); return *this;};
 
 		// // contractions (returns new container of different dimension, or works on a provided container of expected dimension)
 		// //
@@ -301,11 +307,27 @@ class NDimTable : private std::vector<K
 };
 
 template<typename K>
-std::ostream& operator<<(std::ostream& os, const NDimTable<K>& o)
-{
-	o.print(os);
-	return os;
+std::ostream& operator<<(std::ostream& os, const NDimTable<K>& o){	o.print(os);	return os;};
+// FIXME - ambiguous, can do it later, maybe
+// tylko tak sobie wymyśliłem, że bym robił `using namespace std`, a potem wywoływam pow(k,-1), i wtedy albo by się robiła
+// odwrotność float, albo odwrotność elementów tablicy
+//template<typename K, typename L> NDimTable<K> operator+(const L    & k,const NDimTable<K>& a){	NDimTable<K> r( a);	return std::move(r+=k);};
+//template<typename K, typename L> NDimTable<K> operator-(const L    & k,const NDimTable<K>& a){	NDimTable<K> r(-a);	return std::move(r+=k);};
+//template<typename K, typename L> NDimTable<K> operator*(const L    & k,const NDimTable<K>& a){	NDimTable<K> r( a);	return std::move(r*=k);};
+//template<typename K, typename L> NDimTable<K> operator/(const L    & k,const NDimTable<K>& a){	NDimTable<K> r(a.pow(-1));	return std::move(r*=k);};
+
+template<typename K, typename L> NDimTable<K> operator+(const NDimTable<K>& a,const L    & k)
+{	
+	NDimTable<K> r( a);	// don't copy, create empty, and fill in with correct data
+//	NDimTable<K> r;		// FIXME does it make sense to try to prematurely optimise like this??
+//	r.dim_n  = a.dim_n;
+//	r.rank_d = a.rank_d;
+//	r.total  = a.total;
+	return std::move(r+=k);
 };
+template<typename K, typename L> NDimTable<K> operator-(const NDimTable<K>& a,const L    & k){	NDimTable<K> r( a);	return std::move(r-=k); };
+template<typename K, typename L> NDimTable<K> operator*(const NDimTable<K>& a,const L    & k){	NDimTable<K> r( a);	return std::move(r*=k); };
+template<typename K, typename L> NDimTable<K> operator/(const NDimTable<K>& a,const L    & k){	NDimTable<K> r( a);	return std::move(r/=k); };
 
 // dobra, klasa zaczyna działać.
 //

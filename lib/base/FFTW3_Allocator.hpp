@@ -35,11 +35,13 @@ class FFTW3_Allocator
 			typedef FFTW3_Allocator<U> other;
 		};
 
-		inline /*FIXME: why was it here? FIXME - it was to prevent copy-initialisation http://en.cppreference.com/w/cpp/language/explicit explicit*/ FFTW3_Allocator()                         /* FIXME: should I add this?   throw()  */ {};
-		inline          ~FFTW3_Allocator()                            /* FIXME: should I add this?   throw()  */ {};
-		inline /*FIXME: why was it here? explicit*/ FFTW3_Allocator(const FFTW3_Allocator& )  /* FIXME: should I add this?   throw()  */ {};
+		/* FIXME: why "explicit" was here?
+		 * FIXME - it was to prevent copy-initialisation http://en.cppreference.com/w/cpp/language/explicit */
+		inline /*explicit*/ FFTW3_Allocator()  {};
+		inline             ~FFTW3_Allocator()  {};
+		inline /*explicit*/ FFTW3_Allocator(const FFTW3_Allocator& )   {};
 		template<typename U>
-		inline /*FIXME: why was it here? explicit*/ FFTW3_Allocator(const FFTW3_Allocator<U>&)/* FIXME: should I add this?   throw()  */ {};
+		inline /*explicit*/ FFTW3_Allocator(const FFTW3_Allocator<U>&) {};
 
 		//    address
 		inline pointer       address(reference r      ) { return &r; } //.. FIXME: is it necessary?
