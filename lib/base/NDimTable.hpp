@@ -316,6 +316,8 @@ std::ostream& operator<<(std::ostream& os, const NDimTable<K>& o){	o.print(os);	
 //template<typename K, typename L> NDimTable<K> operator*(const L    & k,const NDimTable<K>& a){	NDimTable<K> r( a);	return std::move(r*=k);};
 //template<typename K, typename L> NDimTable<K> operator/(const L    & k,const NDimTable<K>& a){	NDimTable<K> r(a.pow(-1));	return std::move(r*=k);};
 
+// FIXME - think - maybe change it in such a way that first argument is always modified.
+// FIXME - then I could write the full formula in SchrodingerKosloffPropagator directly.
 template<typename K, typename L> NDimTable<K> operator+(const NDimTable<K>& a,const L    & k)
 {	
 	NDimTable<K> r( a);	// don't copy, create empty, and fill in with correct data

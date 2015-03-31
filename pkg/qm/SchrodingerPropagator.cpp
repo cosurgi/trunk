@@ -210,21 +210,31 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 //        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
 //        i osobno dopisać metody do odczytywanie indywidualnych punktów w ileśD ?
 //
-	std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
-	FOREACH(Complexr& psi_i, psiN1_tmp1) psi_i*=(1+G/R);           // ψ₁: psiN1_tmp1=(1+G/R)ψ₀
-	
-	std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
-	doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+	//1 std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
+	//1 doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+	NDimTable<Complexr> psiN1_tmp2={}; // FIXME - maybe make an FFT-constructor, that constructs by FFTof sth else.
+	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+			    // FIXME - maybe use operator=FFT<>(psiN___0); ? This FFT() is a type cast to call correct =
 
-	std::vector<Complexr> psiN1_tmp3(psiN___0.size());             // ψ₁:
-								       // ψ₁: psiN1_tmp3=-k²ℱ(ψ₀)
-	std::transform(psiN1_tmp2.begin(), psiN1_tmp2.end(), kTable.begin(), psiN1_tmp3.begin(), std::multiplies<Complexr>());
+	//2 std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
+	//2 FOREACH(Complexr& psi_i, psiN1_tmp1) psi_i*=(1+G/R);           // ψ₁: psiN1_tmp1=(1+G/R)ψ₀
+	                                   psiN___0 *=(1+G/R);           // ψ₁:         ψ₀→(1+G/R)ψ₀
 	
-	std::vector<Complexr> psiN1_tmp4(psiN___0.size());             // ψ₁:
-	doIFFT_1D(psiN1_tmp3,psiN1_tmp4);                              // ψ₁: psiN1_tmp4=ℱ⁻¹(-k²ℱ(ψ₀))
-	FOREACH(Complexr& psi_i, psiN1_tmp4) psi_i*=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp4=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+
+	//3 std::vector<Complexr> psiN1_tmp3(psiN___0.size());             // ψ₁:
+	//3 							       // ψ₁: psiN1_tmp3=-k²ℱ(ψ₀)
+	//3 std::transform(psiN1_tmp2.begin(), psiN1_tmp2.end(), kTable.begin(), psiN1_tmp3.begin(), std::multiplies<Complexr>());
+	                                   psiN1_tmp2 *= kTable;       // ψ₁: psiN1_tmp2=-k²ℱ(ψ₀)
 	
-	//std::vector<Complexr> psiN___1(psiN___0.size());             // ψ₁: (that's the output)
+	//4 std::vector<Complexr> psiN1_tmp4(psiN___0.size());             // ψ₁:
+	//4 doIFFT_1D(psiN1_tmp3,psiN1_tmp4);                              // ψ₁:            psiN1_tmp4=ℱ⁻¹(-k²ℱ(ψ₀))
+	                    psiN1_tmp2.becomesIFFT(/* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
+			    // FIXME - alternatywa:  IFFT(psiN1_tmp2); // friend class, i wtedy działa na tym.
+	
+	//5 FOREACH(Complexr& psi_i, psiN1_tmp4) psi_i*=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp4=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	                                   psiN1_tmp2 *=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp2=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+
+	// std::vector<Complexr> psiN___1(psiN___0.size());             // ψ₁: (that's the output)
 								       // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
 	std::transform(psiN1_tmp4.begin(), psiN1_tmp4.end(), psiN1_tmp1.begin(), psiN___1.begin(), std::plus<Complexr>());
 	// result is in psiN___1
