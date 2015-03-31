@@ -36,6 +36,7 @@ struct D : B {
 };
 
 int main(void){
+	std::cout << "#./NDimTableTest > test.tmp 2>&1\n#diff -s test.tmp NDimTableTest_correct_output.txt\n";
 	std::vector<std::size_t> dim1;
 	dim1.push_back(3);
 	dim1.push_back(4);
@@ -104,16 +105,16 @@ int main(void){
 	T4.print();
 	
 	std::cout << "T5\n";
-	std::cout << "T1 address= "<< &T1 << "\n";
+//	std::cout << "T1 address= "<< &T1 << "\n";
 	NDimTable<float> T5(std::move(T1));
 	T5.print();
 	T1.print(); //this must segfault, so don't do it.
-	std::cout << "T1 address= "<< &T1 << "\n";
-	std::cout << "T5 address= "<< &T5 << "\n";
+//	std::cout << "T1 address= "<< &T1 << "\n";
+//	std::cout << "T5 address= "<< &T5 << "\n";
 	std::cout << "restore content of T1=T5\n";
 	T1=T5;
-	std::cout << "T1 address= "<< &T1 << "\n";
-	std::cout << "T5 address= "<< &T5 << "\n";
+//	std::cout << "T1 address= "<< &T1 << "\n";
+//	std::cout << "T5 address= "<< &T5 << "\n";
 	T1.print(); //this must NOT segfault now.
 
 	std::cout << "\n\nTESTS from http://en.cppreference.com/w/cpp/language/move_constructor\n\n";
@@ -152,6 +153,73 @@ int main(void){
 	std::cout << "T1/=T5;\n";T1/=T5;  T1.print();
 	std::cout << "T1+=T1;\n";T1+=T1;  T1.print();
 	std::cout << "T1-=T1;\n";T1-=T1;  T1.print();
+	
+	std::cout << "T6=T5-100; =========\n";
+	A T6=T5-100;
+//	A T6(T5);T6-=100;
+	T6.print();
+	T6.abs().print();
+	T6.print();
+	std::cout << "T6*=T6;\n";
+	T6*=T6;
+	T6.print();
+	std::cout << "T6.sqrt();\n";
+	T6.sqrt();
+	T6.print();
+	std::cout << "T6.pow(2.0001);\n";
+	T6.pow(2.0001);
+	T6.print();
+
+	std::cout << "T5="<<T5<<"\n";
+	std::cout << "(T5*2).print();\n";
+	(T5*2).print();
+	std::cout << "....above is FREE of the (T5*2).....\n\na4=T5*2;\n";
+	a4=T5*2;
+	a4.print();
+	std::cout << "a4=a4*2;\n";
+	a4=a4*2;
+	a4.print();
+	
+	std::cout << "A a8=a4*2;\n";
+	A a8=a4*2;
+	a8.print();
+	
+	std::cout << "A a9(a4*2);\n";
+	A a9(a4*2);
+	a9.print();
+
+	std::cout << "A a10=a9-1000; =========\n";
+	A a10=a9-1000;
+	a10.print();	
+	std::cout << "A a11=a9/1000; =========\n";
+	A a11=a9/1000;
+	a11.print();	
+	std::cout << "A a12=a9+1000; =========\n";
+	A a12=a9+1000;
+	a12.print();	
+	std::cout << "A a13=a9*1000; =========\n";
+	A a13=a9*1000;
+	a13.print();	
+
+	std::cout << "A a14=a10-a9 ; =========\n";
+	A a14=a10-a9 ;
+	a14.print();	
+	std::cout << "A a15=a9 /a11; =========\n";
+	A a15=a9/a11 ;
+	a15.print();	
+	std::cout << "A a16=a12-a9 ; =========\n";
+	A a16=a12-a9 ;
+	a16.print();	
+	std::cout << "A a17=a13/a9 ; =========\n";
+	A a17=a13/a9 ;
+	a17.print();	
+	std::cout << "-a11 ; =========\n";
+	(-a11).print();
+	
+//	std::cout << "A a10=1000-a9; =========\n";	a10=1000-a9;               	a10.print();	           
+//	std::cout << "A a11=1000/a9; =========\n";	a11=1000/a9;               	a11.print();	           
+//	std::cout << "A a12=1000+a9; =========\n";	a12=1000+a9;               	a12.print();	           
+//	std::cout << "A a13=1000*a9; =========\n";	a13=1000*a9;	a13.print();	
 
 };
 

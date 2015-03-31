@@ -1,0 +1,339 @@
+#./NDimTableTest > test.tmp 2>&1
+#diff -s test.tmp NDimTableTest_correct_output.txt
+new tensor rank=2
+new tensor dim_n: 3, 4, 
+new tensor total=12
+----- fftwf_malloc(48)
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+
+checking print() call
+
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+
+CREATE T2
+new tensor rank=1
+new tensor dim_n: 5, 
+new tensor total=5
+----- fftwf_malloc(20)
+1000 2000 3000 4000 5000 
+
+checking print() call
+
+1000 2000 3000 4000 5000 
+
+new tensor rank=3
+new tensor dim_n: 3, 4, 5, 
+new tensor total=60
+----- fftwf_malloc(240)
+constructed, print now ---- checking TENSOR PRODUCT
+1000 (1000)   2000 (2000)   3000 (3000)   4000 (4000)   5000 (5000)   
+11000 (11000)   22000 (22000)   33000 (33000)   44000 (44000)   55000 (55000)   
+21000 (21000)   42000 (42000)   63000 (63000)   84000 (84000)   105000 (105000)   
+31000 (31000)   62000 (62000)   93000 (93000)   124000 (124000)   155000 (155000)   
+
+101000 (101000)   202000 (202000)   303000 (303000)   404000 (404000)   505000 (505000)   
+111000 (111000)   222000 (222000)   333000 (333000)   444000 (444000)   555000 (555000)   
+121000 (121000)   242000 (242000)   363000 (363000)   484000 (484000)   605000 (605000)   
+131000 (131000)   262000 (262000)   393000 (393000)   524000 (524000)   655000 (655000)   
+
+201000 (201000)   402000 (402000)   603000 (603000)   804000 (804000)   1.005e+06 (1005000)   
+211000 (211000)   422000 (422000)   633000 (633000)   844000 (844000)   1.055e+06 (1055000)   
+221000 (221000)   442000 (442000)   663000 (663000)   884000 (884000)   1.105e+06 (1105000)   
+231000 (231000)   462000 (462000)   693000 (693000)   924000 (924000)   1.155e+06 (1155000)   
+
+checking print() call
+
+1000 2000 3000 4000 5000 
+11000 22000 33000 44000 55000 
+21000 42000 63000 84000 105000 
+31000 62000 93000 124000 155000 
+
+101000 202000 303000 404000 505000 
+111000 222000 333000 444000 555000 
+121000 242000 363000 484000 605000 
+131000 262000 393000 524000 655000 
+
+201000 402000 603000 804000 1.005e+06 
+211000 422000 633000 844000 1.055e+06 
+221000 442000 663000 884000 1.105e+06 
+231000 462000 693000 924000 1.155e+06 
+
+
+T4
+----- fftwf_malloc(48)
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+T5
+moved! rank:2
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+restore content of T1=T5
+----- fftwf_malloc(48)
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+
+
+TESTS from http://en.cppreference.com/w/cpp/language/move_constructor
+
+  Trying to move A (a1) // move-construct from rvalue temporary         new tensor rank=2
+new tensor dim_n: 3, 4, 
+new tensor total=12
+----- fftwf_malloc(48)
+moved! rank:2
+  Trying to move A (a2)          moved! rank:2
+  Trying to create A (first create)  new tensor rank=2
+new tensor dim_n: 3, 4, 
+new tensor total=12
+----- fftwf_malloc(48)
+  Trying to create B (first create)  new tensor rank=2
+new tensor dim_n: 3, 4, 
+new tensor total=12
+----- fftwf_malloc(48)
+moved! rank:2
+MOVE  B(A&& other): A(static_cast<A&&>(other))  Before move, b1 = "0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+
+"
+moved! rank:2
+MOVE  B(B&& other): A(static_cast<A&&>(other))  After move, b2 = "0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+
+"
+  After move, b1 = ""
+  Trying to move C               move failed! rank:0
+  Trying to move D               moved! rank:0
+MOVE  B(B&& other): A(static_cast<A&&>(other))
+
+  TESTING operators! 
+
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+T1-=4;
+-3 7 17 27 
+97 107 117 127 
+197 207 217 227 
+
+T1+=4;
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+T1*=4;
+4 44 84 124 
+404 444 484 524 
+804 844 884 924 
+
+T1/=4;
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+T1*=T1;
+1 121 441 961 
+10201 12321 14641 17161 
+40401 44521 48841 53361 
+
+T1/=T5;
+1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+T1+=T1;
+2 22 42 62 
+202 222 242 262 
+402 422 442 462 
+
+T1-=T1;
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+
+T6=T5-100; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+-99 -89 -79 -69 
+1 11 21 31 
+101 111 121 131 
+
+99 89 79 69 
+1 11 21 31 
+101 111 121 131 
+
+99 89 79 69 
+1 11 21 31 
+101 111 121 131 
+
+T6*=T6;
+9801 7921 6241 4761 
+1 121 441 961 
+10201 12321 14641 17161 
+
+T6.sqrt();
+99 89 79 69 
+1 11 21 31 
+101 111 121 131 
+
+T6.pow(2.0001);
+9805.5 7924.55 6243.72 4763.01 
+1 121.029 441.134 961.33 
+10205.7 12326.8 14648 17169.4 
+
+T5=1 11 21 31 
+101 111 121 131 
+201 211 221 231 
+
+
+(T5*2).print();
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+2 22 42 62 
+202 222 242 262 
+402 422 442 462 
+
+----- fftwf_FREE
+....above is FREE of the (T5*2).....
+
+a4=T5*2;
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+----- fftwf_FREE
+2 22 42 62 
+202 222 242 262 
+402 422 442 462 
+
+a4=a4*2;
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+----- fftwf_FREE
+4 44 84 124 
+404 444 484 524 
+804 844 884 924 
+
+A a8=a4*2;
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+8 88 168 248 
+808 888 968 1048 
+1608 1688 1768 1848 
+
+A a9(a4*2);
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+8 88 168 248 
+808 888 968 1048 
+1608 1688 1768 1848 
+
+A a10=a9-1000; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+-992 -912 -832 -752 
+-192 -112 -32 48 
+608 688 768 848 
+
+A a11=a9/1000; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+0.008 0.088 0.168 0.248 
+0.808 0.888 0.968 1.048 
+1.608 1.688 1.768 1.848 
+
+A a12=a9+1000; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+1008 1088 1168 1248 
+1808 1888 1968 2048 
+2608 2688 2768 2848 
+
+A a13=a9*1000; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+8000 88000 168000 248000 
+808000 888000 968000 1.048e+06 
+1.608e+06 1.688e+06 1.768e+06 1.848e+06 
+
+A a14=a10-a9 ; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+-1000 -1000 -1000 -1000 
+-1000 -1000 -1000 -1000 
+-1000 -1000 -1000 -1000 
+
+A a15=a9 /a11; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+
+A a16=a12-a9 ; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+
+A a17=a13/a9 ; =========
+----- fftwf_malloc(48)
+move failed! rank:2
+moved! rank:2
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+1000 1000 1000 1000 
+
+-a11 ; =========
+-0.008 -0.088 -0.168 -0.248 
+-0.808 -0.888 -0.968 -1.048 
+-1.608 -1.688 -1.768 -1.848 
+
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
+----- fftwf_FREE
