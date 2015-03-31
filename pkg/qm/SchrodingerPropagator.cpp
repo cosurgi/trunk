@@ -242,6 +242,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	};
 }
 
+// FIXME - later http://stackoverflow.com/questions/2763006/change-the-current-branch-to-master-in-git
 void SchrodingerKosloffPropagator::action()
 {
 	timeLimit.readWallClock();
