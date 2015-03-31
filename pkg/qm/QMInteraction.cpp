@@ -96,7 +96,7 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	//igeom->halfSize2 = extents2;
 
 	// FIXME - 1D only
-	NDimTable<Real>& val(igeom->potentialValues);
+	NDimTable<Complexr>& val(igeom->potentialValues);
 	val.resize(psi->tableValuesPosition); // use size of grid for ψ₀ to write potential data into igeom→potentialValues
 
 // FIXME --------------------------------------- tylko dotąd, poniżej jeszcze poprawić.

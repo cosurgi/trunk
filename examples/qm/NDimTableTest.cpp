@@ -2,6 +2,7 @@
 #define YADE_FFTW3
 #include <iostream>
 #include "lib/base/NDimTable.hpp"
+#include <complex>
 
 typedef NDimTable<float> A;
 A f(A a) {
@@ -36,13 +37,12 @@ struct D : B {
 };
 
 int main(void){
-	std::cout << "#./NDimTableTest > test.tmp 2>&1\n#diff -s test.tmp NDimTableTest_correct_output.txt\n";
+	std::cout << "./NDimTableTest > test.tmp 2>&1\ndiff -s test.tmp NDimTableTest_correct_output.txt\n";
 	std::vector<std::size_t> dim1;
 	dim1.push_back(3);
 	dim1.push_back(4);
 	//dim1.push_back(2);
-	NDimTable<float> T1;
-	T1.resize(dim1);
+	NDimTable<float> T1(dim1);
 	for(int i=0 ; i<3; i++)
 		for(int j=0 ; j<4 ; j++)
 			//for(int k=0 ; k<4 ; k++)
@@ -220,6 +220,10 @@ int main(void){
 //	std::cout << "A a11=1000/a9; =========\n";	a11=1000/a9;               	a11.print();	           
 //	std::cout << "A a12=1000+a9; =========\n";	a12=1000+a9;               	a12.print();	           
 //	std::cout << "A a13=1000*a9; =========\n";	a13=1000*a9;	a13.print();	
-
+	
+	NDimTable<float > Tf(T5);
+	Tf.print();
+	NDimTable<double> Td=Tf;
+	Td.print();
 };
 

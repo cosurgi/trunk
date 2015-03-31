@@ -33,6 +33,7 @@ class QMStateBarrier: public QMState
 "Inside the geometric shape of Body.shape there is a potential barrier with potentialValue."
 			, // attributes, public variables
 			((Real      ,potentialValue,0,,"The value of potential inside the barrier."))
+// FIXME 		((Menu      ,potentialType ,{"default barrier","barrier","square position"} ,,"0: barrier, 1: squared position."))
 			((int       ,potentialType ,0,,"0: barrier, 1: squared position."))
 			, // constructor
 			createIndex();
