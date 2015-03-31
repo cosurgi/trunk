@@ -225,5 +225,34 @@ int main(void){
 	Tf.print();
 	NDimTable<double> Td=Tf;
 	Td.print();
+
+	std::vector<std::size_t> dimF;
+	dimF.push_back(8);
+	NDimTable<std::complex<double> > in(dimF),out(dimF);
+	int i(0);
+	in.at(i++)=(10);
+	in.at(i++)=(20);
+	in.at(i++)=(1);
+	in.at(i++)=(-4);
+	in.at(i++)=(5);
+	in.at(i++)=(6);
+	in.at(i++)=(0);
+	in.at(i++)=(1);
+	in.print();
+	out.print();
+	out.becomesFFT(in);
+	in.print();
+	out.print();
+	in.becomesIFFT(out);
+	in.print();
+	out.print();
+// debug output:
+// FIXME, FIXME - add this to yade --check or test.
+// FIXME, FIXME - this is important, because various FFT libraries divide by sqrt(N) or some other numbers.
+//////////////////// that output was when I used rotateLeft(size/2-1)
+// (10,-2.14306e-16), (20,4.71028e-16), (1,2.14306e-16), (-4,0), (5,-2.14306e-16), (6,-4.71028e-16), (1.57009e-16,2.14306e-16), (1,0), 
+// (-0.767767,3.44975), (-10.253,4.94975), (-2.76777,-6.44975), (13.7886,0), (-2.76777,6.44975), (-10.253,-4.94975), (-0.767767,-3.44975), (2.47487,0), 
+
+
 };
 

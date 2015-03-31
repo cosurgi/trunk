@@ -335,7 +335,7 @@ std::cerr << " ............ i12  \n";
 std::cerr << " ............ i13  \n";
 			
 			for(int i=0;i<N;i++) {
-				this->at(i)=std::complex<Real>(out[i][0],out[i][1]);
+				this->at(i)=value_type(out[i][0],out[i][1]);
 			}
 std::cerr << " ............ i14  \n";
 			
@@ -370,7 +370,7 @@ std::cerr << " ............ 12  \n";
 			fftw_execute(p);
 			
 			for(int i=0;i<N;i++) {
-				this->at(i)=std::complex<Real>(out[i][0],out[i][1])/((Real)(N));
+				this->at(i)=value_type(out[i][0],out[i][1])/((value_type)(N));
 			}
 			
 			fftw_destroy_plan(p);
