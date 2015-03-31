@@ -42,14 +42,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 			, // attributes, public variables
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
-<<<<<<< HEAD
-			((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((NDimTable<Real>::DimReal,positionSize,NDimTable<Real>::DimReal({Real(0)}),,"Wavepacket size in position representation space."))
-=======
 			//1 ((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((vector<size_t>,gridSize,vector<size_t>({}),,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((vector<Real>,positionSize,vector<Real>({}),,"Wavepacket size in position representation space."))
->>>>>>> SchrodingerKosloffPropagator has problems
 			, // constructor
 			createIndex();
 			, // python bindings

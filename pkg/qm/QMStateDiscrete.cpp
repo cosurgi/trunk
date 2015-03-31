@@ -18,85 +18,6 @@ QMStateDiscrete::~QMStateDiscrete(){};
 
 void QMStateDiscrete::postLoad(QMStateDiscrete&)
 {
-<<<<<<< HEAD
-// 	std::cerr<<"\nQMStateDiscrete postLoad\n";
-// 	std::cerr<<"firstRun="<<firstRun<<"\n";
-// 	if(firstRun) { // initialize from creator upon firstRun
-// 	firstRun = false;
-// 	std::cerr<<"positionSize="<<positionSize<<"\n";
-// 	std::cerr<<"gridSize="<<gridSize<<"\n";
-// 	stepPos= getStepPos();
-// 	Real step=stepPos;
-// 	startX = -positionSize[0]/2.0;     // FIXME - does it really have to be centered around zero?
-// 	endX   =  positionSize[0]/2.0;
-// 	startY = -positionSize[1]/2.0;     // FIXME - does it really have to be centered around zero?
-// 	endY   =  positionSize[1]/2.0;
-// 	startZ = -positionSize[2]/2.0;     // FIXME - does it really have to be centered around zero?
-// 	endZ   =  positionSize[2]/2.0;
-// 	if(this->dim == 1) {
-// 		tableValuesPosition      .resize(1);          // no         coordinate
-// 		tableValuesPosition[0]   .resize(1);          // no         coordinate
-// 		tableValuesPosition[0][0].resize(gridSize,0); // x position coordinate
-// 
-// 		// Fill the table by copying from creator
-// // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-// //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
-// 		int i       =  0;
-// 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
-// 			tableValuesPosition[0][0][i] = creator->getValPos(Vector3r(x,0,0));
-// // FIXME		tablePosition      [0][0][i] = x;
-// 		}
-// 	} else if(this->dim == 2) {
-// 		assert( positionSize[0]==positionSize[1]); // FIXME - think if it's really necessary
-// 		tableValuesPosition      .resize(1);          // no         coordinate
-// 		tableValuesPosition[0]   .resize(gridSize);   // x position coordinate
-// 		FOREACH(std::vector<Complexr>& xx, tableValuesPosition[0]) {
-// 			xx.resize(gridSize,0);          // y position coordinate
-// 		};
-// 
-// 		// Fill the table by copying from creator
-// // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-// //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
-// 		int i       =  0;
-// 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
-// 			int j=0;
-// 			for(Real y=startY ; j<gridSize ; y+=step,j++ )
-// 			{
-// 				tableValuesPosition[0][i][j] = creator->getValPos(Vector3r(x,y,0));
-// 			}
-// 		}
-// 	} else if(this->dim == 3) {
-// 		assert( (positionSize[0]==positionSize[1]) and (positionSize[0]==positionSize[2])); // FIXME - think if it's really necessary
-// 		tableValuesPosition      .resize(gridSize);  // x position coordinate
-// 		FOREACH(std::vector<std::vector<Complexr> >& xx, tableValuesPosition   ) {
-// 			xx.resize(gridSize);           // y position coordinate
-// 			FOREACH(std::vector<Complexr>& yy, xx) {
-// 				yy.resize(gridSize,0); // z position coordinate
-// 			};
-// 		};
-// 
-// 		// Fill the table by copying from creator
-// // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-// //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
-// 		int i       =  0;
-// 		for(Real x=startX ; i<gridSize ; x+=step,i++ ) {
-// 			int j=0;
-// 			for(Real y=startY ; j<gridSize ; y+=step,j++ )
-// 			{
-// 				int k=0;
-// 				for(Real z=startZ ; k<gridSize ; z+=step,k++ )
-// 				{
-// 					tableValuesPosition[i][j][k] = creator->getValPos(Vector3r(x,y,z));
-// 				}
-// 			}
-// 		}
-// 	} else {
-// 		throw std::runtime_error("QMStateDiscrete() supports in 1,2 or 3 dimensions.");
-// 	}
-// 	} else { // not a firstRun, we have been just loaded from file
-// 	};
-// 	//////////////FIXME qtHide="nowyKontener"; albo może nawet poprawić qtHide w klasie macierzystej, co za różnica(?) E, chyba lepiej tu, żeby było widać, że tu.
-=======
 	std::cerr<<"\nQMStateDiscrete postLoad\n";
 	std::cerr<<"firstRun="<<firstRun<<"\n";
 	if(firstRun) { // initialize from creator upon firstRun
@@ -177,7 +98,6 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	} else { // not a firstRun, we have been just loaded from file
 	};
 	//////////////FIXME qtHide="nowyKontener"; albo może nawet poprawić qtHide w klasie macierzystej, co za różnica(?) E, chyba lepiej tu, żeby było widać, że tu.
->>>>>>> SchrodingerKosloffPropagator has problems
 };
 
 /// return complex quantum aplitude at given positional representation coordinates
