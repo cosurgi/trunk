@@ -9,6 +9,7 @@
 #include "QMParameters.hpp"
 #include "QMGeometryDisplay.hpp"
 #include <pkg/common/Box.hpp>
+#include <lib/base/NDimTable.hpp>
 
 
 /*********************************************************************************
@@ -70,7 +71,6 @@ class QMInteractionGeometry: public IGeom
 			, // class description
 			"Geometric representation of a single interaction of the WaveFunction"
 			, // attributes, public variables
-			((std::vector<Complexr>, potentialValues , ,, "Discrete values of potential.")) // FIXME - 1D only? why complex?
 //			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
 //			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))
 //			((Vector3r , halfSize1             , ,, "Size of 1st box."))
@@ -78,9 +78,18 @@ class QMInteractionGeometry: public IGeom
 			, // constructor
 			createIndex();
 			, // python bindings
-		);
-	DECLARE_LOGGER;
-	REGISTER_CLASS_INDEX(QMInteractionGeometry,IGeom);
+// FIXME (!1) - add ability to read potential values at given i,j,k,l,... coord
+// FIXME (!1)	.def("valAtIdx"     ,&QMStateDiscrete::valAtIdx     ,"Get potential value at coord idx, invoke for example: valAtIdx([10,20]) # for 2D")
+// FIXME (!1)	.def("valAtPos"     ,&QMStateDiscrete::valAtPos     ,"Get potential value at coord idx, invoke for example: valAtPos([1.0,2.2]) # for 2D")
+		);	
+		DECLARE_LOGGER;
+		REGISTER_CLASS_INDEX(QMInteractionGeometry,IGeom);
+	
+// FIXME (!1)	/*FIXME? Complexr*/ Real valAtIdx(NDimTable<Real>::DimN    idx){};
+// FIXME (!1)	/*FIXME? Complexr*/ Real valAtPos(NDimTable<Real>::DimReal pos){};
+
+		NDimTable<Real> potentialValues;     // Discrete values of potential
+
 };
 REGISTER_SERIALIZABLE(QMInteractionGeometry);
 

@@ -43,7 +43,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
 			((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
-			((NDimTable::DimReal,positionSize,({0}),,"Wavepacket size in position representation space."))
+			((NDimTable<Real>::DimReal,positionSize,NDimTable<Real>::DimReal({Real(0)}),,"Wavepacket size in position representation space."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -69,13 +69,15 @@ or directly by filling in the discrete values in the table. It is used for numer
 		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
 		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
 
-		NDimTable<Real> tableValuesPosition ; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 		
 		//typedef std::vector<std::vector<     Vector3r         > > Vector3r3D;
 		//Complexr3D /*Vector3r3D*/ tablePosition       ; //,,,,"The FFT lattice grid: position coordinates corresponding to table cells"))
 		//Complexr3D tableValueWavenumber; //,,,,"The FFT lattice grid: wavefunction values in wavenumber representation "))
 		//Complexr3D /*Vector3r3D*/ tableWavenumber     ; //,,,,"The FFT lattice grid: wavenumber coordinates corresponding to table cells"))
 	private:
+
+// FIXME ! NDimTab use positionSize-positionCenter
 		Real startX,startY,startZ,endX,endY,endZ,stepPos; // FIXME ? is it necessary?
 		
 		TimeLimit timeLimit;
