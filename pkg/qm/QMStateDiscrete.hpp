@@ -28,7 +28,7 @@ class QMStateDiscrete: public QMState
 {
 	public:
 		virtual Complexr getValPos(Vector3r xyz);                                   /// return complex quantum aplitude at given positional representation coordinates
-		virtual Real     getStepPos(){ return positionSize[0 /*FIXME, not all are squares*/]/gridSize;}; /// return grid step, two point distance in the mesh in positional representation
+		virtual Real     getStepPos(){ return positionSize.at(0 /*FIXME, not all are squares*/)/gridSize[0 /* FIXME */];}; /// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
 		void postLoad(QMStateDiscrete&);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
@@ -42,8 +42,14 @@ or directly by filling in the discrete values in the table. It is used for numer
 			, // attributes, public variables
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
 			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
+<<<<<<< HEAD
 			((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((NDimTable<Real>::DimReal,positionSize,NDimTable<Real>::DimReal({Real(0)}),,"Wavepacket size in position representation space."))
+=======
+			//1 ((int       ,gridSize,4096,,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+			((vector<size_t>,gridSize,vector<size_t>({}),,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+			((vector<Real>,positionSize,vector<Real>({}),,"Wavepacket size in position representation space."))
+>>>>>>> SchrodingerKosloffPropagator has problems
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -61,17 +67,17 @@ or directly by filling in the discrete values in the table. It is used for numer
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
 		// Find min/max wavelength and wavenumber for this FFT grid
-		Real deltaX(     /* Real startX ,Real endX ,Real gridSize */){return (endX-startX)/gridSize;};
+		Real deltaX(     /* Real startX ,Real endX ,Real gridSize */){return (endX-startX)/gridSize[0];};
 		Real lambdaMin(  /* Real startX ,Real endX ,Real gridSize */){return 2*deltaX(/*startX, endX, gridSize*/);};
 		Real kMax(       /* Real startX ,Real endX ,Real gridSize */){return Mathr::TWO_PI/lambdaMin(/*startX, endX, gridSize*/);};
 		Real kMin(       /* Real startX ,Real endX ,Real gridSize */){return -kMax(/*startX, endX, gridSize*/);};
 		// Those functions convert index 'i' to respective position or momentum on the FFT grid
-		Real iToX(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*endX                        +(gridSize-i)*startX                      )/gridSize; };
-		Real iToK(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*kMax(/*startX,endX,gridSize*/)+(gridSize-i)*kMin(/*startX,endX,gridSize*/))/gridSize; };
-		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(x-startX                      ))/(endX                        -startX                      ); };
-		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
+		Real iToX(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*endX                        +(gridSize[0]-i)*startX                      )/gridSize[0]; };
+		Real iToK(Real i /*,Real startX ,Real endX ,Real gridSize */){return (i*kMax(/*startX,endX,gridSize*/)+(gridSize[0]-i)*kMin(/*startX,endX,gridSize*/))/gridSize[0]; };
+		int  xToI(Real x /*,Real startX ,Real endX ,Real gridSize */){return (gridSize[0]*(x-startX                      ))/(endX                        -startX                      ); };
+		int  kToI(Real k /*,Real startX ,Real endX ,Real gridSize */){return (gridSize[0]*(k-kMin(/*startX,endX,gridSize*/)))/(kMax(/*startX,endX,gridSize*/)-kMin(/*startX,endX,gridSize*/)); };
 
-		const Complexr& valAti(int i){return tableValuesPosition.at(i);};
+		const Complexr  valAti(int i){return tableValuesPosition.at(i);};
 		std::size_t     maxI()       {return tableValuesPosition.size0(0);};
 
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"

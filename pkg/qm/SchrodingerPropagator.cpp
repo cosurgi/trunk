@@ -66,17 +66,20 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
+std::cerr << " ............ 4  \n";
 	Real dt=scene->dt;
 	Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
 	Real G   = calcKosloffG();
 
 	// FIXME,FIXME ↓
 	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
+std::cerr << " ............ 5  \n";
 	static NDimTable<Real    > kTable(psiN___0.dim());          // k FIXME: kTable should be prepared only once
 	if(! hasTable){
 		// FIXME - 1D only
 		std::size_t size(kTable.size0(0));
 		int i(size/2); // rotate kTable instead
+std::cerr << " ............ 6  \n";
 
 
 		//0 FOREACH(Real& k, kTable) k                  =-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
@@ -87,6 +90,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 
 		hasTable=true;
 	}
+std::cerr << " ............ 7  \n";
 // FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
 //        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
 //        i osobno dopisać metody do odczytywanie indywidualnych punktów w ileśD ?
@@ -94,7 +98,12 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	//1 std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
 	//1 doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
 	NDimTable<Complexr> psiN1_tmp2={}; // FIXME - maybe make an FFT-constructor, that constructs by FFTof sth else.
+<<<<<<< HEAD
 //	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+=======
+std::cerr << " ............ 8  \n";
+	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+>>>>>>> SchrodingerKosloffPropagator has problems
 			    // FIXME - maybe use operator=FFT<>(psiN___0); ? This FFT() is a type cast to call correct =
 
 	//2 std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
@@ -109,7 +118,14 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	
 	//4 std::vector<Complexr> psiN1_tmp4(psiN___0.size());             // ψ₁:
 	//4 doIFFT_1D(psiN1_tmp3,psiN1_tmp4);                              // ψ₁:            psiN1_tmp4=ℱ⁻¹(-k²ℱ(ψ₀))
+<<<<<<< HEAD
 //	                    psiN1_tmp2.becomesIFFT(/* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
+=======
+	                    psiN1_tmp2.becomesIFFT(
+			    //FIXME - remove that:
+				psiN1_tmp2
+			    /* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
+>>>>>>> SchrodingerKosloffPropagator has problems
 			    // FIXME - alternatywa:  IFFT(psiN1_tmp2); // friend class, i wtedy działa na tym.
 	
 	//5 FOREACH(Complexr& psi_i, psiN1_tmp4) psi_i*=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp4=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
@@ -145,17 +161,19 @@ void SchrodingerKosloffPropagator::action()
 	Real G   = calcKosloffG(); // FIXME -  that's duplicate here
 	Real R13 = 1.3*R;
 	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
-
+std::cerr << " ............ 1  \n";
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		const Body::id_t& id=b->getId();
+std::cerr << " ............ 2  \n";
 		if(psi) {
 			// prepare for the loop, FIXME: it's 1D only
 			               //8 ↓
 			NDimTable<Complexr>& psi_final(psi->tableValuesPosition);     // will become ψ(t+dt):
 			NDimTable<Complexr>  psiN___0 (psi_final);                    // psiN___0=ψ₀
 			NDimTable<Complexr>  psiN___1 = {};               // ψ₁:
+std::cerr << " ............ 3  \n";
 			calcPsiPlus_1(psiN___0,psiN___1,psi);
 			
 			Complexr ak(1);
