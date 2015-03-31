@@ -94,7 +94,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	//1 std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
 	//1 doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
 	NDimTable<Complexr> psiN1_tmp2={}; // FIXME - maybe make an FFT-constructor, that constructs by FFTof sth else.
-	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+//	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
 			    // FIXME - maybe use operator=FFT<>(psiN___0); ? This FFT() is a type cast to call correct =
 
 	//2 std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
@@ -109,7 +109,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	
 	//4 std::vector<Complexr> psiN1_tmp4(psiN___0.size());             // ψ₁:
 	//4 doIFFT_1D(psiN1_tmp3,psiN1_tmp4);                              // ψ₁:            psiN1_tmp4=ℱ⁻¹(-k²ℱ(ψ₀))
-	                    psiN1_tmp2.becomesIFFT(/* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
+//	                    psiN1_tmp2.becomesIFFT(/* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
 			    // FIXME - alternatywa:  IFFT(psiN1_tmp2); // friend class, i wtedy działa na tym.
 	
 	//5 FOREACH(Complexr& psi_i, psiN1_tmp4) psi_i*=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp4=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
