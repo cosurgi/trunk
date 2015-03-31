@@ -3,7 +3,18 @@
 
 dimensions= 1
 size      = 15
-halfSize  = Vector3(size,0.1,0.1)
+halfSize  = [size,0.1,0.1]
+halfSize2 = [size*2.0,0.2,0.2]
+
+
+## FIXME a1 = [0,1,2]
+## FIXME a2 = [x * 3 for x in a1]
+## FIXME or, if you need a1 to be done in place:
+## FIXME a1[:] = [x*3 for x in a1] 
+## FIXME import numpy
+## FIXME a = numpy.array([0, 1, 2])
+## FIXME print a * 3
+
 
 # wavepacket parameters
 k0_x       = 10
@@ -51,7 +62,7 @@ numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**11))
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**11)])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

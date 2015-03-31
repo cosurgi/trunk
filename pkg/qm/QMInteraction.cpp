@@ -99,17 +99,21 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	NDimTable<Complexr>& val(igeom->potentialValues);
 	val.resize(psi->tableValuesPosition); // use size of grid for ψ₀ to write potential data into igeom→potentialValues
 
-// FIXME --------------------------------------- tylko dotąd, poniżej jeszcze poprawić.
 	int startI=psi->xToI(relPos12[0]-extents1[0]);
 	int endI  =psi->xToI(relPos12[0]+extents1[0]);
+
+// FIXME - remove cerr
 	std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
-	          << extents1[0] << " " << psi->tableValuesPosition[0][0].size() << " " << val.size() << " " << pot->potentialValue << "\n";
+	          << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
+
 	for(int i=startI ; i<=endI ; i++) {
-		if(i>=0 and i<val.size())
+		if(i>=0 and i<val.size0(0))
+
+// FIXME - 1D only
 		{
 			switch(pot->potentialType) {
-				case 0 : val[i]=pot->potentialValue; break;
-				case 1 : val[i]=std::pow(psi->iToX(i),2)*0.5; break;
+				case 0 : val.at(i)=pot->potentialValue; break;
+				case 1 : val.at(i)=std::pow(psi->iToX(i),2)*0.5; break;
 				default : std::cerr << "Unknown potential type\n";break;
 			}
 		}
