@@ -76,7 +76,7 @@ class NDimTable : private std::vector<K
 			total  = 1;            // total numer of elements (really explodes)
 			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
 			
-			printDebugInfo();
+			//printDebugInfo();
 		}
 		inline void calcDimRankTotal(const std::vector<std::size_t>& d) {
 			dim_n  = d;
@@ -84,7 +84,7 @@ class NDimTable : private std::vector<K
 			total  = 1;
 			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
 			
-			printDebugInfo();
+			//printDebugInfo();
 		}
 		// element access: http://www.fftw.org/fftw3_doc/Row_002dmajor-Format.html#Row_002dmajor-Format
 		// element is located at the position iᵈ⁻¹ + nᵈ⁻¹ *(iᵈ⁻² + nᵈ⁻² *( ... n³*( i² + n²*(i¹ + n¹ * i⁰))))
@@ -313,41 +313,22 @@ class NDimTable : private std::vector<K
 
 		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-//std::cerr << " ............ i9  \n";
 			(*this)=inp; // FIXME - jakoś inaczej
-//std::cerr << " ............ i10  \n";
+			//this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
 			fftw_plan p;
 			int N(inp.total);
-			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			if(rank_d == 1) {
+			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			if(rank_d == 1) { // FIXME - move to separate function
 				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 			} else
 			if(rank_d == 2) {
 				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-//std::cerr << " ............ i11 2d fft  \n";
 			};
-//std::cerr << " ............ i11  \n";
-			
-			for(int i=0;i<N;i++) {
-				in[i][0]=std::real(inp.operator[](i));
-				in[i][1]=std::imag(inp.operator[](i));
-			}
-		
-//std::cerr << " ............ i12  \n";
 			fftw_execute(p);
-//std::cerr << " ............ i13  \n";
-			
-			for(int i=0;i<N;i++) {
-				this->operator[](i)=value_type(out[i][0],out[i][1]);
-			}
-//std::cerr << " ............ i14  \n";
-			
 			fftw_destroy_plan(p);
-			fftw_free(in);
-			fftw_free(out);
 			#else
 			#error fftw3 library is needed
 			#endif
@@ -355,40 +336,22 @@ class NDimTable : private std::vector<K
 		
 		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-//std::cerr << " ............ i9  \n";
 			(*this)=inp; // FIXME - jakoś inaczej
-//std::cerr << " ............ i10  \n";
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
 			fftw_plan p;
 			int N(inp.total);
-			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-//std::cerr << " ............ i11  \n";
+			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			if(rank_d == 1) {
 				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
 			} else
 			if(rank_d == 2) {
 				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-//std::cerr << " ............ i11 2d ifft  \n";
 			};
-			
-			for(int i=0;i<N;i++) {
-				in[i][0]=std::real(inp.operator[](i));
-				in[i][1]=std::imag(inp.operator[](i));
-			}
-//std::cerr << " ............ 12  \n";
-		
 			fftw_execute(p);
-			
-			for(int i=0;i<N;i++) {
-				this->operator[](i)=value_type(out[i][0],out[i][1])/((value_type)(N));
-			}
-			
+			this->operator/=(N);		
 			fftw_destroy_plan(p);
-			fftw_free(in);
-			fftw_free(out);	
-			//std::cout << "doIFFT_1D fftw3\n";
 			#else
 			#error fftw3 library is needed
 			#endif

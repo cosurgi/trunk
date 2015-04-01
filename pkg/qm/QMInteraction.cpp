@@ -95,29 +95,57 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	//igeom->halfSize1 = extents1;
 	//igeom->halfSize2 = extents2;
 
-	// FIXME - 1D only
 	NDimTable<Complexr>& val(igeom->potentialValues);
 	val.resize(psi->tableValuesPosition); // use size of grid for ψ₀ to write potential data into igeom→potentialValues
 
-	int startI=psi->xToI(relPos12[0]-extents1[0]);
-	int endI  =psi->xToI(relPos12[0]+extents1[0]);
 
-// FIXME - remove cerr
-	std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
-	          << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
+	if(psi->dim==1) {
+		// FIXME - 1D only
+		int startI=psi->xToI(relPos12[0]-extents1[0]);
+		int endI  =psi->xToI(relPos12[0]+extents1[0]);
 
-	for(int i=startI ; i<=endI ; i++) {
-		if(i>=0 and i<val.size0(0))
+	// FIXME - remove cerr
+		std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
+			  << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
 
-// FIXME - 1D only
-		{
-			switch(pot->potentialType) {
-				case 0 : val.at(i)=pot->potentialValue; break;
-				case 1 : val.at(i)=std::pow(psi->iToX(i),2)*0.5; break;
-				default : std::cerr << "Unknown potential type\n";break;
+		for(int i=startI ; i<=endI ; i++) {
+			if(i>=0 and i<val.size0(0))
+
+	// FIXME - 1D only
+			{
+				switch(pot->potentialType) {
+					case 0 : val.at(i)=pot->potentialValue; break;
+					case 1 : val.at(i)=std::pow(psi->iToX(i),2)*0.5; break;
+					default : std::cerr << "Unknown potential type\n";break;
+				}
 			}
 		}
 	}
+	if(psi->dim==2) {
+		// FIXME - 2D only, NOT general :(((
+		int startI=psi->xToI(relPos12[0]-extents1[0]);
+		int endI  =psi->xToI(relPos12[0]+extents1[0]);
+		int startJ=psi->xToI(relPos12[1]-extents1[1]);
+		int endJ  =psi->xToI(relPos12[1]+extents1[1]);
+
+		for(int i=startI ; i<=endI ; i++) 
+		for(int j=startJ ; j<=endJ ; j++) 
+		{
+			if(i>=0 and i<val.size0(0))
+			if(j>=0 and j<val.size0(0))
+
+	// FIXME - 1D only
+			{
+				switch(pot->potentialType) {
+					case 0 : val.at(i,j)=pot->potentialValue; break;
+					case 1 : val.at(i,j)=  std::pow(psi->iToX(i),2)*0.5
+					                      +std::pow(psi->iToX(j),2)*0.5; break;
+					default : std::cerr << "Unknown potential type\n";break;
+				}
+			}
+		}
+	}
+
 
 	c->geom = igeom;
 	std::cerr <<"####### igeom created in QMInteraction\n";

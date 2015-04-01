@@ -1,31 +1,32 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-dimensions= 1
-size      = 15
-halfSize  = [size,0.1,0.1]
+# PICK NUMBER OF DIMENSIONS (1,2 or 3):
+dimensions= 2
+size      = 18
+halfSize  = [size,size,0.1]
 halfSize2 = [x * 2 for x in halfSize]
 
-
-## FIXME a1 = [0,1,2]
-## FIXME a2 = [x * 3 for x in a1]
-## FIXME or, if you need a1 to be done in place:
-## FIXME a1[:] = [x*3 for x in a1] 
-## FIXME import numpy
-## FIXME a = numpy.array([0, 1, 2])
-## FIXME print a * 3
-
+## scale up the graphics
+Gl1_QMGeometryDisplay().partsScale=10
+Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
-k0_x       = 10
-gaussWidth = 0.1
+k0_x       = 0.5
+k0_y       = 1
+gaussWidth = 2.0
 
 # potential parameters
-potentialCenter1  = [ 2.0,0  ,0  ]
-potentialCenter2  = [-2.0,0  ,0  ]
-potentialHalfSize = [1.0,0.1,0.1]
-potentialValue    = 1000.0
+potentialCenter1  = [ 9,0  ,0  ]
+potentialCenter2  = [-9,0  ,0  ]
+potentialHalfSize = [1.0,10.0,1.0]
 
+potentialCenter1a = [0  , 9,0  ]
+potentialCenter2a = [0  ,-9,0  ]
+potentialHalfSizeA= [ 7.8,1.0,1.0]
+potentialValue    = 1000.0
 
 O.engines=[
 	SpatialQuickSortCollider([
@@ -34,26 +35,19 @@ O.engines=[
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMInteractionGeometry for Box+QMGeometryDisplay
 		[Ig2_Box_QMGeometryDisplay_QMInteractionGeometry()],
-# in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
-# in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerKosloffPropagator(),
 ]
 
-## Create:
-# 1. analytical gauss packet - only use it to initialise the discrete packet
-# 2. discrete packet
-# 3. potential barrier - as a box with given potential
 
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a=gaussWidth,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=gaussWidth,hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
@@ -61,8 +55,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-# The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**11)])
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**6)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -78,9 +71,21 @@ potentialBody2.material  = QMParameters()
 potentialBody2.state     = QMStateBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)],potentialValue=potentialValue)
 O.bodies.append(potentialBody2)
 
+potentialBody3 = QMBody()
+potentialBody3.shape     = Box(extents=potentialHalfSizeA ,wire=True)
+potentialBody3.material  = QMParameters()
+potentialBody3.state     = QMStateBarrier(se3=[potentialCenter1a,Quaternion((1,0,0),0)],potentialValue=potentialValue)
+O.bodies.append(potentialBody3)
+
+potentialBody4 = QMBody()
+potentialBody4.shape     = Box(extents=potentialHalfSizeA ,wire=True)
+potentialBody4.material  = QMParameters()
+potentialBody4.state     = QMStateBarrier(se3=[potentialCenter2a,Quaternion((1,0,0),0)],potentialValue=potentialValue)
+O.bodies.append(potentialBody4)
+
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.001
+O.dt=.005
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -88,12 +93,14 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	qt.View()
+#	O.step()
+	#qt.View()
 	qt.Controller()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+	Gl1_QMGeometryDisplay().step=0.2
+
 except ImportError:
 	pass
-
 #O.run(20000)
 

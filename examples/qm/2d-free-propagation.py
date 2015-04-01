@@ -62,7 +62,7 @@ numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,pos
 O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
-O.dt=.000001
+O.dt=.02
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

@@ -99,7 +99,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 			                     -    std::pow(psi->iToK((j+size/2)%size),2);
 		} //FIXME - ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
 		hasTable=true;
-kTable.print();
+//kTable.print();
 	}
 //std::cerr << " ............ 7  \n";
 // FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
@@ -140,10 +140,13 @@ kTable.print();
 	                            psiN___1 += psiN1_tmp2;
 	// result is in psiN___1
 
+	NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
 		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
 		if(igeom) {
-			NDimTable<Complexr> psiN1_pot(igeom->potentialValues);      // ψ₁: (potential)
+			psiN1_pot+=igeom->potentialValues;      // ψ₁: (potential)
+		}
+	};
 			//7 for(int j=0 ; j<psiN1_potential.size() ; j++) psiN1_potential[j]*=dt*psiN___1[j]/(hbar*R);
 			                                                  psiN1_pot         *=   psiN___1;             // FIXME - should look nicer
 			                                                  psiN1_pot         *=dt            /(hbar*R); // FIXME - should look nicer
@@ -151,8 +154,6 @@ kTable.print();
 			//8 std::transform(psiN___1.begin(), psiN___1.end(), psiN1_potential.begin(), tmp.begin(), std::minus<Complexr>());
 			                                                  psiN___1 -= psiN1_pot      ;
 			//8 psiN___1=tmp; // FIXME - inefficient
-		}
-	};
 	// FIXME: return std::move(psiN___1);
 }
 
