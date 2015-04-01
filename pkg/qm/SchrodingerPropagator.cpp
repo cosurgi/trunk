@@ -66,31 +66,32 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
-std::cerr << " ............ 4  \n";
+//std::cerr << " ............ 4  \n";
 	Real dt=scene->dt;
 	Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
 	Real G   = calcKosloffG();
 
 	// FIXME,FIXME ↓
 	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
-std::cerr << " ............ 5  \n";
+//std::cerr << " ............ 5  \n";
 	static NDimTable<Real    > kTable(psiN___0.dim());          // k FIXME: kTable should be prepared only once
 	if(! hasTable){
 		// FIXME - 1D only
 		std::size_t size(kTable.size0(0));
-		int i(size/2); // rotate kTable instead
-std::cerr << " ............ 6  \n";
+		//int i(size/2); // rotate kTable instead
+//std::cerr << " ............ 6  \n";
 
 
 		//0 FOREACH(Real& k, kTable) k                  =-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
 		      // FIXME 1D only
 		      // używając mój increment, może po dorobieniu iteratora mógłbym wołać kTable.at(increment_zmienna++)= ....
-		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i++)%size),2);
-
+		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size),2);
+		                                                                               //  ↑  lepiej nie dodawać tylko inicializować od tej wartości
 
 		hasTable=true;
+kTable.print();
 	}
-std::cerr << " ............ 7  \n";
+//std::cerr << " ............ 7  \n";
 // FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
 //        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
 //        i osobno dopisać metody do odczytywanie indywidualnych punktów w ileśD ?
@@ -98,7 +99,7 @@ std::cerr << " ............ 7  \n";
 	//1 std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
 	//1 doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
 	NDimTable<Complexr> psiN1_tmp2={}; // FIXME - maybe make an FFT-constructor, that constructs by FFTof sth else.
-std::cerr << " ............ 8  \n";
+//std::cerr << " ............ 8  \n";
 	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
 			    // FIXME - maybe use operator=FFT<>(psiN___0); ? This FFT() is a type cast to call correct =
 
@@ -153,19 +154,19 @@ void SchrodingerKosloffPropagator::action()
 	Real G   = calcKosloffG(); // FIXME -  that's duplicate here
 	Real R13 = 1.3*R;
 	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
-std::cerr << " ............ 1  \n";
+//std::cerr << " ............ 1  \n";
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		const Body::id_t& id=b->getId();
-std::cerr << " ............ 2  \n";
+//std::cerr << " ............ 2  \n";
 		if(psi) {
 			// prepare for the loop, FIXME: it's 1D only
-			               //8 ↓
-			NDimTable<Complexr>& psi_final(psi->tableValuesPosition);     // will become ψ(t+dt):
+			                 //8 ↓
+			NDimTable<Complexr>/*&*/  psi_final(psi->tableValuesPosition);     // will become ψ(t+dt):
 			NDimTable<Complexr>  psiN___0 (psi_final);                    // psiN___0=ψ₀
 			NDimTable<Complexr>  psiN___1 = {};               // ψ₁:
-std::cerr << " ............ 3  \n";
+//std::cerr << " ............ 3  \n";
 			calcPsiPlus_1(psiN___0,psiN___1,psi);
 			
 			Complexr ak(1);
@@ -215,6 +216,7 @@ std::cerr << " ............ 3  \n";
 			//std::cerr << "middle ak " << ak << "\n";
 			//8 ↑psi->tableValuesPosition=psi_final;
 			   //↑ zrobione na górze
+			psi->tableValuesPosition=psi_final;
 
 			if(timeLimit.messageAllowed(4)) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << i-1 << "/" << steps << "\n";
 		}

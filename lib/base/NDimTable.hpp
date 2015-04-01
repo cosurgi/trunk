@@ -121,7 +121,7 @@ class NDimTable : private std::vector<K
 		NDimTable(const NDimTable& other) 
 			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
 		{
-			std::cerr << "move failed! rank:" << rank_d << "\n";
+//			std::cerr << "move failed! rank:" << rank_d << "\n";
 		};
 		template<typename L> NDimTable(const NDimTable<L>& other) 
 			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
@@ -132,7 +132,7 @@ class NDimTable : private std::vector<K
 		NDimTable(NDimTable&& other)
 			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
 		{
-			std::cerr << "moved! rank:" << rank_d << "\n";
+//			std::cerr << "moved! rank:" << rank_d << "\n";
 			other={};
 		};
 		// tensor product constructor
@@ -313,9 +313,9 @@ class NDimTable : private std::vector<K
 
 		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-std::cerr << " ............ i9  \n";
+//std::cerr << " ............ i9  \n";
 			(*this)=inp; // FIXME - jakoś inaczej
-std::cerr << " ............ i10  \n";
+//std::cerr << " ............ i10  \n";
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
 			fftw_plan p;
@@ -323,21 +323,21 @@ std::cerr << " ............ i10  \n";
 			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-std::cerr << " ............ i11  \n";
+//std::cerr << " ............ i11  \n";
 			
 			for(int i=0;i<N;i++) {
 				in[i][0]=std::real(inp.at(i));
 				in[i][1]=std::imag(inp.at(i));
 			}
 		
-std::cerr << " ............ i12  \n";
+//std::cerr << " ............ i12  \n";
 			fftw_execute(p);
-std::cerr << " ............ i13  \n";
+//std::cerr << " ............ i13  \n";
 			
 			for(int i=0;i<N;i++) {
 				this->at(i)=value_type(out[i][0],out[i][1]);
 			}
-std::cerr << " ............ i14  \n";
+//std::cerr << " ............ i14  \n";
 			
 			fftw_destroy_plan(p);
 			fftw_free(in);
@@ -349,23 +349,23 @@ std::cerr << " ............ i14  \n";
 		
 		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-std::cerr << " ............ i9  \n";
+//std::cerr << " ............ i9  \n";
 			(*this)=inp; // FIXME - jakoś inaczej
-std::cerr << " ............ i10  \n";
+//std::cerr << " ............ i10  \n";
 			#ifdef YADE_FFTW3
-			fftw_complex *in, *out;
+			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
 			fftw_plan p;
 			int N(inp.size0(0));
 			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-std::cerr << " ............ i11  \n";
+//std::cerr << " ............ i11  \n";
 			p = fftw_plan_dft_1d(N, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
 			
 			for(int i=0;i<N;i++) {
 				in[i][0]=std::real(inp.at(i));
 				in[i][1]=std::imag(inp.at(i));
 			}
-std::cerr << " ............ 12  \n";
+//std::cerr << " ............ 12  \n";
 		
 			fftw_execute(p);
 			
