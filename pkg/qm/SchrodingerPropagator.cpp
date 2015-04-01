@@ -81,13 +81,23 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 		//int i(size/2); // rotate kTable instead
 //std::cerr << " ............ 6  \n";
 
+		//FIXME - stupid way of checking dim
+		std::size_t rank = psiN___0.rank();
 
+
+		if(rank==1){
 		//0 FOREACH(Real& k, kTable) k                  =-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
 		      // FIXME 1D only
 		      // używając mój increment, może po dorobieniu iteratora mógłbym wołać kTable.at(increment_zmienna++)= ....
 		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size),2);
-		                                                                               //  ↑  lepiej nie dodawać tylko inicializować od tej wartości
-
+				                                                                    //  ↑  lepiej nie dodawać tylko inicializować od tej wartości
+		} else
+		if(rank==2){
+		      for(int i=0;i<kTable.size0(0);i++) 
+		      for(int j=0;j<kTable.size0(1);j++) 
+			      kTable.at(i,j)=-1.0*std::pow(psi->iToK((i+size/2)%size),2)
+			                     -    std::pow(psi->iToK((j+size/2)%size),2);
+		} //FIXME - ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
 		hasTable=true;
 kTable.print();
 	}

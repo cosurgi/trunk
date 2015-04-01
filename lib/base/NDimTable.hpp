@@ -319,15 +319,21 @@ class NDimTable : private std::vector<K
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
 			fftw_plan p;
-			int N(inp.size0(0));
+			int N(inp.total);
 			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+			if(rank_d == 1) {
+				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+			} else
+			if(rank_d == 2) {
+				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+//std::cerr << " ............ i11 2d fft  \n";
+			};
 //std::cerr << " ............ i11  \n";
 			
 			for(int i=0;i<N;i++) {
-				in[i][0]=std::real(inp.at(i));
-				in[i][1]=std::imag(inp.at(i));
+				in[i][0]=std::real(inp.operator[](i));
+				in[i][1]=std::imag(inp.operator[](i));
 			}
 		
 //std::cerr << " ............ i12  \n";
@@ -335,7 +341,7 @@ class NDimTable : private std::vector<K
 //std::cerr << " ............ i13  \n";
 			
 			for(int i=0;i<N;i++) {
-				this->at(i)=value_type(out[i][0],out[i][1]);
+				this->operator[](i)=value_type(out[i][0],out[i][1]);
 			}
 //std::cerr << " ............ i14  \n";
 			
@@ -355,22 +361,28 @@ class NDimTable : private std::vector<K
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
 			fftw_plan p;
-			int N(inp.size0(0));
+			int N(inp.total);
 			in  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 //std::cerr << " ............ i11  \n";
-			p = fftw_plan_dft_1d(N, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+			if(rank_d == 1) {
+				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+			} else
+			if(rank_d == 2) {
+				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+//std::cerr << " ............ i11 2d ifft  \n";
+			};
 			
 			for(int i=0;i<N;i++) {
-				in[i][0]=std::real(inp.at(i));
-				in[i][1]=std::imag(inp.at(i));
+				in[i][0]=std::real(inp.operator[](i));
+				in[i][1]=std::imag(inp.operator[](i));
 			}
 //std::cerr << " ............ 12  \n";
 		
 			fftw_execute(p);
 			
 			for(int i=0;i<N;i++) {
-				this->at(i)=value_type(out[i][0],out[i][1])/((value_type)(N));
+				this->operator[](i)=value_type(out[i][0],out[i][1])/((value_type)(N));
 			}
 			
 			fftw_destroy_plan(p);
