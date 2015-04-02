@@ -55,7 +55,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	Real ret(0); // assume that negative maximum energy is not possible
 	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		if(psi) {
+		if(psi) {// FIXME - px^2+py^2 + potencjał FIXME !!!
 			ret=std::max(ret,std::pow(psi->kMax()* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */) );
 		}
 	};

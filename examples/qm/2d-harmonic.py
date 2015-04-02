@@ -3,24 +3,24 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size      = 5
+size      = 10
 halfSize  = [size,size,0.1]
 halfSize2 = [x * 2 for x in halfSize]
 
 ## scale up the graphics
 Gl1_QMGeometryDisplay().partsScale=10
-Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
-k0_x       = 0.5
-k0_y       = 1
+k0_x       = 0
+k0_y       = 4
 gaussWidth = 2.0
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = [5.0,5.0,1]
+potentialHalfSize = [10.0,10.0,1]
 potentialValue    = 0.0
 
 O.engines=[
@@ -50,7 +50,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**6)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**7)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -62,7 +62,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.005
+O.dt=.01
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

@@ -60,6 +60,7 @@ Complexr FreeMovingGaussianWavePacket::getValPos(Vector3r pos)
 	switch(this->dim) {
 		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar);
 
+		//FIXME - I need different a in each direction
 		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
 		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar);
 

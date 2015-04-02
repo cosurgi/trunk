@@ -4,7 +4,8 @@
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 3
 size      = 10
-halfSize  = Vector3(size,size,size)
+halfSize  = [size,size,size]
+halfSize2 = [x * 2 for x in halfSize]
 #halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
 
 ## This is a simple test:
@@ -54,7 +55,7 @@ numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize*2.0,gridSize=(2**12 if dimensions==1 else 32))
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**8 if dimensions==1 else 32)]*dimensions)
 #O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
@@ -77,9 +78,9 @@ try:
 	qt.Controller()
 	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometryDisplay().probability  =False
-	Gl1_QMGeometryDisplay().partReal     =True
-	Gl1_QMGeometryDisplay().partImaginary=False
+	#Gl1_QMGeometryDisplay().probability  =False
+	#Gl1_QMGeometryDisplay().partReal     =True
+	#Gl1_QMGeometryDisplay().partImaginary=False
 	Gl1_QMGeometryDisplay().step=0.3
 	Gl1_QMGeometryDisplay().stepWait=0.5
         Gl1_QMGeometryDisplay().threshold3D=0.00001

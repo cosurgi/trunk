@@ -60,9 +60,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("maxI"     ,&QMStateDiscrete::maxI     ,"size")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
-
+//FIXME - 'x' only everywhere
 		// Find min/max wavelength and wavenumber for this FFT grid
-		Real deltaX(     /* Real startX ,Real endX ,Real gridSize */){return (endX-startX)/gridSize[0];};
+		Real deltaX(     /* Real startX ,Real endX ,Real gridSize */){return (endX-startX)/gridSize[0];/* FIXME - 'x' only */};
 		Real lambdaMin(  /* Real startX ,Real endX ,Real gridSize */){return 2*deltaX(/*startX, endX, gridSize*/);};
 		Real kMax(       /* Real startX ,Real endX ,Real gridSize */){return Mathr::TWO_PI/lambdaMin(/*startX, endX, gridSize*/);};
 		Real kMin(       /* Real startX ,Real endX ,Real gridSize */){return -kMax(/*startX, endX, gridSize*/);};
