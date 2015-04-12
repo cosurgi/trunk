@@ -76,7 +76,7 @@ class NDimTable : private std::vector<K
 			total  = 1;            // total numer of elements (really explodes)
 			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
 			
-			//printDebugInfo();
+//			printDebugInfo();
 		}
 		inline void calcDimRankTotal(const std::vector<std::size_t>& d) {
 			dim_n  = d;
@@ -84,7 +84,7 @@ class NDimTable : private std::vector<K
 			total  = 1;
 			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
 			
-			//printDebugInfo();
+//			printDebugInfo();
 		}
 		// element access: http://www.fftw.org/fftw3_doc/Row_002dmajor-Format.html#Row_002dmajor-Format
 		// element is located at the position iᵈ⁻¹ + nᵈ⁻¹ *(iᵈ⁻² + nᵈ⁻² *( ... n³*( i² + n²*(i¹ + n¹ * i⁰))))
@@ -145,6 +145,7 @@ class NDimTable : private std::vector<K
 
 		// allocation
 /* OK */	void resize(const std::vector<std::size_t>& d ) {
+			if(dim_n==d) return;
 			calcDimRankTotal(d);
 			parent::resize(total);
 		};
@@ -153,6 +154,7 @@ class NDimTable : private std::vector<K
 			parent::resize(total,init);
 		};
 /* OK */	void resize(const NDimTable& other) {
+			if(dim_n==other.dim_n) return;
 			calcDimRankTotal(other.dim_n);
 			parent::resize(total);
 		};
@@ -313,8 +315,8 @@ class NDimTable : private std::vector<K
 
 		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-			(*this)=inp; // FIXME - jakoś inaczej
-			//this->resize(inp.dim()); // FIXME - jakoś inaczej
+			//(*this)=inp; // FIXME - jakoś inaczej
+			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
 			fftw_plan p;
@@ -336,7 +338,8 @@ class NDimTable : private std::vector<K
 		
 		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
-			(*this)=inp; // FIXME - jakoś inaczej
+			//(*this)=inp; // FIXME - jakoś inaczej
+			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
 			fftw_plan p;

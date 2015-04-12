@@ -217,7 +217,7 @@ Matrix3<Scalar> voigt_toSymmTensor(const Vector6<Scalar>& v, bool strain=false){
 	Matrix3<Scalar> ret; ret<<v[0],k*v[5],k*v[4], k*v[5],v[1],k*v[3], k*v[4],k*v[3],v[2]; return ret;
 }
 /* convert 2nd order tensor to 6-vector (Voigt notation), symmetrizing the tensor;
-	if strain is true, multiply non-diagonal compoennts by 2.
+	if strain is true, multiply non-diagonal components by 2.
 */
 template<typename Scalar>
 Vector6<Scalar> tensor_toVoigt(const Matrix3<Scalar>& m, bool strain=false){
