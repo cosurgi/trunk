@@ -3,9 +3,9 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size      = 10
-halfSize  = [size,size,0.1]
-halfSize2 = [x * 2 for x in halfSize]
+size_1d   = 10
+halfSize  = [size_1d,size_1d,0.1]
+size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
 Gl1_QMGeometryDisplay().partsScale=10
@@ -50,7 +50,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**7)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -62,7 +62,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.01
+O.dt=.04
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -74,6 +74,7 @@ try:
 	#qt.View()
 	qt.Controller()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+	qt.controller.setWindowTitle("Gaussian packet in 2D harmonic potential")
 	qt.Renderer().blinkHighlight=False
 	Gl1_QMGeometryDisplay().step=0.2
 

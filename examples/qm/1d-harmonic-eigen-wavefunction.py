@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size      = 100
-halfSize  = [size,0.1,0.1]
-halfSize2 = [size*2.0,0.2,0.2]
+size_1d   = 100
+halfSize  = [size_1d,0.1,0.1]
+size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
 k0_x       = 2
@@ -12,7 +12,7 @@ gaussWidth = 1
 
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
-potentialHalfSize = Vector3(size,3,3)
+potentialHalfSize = Vector3(size_1d,3,3)
 harmonicOrder     = 15
 
 
@@ -30,8 +30,8 @@ O.engines=[
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
-	SchrodingerKosloffPropagator(steps=55),
-	SchrodingerAnalyticPropagator()
+	SchrodingerAnalyticPropagator(),
+	SchrodingerKosloffPropagator(steps=-1 ), # auto
 ]
 
 ## Create:
@@ -53,7 +53,7 @@ numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**13)])
+numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[(2**13)])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -75,6 +75,7 @@ try:
 	from yade import qt
 	qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("1D eigenwavefunction in harmonic potential")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 except ImportError:

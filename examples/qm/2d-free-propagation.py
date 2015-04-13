@@ -3,9 +3,9 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size      = 10
-halfSize  = [size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1]
-halfSize2 = [x * 2 for x in halfSize]
+size_1d   = 10
+halfSize  = [size_1d,size_1d,0.1]
+size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
 Gl1_QMGeometryDisplay().partsScale=40
@@ -58,7 +58,7 @@ numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**12 if dimensions==1 else 128)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**12 if dimensions==1 else 128)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
@@ -73,6 +73,7 @@ try:
 	O.step()
 	#qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("2D free propagating packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	Gl1_QMGeometryDisplay().step=0.2

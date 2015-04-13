@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size      = 15
-halfSize  = [size,0.1,0.1]
-halfSize2 = [x * 2 for x in halfSize]
+size_1d   = 15
+halfSize  = [size_1d,0.1,0.1]
+size      = [x * 2 for x in halfSize]
 
 
 ## FIXME a1 = [0,1,2]
@@ -62,7 +62,7 @@ numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**11)])
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**11)])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -90,6 +90,7 @@ try:
 	from yade import qt
 	qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("Packet inside a 1D well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 except ImportError:

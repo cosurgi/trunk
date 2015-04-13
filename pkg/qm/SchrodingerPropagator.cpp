@@ -56,7 +56,12 @@ Real SchrodingerKosloffPropagator::eMax()
 	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		if(psi) {// FIXME - px^2+py^2 + potencjał FIXME !!!
-			ret=std::max(ret,std::pow(psi->kMax()* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */) );
+			int rank = psi->tableValuesPosition.rank();
+			Real Ekin(0);
+			for(int dim=0 ; dim<rank ; dim++)
+				Ekin += std::pow(psi->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
+	
+			ret=std::max(ret, Ekin );
 		}
 	};
 	return ret;
@@ -89,14 +94,14 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 		//0 FOREACH(Real& k, kTable) k                  =-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
 		      // FIXME 1D only
 		      // używając mój increment, może po dorobieniu iteratora mógłbym wołać kTable.at(increment_zmienna++)= ....
-		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size),2);
+		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2);
 				                                                                    //  ↑  lepiej nie dodawać tylko inicializować od tej wartości
 		} else
 		if(rank==2){
 		      for(int i=0;i<kTable.size0(0);i++) 
 		      for(int j=0;j<kTable.size0(1);j++) 
-			      kTable.at(i,j)=-1.0*std::pow(psi->iToK((i+size/2)%size),2)
-			                     -    std::pow(psi->iToK((j+size/2)%size),2);
+			      kTable.at(i,j)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2)
+			                     -    std::pow(psi->iToK((j+size/2)%size,1),2);
 		} //FIXME - ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
 		hasTable=true;
 //kTable.print();

@@ -5,9 +5,12 @@ center   = [ 0,0,0]
 size1     = 10
 size2     = 10
 size3     = 10
-halfSize1  = Vector3(size1, 0.1 ,0.1  )
-halfSize2  = Vector3(size2,size2,0.1  )
-halfSize3  = Vector3(size3,size3,size3)
+halfSize1  = [size1, 0.1 ,0.1  ]
+halfSize2  = [size2,size2,0.1  ]
+halfSize3  = [size3,size3,size3]
+size1      = [x * 2 for x in halfSize1]
+size2      = [x * 2 for x in halfSize2]
+size3      = [x * 2 for x in halfSize3]
 
 O.engines=[
 	InsertionSortCollider([
@@ -22,7 +25,7 @@ numericBody1.shape     = QMGeometryDisplay(halfSize=halfSize1,color=[0.6,0.6,0.6
 numericBody1.material  = None
 gaussPacket1            = FreeMovingGaussianWavePacket(dim=1,x0=center,t0=0,k0=[3,0,0],m=1,a=1,hbar=1)
 #numericBody1.state     = gaussPacket1
-numericBody1.state     = QMStateDiscrete(creator=gaussPacket1,dim=1,positionSize=halfSize1*2.0,gridSize=(512))
+numericBody1.state     = QMStateDiscrete(creator=gaussPacket1,dim=1,size=size1,gridSize=[512])
 O.bodies.append(numericBody1)
 
 numericBody2           = QMBody()
@@ -32,7 +35,7 @@ numericBody2.material  = None
 gaussPacket2            = FreeMovingGaussianWavePacket(dim=2,x0=center,t0=0,k0=[3,0,0],m=1,a=1,hbar=1)
 #gaussPacket2            = FreeMovingGaussianWavePacket(dim=2,x0=[0,0,0],t0=0,k0=[3,-2,0],m=1,a=1,hbar=1)
 #numericBody2.state     = gaussPacket2
-numericBody2.state     = QMStateDiscrete(creator=gaussPacket2,dim=2,positionSize=halfSize2*2.0,gridSize=(128))
+numericBody2.state     = QMStateDiscrete(creator=gaussPacket2,dim=2,size=size2,gridSize=[128]*2)
 O.bodies.append(numericBody2)
 
 numericBody3           = QMBody()
@@ -42,7 +45,7 @@ numericBody3.material  = None
 gaussPacket3            = FreeMovingGaussianWavePacket(dim=3,x0=center,t0=0,k0=[3,0,0],m=1,a=1,hbar=1)
 #gaussPacket3            = FreeMovingGaussianWavePacket(dim=3,x0=[0,0,0],t0=0,k0=[3,-2,1],m=1,a=1,hbar=1)
 #numericBody3.state     = gaussPacket3
-numericBody3.state     = QMStateDiscrete(creator=gaussPacket3,dim=3,positionSize=halfSize3*2.0,gridSize=(128))
+numericBody3.state     = QMStateDiscrete(creator=gaussPacket3,dim=3,size=size3,gridSize=[128]*3)
 O.bodies.append(numericBody3)
 
 ## Define timestep for the calculations
@@ -57,6 +60,7 @@ try:
         O.step()
 	#qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("1,2,3D")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 except ImportError:

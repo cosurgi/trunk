@@ -3,10 +3,13 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 3
-size      = 10
-halfSize  = [size,size,size]
-halfSize2 = [x * 2 for x in halfSize]
-#halfSize  = Vector3(size,size if dimensions>1 else 0.1,size if dimensions>2 else 0.1)
+size_1d   = 10
+halfSize  = [size_1d,size_1d,size_1d]
+size      = [x * 2 for x in halfSize]
+
+Gl1_QMGeometryDisplay().partAbsolute=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partReal=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
@@ -42,7 +45,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,-2,1],m=1,a=0.5,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[1.5,0,0],m=1,a=1.5,hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -55,7 +58,7 @@ numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**8 if dimensions==1 else 32)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**8 if dimensions==1 else 32)]*dimensions)
 #O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations
@@ -76,6 +79,7 @@ try:
         #O.step()
 	#qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("3D free propagating packet")
 	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	#Gl1_QMGeometryDisplay().probability  =False

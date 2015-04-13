@@ -3,15 +3,15 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size      = 18
-halfSize  = [size,size,0.1]
-halfSize2 = [x * 2 for x in halfSize]
+size_1d   = 18
+halfSize  = [size_1d,size_1d,0.1]
+size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
 Gl1_QMGeometryDisplay().partsScale=10
-Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
 k0_x       = 0.5
@@ -55,7 +55,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,positionSize=halfSize2,gridSize=[(2**6)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**8)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
@@ -96,6 +96,7 @@ try:
 #	O.step()
 	#qt.View()
 	qt.Controller()
+	qt.controller.setWindowTitle("2D potential well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	Gl1_QMGeometryDisplay().step=0.2

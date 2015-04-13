@@ -24,14 +24,14 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	firstRun = false;
 //	std::cerr<<"positionSize="<<positionSize<<"\n";
 //	std::cerr<<"gridSize="<<gridSize<<"\n";
-	stepPos= getStepPos();
-	Real step=stepPos;
-	startX = -positionSize[0]/2.0;     // FIXME - does it really have to be centered around zero?
-	endX   =  positionSize[0]/2.0;
-	startY = -positionSize[1]/2.0;     // FIXME - does it really have to be centered around zero?
-	endY   =  positionSize[1]/2.0;
-	startZ = -positionSize[2]/2.0;     // FIXME - does it really have to be centered around zero?
-	endZ   =  positionSize[2]/2.0;
+//	stepPos= getStepPos();
+//	Real step=stepInPositionalRepresentation();
+//	startX = -positionSize[0]/2.0;     // FIXME - does it really have to be centered around zero?
+//	endX   =  positionSize[0]/2.0;
+//	startY = -positionSize[1]/2.0;     // FIXME - does it really have to be centered around zero?
+//	endY   =  positionSize[1]/2.0;
+//	startZ = -positionSize[2]/2.0;     // FIXME - does it really have to be centered around zero?
+//	endZ   =  positionSize[2]/2.0;
 	if(this->dim == 1) {
 		//1 tableValuesPosition      .resize(1);          // no         coordinate
 		//1 tableValuesPosition[0]   .resize(1);          // no         coordinate
@@ -42,12 +42,15 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
 //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
-		for(Real x=startX ; i<gridSize[0] ; x+=step,i++ ) {
+		for(Real x=start(0); i<gridSize[0] ; x+=stepInPositionalRepresentation(0),i++ ) {
 			tableValuesPosition.at(i) = creator->getValPos(Vector3r(x,0,0));
 // FIXME		tablePosition      [0][0][i] = x;
 		}
 	} else if(this->dim == 2) {
-		assert( positionSize[0]==positionSize[1]); // FIXME - think if it's really necessary
+		if(not( size[0]==size[1])) {
+			std::cerr << "WARNIG - wavepacket dimensions are different in each positional representation \
+			direction. This is not tested yet.\n";
+		}; // FIXME - think if it's really necessary. Test it.
 		//2 tableValuesPosition      .resize(1);          // no         coordinate
 		//2 tableValuesPosition[0]   .resize(gridSize);   // x position coordinate
 		tableValuesPosition.resize(gridSize);
@@ -59,15 +62,18 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
 //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
-		for(Real x=startX ; i<gridSize[0] ; x+=step,i++ ) {
+		for(Real x=start(0) ; i<gridSize[0] ; x+=stepInPositionalRepresentation(0),i++ ) {
 			int j=0;
-			for(Real y=startY ; j<gridSize[1] ; y+=step,j++ )
+			for(Real y=start(1) ; j<gridSize[1] ; y+=stepInPositionalRepresentation(1),j++ )
 			{
 				tableValuesPosition.at(i,j) = creator->getValPos(Vector3r(x,y,0));
 			}
 		}
 	} else if(this->dim == 3) {
-		assert( (positionSize[0]==positionSize[1]) and (positionSize[0]==positionSize[2])); // FIXME - think if it's really necessary
+		if(not( (size[0]==size[1]) and (size[0]==size[2]))) {
+			std::cerr << "WARNIG - wavepacket dimensions are different in each positional representation \
+			direction. This is not tested yet.\n";
+		}; // FIXME - think if it's really necessary. Test it.
 		//3 tableValuesPosition      .resize(gridSize);  // x position coordinate
 		//3 FOREACH(std::vector<std::vector<Complexr> >& xx, tableValuesPosition   ) {
 		//3 	xx.resize(gridSize);           // y position coordinate
@@ -81,12 +87,12 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 // FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
 //		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
 		int i       =  0;
-		for(Real x=startX ; i<gridSize[0] ; x+=step,i++ ) {
+		for(Real x=start(0) ; i<gridSize[0] ; x+=stepInPositionalRepresentation(0),i++ ) {
 			int j=0;
-			for(Real y=startY ; j<gridSize[1] ; y+=step,j++ )
+			for(Real y=start(1) ; j<gridSize[1] ; y+=stepInPositionalRepresentation(1),j++ )
 			{
 				int k=0;
-				for(Real z=startZ ; k<gridSize[2] ; z+=step,k++ )
+				for(Real z=start(2) ; k<gridSize[2] ; z+=stepInPositionalRepresentation(2),k++ )
 				{
 					tableValuesPosition.at(i,j,k) = creator->getValPos(Vector3r(x,y,z));
 				}
@@ -104,10 +110,10 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 {
 	double errorTime(2);
-	int i( (xyz[0]-startX)/stepPos ), // FIXME - maybe add interpolation?
-	    j( (xyz[1]-startY)/stepPos ),
-	    k( (xyz[2]-startZ)/stepPos );
-	switch(this->dim) { // FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draw one too much!!
+	int i( xToI(xyz[0],0) /* (xyz[0]-start(0))/stepInPositionalRepresentation()*/),
+	    j( xToI(xyz[1],1) /* (xyz[1]-start(1))/stepInPositionalRepresentation()*/),
+	    k( xToI(xyz[2],2) /* (xyz[2]-start(2))/stepInPositionalRepresentation()*/);
+	switch(this->dim) { // FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draws one too much!!
 	
 	//FIXME - must work for all dimensions, with contractions !!!!!!
 		case 1 :

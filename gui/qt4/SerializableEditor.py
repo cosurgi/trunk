@@ -415,9 +415,11 @@ class Se3FakeType: pass
 
 class DropDownMenuFakeType: pass
 
+class size_t_FakeType: pass
 
-_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3,DropDownMenuFakeType:AttrEditor_QComboBox}
-_fundamentalInitValues={bool:True,str:'',int:0,float:0.0,complex:0.0j,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0)),DropDownMenuFakeType:""}
+
+_fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,size_t_FakeType:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3,DropDownMenuFakeType:AttrEditor_QComboBox}
+_fundamentalInitValues={bool:True,str:'',int:0,size_t_FakeType:0,float:0.0,complex:0.0j,Quaternion:Quaternion((0,1,0),0.0),Vector3:Vector3.Zero,Matrix3:Matrix3.Zero,Vector6:Vector6.Zero,Vector6i:Vector6i.Zero,Vector3i:Vector3i.Zero,Vector2i:Vector2i.Zero,Vector2:Vector2.Zero,Se3FakeType:(Vector3.Zero,Quaternion((0,1,0),0.0)),DropDownMenuFakeType:""}
 
 class SerQLabel(QLabel):
 	def __init__(self,parent,label,tooltip,path):
@@ -494,7 +496,7 @@ class SerializableEditor(QFrame):
 			m=re.match(regexp,cxxT)
 			return m
 		vecMap={
-			'bool':bool,'int':int,'long':int,'Body::id_t':long,'size_t':long,
+			'bool':bool,'int':int,'long':int,'Body::id_t':long,'size_t':size_t_FakeType,
 			'Real':float,'float':float,'double':float,'complex':complex,'std::complex<Real>':complex,
 			'Vector6r':Vector6,'Vector6i':Vector6i,'Vector3i':Vector3i,'Vector2r':Vector2,'Vector2i':Vector2i,
 			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,'DropDownMenu':DropDownMenuFakeType,
