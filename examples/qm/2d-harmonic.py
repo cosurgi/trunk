@@ -14,7 +14,7 @@ Gl1_QMGeometryDisplay().partsScale=10
 #Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
-k0_x       = 0
+k0_x       = 2
 k0_y       = 4
 gaussWidth = 2.0
 

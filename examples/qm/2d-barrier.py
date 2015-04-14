@@ -3,7 +3,7 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
-size_1d   = 18
+size_1d   = 12
 halfSize  = [size_1d,size_1d,0.1]
 size      = [x * 2 for x in halfSize]
 
@@ -14,8 +14,8 @@ Gl1_QMGeometryDisplay().partsScale=10
 #Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
-k0_x       = 0.5
-k0_y       = 1
+k0_x       = 2
+k0_y       = 4
 gaussWidth = 2.0
 
 # potential parameters
@@ -26,7 +26,7 @@ potentialHalfSize = [1.0,10.0,1.0]
 potentialCenter1a = [0  , 9,0  ]
 potentialCenter2a = [0  ,-9,0  ]
 potentialHalfSizeA= [ 7.8,1.0,1.0]
-potentialValue    = 1000.0
+potentialValue    = 100.0
 
 O.engines=[
 	SpatialQuickSortCollider([
@@ -55,7 +55,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**8)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
