@@ -16,7 +16,8 @@ Gl1_QMGeometryDisplay().partsScale=10
 # wavepacket parameters
 k0_x       = 2
 k0_y       = 4
-gaussWidth = 2.0
+gaussWidth_x = 2.0
+gaussWidth_y = 1.5
 
 # potential parameters
 potentialCenter1  = [ 9,0  ,0  ]
@@ -47,7 +48,7 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=gaussWidth,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 

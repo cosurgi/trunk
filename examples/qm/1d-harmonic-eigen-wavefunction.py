@@ -44,7 +44,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-harmonicPacket         = HarmonicOscillator(dim=dimensions,order=harmonicOrder)
+harmonicPacket         = HarmonicOscillator(dim=dimensions,order=[harmonicOrder,0,0])
 analyticBody.state     = harmonicPacket
 O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 

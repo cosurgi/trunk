@@ -3,7 +3,7 @@
 
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 3
-size_1d   = 10
+size_1d   = 15
 halfSize  = [size_1d,size_1d,size_1d]
 size      = [x * 2 for x in halfSize]
 
@@ -45,7 +45,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[1.5,0,0],m=1,a=1.5,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[1.5,0,0],m=1,a=[1.5,1.5,1.5],hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -58,7 +58,7 @@ numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**8 if dimensions==1 else 32)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[16]*dimensions)
 #O.bodies.append(numericalBody)
 
 ## Define timestep for the calculations

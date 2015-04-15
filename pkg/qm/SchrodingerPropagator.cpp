@@ -62,6 +62,19 @@ Real SchrodingerKosloffPropagator::eMax()
 				Ekin += std::pow(psi->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
 	
 			ret=std::max(ret, Ekin );
+
+
+
+//NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
+//FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
+//	QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+//	if(igeom) {
+//		psiN1_pot+=igeom->potentialValues;      // ψ₁: (potential)
+//	}
+//};
+
+
+
 		}
 	};
 	return ret;
@@ -73,8 +86,8 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN
 	Real mass(1); // FIXME - this shouldn't be here
 //std::cerr << " ............ 4  \n";
 	Real dt=scene->dt;
-	Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
-	Real G   = calcKosloffG();
+	static Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
+	static Real G   = calcKosloffG();
 
 	// FIXME,FIXME ↓
 	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once

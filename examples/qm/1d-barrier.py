@@ -53,7 +53,7 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a=gaussWidth,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a=[gaussWidth,0,0],hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 

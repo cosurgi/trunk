@@ -41,7 +41,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[5,-2 if dimensions > 1 else 0,1 if dimensions > 2 else 0],m=1,a=0.5,hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[5,0,0],m=1,a=[0.5,0,0],hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 

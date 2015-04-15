@@ -197,6 +197,8 @@ class NDimTable : private std::vector<K
 
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
+		NDimTable& min()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::min(v    );}); return *this;}; 
+		NDimTable& max()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::max(v    );}); return *this;}; 
 		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;}; 
 		NDimTable& pow(const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
 		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};

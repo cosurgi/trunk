@@ -58,15 +58,15 @@ Complexr FreeMovingGaussianWavePacket::waveFunctionValue_1D_positionRepresentati
 Complexr FreeMovingGaussianWavePacket::getValPos(Vector3r pos)
 {
 	switch(this->dim) {
-		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar);
+		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a[0],hbar);
 
 		//FIXME - I need different a in each direction
-		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar);
+		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a[0],hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a[1],hbar);
 
-		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a,hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a,hbar)*
-				waveFunctionValue_1D_positionRepresentation(pos[2],x0[2],this->t,k0[2],m,a,hbar);
+		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a[0],hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a[1],hbar)*
+				waveFunctionValue_1D_positionRepresentation(pos[2],x0[2],this->t,k0[2],m,a[2],hbar);
 				// FIXME - interesting thing: adding a new dimension is just a multiplication.
 				//         but calculating probability is multiplication by conjugate.
 				//         just as time is really just another dimension, but in Minkowski metric.
@@ -164,9 +164,12 @@ Complexr  HarmonicOscillator::quantumOscillatorWavefunction( // assume hbar=1, m
 Complexr HarmonicOscillator::getValPos(Vector3r pos)
 {
 	switch(this->dim) {
-		case 1 : return quantumOscillatorWavefunction(order,pos[0])*std::exp((-Mathr::I*(order+0.5))*this->t); // FIXME,FIXME: ,x0[0],this->t,k0[0],m,a,hbar);
+		case 1 : return quantumOscillatorWavefunction(order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t); // FIXME,FIXME: ,x0[0],this->t,k0[0],m,a,hbar);
 
-		default: throw std::runtime_error("getValPos() works only in 1 dimension.");
+		case 2 : return quantumOscillatorWavefunction(order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t)*
+		                quantumOscillatorWavefunction(order[1],pos[1])*std::exp((-Mathr::I*(order[1]+0.5))*this->t);
+
+		default: throw std::runtime_error("getValPos() works only in 1 or 2 dimensions.");
 	}
 };
 
