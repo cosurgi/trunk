@@ -11,12 +11,13 @@ Gl1_QMGeometryDisplay().partsScale=10
 Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().stepWait=0.5
 
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]
 potentialHalfSize = [size_1d,size_1d,1]
-harmonicOrder_x   = 5
-harmonicOrder_y   = 7 
+harmonicOrder_x   = 0
+harmonicOrder_y   = 0 
 
 
 O.engines=[

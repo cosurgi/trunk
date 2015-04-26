@@ -24,7 +24,7 @@ gaussWidth = 0.1
 potentialCenter1  = [ 2.0,0  ,0  ]
 potentialCenter2  = [-2.0,0  ,0  ]
 potentialHalfSize = [1.0,0.1,0.1]
-potentialValue    = 1000.0
+potentialValue    = 23000/2
 
 
 O.engines=[

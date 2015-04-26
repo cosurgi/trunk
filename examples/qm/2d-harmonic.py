@@ -14,8 +14,8 @@ Gl1_QMGeometryDisplay().partsScale=10
 #Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
-k0_x         = 2
-k0_y         = 4
+k0_x         = 3
+k0_y         = 2
 gaussWidth_x = 1.0
 gaussWidth_y = 2.0
 
@@ -51,7 +51,7 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
