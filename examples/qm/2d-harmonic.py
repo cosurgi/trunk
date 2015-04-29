@@ -51,7 +51,8 @@ analyticBody.state     = gaussPacket
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
+#numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

@@ -55,14 +55,13 @@ Real SchrodingerKosloffPropagator::eMax()
 	Real ret(0); // assume that negative maximum energy is not possible
 	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		if(psi) {// FIXME - px^2+py^2 + potencjał FIXME !!!
+		if(psi) {// FIXME - px^2+py^2 + potential FIXME, Kosloff eq.2.4 !!!
 			int rank = psi->tableValuesPosition.rank();
 			Real Ekin(0);
 			for(int dim=0 ; dim<rank ; dim++)
 				Ekin += std::pow(psi->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
 	
 			ret=std::max(ret, Ekin );
-
 
 
 //NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
@@ -74,108 +73,60 @@ Real SchrodingerKosloffPropagator::eMax()
 //};
 
 
-
 		}
 	};
 	return ret;
 }
 
-void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psiN___0,NDimTable<Complexr>& psiN___1,
+void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psiN___1,
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
-//std::cerr << " ............ 4  \n";
 	Real dt=scene->dt;
 	static Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
 	static Real G   = calcKosloffG();
 
-	// FIXME,FIXME ↓
+	// FIXME,FIXME ↓ -- this should be somewhere else. Still need to find a good place.
 	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
-//std::cerr << " ............ 5  \n";
-	static NDimTable<Real    > kTable(psiN___0.dim());          // k FIXME: kTable should be prepared only once
+	static NDimTable<Real    > kTable(psi_0.dim());          // k FIXME: kTable should be prepared only once
 	if(! hasTable){
-		// FIXME - 1D only
 		std::size_t size(kTable.size0(0));
-		//int i(size/2); // rotate kTable instead
-//std::cerr << " ............ 6  \n";
-
-		//FIXME - stupid way of checking dim
-		std::size_t rank = psiN___0.rank();
-
-
+		std::size_t rank = psi_0.rank();
 		if(rank==1){
-		//0 FOREACH(Real& k, kTable) k                  =-1.0*std::pow(psi->iToK((i++)%kTable.size()),2); // k FIXME: kTable should be prepared only once, FIXME - and not here!!
-		      // FIXME 1D only
-		      // używając mój increment, może po dorobieniu iteratora mógłbym wołać kTable.at(increment_zmienna++)= ....
 		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2);
-				                                                                    //  ↑  lepiej nie dodawać tylko inicializować od tej wartości
 		} else
 		if(rank==2){
 		      for(int i=0;i<kTable.size0(0);i++) 
 		      for(int j=0;j<kTable.size0(1);j++) 
 			      kTable.at(i,j)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2)
 			                     -    std::pow(psi->iToK((j+size/2)%size,1),2);
-		} //FIXME - ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
+		} //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
 		hasTable=true;
-//kTable.print();
+	//kTable.print();
 	}
-//std::cerr << " ............ 7  \n";
-// FIXME: potrzebuję mnożenie, dodawanie, odejmowanie - to jest wszystko 1D, nieważne ileD jest naprawdę......
-//        więc czy da się użyć fftw_malloc na std::vector na tym wszystkim? osobno real/imag?
-//        i osobno dopisać metody do odczytywanie indywidualnych punktów w ileśD ?
-//
-	//1 std::vector<Complexr> psiN1_tmp2(psiN___0.size());             // ψ₁:
-	//1 doFFT_1D(psiN___0,psiN1_tmp2);                                 // ψ₁: psiN1_tmp2=ℱ(ψ₀)
-	NDimTable<Complexr> psiN1_tmp2={}; // FIXME - maybe make an FFT-constructor, that constructs by FFTof sth else.
-//std::cerr << " ............ 8  \n";
-	                    psiN1_tmp2.becomesFFT(psiN___0);             // ψ₁: psiN1_tmp2=ℱ(ψ₀)
-			    // FIXME - maybe use operator=FFT<>(psiN___0); ? This FFT() is a type cast to call correct =
 
-	//2 std::vector<Complexr> psiN1_tmp1(psiN___0);                    // ψ₁:
-	//2 FOREACH(Complexr& psi_i, psiN1_tmp1) psi_i*=(1+G/R);           // ψ₁: psiN1_tmp1=(1+G/R)ψ₀
-	                                   psiN___1 =psiN___0*(1+G/R);     // ψ₁:         ψ₁=(1+G/R)ψ₀
-	
-
-	//3 std::vector<Complexr> psiN1_tmp3(psiN___0.size());             // ψ₁:
-	//3 							       // ψ₁: psiN1_tmp3=-k²ℱ(ψ₀)
-	//3 std::transform(psiN1_tmp2.begin(), psiN1_tmp2.end(), kTable.begin(), psiN1_tmp3.begin(), std::multiplies<Complexr>());
-	                                   psiN1_tmp2 *= kTable;       // ψ₁: psiN1_tmp2=-k²ℱ(ψ₀)
-	
-	//4 std::vector<Complexr> psiN1_tmp4(psiN___0.size());             // ψ₁:
-	//4 doIFFT_1D(psiN1_tmp3,psiN1_tmp4);                              // ψ₁:            psiN1_tmp4=ℱ⁻¹(-k²ℱ(ψ₀))
-	                    psiN1_tmp2.becomesIFFT(
-			    //FIXME - remove that:
-				psiN1_tmp2
-			    /* no argument means in-place*/);  // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
-			    // FIXME - alternatywa:  IFFT(psiN1_tmp2); // friend class, i wtedy działa na tym.
-	
-	//5 FOREACH(Complexr& psi_i, psiN1_tmp4) psi_i*=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp4=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-	                                   psiN1_tmp2 *=dt*hbar/(R*2*mass);// ψ₁: psiN1_tmp2=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-
-	// std::vector<Complexr> psiN___1(psiN___0.size());             // ψ₁: (that's the output)
-								       // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-	//6 std::transform(psiN1_tmp4.begin(), psiN1_tmp4.end(), psiN1_tmp1.begin(), psiN___1.begin(), std::plus<Complexr>());
-	                            psiN___1 += psiN1_tmp2;
+	NDimTable<Complexr> psiN1_tmp2 = FFT(psi_0);                    // ψ₁: psiN1_tmp2=ℱ(ψ₀)
+	psiN1_tmp2 *= kTable;                                           // ψ₁: psiN1_tmp2=-k²ℱ(ψ₀)
+	psiN1_tmp2.becomesIFFT(psiN1_tmp2);                             // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
+	psiN1_tmp2 *=dt*hbar/(R*2*mass);                                // ψ₁: psiN1_tmp2=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	psiN___1 =psi_0*(1+G/R);                                        // ψ₁: ψ₁=(1+G/R)ψ₀
+	psiN___1 += psiN1_tmp2;                                         // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
 	// result is in psiN___1
 
+	// now use take care of potential
 	NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
-	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
+	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
 		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
 		if(igeom) {
 			psiN1_pot+=igeom->potentialValues;      // ψ₁: (potential)
 		}
 	};
-			//7 for(int j=0 ; j<psiN1_potential.size() ; j++) psiN1_potential[j]*=dt*psiN___1[j]/(hbar*R);
-			                                                  psiN1_pot         *=   psiN___1;             // FIXME - should look nicer
-			                                                  psiN1_pot         *=dt            /(hbar*R); // FIXME - should look nicer
-			//8 std::vector<Complexr> tmp (psiN___0.size()  );                         // ψ₁: (potential)
-			//8 std::transform(psiN___1.begin(), psiN___1.end(), psiN1_potential.begin(), tmp.begin(), std::minus<Complexr>());
-			                                                  psiN___1 -= psiN1_pot      ;
-			//8 psiN___1=tmp; // FIXME - inefficient
+	psiN1_pot         *=   psiN___1;             // FIXME - should look nicer
+	psiN1_pot         *=dt            /(hbar*R); // FIXME - should look nicer                                 FIXME ↓ ,ERROR!!!
+	psiN___1 -= psiN1_pot;                       // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) - (dt V ψ₁)/(ℏ R)
 	// FIXME: return std::move(psiN___1);
 }
 
-// FIXME - later http://stackoverflow.com/questions/2763006/change-the-current-branch-to-master-in-git
 void SchrodingerKosloffPropagator::action()
 {
 	timeLimit.readWallClock();

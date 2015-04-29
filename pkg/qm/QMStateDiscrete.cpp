@@ -22,20 +22,8 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	std::cerr<<"firstRun="<<firstRun<<"\n";
 	if(firstRun) { // initialize from creator upon firstRun
 	firstRun = false;
-//	std::cerr<<"positionSize="<<positionSize<<"\n";
-//	std::cerr<<"gridSize="<<gridSize<<"\n";
-//	stepPos= getStepPos();
-//	Real step=stepInPositionalRepresentation();
-//	startX = -positionSize[0]/2.0;     // FIXME - does it really have to be centered around zero?
-//	endX   =  positionSize[0]/2.0;
-//	startY = -positionSize[1]/2.0;     // FIXME - does it really have to be centered around zero?
-//	endY   =  positionSize[1]/2.0;
-//	startZ = -positionSize[2]/2.0;     // FIXME - does it really have to be centered around zero?
-//	endZ   =  positionSize[2]/2.0;
+// FIXME - does it really have to be centered around zero?
 	if(this->dim == 1) {
-		//1 tableValuesPosition      .resize(1);          // no         coordinate
-		//1 tableValuesPosition[0]   .resize(1);          // no         coordinate
-		//1 tableValuesPosition[0][0].resize(gridSize,0); // x position coordinate
 		tableValuesPosition.resize(gridSize); // x position coordinate
 
 		// Fill the table by copying from creator
@@ -110,9 +98,9 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 Complexr QMStateDiscrete::getValPos(Vector3r xyz)
 {
 	double errorTime(2);
-	int i( xToI(xyz[0],0) /* (xyz[0]-start(0))/stepInPositionalRepresentation()*/),
-	    j( xToI(xyz[1],1) /* (xyz[1]-start(1))/stepInPositionalRepresentation()*/),
-	    k( xToI(xyz[2],2) /* (xyz[2]-start(2))/stepInPositionalRepresentation()*/);
+	int i( xToI(xyz[0],0) ),
+	    j( xToI(xyz[1],1) ),
+	    k( xToI(xyz[2],2) );
 	switch(this->dim) { // FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draws one too much!!
 	
 	//FIXME - must work for all dimensions, with contractions !!!!!!
