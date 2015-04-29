@@ -197,10 +197,13 @@ class NDimTable : private std::vector<K
 		template<typename L> NDimTable& operator *= (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
 		template<typename L> NDimTable& operator /= (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v/l;});return *this;}; 
 
+		// FIXME: should be 'K'-type not 'double'-type. But min(), max() works only with real numbers. 
+		// FIXME: this is because potential should be real valued (but isn't)
+		// FIXME: if it's 'double' here then better it should be 'Real' so that changing precision works correctly
+		double min(){double ret(std::real(this->front())); for(K v : (*this)){ret = std::min(std::real(v),ret);}; return ret;};
+		double max(){double ret(std::real(this->front())); for(K v : (*this)){ret = std::max(std::real(v),ret);}; return ret;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
-		NDimTable& min()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::min(v    );}); return *this;};
-		NDimTable& max()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::max(v    );}); return *this;};
 		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
 		NDimTable& pow(const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
 		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};

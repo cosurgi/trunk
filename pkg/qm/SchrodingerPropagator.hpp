@@ -71,8 +71,8 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 {
 	public:
 		virtual void action();
-		Real eMin() {return 0;}; // FIXME - it will have to scan the scene and find minimum potential
-		Real eMax(); // this function scans the scene and currently finds (only) maximum momentum
+		Real eMin();
+		Real eMax();
 		Real calcKosloffR(Real dt) { return dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG(Real dt) { return dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes

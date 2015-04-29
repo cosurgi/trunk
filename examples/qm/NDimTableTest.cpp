@@ -246,6 +246,8 @@ int main(void){
 	in.becomesIFFT(out);
 	in.print();
 	out.print();
+	std::cout << "\n" << out.max();
+	std::cout << "\n" << out.min();
 // debug output:
 // FIXME, FIXME - add this to yade --check or test.
 // FIXME, FIXME - this is important, because various FFT libraries divide by sqrt(N) or some other numbers.

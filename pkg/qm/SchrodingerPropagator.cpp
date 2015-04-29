@@ -50,6 +50,22 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 // !! at least one virtual function in the .cpp file
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
+Real SchrodingerKosloffPropagator::eMin()
+{
+	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
+	// prepare the potential  ψᵥ
+	NDimTable<Complexr> Vpsi={};
+	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
+		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+		if(igeom) {
+			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
+			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
+		}
+	};
+	// FIXME end
+	return Vpsi.min();
+};
+
 Real SchrodingerKosloffPropagator::eMax()
 {
 	Real ret(0); // assume that negative maximum energy is not possible
@@ -60,21 +76,24 @@ Real SchrodingerKosloffPropagator::eMax()
 			Real Ekin(0);
 			for(int dim=0 ; dim<rank ; dim++)
 				Ekin += std::pow(psi->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
-	
 			ret=std::max(ret, Ekin );
-
-
-//NDimTable<Complexr> Vpsi(psiN___1.dim(),0);
-//FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
-//	QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
-//	if(igeom) {
-//		Vpsi+=igeom->potentialValues;      // ψ₁: (potential)
-//	}
-//};
-
-
 		}
 	};
+
+
+	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
+	// prepare the potential  ψᵥ
+	NDimTable<Complexr> Vpsi={};
+	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
+		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+		if(igeom) {
+			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
+			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
+		}
+	};
+	ret += Vpsi.max();
+	// FIXME end
+
 	return ret;
 }
 
