@@ -64,11 +64,11 @@ Real SchrodingerKosloffPropagator::eMax()
 			ret=std::max(ret, Ekin );
 
 
-//NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
+//NDimTable<Complexr> Vpsi(psiN___1.dim(),0);
 //FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){
 //	QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
 //	if(igeom) {
-//		psiN1_pot+=igeom->potentialValues;      // ψ₁: (potential)
+//		Vpsi+=igeom->potentialValues;      // ψ₁: (potential)
 //	}
 //};
 
@@ -78,17 +78,18 @@ Real SchrodingerKosloffPropagator::eMax()
 	return ret;
 }
 
-void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psiN___1,
+void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
 	Real dt=scene->dt;
-	static Real R   = calcKosloffR(); // FIXME - this also should be calculated only once
-	static Real G   = calcKosloffG();
+
+	Real R   = calcKosloffR(); // FIXME -  that's duplicate here, depends on dt !!
+	Real G   = calcKosloffG(); // FIXME -  that's duplicate here, depends on dt !!
 
 	// FIXME,FIXME ↓ -- this should be somewhere else. Still need to find a good place.
-	static bool hasTable(false);                                // k FIXME: kTable should be prepared only once
-	static NDimTable<Real    > kTable(psi_0.dim());          // k FIXME: kTable should be prepared only once
+	static bool hasTable(false);
+	static NDimTable<Real    > kTable(psi_0.dim());
 	if(! hasTable){
 		std::size_t size(kTable.size0(0));
 		std::size_t rank = psi_0.rank();
@@ -104,34 +105,33 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 		hasTable=true;
 	//kTable.print();
 	}
-
-	NDimTable<Complexr> psiN1_tmp2 = FFT(psi_0);                    // ψ₁: psiN1_tmp2=ℱ(ψ₀)
-	psiN1_tmp2 *= kTable;                                           // ψ₁: psiN1_tmp2=-k²ℱ(ψ₀)
-	psiN1_tmp2.becomesIFFT(psiN1_tmp2);                             // ψ₁: psiN1_tmp2=ℱ⁻¹(-k²ℱ(ψ₀))
-	psiN1_tmp2 *=dt*hbar/(R*2*mass);                                // ψ₁: psiN1_tmp2=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-	psiN___1 =psi_0*(1+G/R);                                        // ψ₁: ψ₁=(1+G/R)ψ₀
-	psiN___1 += psiN1_tmp2;                                         // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-	// result is in psiN___1
-
-	// now use take care of potential
-	NDimTable<Complexr> psiN1_pot(psiN___1.dim(),0);
+	
+	// prepare the potential
+	NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
 		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
 		if(igeom) {
-			psiN1_pot+=igeom->potentialValues;      // ψ₁: (potential)
+			Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 		}
 	};
-	psiN1_pot         *=   psiN___1;             // FIXME - should look nicer
-	psiN1_pot         *=dt            /(hbar*R); // FIXME - should look nicer                                 FIXME ↓ ,ERROR!!!
-	psiN___1 -= psiN1_pot;                       // ψ₁: psiN___1=(1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) - (dt V ψ₁)/(ℏ R)
-	// FIXME: return std::move(psiN___1);
+	Vpsi  *=   psi_0;                   // ψᵥ: ψᵥ=V ψ₀
+	Vpsi  *= dt     /(hbar*R);          // ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
+
+	psi_1  = FFT(psi_0);                // ψ₁: ψ₁=              ℱ(ψ₀)
+	psi_1 *= kTable;                    // ψ₁: ψ₁=           -k²ℱ(ψ₀)
+	psi_1   .IFFT();                    // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
+	psi_1 *= dt*hbar/(R*2*mass);        // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	psi_1.multAdd(psi_0,(1+G/R));       // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
+	psi_1 -= Vpsi;                      // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+
+	// FIXME: return std::move(psi_1);
 }
 
 void SchrodingerKosloffPropagator::action()
 {
 	timeLimit.readWallClock();
-	Real R   = calcKosloffR(); // FIXME -  that's duplicate here
-	Real G   = calcKosloffG(); // FIXME -  that's duplicate here
+	Real R   = calcKosloffR(); // FIXME -  that's duplicate here, depends on dt !!
+	Real G   = calcKosloffG(); // FIXME -  that's duplicate here, depends on dt !!
 	Real R13 = 1.3*R;
 	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
 //std::cerr << " ............ 1  \n";

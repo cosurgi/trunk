@@ -206,6 +206,11 @@ class NDimTable : private std::vector<K
 		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};
 		NDimTable& conj()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::conj(v   );}); return *this;};
 
+		template<typename L> NDimTable& multAdd(const NDimTable<L>& T,const K& k)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v+l*k;});return *this;}; 
+		template<typename L> NDimTable& multSub(const NDimTable<L>& T,const K& k)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v-l*k;});return *this;}; 
+
 		// // contractions (returns new container of different dimension, or works on a provided container of expected dimension)
 		// //
 		//
@@ -340,6 +345,7 @@ class NDimTable : private std::vector<K
 			#endif
 		};
 		
+		void IFFT() { this->becomesIFFT(*this); };
 		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
 			//(*this)=inp; // FIXME - jakoś inaczej

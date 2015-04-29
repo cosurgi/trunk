@@ -8,9 +8,9 @@ size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
 Gl1_QMGeometryDisplay().partsScale=10
-Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
 Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+Gl1_QMGeometryDisplay().partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
 Gl1_QMGeometryDisplay().stepWait=0.5
 
 # potential parameters
