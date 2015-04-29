@@ -84,8 +84,8 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 	Real mass(1); // FIXME - this shouldn't be here
 	Real dt=scene->dt;
 
-	Real R   = calcKosloffR(); // FIXME -  that's duplicate here, depends on dt !!
-	Real G   = calcKosloffG(); // FIXME -  that's duplicate here, depends on dt !!
+	Real R   = calcKosloffR(dt); // FIXME -  that's duplicate here, depends on dt !!
+	Real G   = calcKosloffG(dt); // FIXME -  that's duplicate here, depends on dt !!
 
 	// FIXME,FIXME ↓ -- this should be somewhere else. Still need to find a good place.
 	static bool hasTable(false);
@@ -106,7 +106,7 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 	//kTable.print();
 	}
 	
-	// prepare the potential
+	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
 		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
@@ -114,15 +114,14 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 			Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 		}
 	};
-	Vpsi  *=   psi_0;                   // ψᵥ: ψᵥ=V ψ₀
-	Vpsi  *= dt     /(hbar*R);          // ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
+	Vpsi    .multMult(psi_0,dt/(hbar*R));// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
 
-	psi_1  = FFT(psi_0);                // ψ₁: ψ₁=              ℱ(ψ₀)
-	psi_1 *= kTable;                    // ψ₁: ψ₁=           -k²ℱ(ψ₀)
-	psi_1   .IFFT();                    // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
-	psi_1 *= dt*hbar/(R*2*mass);        // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
-	psi_1.multAdd(psi_0,(1+G/R));       // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
-	psi_1 -= Vpsi;                      // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+	psi_1  = FFT(psi_0);                 // ψ₁: ψ₁=              ℱ(ψ₀)
+	psi_1 *= kTable;                     // ψ₁: ψ₁=           -k²ℱ(ψ₀)
+	psi_1   .IFFT();                     // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
+	psi_1 *= dt*hbar/(R*2*mass);         // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	psi_1   .mult2Add(psi_0,(1+G/R));    // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
+	psi_1 -= Vpsi;                       // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 
 	// FIXME: return std::move(psi_1);
 }
@@ -130,75 +129,37 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 void SchrodingerKosloffPropagator::action()
 {
 	timeLimit.readWallClock();
-	Real R   = calcKosloffR(); // FIXME -  that's duplicate here, depends on dt !!
-	Real G   = calcKosloffG(); // FIXME -  that's duplicate here, depends on dt !!
+	Real R   = calcKosloffR(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
+	Real G   = calcKosloffG(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real R13 = 1.3*R;
 	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
-//std::cerr << " ............ 1  \n";
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		const Body::id_t& id=b->getId();
-//std::cerr << " ............ 2  \n";
-		if(psi) {
-			// prepare for the loop, FIXME: it's 1D only
-			                 //8 ↓
-			NDimTable<Complexr>/*&*/  psi_final(psi->tableValuesPosition);     // will become ψ(t+dt):
-			NDimTable<Complexr>  psiN___0 (psi_final);                    // psiN___0=ψ₀
-			NDimTable<Complexr>  psiN___1 = {};               // ψ₁:
-//std::cerr << " ............ 3  \n";
-			calcPsiPlus_1(psiN___0,psiN___1,psi);
-			
-			Complexr ak(1);
-			Complexr ak0=calcAKseriesCoefficient(0,R);
-			Complexr ak1=calcAKseriesCoefficient(1,R);
-			//1 int j(0);                                                      // ψ(t+dt): psi_final=a₀ψ₀+a₁ψ₁
-			//1 FOREACH(Complexr& psi_i, psi_final) psi_i=ak0*psi_i + ak1*psiN___1[j++];
-			                                        psi_final*=ak0;           // FIXME - make it look nicer
-			                                        psi_final+=psiN___1*ak1;  // FIXME - make it look nicer
-
+		if(psi) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
+			NDimTable<Complexr>/*&*/ psi_dt(psi->tableValuesPosition); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
+			NDimTable<Complexr>  psi_1 = {};                // ψ₁
+			calcPsiPlus_1(psi_0,psi_1,psi);                 // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+			Complexr ak0=calcAK(0,R);                       // a₀
+			Complexr ak1=calcAK(1,R);                       // a₁
+			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
 			int i(0);
-			// never stop when i<R*1.3, unless steps is positive. Auto stop based on std::numeric_limits<Real>::min()
+			Complexr ak(1);
+			// never stop when i < R*1.3, unless steps is positive. Auto stop expanding series based on std::numeric_limits<Real>::min()
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
-				//2 std::vector<Complexr> psi_tmp(psiN___0.size());        // ψ₂:
-				    NDimTable<Complexr> psiN___2;        // ψ₂:
-
-				//3 calcPsiPlus_1(psiN___1,psi_tmp,psi);                   // ψ₂: psi_tmp  =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
-				    calcPsiPlus_1(psiN___1,psiN___2,psi);                  // ψ₂: psiN___2 =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
-
-				//4 FOREACH(Complexr& psi_i, psi_tmp) psi_i*=2;            // ψ₂: psi_tmp  = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) )
-				    psiN___2 *= 2;                                         // ψ₂: psiN___2 = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) )
-				
-				//5 std::vector<Complexr> psiN___2(psiN___0.size());       // ψ₂:
-				//5                                                        // ψ₂: psiN___2 = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
-				//5 std::transform(psi_tmp.begin(), psi_tmp.end(), psiN___0.begin(), psiN___2.begin(), std::minus<Complexr>());
-				    psiN___2 -= psiN___0;
-
-				// FIXME - all ak can be precalculated, because R=const
-				ak = calcAKseriesCoefficient(i,R);
-
-				//1 j=0;                                                   // ψ(t+dt):  psi_final+=a₂ψ₂
-				//6 FOREACH(Complexr& psi_i, psi_final) psi_i+=ak*psiN___2[j++]; 
-				                                                              //
-				                                                            //!!!!!
-				                                                        //!!!!!!!!!!!!!!
-				    psi_final += psiN___2*ak; // FIXME - (maybe) inefficient !!!!!!!!!!!!!!!!!!!!!\\
-
-
-				psiN___0=std::move(psiN___1);                                     // ψ₀ ← ψ₁
-				psiN___1=std::move(psiN___2);                                     // ψ₁ ← ψ₂
+				NDimTable<Complexr> psi_2;              // ψ₂     :
+				calcPsiPlus_1(psi_1,psi_2,psi);         // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
+				psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
+				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
 			}
-			//7 Complexr expiRG = std::exp(-1.0*Mathr::I*(R+G));
-			//7 FOREACH(Complexr& psi_i, psi_final) psi_i*=expiRG;             // ψ(t+dt): psi_final=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
-			    psi_final *= std::exp(-1.0*Mathr::I*(R+G));
-
-			//std::cerr << "middle ak " << ak << "\n";
-			//8 ↑psi->tableValuesPosition=psi_final;
-			   //↑ zrobione na górze
-			psi->tableValuesPosition=psi_final;
-
-			if(timeLimit.messageAllowed(4)) std::cerr << "final ak=" << std::abs(ak) << " iterations: " << i-1 << "/" << steps << "\n";
+			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
+			psi->tableValuesPosition=psi_dt;
+			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << std::abs(ak) << " iterations: " << i-1 << "/" << steps << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }

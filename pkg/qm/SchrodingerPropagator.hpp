@@ -73,9 +73,10 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		virtual void action();
 		Real eMin() {return 0;}; // FIXME - it will have to scan the scene and find minimum potential
 		Real eMax(); // this function scans the scene and currently finds (only) maximum momentum
-		Real calcKosloffR() { return scene->dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
-		Real calcKosloffG() { return scene->dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
-		Complexr calcAKseriesCoefficient(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
+		Real calcKosloffR(Real dt) { return dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
+		Real calcKosloffG(Real dt) { return dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
+		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
+		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
 		void calcPsiPlus_1(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
@@ -104,7 +105,7 @@ found in [TalEzer1984]_"
 			.def("calcR" ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("G"     ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
 			.def("calcG" ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
-			.def("ak"    ,&SchrodingerKosloffPropagator::calcAKseriesCoefficient,"Calculate $a_k$ coefficient in Chebyshev polynomial expansion.")
+			.def("ak"    ,&SchrodingerKosloffPropagator::calcAK,"Calculate $a_k$ coefficient in Chebyshev polynomial expansion series.")
 	);
 	DECLARE_LOGGER;
 	private:

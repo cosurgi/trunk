@@ -199,17 +199,23 @@ class NDimTable : private std::vector<K
 
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
-		NDimTable& min()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::min(v    );}); return *this;}; 
-		NDimTable& max()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::max(v    );}); return *this;}; 
-		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;}; 
+		NDimTable& min()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::min(v    );}); return *this;};
+		NDimTable& max()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::max(v    );}); return *this;};
+		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
 		NDimTable& pow(const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
 		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};
 		NDimTable& conj()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::conj(v   );}); return *this;};
 
-		template<typename L> NDimTable& multAdd(const NDimTable<L>& T,const K& k)
-		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v+l*k;});return *this;}; 
-		template<typename L> NDimTable& multSub(const NDimTable<L>& T,const K& k)
-		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v-l*k;});return *this;}; 
+		template<typename L> NDimTable& mult2Add(const NDimTable<L>& T,const K& k)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v+l*k;});return *this;};
+		template<typename L> NDimTable& mult2Sub(const NDimTable<L>& T,const K& k)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v-l*k;});return *this;};
+		template<typename L> NDimTable& mult1Sub(const K& k,const NDimTable<L>& T)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*k-l;});return *this;};
+		template<typename L> NDimTable& multMult(const NDimTable<L>& T,const K& k)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*l*k;});return *this;};
+		template<typename L> NDimTable& mult1Mult2Add(const K& k1,const NDimTable<L>& T,const K& k2)
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k1,k2](K& v,const L& l){return v*k1+l*k2;});return *this;};
 
 		// // contractions (returns new container of different dimension, or works on a provided container of expected dimension)
 		// //
