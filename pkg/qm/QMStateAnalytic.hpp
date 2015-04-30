@@ -177,7 +177,7 @@ FIXME: Above are the arguments to the function, they are not stored in this clas
 For higher number of dimensions the x and k are replaced with a vector, and thus reduce to a multiplication of Gaussians.\
 "
 			, // attributes, public variables
-			((Vector3i   ,order,Vector3i::Zero(),,"Energy level 'n' of quantum harmonic oscillator"))
+			((Vector3i   ,order,Vector3i::Zero(),,"Energy level 'n' in xyz-directions of quantum harmonic oscillator"))
 //			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))     ← this is stored in parent class
 // FIXME or delete			((Vector3r,x0  ,Vector3r::Zero(),,"Initial wave packet center at $t=0$"))
 // FIXME or delete			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
