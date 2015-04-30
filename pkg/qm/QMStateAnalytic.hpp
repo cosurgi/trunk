@@ -107,7 +107,7 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
 			((Vector3r,k0  ,Vector3r::Zero(),,"Initial wavenumber $k_0$"))
 			((Real    ,m   ,1               ,,"Particle mass"))
-			((Vector3r,a   ,1               ,,"Initial Gausian packet width $a$, sometimes called $\\sigma$"))
+			((Vector3r,a   ,Vector3r::Zero(),,"Initial Gausian packet width $a$, sometimes called $\\sigma$"))
 			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
 			, // additional initializers (for references)
 			, // constructor
@@ -177,7 +177,7 @@ FIXME: Above are the arguments to the function, they are not stored in this clas
 For higher number of dimensions the x and k are replaced with a vector, and thus reduce to a multiplication of Gaussians.\
 "
 			, // attributes, public variables
-			((Vector3i   ,order,1              ,,"Energy level 'n' of quantum harmonic oscillator"))
+			((Vector3i   ,order,Vector3i::Zero(),,"Energy level 'n' of quantum harmonic oscillator"))
 //			((Real,t,0,,"Current time $t$, assuming propagation of type exp(i(kx-ωt))"))     ← this is stored in parent class
 // FIXME or delete			((Vector3r,x0  ,Vector3r::Zero(),,"Initial wave packet center at $t=0$"))
 // FIXME or delete			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
