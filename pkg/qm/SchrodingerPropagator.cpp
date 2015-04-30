@@ -52,7 +52,7 @@ SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
 Real SchrodingerKosloffPropagator::eMin()
 {
-	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
+	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!! FIXME FIXME FIXME FIXME,,,, FIXME, FIXME, FIXME, FIXME,
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi={};
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential

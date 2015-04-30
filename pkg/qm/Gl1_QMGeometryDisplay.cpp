@@ -99,7 +99,7 @@ void Gl1_QMGeometryDisplay::go(
 	endZ  =  geometry->halfSize[2];
 
 // FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
-                     ///////// FIXME!!!!!!! muszą być możliwe różne step dla x,y,z ↓
+                     ///////// FIXME!!!!!!! muszą być możliwe różne step dla x,y,z ↓ FIXME, FIXME, FIXME, FIXME, FIXME,
 	if(packetDiscrete) step=packetDiscrete->stepInPositionalRepresentation    (0); 
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
