@@ -19,6 +19,7 @@
 #include <algorithm>    // std::transform
 #include <cmath>
 #include <complex>
+#include <stdexcept>
 
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
@@ -102,11 +103,11 @@ class NDimTable : private std::vector<K
 		};
 		inline std::size_t calcPositionSafe(const std::vector<size_t>& position) {
 			std::size_t ret(position[0]);                  // store i⁰
-			if(ret >= dim_n[0]) throw std::out_of_range(); // verify that i⁰<n⁰
+			if(ret >= dim_n[0]) throw std::out_of_range("calcPositionSafe ret >= dim_n[0] , "+boost::lexical_cast<std::string>(ret)+" >= "+boost::lexical_cast<std::string>(dim_n[0])); // verify that i⁰<n⁰
 			for(std::size_t m=1; m<rank_d ; m++) {
 				std::size_t i      = position[m];     // get position at mᵗʰ dimension, eg. i¹
 				std::size_t n      = dim_n[m];        // get array        dimension n , eg. n¹
-				if(i >= n) throw std::out_of_range();
+				if(i >= n) throw std::out_of_range("calcPositionSafe i >= n , "+boost::lexical_cast<std::string>(i)+" >= "+boost::lexical_cast<std::string>(n));
 				//ret = ret*n+i;
 				ret *= n;
 				ret += i;
