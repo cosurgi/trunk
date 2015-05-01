@@ -73,14 +73,16 @@ ENDIF()
 
 #===========================================================
 
+# ====== FIXME 1. -frounding-math is only for CGAL < 4.2
+# ====== FIXME 2. -Ofast should be optional
 IF ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
   ADD_DEFINITIONS("-ftemplate-depth-512 -fstack-protector ")
 ELSE()
   IF (GCC_VERSION VERSION_GREATER 4.9 OR GCC_VERSION VERSION_EQUAL 4.9)
     MESSAGE(STATUS "GCC Version >= 4.9. Adding -fstack-protector-strong")
-    ADD_DEFINITIONS("-fstack-protector-strong -frounding-math")
+    ADD_DEFINITIONS("-fstack-protector-strong -frounding-math -Ofast")
   ELSE()
-    ADD_DEFINITIONS("-fstack-protector -frounding-math")
+    ADD_DEFINITIONS("-fstack-protector -frounding-math -Ofast")
   ENDIF()
 ENDIF()
 
