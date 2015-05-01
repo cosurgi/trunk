@@ -100,7 +100,7 @@ try:
 	qt.controller.setWindowTitle("2D potential well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometryDisplay().step=0.2
+	Gl1_QMGeometryDisplay().step=[0.2,0.2,0.2]
 
 except ImportError:
 	pass
