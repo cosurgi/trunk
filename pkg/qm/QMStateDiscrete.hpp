@@ -58,8 +58,6 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("iToK"     ,&QMStateDiscrete::iToK     ,"Get $k$ coordinate for i-th node, invoke example: iToK(0)")
 			.def("xToI"     ,&QMStateDiscrete::xToI     ,"Get node number for $x$ coordinate, invoke example: xToI(0)")
 			.def("kToI"     ,&QMStateDiscrete::kToI     ,"Get node number for $k$ coordinate, invoke example: kToI(0)")
-			.def("valAti"   ,&QMStateDiscrete::valAti   ,"val")
-			.def("maxI"     ,&QMStateDiscrete::maxI     ,"size")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
@@ -73,17 +71,14 @@ or directly by filling in the discrete values in the table. It is used for numer
 		// Those functions convert index 'i' to respective position or momentum on the FFT grid
 		Real iToX(Real i, int d){return (i*(      end(d)      )    +(gridSize[d]-i)* (       start(d)    )  )/gridSize[d]; };
 		Real iToK(Real i, int d){return (i*kMax(d )+(gridSize[d]-i)*kMin(d ))/gridSize[d]; };
-		int  xToI(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    size[d]    ); };
-		int  kToI(Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
+		size_t xToI(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    size[d]    ); };
+		size_t kToI(Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
 
 		Real start(int d) { return (-size[d]*0.5+pos[d]);};
 		Real end  (int d) { return ( size[d]*0.5+pos[d]);};
 
-		const Complexr  valAti(int i){return tableValuesPosition.at(i);};
-		std::size_t     maxI()       {return tableValuesPosition.size0(0);};
-
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
-		
+
 	private:
 		TimeLimit timeLimit;
 		

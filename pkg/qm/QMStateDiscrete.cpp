@@ -51,41 +51,15 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 };
 
 /// return complex quantum aplitude at given positional representation coordinates
-Complexr QMStateDiscrete::getValPos(Vector3r xyz)
+Complexr QMStateDiscrete::getValPos(Vector3r xyz) // FIXME - should take   std::vector<Real> (probably? - maybe useful for 4D?)
 {
 	double errorTime(2);
-	size_t i( xToI(xyz[0],0) ),
-	       j( xToI(xyz[1],1) ),
-	       k( xToI(xyz[2],2) );
 	switch(this->dim) {
 	// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draws one too much!!
 	// FIXME - must work for all dimensions, with contractions !!!!!!
-		case 1 :
-			if    ( (i>=0) and (i<gridSize[0]))
-				return tableValuesPosition.at(i);
-			//else throw std::runtime_error("QMStateDiscrete::getValPos "+boost::lexical_cast<string>(i)+" outside bounds.");
-			else if(i==gridSize[0] or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
-			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" outside bounds.";return 0;};
-		break;
-
-		case 2 :
-			if(   ( (i>=0) and (i<gridSize[0]))
-			  and ( (j>=0) and (j<gridSize[1])))
-				return tableValuesPosition.at(i,j);
-			else if(i==gridSize[0] or j==gridSize[1] or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
-			else {std::cerr << "QMStateDiscrete::getValPos "<<i<<" or "<<j<<" outside bounds.";return 0;};
-			//else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
-		break;
-
-		case 3 :
-			if(   ( (i>=0) and (i<gridSize[0]))
-			  and ( (j>=0) and (j<gridSize[1]))
-			  and ( (k>=0) and (k<gridSize[2])))
-				return tableValuesPosition.at(i,j,k);
-			else if(i==gridSize[0] or j==gridSize[1] or k==gridSize[2] or !timeLimit.messageAllowed(errorTime)) return 0; // skip silently
-			else throw std::runtime_error("QMStateDiscrete::getValPos outside bounds.");
-		break;
-
+		case 1 : return tableValuesPosition.atSafe({xToI(xyz[0],0)                              }); break;
+		case 2 : return tableValuesPosition.atSafe({xToI(xyz[0],0),xToI(xyz[1],1)               }); break;
+		case 3 : return tableValuesPosition.atSafe({xToI(xyz[0],0),xToI(xyz[1],1),xToI(xyz[2],2)}); break;
 		default: throw std::runtime_error("Wrong dimension! This code in QMStateDiscrete::getValPos should be unreachable");
 	}
 };
