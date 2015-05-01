@@ -46,7 +46,7 @@ analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[3,1,0],m=1,a=[3,1,0],hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[0.4,2,0],m=1,a=[3,2,0],hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 
@@ -71,13 +71,13 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	#O.step()
-	#qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("2D free propagating packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	Gl1_QMGeometryDisplay().step=[0.2,0.2,0.2]
+	qt.View()
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 
 except ImportError:
 	pass

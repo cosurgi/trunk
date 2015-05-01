@@ -94,13 +94,13 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-#	O.step()
-	#qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("2D potential well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	Gl1_QMGeometryDisplay().step=[0.2,0.2,0.2]
+	qt.View()
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 
 except ImportError:
 	pass

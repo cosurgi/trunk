@@ -13,7 +13,8 @@ size      = [x * 2 for x in halfSize]
 ## The error between numerical and analytical solution is plot on the graph
 
 O.engines=[
-	InsertionSortCollider([
+	SpatialQuickSortCollider([
+	#InsertionSortCollider([
 		Bo1_QMGeometryDisplay_Aabb(),
 	]),
 # No particle interactions yet, only a free propagating particle. First step will be to introduce
@@ -23,7 +24,7 @@ O.engines=[
 		#[Ip2_FrictMat_FrictMat_FrictPhys()],
 		#[Law2_ScGeom_FrictPhys_CundallStrack()]
 	#),
-	SchrodingerKosloffPropagator(steps=200),
+	SchrodingerKosloffPropagator(), #steps=200),
 # FIXME: perhaps derive FreeMovingGaussianWavePacket from something so that this below could propagate harmonic oscillator too.
 	SchrodingerAnalyticPropagator()
 ]

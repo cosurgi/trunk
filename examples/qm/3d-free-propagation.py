@@ -17,7 +17,8 @@ Gl1_QMGeometryDisplay().partReal=['default surface', 'hidden', 'nodes', 'points'
 ## The error between numerical and analytical solution is plot on the graph
 
 O.engines=[
-	InsertionSortCollider([
+	SpatialQuickSortCollider([
+	#InsertionSortCollider([
 		Bo1_QMGeometryDisplay_Aabb(),
 	]),
 # No particle interactions yet, only a free propagating particle. First step will be to introduce
@@ -76,8 +77,6 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-        #O.step()
-	#qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("3D free propagating packet")
 	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
@@ -85,9 +84,12 @@ try:
 	#Gl1_QMGeometryDisplay().probability  =False
 	#Gl1_QMGeometryDisplay().partReal     =True
 	#Gl1_QMGeometryDisplay().partImaginary=False
-	Gl1_QMGeometryDisplay().step=0.3
+	Gl1_QMGeometryDisplay().step=[0.3,0.3,0.3]
 	Gl1_QMGeometryDisplay().stepWait=0.5
         Gl1_QMGeometryDisplay().threshold3D=0.00001
+	qt.View()
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
+
 except ImportError:
 	pass
 #O.run(20000)

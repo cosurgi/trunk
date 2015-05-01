@@ -43,7 +43,7 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
+gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
@@ -64,7 +64,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.04
+O.dt=.1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -72,13 +72,13 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-#	O.step()
-	#qt.View()
 	qt.Controller()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.controller.setWindowTitle("Gaussian packet in 2D harmonic potential")
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometryDisplay().step=0.2
+	Gl1_QMGeometryDisplay().step=[0.2,0.2,0.2]
+	qt.View()
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 
 except ImportError:
 	pass

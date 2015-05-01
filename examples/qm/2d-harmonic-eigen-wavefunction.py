@@ -3,7 +3,7 @@
 
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d*1.2,size_1d*1.8,0.1]
+halfSize  = [size_1d,size_1d*1.5,0.1]
 size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
@@ -15,9 +15,9 @@ Gl1_QMGeometryDisplay().stepWait=0.5
 
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]
-potentialHalfSize = [size_1d,size_1d,1]
+potentialHalfSize = halfSize
 harmonicOrder_x   = 0
-harmonicOrder_y   = 0 
+harmonicOrder_y   = 3 
 
 
 O.engines=[
@@ -69,7 +69,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.002
+O.dt=.2
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -77,11 +77,12 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("2D eigenwavefunction in harmonic potential")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+	qt.View()
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 except ImportError:
 	pass
 
