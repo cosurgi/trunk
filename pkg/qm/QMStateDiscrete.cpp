@@ -24,39 +24,19 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 	firstRun = false;
 // FIXME - does it really have to be centered around zero?
 	if(this->dim == 1) {
-		tableValuesPosition.resize(gridSize); // x position coordinate
-
-		// Fill the table by copying from creator
-// FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-//		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
-		int i       =  0;
-		for(Real x=start(0); i<gridSize[0] ; x+=stepInPositionalRepresentation(0),i++ ) {
-			tableValuesPosition.at(i) = creator->getValPos(Vector3r(x,0,0));
-// FIXME		tablePosition      [0][0][i] = x;
-		}
-	} else if(this->dim == 2) {
-		if(not( size[0]==size[1])) {
-			std::cerr << "WARNIG - wavepacket dimensions are different in each positional representation \
-			direction. This is not tested yet.\n";
-		}; // FIXME - think if it's really necessary. Test it.
-		//2 tableValuesPosition      .resize(1);          // no         coordinate
-		//2 tableValuesPosition[0]   .resize(gridSize);   // x position coordinate
+		if (gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete::postLoad(), should be dimension 1\n");
 		tableValuesPosition.resize(gridSize);
-		//2 FOREACH(std::vector<Complexr>& xx, tableValuesPosition[0]) {
-		//2 	xx.resize(gridSize,0);          // y position coordinate
-		//2 };
-
-		// Fill the table by copying from creator
-// FIXME	tableWavenumber  =  tableValueWavenumber=  tablePosition=  tableValuesPosition;
-//		/*tableWavenumber=*/tableValueWavenumber=/*tablePosition=*/tableValuesPosition;
-		int i       =  0;
-		for(Real x=start(0) ; i<gridSize[0] ; x+=stepInPositionalRepresentation(0),i++ ) {
-			int j=0;
-			for(Real y=start(1) ; j<gridSize[1] ; y+=stepInPositionalRepresentation(1),j++ )
-			{
-				tableValuesPosition.at(i,j) = creator->getValPos(Vector3r(x,y,0));
-			}
-		}
+		for(size_t i=0 ; i<gridSize[0] ; i++)
+			tableValuesPosition.at(i) = creator->getValPos(Vector3r(iToX(i,0),0,0));
+	} else if(this->dim == 2) {
+		if (gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete::postLoad(), should be dimension 2\n");
+		tableValuesPosition.resize(gridSize,-0.5);                                                                   //   ↓
+		for(size_t i=0 ; i<gridSize[0] ; i++)
+		for(size_t j=0 ; j<gridSize[1] ; j++)
+			tableValuesPosition.at    ( i,j ) = creator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
+// OK			tableValuesPosition.atSafe({i,j}) = creator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
+//			///////////////////////////////////   o dziwo zamiana x oraz y "pomogła"                           //   ↑
+//			//////////////////// FIXME - może przypisać wszzędzie -0.5 żeby widzieć które wartości są przypisywane a które nie
 	} else if(this->dim == 3) {
 		if(not( (size[0]==size[1]) and (size[0]==size[2]))) {
 			std::cerr << "WARNIG - wavepacket dimensions are different in each positional representation \

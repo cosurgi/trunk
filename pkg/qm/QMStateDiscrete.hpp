@@ -65,7 +65,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 
 		// Find min/max wavelength and wavenumber for this FFT grid
 		virtual Real     stepInPositionalRepresentation(int dim){ return deltaX(dim); /*return size.at(d) / gridSize[d];*/};
-		Real deltaX   (int d)                                   { return (size[d])  / gridSize[d];};
+		Real deltaX   (int d)                                   { return size[d]/gridSize[d];};
 		Real lambdaMin(int d){return 2*deltaX(d);};
 		Real kMax     (int d){return Mathr::TWO_PI/lambdaMin(d);};
 		Real kMin     (int d){return -kMax(d);};
