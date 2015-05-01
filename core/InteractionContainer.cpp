@@ -123,7 +123,9 @@ void InteractionContainer::eraseNonReal(){
 	FOREACH(const shared_ptr<Interaction>& i, *this)
 	{
 		bool isNotReal(false);
-		{
+		{ // There's a race condition which causes removal of igeom & iphys before they are constructed
+		  // It's difficult to nail it down, because taht's a race condition. Currently I am trying this mutex here
+		  // and so far the bug didn't return.
 			boost::mutex::scoped_lock lock(drawloopmutex);
 			isNotReal = not i->isReal();
 		}
