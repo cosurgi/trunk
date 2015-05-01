@@ -63,7 +63,7 @@ Real SchrodingerKosloffPropagator::eMin()
 		}
 	};
 	// FIXME end
-	return Vpsi.min();
+	return ((Vpsi.rank()!=0) ? (Vpsi.min()) : (0));
 };
 
 Real SchrodingerKosloffPropagator::eMax()
@@ -91,7 +91,7 @@ Real SchrodingerKosloffPropagator::eMax()
 			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
 		}
 	};
-	ret += Vpsi.max();
+	ret += ((Vpsi.rank()!=0) ? (Vpsi.max()) : (0));
 	// FIXME end
 
 	return ret;
