@@ -39,31 +39,20 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			, // class description
 			"Renders :yref:`QMGeometryDisplay` object"
 			, // static public attributes
-// FIXME,FIXME - add option to draw points of discretisation (for discretized wavefunctions, do I need to derive :
-// class Gl1_QMGeometryDiscreteDisplay : public Gl1_QMGeometryDisplay
-			// FIXME - maybe implement ordering, and <hr> separator, similar way as with qtHide
-			((Menu,partAbsolute     ,Menu({"default wire","hidden","nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
-			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","points","wire","surface"}),,"Show imaginary component"))
-			((Menu,partReal         ,Menu({"default surface","hidden","nodes","points","wire","surface"}),,"Show real component"))
-			((int ,partsScale       ,1.0,,"Scaling of the wavefunction. Positive number multiplies, negative divides by absolute value."))
-			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
-			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
-			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
-			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
-			((int ,renderShininess  ,50,,"Amount of shininess of the surface"))
-			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
-			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
-			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
-			((Real,stepWait         ,0.1,,"Maximum rendering time in seconds. Abort if takes too long."))
-			((Real,threshold3D      ,0.00000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 		);
 	private:
 		TimeLimit timeLimit;
 		MarchingCube mc;
+		
+		//! pointer to what's drawn right now
+		QMGeometryDisplay* g;
+
+		///! These are drawing functors, to speed up selection of drawing options
 		std::vector< std::function< bool    (                  ) > > partsToDraw;
 		std::vector< std::function< string  (                  ) > > drawStyle;
 		std::vector< std::function< Real    (std::complex<Real>) > > valueToDraw;
 		std::vector< std::function< Vector3r(Vector3r          ) > > colorToDraw;
+
 
 		// FIXME - after redundancy is removed, this should be removed too
 		Real startX,startY,startZ,endX,endY,endZ;

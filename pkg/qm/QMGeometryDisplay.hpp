@@ -4,6 +4,7 @@
 
 #include <pkg/common/Dispatching.hpp>
 #include <core/Scene.hpp>
+#include <py/wrapper/Menu.hpp>
 #include <stdexcept>
 
 /*********************************************************************************
@@ -39,6 +40,20 @@ class QMGeometryDisplay: public Shape
 			in positional representation. It is used to create :yref:`Aabb`, so it also helps fiding particle collisions. \
 			If the wavefunctions were really infinite, then it would work nicely, but due to computer limitations this \
 			halfSize also covers the range of interactions between particles. Later it should work in 4D space-time."))
+			((Menu,partAbsolute     ,Menu({"default wire"   ,"hidden","nodes","big nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
+			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show imaginary component"))
+			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
+			((int ,partsScale       ,1.0,,"Scaling of the wavefunction or potential. Positive number multiplies, negative divides by absolute value."))
+			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
+			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
+			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
+			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
+			((int ,renderShininess  ,50,,"Amount of shininess of the surface"))
+			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
+			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
+			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
+			((Real,stepWait         ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
+			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 			, // constructor
 			createIndex();
 		);

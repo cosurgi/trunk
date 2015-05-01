@@ -24,39 +24,25 @@ YADE_PLUGIN(
 #include <lib/smoothing/Spline6Interpolate.hpp>
 
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
-Menu Gl1_QMGeometryDisplay::partAbsolute={};
-Menu Gl1_QMGeometryDisplay::partReal={};
-Menu Gl1_QMGeometryDisplay::partImaginary={};
-bool Gl1_QMGeometryDisplay::partsSquared=false;
-int  Gl1_QMGeometryDisplay::partsScale=1.0;
-bool Gl1_QMGeometryDisplay::renderSmoothing=true;
-bool Gl1_QMGeometryDisplay::renderInterpolate=false;
-int  Gl1_QMGeometryDisplay::renderSpecular=10;
-int  Gl1_QMGeometryDisplay::renderAmbient=15;
-int  Gl1_QMGeometryDisplay::renderDiffuse=100;
-int  Gl1_QMGeometryDisplay::renderShininess=50;
-Vector3r Gl1_QMGeometryDisplay::step=Vector3r(0.1,0.1,0.1);
-Real Gl1_QMGeometryDisplay::stepWait=0.1;
-Real Gl1_QMGeometryDisplay::threshold3D=0.00000001;
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 
 Gl1_QMGeometryDisplay::Gl1_QMGeometryDisplay()
 {
 	partsToDraw.resize(0);
-	partsToDraw.push_back( []()                    { return menuSelection(partReal     )!="hidden" and not partsSquared;                } );
-	partsToDraw.push_back( []()                    { return menuSelection(partImaginary)!="hidden" and not partsSquared;                } );
-	partsToDraw.push_back( []()                    { return menuSelection(partAbsolute )!="hidden" and not partsSquared;                } );
-	partsToDraw.push_back( []()                    { return menuSelection(partReal     )!="hidden" and partsSquared;                    } );
-	partsToDraw.push_back( []()                    { return menuSelection(partImaginary)!="hidden" and partsSquared;                    } );
-	partsToDraw.push_back( []()                    { return menuSelection(partAbsolute )!="hidden" and partsSquared;                    } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partReal     )!="hidden" and not g->partsSquared; } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partImaginary)!="hidden" and not g->partsSquared; } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partAbsolute )!="hidden" and not g->partsSquared; } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partReal     )!="hidden" and     g->partsSquared; } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partImaginary)!="hidden" and     g->partsSquared; } );
+	partsToDraw.push_back( [this](){ return menuSelection(g->partAbsolute )!="hidden" and     g->partsSquared; } );
 
 	drawStyle.resize(0);
-	drawStyle.push_back  ( []()                    { return menuSelection(partReal     );                      } );
-	drawStyle.push_back  ( []()                    { return menuSelection(partImaginary);                      } );
-	drawStyle.push_back  ( []()                    { return menuSelection(partAbsolute );                      } );
-	drawStyle.push_back  ( []()                    { return menuSelection(partReal     );                      } );
-	drawStyle.push_back  ( []()                    { return menuSelection(partImaginary);                      } );
-	drawStyle.push_back  ( []()                    { return menuSelection(partAbsolute );                      } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partReal     );                                   } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partImaginary);                                   } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partAbsolute );                                   } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partReal     );                                   } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partImaginary);                                   } );
+	drawStyle.push_back  ( [this](){ return menuSelection(g->partAbsolute );                                   } );
 
 	valueToDraw.resize(0);
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a);                                      } );
@@ -83,26 +69,30 @@ void Gl1_QMGeometryDisplay::go(
 )
 {
 	timeLimit.readWallClock();
-	if(menuSelection(partAbsolute)=="hidden" and menuSelection(partReal)=="hidden" and menuSelection(partImaginary)=="hidden") return; // nothing to draw
-	QMGeometryDisplay* geometry       = static_cast<QMGeometryDisplay*>(shape.get());
+
+// FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that?
+	g = static_cast<QMGeometryDisplay*>(shape.get());
+	if(menuSelection(g->partAbsolute)=="hidden" and menuSelection(g->partReal)=="hidden" and menuSelection(g->partImaginary)=="hidden") return; // nothing to draw
+
+// FIXME - careful! use different names than class members!!!
 	QMState*           packet         = static_cast<QMState*>(state.get());
 	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
-	Vector3r col = geometry->color;
-
+	Vector3r col = g->color;
+	
 // find extents to render
 // FIXME(2) maybe move that into some renderConfig class, with default values in O.body[#].shape and override in this class.
-	startX= -geometry->halfSize[0]; // + pos[0] ← FIXME
-	endX  =  geometry->halfSize[0]; // + pos[0] ← FIXME
-	startY= -geometry->halfSize[1]; // + pos[1] ← FIXME
-	endY  =  geometry->halfSize[1]; // + pos[1] ← FIXME
-	startZ= -geometry->halfSize[2]; // + pos[2] ← FIXME
-	endZ  =  geometry->halfSize[2]; // + pos[2] ← FIXME
+	startX= -g->halfSize[0]; // + pos[0] ← FIXME
+	endX  =  g->halfSize[0]; // + pos[0] ← FIXME
+	startY= -g->halfSize[1]; // + pos[1] ← FIXME
+	endY  =  g->halfSize[1]; // + pos[1] ← FIXME
+	startZ= -g->halfSize[2]; // + pos[2] ← FIXME
+	endZ  =  g->halfSize[2]; // + pos[2] ← FIXME
 
 // FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
 	if(packetDiscrete) {
-		                    step.x()=packetDiscrete->stepInPositionalRepresentation(0);
-		if(packet->dim > 1) step.y()=packetDiscrete->stepInPositionalRepresentation(1);
-		if(packet->dim > 2) step.z()=packetDiscrete->stepInPositionalRepresentation(2);
+		                    g->step.x()=packetDiscrete->stepInPositionalRepresentation(0);
+		if(packet->dim > 1) g->step.y()=packetDiscrete->stepInPositionalRepresentation(1);
+		if(packet->dim > 2) g->step.z()=packetDiscrete->stepInPositionalRepresentation(2);
 	
 //OK	std::cerr << startX                   << " " << endX                   << "\n" 
 //OK		  << packetDiscrete->start(0) << " " << packetDiscrete->end(0) << "\n" 
@@ -115,7 +105,7 @@ void Gl1_QMGeometryDisplay::go(
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
-	Real scalingFactor = (partsScale >= 0 ? ((partsScale==0)?(1):(partsScale)) : -1.0/partsScale);
+	Real scalingFactor = (g->partsScale >= 0 ? ((g->partsScale==0)?(1):(g->partsScale)) : -1.0/g->partsScale);
 	for(int draw=0 ; draw<partsToDraw.size() ; draw++) {
 		if( partsToDraw[draw]() ) {
 			switch(packet->dim) {
@@ -127,12 +117,13 @@ void Gl1_QMGeometryDisplay::go(
 					// FIXME(2) - add points, with point density reflecting the value
 					// 1D points ← points scattered randomly, using density
 					// 1D nodes  ← just points at the nodes
+					// 1D big nodes  ← small spheres at the nodes, radius 1/10 of smallest step_x,step_y,step_z
 					// if(points == true) ... else ...
 					// 1D lines
 					if(drawStyle[draw]()!="points") {
 						if(drawStyle[draw]()=="nodes") glBegin(GL_POINTS); else glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
-						for(Real x=startX ; x<endX ; x+=step.x() ) {
+						for(Real x=startX ; x<endX ; x+=g->step.x() ) {
 							glVertex3d(x,0,valueToDraw[draw] ((packet->getValPos(Vector3r(x,0,0)))) *scalingFactor);
 						}
 						glEnd();
@@ -148,40 +139,40 @@ void Gl1_QMGeometryDisplay::go(
 						glColor3v( colorToDraw[draw](col) );
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x()/*,i++ */ ) {
+						for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x()/*,i++ */ ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y()/*,j++*/ ) {
+							for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y()/*,j++*/ ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
-							if(timeLimit.tooLong(stepWait)) break;
+							if(timeLimit.tooLong(g->stepWait)) break;
 						}
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y() ) {
+						for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y() ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x() ) {
+							for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x() ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
-							if(timeLimit.tooLong(stepWait)) break;
+							if(timeLimit.tooLong(g->stepWait)) break;
 						}
 						// FIXME - drawing wires is slower than drawSurface. Better to prepare data for wires, then call drawWires()
 					} else {
 					// 2D surface
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						waveValues2D.resize(int((endX-startX)/step.x()));
-						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/step.y()),0);};
+						waveValues2D.resize(int((endX-startX)/g->step.x()));
+						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/g->step.y()),0);};
 						int i=0;
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x(),i++ ) {
+						for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y(),j++ ) {
+							for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ ) {
 								waveValues2D[i][j]=valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0))))*scalingFactor;
 							}
-							if(timeLimit.tooLong(stepWait)) break;
+							if(timeLimit.tooLong(g->stepWait)) break;
 						}
 						drawSurface(waveValues2D,colorToDraw[draw](col));
 					}
@@ -196,13 +187,13 @@ void Gl1_QMGeometryDisplay::go(
 					if(true /* points == false */) {
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						int gridSizex=int((endX-startX)/step.x());
-						int gridSizey=int((endY-startY)/step.y());
-						int gridSizez=int((endZ-startZ)/step.z());
+						int gridSizex=int((endX-startX)/g->step.x());
+						int gridSizey=int((endY-startY)/g->step.y());
+						int gridSizez=int((endZ-startZ)/g->step.z());
 						// FIXME(2) - reconsider if doing [draw] loop outside this if() slows things down - more reinitialization of mc 
 						// FIXME(3) -                     ↓ +pos[0]                    ↓ +pos[1]                    ↓ + pos[2]
-						Vector3r minMC(startX+step.x()*0.5         ,startY+step.y()*0.5         ,startZ+step.z()*0.5          );
-						Vector3r maxMC(endX  +step.x()*0.5         ,endY  +step.y()*0.5         ,endZ  +step.z()*0.5          );
+						Vector3r minMC(startX+g->step.x()*0.5         ,startY+g->step.y()*0.5         ,startZ+g->step.z()*0.5          );
+						Vector3r maxMC(endX  +g->step.x()*0.5         ,endY  +g->step.y()*0.5         ,endZ  +g->step.z()*0.5          );
 						mc.init(gridSizex,gridSizey,gridSizez,minMC,maxMC);
 						// about waveValues3D FIXME(2) - resolve storage problems
 						mc.resizeScalarField(waveValues3D,gridSizex,gridSizey,gridSizez);
@@ -210,11 +201,11 @@ void Gl1_QMGeometryDisplay::go(
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
 						int i=0;
-						for(Real x=startX ; x < (endX - step.x()*0.5) ; x+=step.x(),i++ ) {
+						for(Real x=startX ; x < (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y < (endY - step.y()*0.5) ; y+=step.y(),j++ ) {
+							for(Real y=startY ; y < (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ ) {
 								int k=0;
-								for(Real z=startZ ; z < (endZ - step.z()*0.5) ; z+=step.z(),k++ ) {
+								for(Real z=startZ ; z < (endZ - g->step.z()*0.5) ; z+=g->step.z(),k++ ) {
 									// FIXME(2) - to jest kopiowanie!
 									// owszem - bez FFTW3 takie coś musi zostać, ale
 									// z nowymi kontenerami muszę móc to ominąć
@@ -223,9 +214,9 @@ void Gl1_QMGeometryDisplay::go(
 									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
 								}
 							}
-							if(timeLimit.tooLong(stepWait)) break;
+							if(timeLimit.tooLong(g->stepWait)) break;
 						}
-						mc.computeTriangulation(waveValues3D,threshold3D);
+						mc.computeTriangulation(waveValues3D,g->threshold3D);
 						// FIXME(2) - drawSurface or drawWires
 						glDrawMarchingCube(mc,colorToDraw[draw](col));
 					}
@@ -249,7 +240,7 @@ void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
 	const vector<Vector3r>& triangles 	= mc.getTriangles();
 	int nbTriangles				= mc.getNbTriangles();
 	const vector<Vector3r>& normals 	= mc.getNormals();	
-	if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
+	if(g->renderSmoothing){ glShadeModel(GL_SMOOTH);};
 	glEnable(GL_NORMALIZE);
 	glBegin(GL_TRIANGLES);
 	for(int i=0;i<3*nbTriangles;++i)
@@ -299,16 +290,16 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 	// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
 	int i=0;
-	for(Real x=startX ; x < (endX - step.x()*0.5) ; x+=step.x(),i++ )
+	for(Real x=startX ; x < (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ )
 	{
 		int j=0;
-		for(Real y=startY ; y < (endY - step.y()*0.5) ; y+=step.y(),j++ )
+		for(Real y=startY ; y < (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ )
 		{
-			                p0=Vector3r(x         ,y         ,waveVals[i  ][j  ]);
-			if((j+1)<lenY){ p1=Vector3r(x         ,y+step.y(),waveVals[i  ][j+1]);} else{ p1=p0;};
-			if((i+1)<lenX){ p2=Vector3r(x+step.x(),y         ,waveVals[i+1][j  ]);} else{ p2=p0;};
-			if((j-1)>=0  ){ p3=Vector3r(x         ,y-step.y(),waveVals[i  ][j-1]);} else{ p3=p0;};
-			if((i-1)>=0  ){ p4=Vector3r(x-step.x(),y         ,waveVals[i-1][j  ]);} else{ p4=p0;};
+			                p0=Vector3r(x            ,y            ,waveVals[i  ][j  ]);
+			if((j+1)<lenY){ p1=Vector3r(x            ,y+g->step.y(),waveVals[i  ][j+1]);} else{ p1=p0;};
+			if((i+1)<lenX){ p2=Vector3r(x+g->step.x(),y            ,waveVals[i+1][j  ]);} else{ p2=p0;};
+			if((j-1)>=0  ){ p3=Vector3r(x            ,y-g->step.y(),waveVals[i  ][j-1]);} else{ p3=p0;};
+			if((i-1)>=0  ){ p4=Vector3r(x-g->step.x(),y            ,waveVals[i-1][j  ]);} else{ p4=p0;};
 			n1 = (p2-p0).cross(p1-p0);
 			n2 = (p3-p0).cross(p2-p0);
 			n3 = (p4-p0).cross(p3-p0);
@@ -326,22 +317,22 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 void Gl1_QMGeometryDisplay::prepareGlSurfaceMaterial()
 {
 	GLfloat mat[4];
-	mat[0] = renderSpecular/100.0;
-	mat[1] = renderSpecular/100.0;
-	mat[2] = renderSpecular/100.0;
+	mat[0] = g->renderSpecular/100.0;
+	mat[1] = g->renderSpecular/100.0;
+	mat[2] = g->renderSpecular/100.0;
 	mat[3] = 1;
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat);
-	mat[0] = renderAmbient/100.0;
-	mat[1] = renderAmbient/100.0;
-	mat[2] = renderAmbient/100.0;
+	mat[0] = g->renderAmbient/100.0;
+	mat[1] = g->renderAmbient/100.0;
+	mat[2] = g->renderAmbient/100.0;
 	mat[3] = 1;
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat);
-	mat[0] = renderDiffuse/100.0;
-	mat[1] = renderDiffuse/100.0;
-	mat[2] = renderDiffuse/100.0;
+	mat[0] = g->renderDiffuse/100.0;
+	mat[1] = g->renderDiffuse/100.0;
+	mat[2] = g->renderDiffuse/100.0;
 	mat[3] = 1;
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat);
-	GLfloat sh=renderShininess;
+	GLfloat sh=g->renderShininess;
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS,&sh);
 }
 
@@ -360,21 +351,21 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	prepareGlSurfaceMaterial();
 
 	glEnable(GL_CULL_FACE);
-	if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
+	if(g->renderSmoothing){ glShadeModel(GL_SMOOTH);};
 	//draw front
 	glCullFace(GL_BACK);
 	glColor3v(col);
 	for(int i=0 ; i<lenX-1 ; i++ )
 	{
-		Real x=startX+i*step.x();
+		Real x=startX+i*g->step.x();
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=0 ; j<lenY ; j++ )
 		{
-			Real y=startY+j*step.y();
-			glNormal3v(             wavNormV[i  ][j]);
-			glVertex3f(x         ,y,waveVals[i  ][j]);
-			glNormal3v(             wavNormV[i+1][j]);
-			glVertex3f(x+step.x(),y,waveVals[i+1][j]);
+			Real y=startY+j*g->step.y();
+			glNormal3v(                wavNormV[i  ][j]);
+			glVertex3f(x            ,y,waveVals[i  ][j]);
+			glNormal3v(                wavNormV[i+1][j]);
+			glVertex3f(x+g->step.x(),y,waveVals[i+1][j]);
 		}
 		glEnd();
 	}
@@ -383,15 +374,15 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
 	for(int i=0 ; i<lenX-1 ; i++ )
 	{
-		Real x=startX+i*step.x();
+		Real x=startX+i*g->step.x();
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=lenY-1 ; j>=0 ; j-- )
 		{
-			Real y=startY+j*step.y();
-			glNormal3v(             wavNormV[i  ][j]);
-			glVertex3f(x         ,y,waveVals[i  ][j]);
-			glNormal3v(             wavNormV[i+1][j]);
-			glVertex3f(x+step.x(),y,waveVals[i+1][j]);
+			Real y=startY+j*g->step.y();
+			glNormal3v(                wavNormV[i  ][j]);
+			glVertex3f(x            ,y,waveVals[i  ][j]);
+			glNormal3v(                wavNormV[i+1][j]);
+			glVertex3f(x+g->step.x(),y,waveVals[i+1][j]);
 		}
 		glEnd();
 	}
@@ -406,12 +397,12 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	Vector3r col                                              // color in which to draw the surface
 )
 {
-	Real stepx  = step.x()    ;
-	Real stepx2 = step.x()*0.5;
-	Real stepy  = step.y()    ;
-	Real stepy2 = step.y()*0.5;
-	Real stepy3 = step.y()*1.5;
-	Real stepy4 = step.y()*2.0;
+	Real stepx  = g->step.x()    ;
+	Real stepx2 = g->step.x()*0.5;
+	Real stepy  = g->step.y()    ;
+	Real stepy2 = g->step.y()*0.5;
+	Real stepy3 = g->step.y()*1.5;
+	Real stepy4 = g->step.y()*2.0;
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
 	int lenX=wavNormV.size();
 	int lenY=wavNormV[0].size();
@@ -422,7 +413,7 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	prepareGlSurfaceMaterial();
 
 	glEnable(GL_CULL_FACE);
-	if(renderSmoothing){ glShadeModel(GL_SMOOTH);};
+	if(g->renderSmoothing){ glShadeModel(GL_SMOOTH);};
 	//draw front
 	glCullFace(GL_BACK);
 	glColor3v(col);
@@ -579,7 +570,7 @@ void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& w
 {
 	std::vector<std::vector<Vector3r> > wavNormV(/*size=*/waveVals.size(),/*init=*/std::vector<Vector3r>(waveVals[0].size()));
 	calcNormalVectors(waveVals,wavNormV);
-	if(not renderInterpolate)
+	if(not g->renderInterpolate)
 	{
 		glDrawSurface(waveVals,wavNormV,col);
 	} else {

@@ -105,8 +105,8 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 		int endI  =psi->xToI(relPos12[0]+extents1[0],0);
 
 	// FIXME - remove cerr
-		std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
-			  << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
+//		std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
+//			  << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
 
 		for(int i=startI ; i<=endI ; i++) {
 			if(i>=0 and i<val.size0(0))
