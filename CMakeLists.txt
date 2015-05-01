@@ -73,9 +73,12 @@ ENDIF()
 
 #===========================================================
 
+## >>>>>>> Fast compilation -O0, Set -Og for debugging FIXME: should be an option for this somewhere
+## SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -O0 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
 # ====== FIXME 1. -frounding-math is only for CGAL < 4.2
 # ====== FIXME 2. -Ofast should be optional
-# ====== FIXME 3. -O0    shoould be optional too (fast compiling)
+# ====== FIXME 3. -Og    should be used by default with -DDEBUG
+# ====== FIXME 4. -O0    shoould be optional too (fast compiling)
 IF ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
   ADD_DEFINITIONS("-ftemplate-depth-512 -fstack-protector ")
 ELSE()
@@ -88,9 +91,6 @@ ELSE()
 ENDIF()
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC -O2 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++11")
-
-## FIXME: >>>>>>> Fast compilation (should be an option for this somewhere)
-## SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -O0 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
 
 IF (DEBUG)
   SET(CMAKE_VERBOSE_MAKEFILE 1)
