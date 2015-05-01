@@ -223,6 +223,8 @@ void Gl1_QMGeometryDisplay::go(
 									// z nowymi kontenerami muszę móc to ominąć
 									// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
 //// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem with endXYZ - it draws one element too much!! (outside table bounds)
+									
+									// FIXME - here's crash sometimes when step is changed "live" in inspect window
 									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
 								}
 							}
