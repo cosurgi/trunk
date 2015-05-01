@@ -75,18 +75,22 @@ ENDIF()
 
 # ====== FIXME 1. -frounding-math is only for CGAL < 4.2
 # ====== FIXME 2. -Ofast should be optional
+# ====== FIXME 3. -O0    shoould be optional too (fast compiling)
 IF ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
   ADD_DEFINITIONS("-ftemplate-depth-512 -fstack-protector ")
 ELSE()
   IF (GCC_VERSION VERSION_GREATER 4.9 OR GCC_VERSION VERSION_EQUAL 4.9)
     MESSAGE(STATUS "GCC Version >= 4.9. Adding -fstack-protector-strong")
-    ADD_DEFINITIONS("-fstack-protector-strong -frounding-math -Ofast")
+    ADD_DEFINITIONS("-fstack-protector-strong -frounding-math")
   ELSE()
-    ADD_DEFINITIONS("-fstack-protector -frounding-math -Ofast")
+    ADD_DEFINITIONS("-fstack-protector -frounding-math")
   ENDIF()
 ENDIF()
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC -O2 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++11")
+
+## FIXME: >>>>>>> Fast compilation (should be an option for this somewhere)
+## SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -O0 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
 
 IF (DEBUG)
   SET(CMAKE_VERBOSE_MAKEFILE 1)
