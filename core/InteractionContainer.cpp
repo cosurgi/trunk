@@ -120,8 +120,16 @@ void InteractionContainer::requestErase(Interaction* I){
 }
 
 void InteractionContainer::eraseNonReal(){
-	boost::mutex::scoped_lock lock(drawloopmutex);
-	FOREACH(const shared_ptr<Interaction>& i, *this) if(!i->isReal()) this->erase(i->getId1(),i->getId2(),i->linIx);
+	FOREACH(const shared_ptr<Interaction>& i, *this)
+	{
+		bool isNotReal(false);
+		{
+			boost::mutex::scoped_lock lock(drawloopmutex);
+			isNotReal = not i->isReal();
+		}
+		if(isNotReal)
+			this->erase(i->getId1(),i->getId2(),i->linIx);
+	}
 }
 
 // compare interaction based on their first id
