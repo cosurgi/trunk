@@ -125,7 +125,7 @@ REGISTER_SERIALIZABLE(FreeMovingGaussianWavePacket);
 * 
 *********************************************************************************/
 
-/*! @brief HarmonicOscillator is a wave function psi initialized as a quantum harmonic 
+/*! @brief HarmonicOscillatorEigenFunction is a wave function psi initialized as a quantum harmonic 
  * oscillator at given energy level n.
  *
  */
@@ -134,17 +134,17 @@ REGISTER_SERIALIZABLE(FreeMovingGaussianWavePacket);
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
-class HarmonicOscillator: public QMStateAnalytic
+class HarmonicOscillatorEigenFunction: public QMStateAnalytic
 {
 	public:
-		virtual ~HarmonicOscillator();
+		virtual ~HarmonicOscillatorEigenFunction();
 		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
 		vector<boost::rational<signed long> > hermitePolynomialCoefficients(int order, boost::rational<signed long> lambdaPerAlpha);
 		vector<boost::rational<signed long> > hermitePolynomialScaled(int order, boost::rational<signed long> lambdaPerAlpha);
 		Complexr  quantumOscillatorWavefunction(int,Real); // assume hbar=1, mass=1, frequency=1
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
-			HarmonicOscillator
+			HarmonicOscillatorEigenFunction
 			, // base class
 			QMStateAnalytic
 			, // class description
@@ -190,7 +190,7 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			createIndex();
 			, // python bindings
 		);
-		REGISTER_CLASS_INDEX(HarmonicOscillator,QMStateAnalytic);
+		REGISTER_CLASS_INDEX(HarmonicOscillatorEigenFunction,QMStateAnalytic);
 };
-REGISTER_SERIALIZABLE(HarmonicOscillator);
+REGISTER_SERIALIZABLE(HarmonicOscillatorEigenFunction);
 

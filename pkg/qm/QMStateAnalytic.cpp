@@ -6,7 +6,7 @@
 YADE_PLUGIN(
 	(QMStateAnalytic)
 	(FreeMovingGaussianWavePacket)
-	(HarmonicOscillator)
+	(HarmonicOscillatorEigenFunction)
 	);
 
 /*********************************************************************************
@@ -79,11 +79,11 @@ Complexr FreeMovingGaussianWavePacket::getValPos(Vector3r pos)
 * 
 *********************************************************************************/
 
-CREATE_LOGGER(HarmonicOscillator);
+CREATE_LOGGER(HarmonicOscillatorEigenFunction);
 // !! at least one virtual function in the .cpp file
-HarmonicOscillator::~HarmonicOscillator(){};
+HarmonicOscillatorEigenFunction::~HarmonicOscillatorEigenFunction(){};
 
-vector<boost::rational<signed long> > HarmonicOscillator::hermitePolynomialCoefficients(int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialCoefficients(int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long> > c_even; // can't use static, because lambdaPerAlpha changes between calls
 	vector<boost::rational<signed long> > c_odd;
@@ -109,7 +109,7 @@ vector<boost::rational<signed long> > HarmonicOscillator::hermitePolynomialCoeff
 	return a;
 }
 
-vector<boost::rational<signed long> > HarmonicOscillator::hermitePolynomialScaled(int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialScaled(int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long>> a(hermitePolynomialCoefficients(order,lambdaPerAlpha));
 	vector<boost::rational<signed long>> b;
@@ -119,7 +119,7 @@ vector<boost::rational<signed long> > HarmonicOscillator::hermitePolynomialScale
 	return b;
 }
 
-Complexr  HarmonicOscillator::quantumOscillatorWavefunction( // assume hbar=1, mass=1, frequency=1
+Complexr  HarmonicOscillatorEigenFunction::quantumOscillatorWavefunction( // assume hbar=1, mass=1, frequency=1
       int n                             // n - order of wavefunction
     , Real x          // position
 )
@@ -160,7 +160,7 @@ Complexr  HarmonicOscillator::quantumOscillatorWavefunction( // assume hbar=1, m
 //	return true;
 //}
 
-Complexr HarmonicOscillator::getValPos(Vector3r pos)
+Complexr HarmonicOscillatorEigenFunction::getValPos(Vector3r pos)
 {
 	switch(this->dim) {
 		case 1 : return quantumOscillatorWavefunction(order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t); // FIXME,FIXME: ,x0[0],this->t,k0[0],m,a,hbar);
