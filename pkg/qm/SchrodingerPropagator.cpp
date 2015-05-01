@@ -34,7 +34,7 @@ void SchrodingerAnalyticPropagator::action()
 //	const Real& time=scene->time;
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 		QMStateAnalytic* analytic=dynamic_cast<QMStateAnalytic*>(b->state.get());
-		const Body::id_t& id=b->getId();
+//		const Body::id_t& id=b->getId();
 		if(analytic) {
 			analytic->t += dt;
 		}
@@ -111,12 +111,12 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 	if(! hasTable){
 		std::size_t rank = psi_0.rank();
 		if(rank==1){
-		      for(int i=0;i<kTable.size0(0);i++)
+		      for(size_t i=0;i<kTable.size0(0);i++)
 			      kTable.at(i  )=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2);
 		} else
 		if(rank==2){
-		      for(int i=0;i<kTable.size0(0);i++) 
-		      for(int j=0;j<kTable.size0(1);j++) 
+		      for(size_t i=0;i<kTable.size0(0);i++)
+		      for(size_t j=0;j<kTable.size0(1);j++)
 			      kTable.at(i,j)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
 			                     -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2);
 		} //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
@@ -154,7 +154,7 @@ void SchrodingerKosloffPropagator::action()
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		const Body::id_t& id=b->getId();
+//		const Body::id_t& id=b->getId();
 		if(psi) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
 			NDimTable<Complexr>/*&*/ psi_dt(psi->tableValuesPosition); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀

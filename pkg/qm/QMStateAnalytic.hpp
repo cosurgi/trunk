@@ -139,9 +139,9 @@ class HarmonicOscillatorEigenFunction: public QMStateAnalytic
 	public:
 		virtual ~HarmonicOscillatorEigenFunction();
 		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
-		vector<boost::rational<signed long> > hermitePolynomialCoefficients(int order, boost::rational<signed long> lambdaPerAlpha);
-		vector<boost::rational<signed long> > hermitePolynomialScaled(int order, boost::rational<signed long> lambdaPerAlpha);
-		Complexr  quantumOscillatorWavefunction(int,Real); // assume hbar=1, mass=1, frequency=1
+		vector<boost::rational<signed long> > hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
+		vector<boost::rational<signed long> > hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
+		Complexr  quantumOscillatorWavefunction(unsigned int,Real); // assume hbar=1, mass=1, frequency=1
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
 			HarmonicOscillatorEigenFunction

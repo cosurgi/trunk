@@ -83,7 +83,7 @@ CREATE_LOGGER(HarmonicOscillatorEigenFunction);
 // !! at least one virtual function in the .cpp file
 HarmonicOscillatorEigenFunction::~HarmonicOscillatorEigenFunction(){};
 
-vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialCoefficients(int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long> > c_even; // can't use static, because lambdaPerAlpha changes between calls
 	vector<boost::rational<signed long> > c_odd;
@@ -101,7 +101,7 @@ vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePo
 	if(order+1 < a.size())
 		return a;
 
-	for(int i = a.size() ; i <= order ; ++i)
+	for(size_t i = a.size() ; i <= order ; ++i)
 	{
 		boost::rational<signed long> next = a[i-2]*(2*(i-2)+1-lambdaPerAlpha)/(i*(i-1));
 		a.push_back(next);
@@ -109,18 +109,18 @@ vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePo
 	return a;
 }
 
-vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialScaled(int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > HarmonicOscillatorEigenFunction::hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long>> a(hermitePolynomialCoefficients(order,lambdaPerAlpha));
 	vector<boost::rational<signed long>> b;
 	boost::rational<signed long> factor(std::pow(2,order)/a[order]);
-	for(int i = 0 ; i<=order ; ++i)
+	for(unsigned int i = 0 ; i<=order ; ++i)
 		b.push_back(a[i]*factor);
 	return b;
 }
 
 Complexr  HarmonicOscillatorEigenFunction::quantumOscillatorWavefunction( // assume hbar=1, mass=1, frequency=1
-      int n                             // n - order of wavefunction
+      unsigned int n                             // n - order of wavefunction
     , Real x          // position
 )
 {
@@ -128,8 +128,8 @@ Complexr  HarmonicOscillatorEigenFunction::quantumOscillatorWavefunction( // ass
 	Real mass=1.0;   // mass - mass of particle
 	Real omega=1.0;  // oscillator frequency
 	Real hbar=1.0;
-	Real                      E      ( hbar*omega*(n+0.5)       );        // energy of oscillator
-	Real                      lambda ( 2.0*mass*E / (hbar*hbar) );        // 
+//	Real                      E      ( hbar*omega*(n+0.5)       );        // energy of oscillator // FIXME - really unused ????
+//	Real                      lambda ( 2.0*mass*E / (hbar*hbar) );        // FIXME - where's lambda needed ????
 	Real                      alpha  ( mass*omega / hbar        );
 	Real                      alphaRoot(pow(alpha,0.5));
 	//Real                      lambdaPerAlpha ( 2*n+1 );
@@ -140,7 +140,7 @@ Complexr  HarmonicOscillatorEigenFunction::quantumOscillatorWavefunction( // ass
 	Complexr i(0,1);
 	Complexr result(0);
 	vector<boost::rational<signed long> > a(hermitePolynomialScaled(n,  2*n+1 ));
-	for(int v=0 ; v<=n ; v++)
+	for(unsigned int v=0 ; v<=n ; v++)
 	{
 		Real a_v(boost::rational_cast<Real>(a[v])); // Hermite Polynomial coefficient
 		result+=N_n*a_v*pow(alphaRoot*x , v) *exp(-0.5*alpha*pow(x,2));
@@ -163,10 +163,9 @@ Complexr  HarmonicOscillatorEigenFunction::quantumOscillatorWavefunction( // ass
 Complexr HarmonicOscillatorEigenFunction::getValPos(Vector3r pos)
 {
 	switch(this->dim) {
-		case 1 : return quantumOscillatorWavefunction(order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t); // FIXME,FIXME: ,x0[0],this->t,k0[0],m,a,hbar);
-
-		case 2 : return quantumOscillatorWavefunction(order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t)*
-		                quantumOscillatorWavefunction(order[1],pos[1])*std::exp((-Mathr::I*(order[1]+0.5))*this->t);
+		case 1 : return quantumOscillatorWavefunction((unsigned int)order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t);
+		case 2 : return quantumOscillatorWavefunction((unsigned int)order[0],pos[0])*std::exp((-Mathr::I*(order[0]+0.5))*this->t)*
+		                quantumOscillatorWavefunction((unsigned int)order[1],pos[1])*std::exp((-Mathr::I*(order[1]+0.5))*this->t);
 
 		default: throw std::runtime_error("getValPos() works only in 1 or 2 dimensions.");
 	}

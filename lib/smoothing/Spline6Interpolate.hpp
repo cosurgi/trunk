@@ -76,7 +76,7 @@ valueType  spline6InterpolatePoint2D(
 	static const size_t CHOSEN_RANGE=6;
 	static const size_t STA=1-CHOSEN_RANGE/2;
 	static const size_t END=1+CHOSEN_RANGE/2;
-	int      start_x=(size_t)(std::floor(posX))+STA
+	size_t   start_x=(size_t)(std::floor(posX))+STA
 		,end_x  =(size_t)(std::floor(posX))+END
 		,start_y=(size_t)(std::floor(posY))+STA
 		,end_y  =(size_t)(std::floor(posY))+END;
@@ -84,8 +84,8 @@ valueType  spline6InterpolatePoint2D(
 	assert(start_x>=0 and end_x<=values2D   .size());
 	assert(start_y>=0 and end_y<=values2D[0].size());
 
-	for(int x=start_x ; x<end_x ; ++x)
-		for(int y=start_y ; y<end_y ; ++y)
+	for(size_t x=start_x ; x<end_x ; ++x)
+		for(size_t y=start_y ; y<end_y ; ++y)
 			ret += values2D[x][y]*spline6Interpolation<floatType>((floatType)(x)-posX)
 			                     *spline6Interpolation<floatType>((floatType)(y)-posY);
 

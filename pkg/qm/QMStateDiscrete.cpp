@@ -53,7 +53,6 @@ void QMStateDiscrete::postLoad(QMStateDiscrete&)
 /// return complex quantum aplitude at given positional representation coordinates
 Complexr QMStateDiscrete::getValPos(Vector3r xyz) // FIXME - should take   std::vector<Real> (probably? - maybe useful for 4D?)
 {
-	double errorTime(2);
 	switch(this->dim) {
 	// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draws one too much!!
 	// FIXME - must work for all dimensions, with contractions !!!!!!

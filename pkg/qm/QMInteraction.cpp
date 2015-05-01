@@ -61,13 +61,13 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	if(!psi or !pot) return false;
 
 	Vector3r pt1,pt2,normal;
-	Real depth;
+	// Real depth;
 
 	Box* obb             = static_cast<Box*>(qm1.get());
-	QMGeometryDisplay* s = static_cast<QMGeometryDisplay*>(qm2.get());
+//	QMGeometryDisplay* s = static_cast<QMGeometryDisplay*>(qm2.get());
 
 	Vector3r extents1 = obb->extents;
-	Vector3r extents2 = s  ->halfSize;
+//	Vector3r extents2 = s  ->halfSize;
 
 	// 
 	// FIXME: do we need rotation matrix? Can't quaternion do just fine?
@@ -101,14 +101,14 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 
 	if(psi->dim==1) {
 		// FIXME - 1D only
-		int startI=psi->xToI(relPos12[0]-extents1[0],0);
-		int endI  =psi->xToI(relPos12[0]+extents1[0],0);
+		size_t startI=psi->xToI(relPos12[0]-extents1[0],0);
+		size_t endI  =psi->xToI(relPos12[0]+extents1[0],0);
 
 	// FIXME - remove cerr
 //		std::cerr << startI << " " << endI << " " << relPos12[0] << " " 
 //			  << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
 
-		for(int i=startI ; i<=endI ; i++) {
+		for(size_t i=startI ; i<=endI ; i++) {
 			if(i>=0 and i<val.size0(0))
 
 	// FIXME - 1D only
@@ -123,13 +123,13 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	}
 	if(psi->dim==2) {
 		// FIXME - 2D only, NOT general :(((
-		int startI=psi->xToI(relPos12[0]-extents1[0],0);
-		int endI  =psi->xToI(relPos12[0]+extents1[0],0);
-		int startJ=psi->xToI(relPos12[1]-extents1[1],1);
-		int endJ  =psi->xToI(relPos12[1]+extents1[1],1);
+		size_t startI=psi->xToI(relPos12[0]-extents1[0],0);
+		size_t endI  =psi->xToI(relPos12[0]+extents1[0],0);
+		size_t startJ=psi->xToI(relPos12[1]-extents1[1],1);
+		size_t endJ  =psi->xToI(relPos12[1]+extents1[1],1);
 
-		for(int i=startI ; i<=endI ; i++) 
-		for(int j=startJ ; j<=endJ ; j++) 
+		for(size_t i=startI ; i<=endI ; i++)
+		for(size_t j=startJ ; j<=endJ ; j++)
 		{
 			if(i>=0 and i<val.size0(0))
 			if(j>=0 and j<val.size0(1))
@@ -169,15 +169,16 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::goReverse(const shared_ptr
 *********************************************************************************/
 CREATE_LOGGER(Ip2_QMParameters_QMParameters_QMInteractionPhysics);
 void Ip2_QMParameters_QMParameters_QMInteractionPhysics::go(
-	const shared_ptr<Material>& pp1, 
-	const shared_ptr<Material>& pp2, 
+	const shared_ptr<Material>& pp1,
+	const shared_ptr<Material>& pp2,
 	const shared_ptr<Interaction>& interaction)
 {	
 	if(interaction->phys) return;
 
 	// FIXME - those two lines unnecessary right now
-	const shared_ptr<QMParameters>& q1 = YADE_PTR_CAST<QMParameters>(pp1);
-	const shared_ptr<QMParameters>& q2 = YADE_PTR_CAST<QMParameters>(pp2);
+	// btw, will they be necessary
+//	const shared_ptr<QMParameters>& q1 = YADE_PTR_CAST<QMParameters>(pp1);
+//	const shared_ptr<QMParameters>& q2 = YADE_PTR_CAST<QMParameters>(pp2);
 	
 	interaction->phys = shared_ptr<QMInteractionPhysics>(new QMInteractionPhysics());
 	std::cerr <<"####### iphys created in QMInteraction\n";
@@ -200,5 +201,6 @@ bool Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics::go(
 	shared_ptr<IPhys>& iphys, 
 	Interaction* interaction)
 {
+	return true;
 }
 

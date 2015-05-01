@@ -19,16 +19,16 @@
 class QMState: public State
 {
 	public:
-		virtual Complexr getValPos(Vector3r xyz){};          /// return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz){throw;};    /// return complex quantum aplitude at given positional representation coordinates
 //		virtual Complexr getValInv(Vector3r xyz){};          /// return complex quantum aplitude at given wavenumber representation coordinates
-		virtual Complexr getValIJKPos(Vector3i ijk){};       /// return complex quantum aplitude at given positional grid coordinates
+		virtual Complexr getValIJKPos(Vector3i ijk){throw;}; /// return complex quantum aplitude at given positional grid coordinates
 //		virtual Complexr getValIJKInv(Vector3i ijk){};       /// return complex quantum aplitude at given wavenumber grid coordinates
 		virtual int      getDim(){ return dim;};             /// return number of dimensions
-		virtual Vector3r getExtentsIJK(){};                  /// return grid size
+		virtual Vector3r getExtentsIJK(){throw;};            /// return grid size
 
 //////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// FIXME - only this one has a nice name, and is actually implemented, fix the others.
-		virtual Real     stepInPositionalRepresentation(){}; /// return grid step, two point distance in the mesh in positional representation
+		virtual Real     stepInPositionalRepresentation(){throw;}; /// return grid step, two point distance in the mesh in positional representation
 //////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 

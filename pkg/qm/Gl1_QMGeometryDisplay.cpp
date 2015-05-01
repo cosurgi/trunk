@@ -106,7 +106,7 @@ void Gl1_QMGeometryDisplay::go(
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
 	Real scalingFactor = (g->partsScale >= 0 ? ((g->partsScale==0)?(1):(g->partsScale)) : -1.0/g->partsScale);
-	for(int draw=0 ; draw<partsToDraw.size() ; draw++) {
+	for(size_t draw=0 ; draw<partsToDraw.size() ; draw++) {
 		if( partsToDraw[draw]() ) {
 			switch(packet->dim) {
 				// FIXME(2) - add following

@@ -339,7 +339,7 @@ class NDimTable : private std::vector<K
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
 			fftw_plan p;
-			int N(inp.total);
+			//int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			if(rank_d == 1) { // FIXME - move to separate function
