@@ -71,7 +71,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	Real ret(0); // assume that negative maximum energy is not possible
 	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		if(psi) {// FIXME - px^2+py^2 + potential FIXME, Kosloff eq.2.4 !!!
+		if(psi) {
 			int rank = psi->tableValuesPosition.rank();
 			Real Ekin(0);
 			for(int dim=0 ; dim<rank ; dim++)
@@ -79,7 +79,6 @@ Real SchrodingerKosloffPropagator::eMax()
 			ret=std::max(ret, Ekin );
 		}
 	};
-
 
 	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
 	// prepare the potential  ψᵥ
@@ -110,16 +109,16 @@ void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_
 	static bool hasTable(false);
 	static NDimTable<Real    > kTable(psi_0.dim());
 	if(! hasTable){
-		std::size_t size(kTable.size0(0));
 		std::size_t rank = psi_0.rank();
 		if(rank==1){
-		      for(int i=0;i<kTable.size0(0);i++) kTable.at(i)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2);
+		      for(int i=0;i<kTable.size0(0);i++)
+			      kTable.at(i  )=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2);
 		} else
 		if(rank==2){
 		      for(int i=0;i<kTable.size0(0);i++) 
 		      for(int j=0;j<kTable.size0(1);j++) 
-			      kTable.at(i,j)=-1.0*std::pow(psi->iToK((i+size/2)%size,0),2)
-			                     -    std::pow(psi->iToK((j+size/2)%size,1),2);
+			      kTable.at(i,j)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
+			                     -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2);
 		} //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
 		hasTable=true;
 	//kTable.print();
