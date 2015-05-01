@@ -100,7 +100,7 @@ void Gl1_QMGeometryDisplay::go(
 
 // FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
 	if(packetDiscrete) {
-		step.x()=packetDiscrete->stepInPositionalRepresentation(0);
+		                    step.x()=packetDiscrete->stepInPositionalRepresentation(0);
 		if(packet->dim > 1) step.y()=packetDiscrete->stepInPositionalRepresentation(1);
 		if(packet->dim > 2) step.z()=packetDiscrete->stepInPositionalRepresentation(2);
 	
@@ -146,35 +146,43 @@ void Gl1_QMGeometryDisplay::go(
 					// 2D lines
 					if(wire == true or drawStyle[draw]()=="wire") {
 						glColor3v( colorToDraw[draw](col) );
-						for(Real x=startX ; x<=endX ; x+=step.x()/*,i++ */ ) {
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
+						for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x()/*,i++ */ ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real y=startY ; y<=endY ; y+=step.y()/*,j++*/ ) {
+							for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y()/*,j++*/ ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(stepWait)) break;
 						}
-						for(Real y=startY ; y<=endY ; y+=step.y() ) {
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
+						for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y() ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real x=startX ; x<=endX ; x+=step.x() ) {
+							for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x() ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(stepWait)) break;
 						}
+						// FIXME - drawing wires is slower than drawSurface. Better to prepare data for wires, then call drawWires()
 					} else {
 					// 2D surface
-						waveValues2D.resize(int((endX-startX)/step.x())+1); // FIXME(2) - resolve storage problems
-						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/step.y())+1,0);};
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
+						waveValues2D.resize(int((endX-startX)/step.x()));
+						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/step.y()),0);};
 						int i=0;
-						for(Real x=startX ; x<=endX ; x+=step.x(),i++ ) {
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
+						for(Real x=startX ; x< (endX - step.x()*0.5) ; x+=step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y<=endY ; y+=step.y(),j++ ) {
+							for(Real y=startY ; y< (endY - step.y()*0.5) ; y+=step.y(),j++ ) {
 								waveValues2D[i][j]=valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0))))*scalingFactor;
 							}
 							if(timeLimit.tooLong(stepWait)) break;
 						}
-						// FIXME - drawSurface or drawWires, this will speed up drawing wires (which are currently slower)
 						drawSurface(waveValues2D,colorToDraw[draw](col));
 					}
 				break;
@@ -186,22 +194,27 @@ void Gl1_QMGeometryDisplay::go(
 					// 3D lines
 					// 3D surface
 					if(true /* points == false */) {
-						int gridSizex=int((endX-startX)/step.x())+1;
-						int gridSizey=int((endY-startY)/step.y())+1;
-						int gridSizez=int((endZ-startZ)/step.z())+1;
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
+						int gridSizex=int((endX-startX)/step.x());
+						int gridSizey=int((endY-startY)/step.y());
+						int gridSizez=int((endZ-startZ)/step.z());
 						// FIXME(2) - reconsider if doing [draw] loop outside this if() slows things down - more reinitialization of mc 
-						Vector3r minMC(startX+step.x()*0.5     ,startY+step.y()*0.5     ,startZ+step.z()*0.5     );
-						Vector3r maxMC(endX  +step.x()*0.5     ,endY  +step.y()*0.5     ,endZ  +step.z()*0.5     );
+						// FIXME(3) -                     ↓ +pos[0]                    ↓ +pos[1]                    ↓ + pos[2]
+						Vector3r minMC(startX+step.x()*0.5         ,startY+step.y()*0.5         ,startZ+step.z()*0.5          );
+						Vector3r maxMC(endX  +step.x()*0.5         ,endY  +step.y()*0.5         ,endZ  +step.z()*0.5          );
 						mc.init(gridSizex,gridSizey,gridSizez,minMC,maxMC);
 						// about waveValues3D FIXME(2) - resolve storage problems
 						mc.resizeScalarField(waveValues3D,gridSizex,gridSizey,gridSizez);
 
+						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
 						int i=0;
-						for(Real x=startX ; x<=endX ; x+=step.x(),i++ ) {
+						for(Real x=startX ; x < (endX - step.x()*0.5) ; x+=step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y<=endY ; y+=step.y(),j++ ) {
+							for(Real y=startY ; y < (endY - step.y()*0.5) ; y+=step.y(),j++ ) {
 								int k=0;
-								for(Real z=startZ ; z<=endZ ; z+=step.z(),k++ ) {
+								for(Real z=startZ ; z < (endZ - step.z()*0.5) ; z+=step.z(),k++ ) {
 									// FIXME(2) - to jest kopiowanie!
 									// owszem - bez FFTW3 takie coś musi zostać, ale
 									// z nowymi kontenerami muszę móc to ominąć
@@ -282,11 +295,14 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	//      *        3    
 	Vector3r p0(0,0,0),p1(0,0,0),p2(0,0,0),p3(0,0,0),p4(0,0,0);
 	Vector3r           n1(0,0,0),n2(0,0,0),n3(0,0,0),n4(0,0,0);
+
+	// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
+	// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
 	int i=0;
-	for(Real x=startX ; x<=endX ; x+=step.x(),i++ )
+	for(Real x=startX ; x < (endX - step.x()*0.5) ; x+=step.x(),i++ )
 	{
 		int j=0;
-		for(Real y=startY ; y<=endY ; y+=step.y(),j++ )
+		for(Real y=startY ; y < (endY - step.y()*0.5) ; y+=step.y(),j++ )
 		{
 			                p0=Vector3r(x         ,y         ,waveVals[i  ][j  ]);
 			if((j+1)<lenY){ p1=Vector3r(x         ,y+step.y(),waveVals[i  ][j+1]);} else{ p1=p0;};
@@ -561,27 +577,16 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 
 void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
-	std::vector<std::vector<Vector3r> > wavNormV;
-	wavNormV.resize(int((endX-startX)/step.x())+1);
-	FOREACH(std::vector<Vector3r>& xx, wavNormV) {xx.resize(int((endY-startY)/step.y())+1,Vector3r(0,0,0));};
-
+	std::vector<std::vector<Vector3r> > wavNormV(/*size=*/waveVals.size(),/*init=*/std::vector<Vector3r>(waveVals[0].size()));
 	calcNormalVectors(waveVals,wavNormV);
-
 	if(not renderInterpolate)
 	{
 		glDrawSurface(waveVals,wavNormV,col);
 	} else {
-		std::vector<std::vector<Vector3r> > extraWavNormV;
-		extraWavNormV.resize(int((endX-startX)/step.x())+1);
-		FOREACH(std::vector<Vector3r>& xx, extraWavNormV) {xx.resize(int((endY-startY)/step.y())+1,Vector3r(0,0,0));};
-	
-		std::vector<std::vector<Real> > extraWaveVals;
-		extraWaveVals.resize(int((endX-startX)/step.x())+1);
-		FOREACH(std::vector<Real>& xx, extraWaveVals) {xx.resize(int((endY-startY)/step.y())+1,0);};
-
-		interpolateExtraWaveValues(waveVals,extraWaveVals);
-		interpolateExtraNormalVectors(wavNormV,extraWavNormV);
-		
+		std::vector<std::vector<Vector3r> > extraWavNormV(/*size=*/waveVals.size(),/*init=*/std::vector<Vector3r>(waveVals[0].size()));
+		std::vector<std::vector<Real    > > extraWaveVals(/*size=*/waveVals.size(),/*init=*/std::vector<Real    >(waveVals[0].size()));
+		interpolateExtraWaveValues   (waveVals,extraWaveVals);
+		interpolateExtraNormalVectors(wavNormV,extraWavNormV);	
 		glDrawSurfaceInterpolated(waveVals,wavNormV,extraWaveVals,extraWavNormV,col);
 	}
 }
