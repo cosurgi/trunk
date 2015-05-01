@@ -71,7 +71,7 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	O.step()
+	#O.step()
 	#qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("2D free propagating packet")
