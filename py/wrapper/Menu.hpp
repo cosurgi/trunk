@@ -16,8 +16,10 @@
 #pragma once
 #include<string>
 #include<vector>
+#include<iostream>
 typedef            std::vector<std::string>   Menu;
 std::string menuSelection(const Menu& m);
+std::ostream & operator<<(std::ostream &os, const Menu& menu);
 
 // NOTE: it is simplest way to do this just by typedef. The caveat is that any
 // vector<string> type might potentially become a dropdown menu in the qt4
