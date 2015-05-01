@@ -3,7 +3,7 @@
 
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d,size_1d*2.0,0.1]
+halfSize  = [size_1d*1.2,size_1d*1.8,0.1]
 size      = [x * 2 for x in halfSize]
 
 ## scale up the graphics
@@ -57,7 +57,7 @@ numericalBody = QMBody()
 numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[2**6,2**6])
+numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential
