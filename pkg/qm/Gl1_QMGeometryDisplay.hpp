@@ -53,7 +53,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			((int ,renderShininess  ,50,,"Amount of shininess of the surface"))
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
-			((Real,step             ,0.1,,"Rendering step, careful - too small will make rendering extremely slow"))
+			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
 			((Real,stepWait         ,0.1,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.00000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 		);

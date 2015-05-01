@@ -35,7 +35,7 @@ int  Gl1_QMGeometryDisplay::renderSpecular=10;
 int  Gl1_QMGeometryDisplay::renderAmbient=15;
 int  Gl1_QMGeometryDisplay::renderDiffuse=100;
 int  Gl1_QMGeometryDisplay::renderShininess=50;
-Real Gl1_QMGeometryDisplay::step=0.1;
+Vector3r Gl1_QMGeometryDisplay::step=Vector3r(0.1,0.1,0.1);
 Real Gl1_QMGeometryDisplay::stepWait=0.1;
 Real Gl1_QMGeometryDisplay::threshold3D=0.00000001;
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
@@ -91,16 +91,27 @@ void Gl1_QMGeometryDisplay::go(
 
 // find extents to render
 // FIXME(2) maybe move that into some renderConfig class, with default values in O.body[#].shape and override in this class.
-	startX= -geometry->halfSize[0];
-	endX  =  geometry->halfSize[0];
-	startY= -geometry->halfSize[1];
-	endY  =  geometry->halfSize[1];
-	startZ= -geometry->halfSize[2];
-	endZ  =  geometry->halfSize[2];
+	startX= -geometry->halfSize[0]; // + pos[0] ← FIXME
+	endX  =  geometry->halfSize[0]; // + pos[0] ← FIXME
+	startY= -geometry->halfSize[1]; // + pos[1] ← FIXME
+	endY  =  geometry->halfSize[1]; // + pos[1] ← FIXME
+	startZ= -geometry->halfSize[2]; // + pos[2] ← FIXME
+	endZ  =  geometry->halfSize[2]; // + pos[2] ← FIXME
 
 // FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
-                     ///////// FIXME!!!!!!! muszą być możliwe różne step dla x,y,z ↓ FIXME, FIXME, FIXME, FIXME, FIXME,
-	if(packetDiscrete) step=packetDiscrete->stepInPositionalRepresentation    (0); 
+	if(packetDiscrete) {
+		step.x()=packetDiscrete->stepInPositionalRepresentation(0);
+		if(packet->dim > 1) step.y()=packetDiscrete->stepInPositionalRepresentation(1);
+		if(packet->dim > 2) step.z()=packetDiscrete->stepInPositionalRepresentation(2);
+	
+//OK	std::cerr << startX                   << " " << endX                   << "\n" 
+//OK		  << packetDiscrete->start(0) << " " << packetDiscrete->end(0) << "\n" 
+//OK	          << startY                   << " " << endY                   << "\n" 
+//OK		  << packetDiscrete->start(1) << " " << packetDiscrete->end(1) << "\n" 
+//OK		  << startZ                   << " " << endZ                   << "\n" 
+//OK		  << packetDiscrete->start(2) << " " << packetDiscrete->end(2) << "\n"; 
+
+	}
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
@@ -121,7 +132,7 @@ void Gl1_QMGeometryDisplay::go(
 					if(drawStyle[draw]()!="points") {
 						if(drawStyle[draw]()=="nodes") glBegin(GL_POINTS); else glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
-						for(Real x=startX ; x<endX ; x+=step ) {
+						for(Real x=startX ; x<endX ; x+=step.x() ) {
 							glVertex3d(x,0,valueToDraw[draw] ((packet->getValPos(Vector3r(x,0,0)))) *scalingFactor);
 						}
 						glEnd();
@@ -135,17 +146,17 @@ void Gl1_QMGeometryDisplay::go(
 					// 2D lines
 					if(wire == true or drawStyle[draw]()=="wire") {
 						glColor3v( colorToDraw[draw](col) );
-						for(Real x=startX ; x<=endX ; x+=step/*,i++ */ ) {
+						for(Real x=startX ; x<=endX ; x+=step.x()/*,i++ */ ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real y=startY ; y<=endY ; y+=step/*,j++*/ ) {
+							for(Real y=startY ; y<=endY ; y+=step.y()/*,j++*/ ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(stepWait)) break;
 						}
-						for(Real y=startY ; y<=endY ; y+=step ) {
+						for(Real y=startY ; y<=endY ; y+=step.y() ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real x=startX ; x<=endX ; x+=step ) {
+							for(Real x=startX ; x<=endX ; x+=step.x() ) {
 								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
 							}
 							glEnd();
@@ -153,12 +164,12 @@ void Gl1_QMGeometryDisplay::go(
 						}
 					} else {
 					// 2D surface
-						waveValues2D.resize(int((endX-startX)/step)+1); // FIXME(2) - resolve storage problems
-						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endX-startX)/step)+1,0);};
+						waveValues2D.resize(int((endX-startX)/step.x())+1); // FIXME(2) - resolve storage problems
+						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/step.y())+1,0);};
 						int i=0;
-						for(Real x=startX ; x<=endX ; x+=step,i++ ) {
+						for(Real x=startX ; x<=endX ; x+=step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
+							for(Real y=startY ; y<=endY ; y+=step.y(),j++ ) {
 								waveValues2D[i][j]=valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0))))*scalingFactor;
 							}
 							if(timeLimit.tooLong(stepWait)) break;
@@ -175,20 +186,22 @@ void Gl1_QMGeometryDisplay::go(
 					// 3D lines
 					// 3D surface
 					if(true /* points == false */) {
-						int gridSize=int((endX-startX)/step)+1;
+						int gridSizex=int((endX-startX)/step.x())+1;
+						int gridSizey=int((endY-startY)/step.y())+1;
+						int gridSizez=int((endZ-startZ)/step.z())+1;
 						// FIXME(2) - reconsider if doing [draw] loop outside this if() slows things down - more reinitialization of mc 
-						Vector3r minMC(startX+step*0.5     ,startY+step*0.5     ,startZ+step*0.5     );
-						Vector3r maxMC(endX  +step*0.5     ,endY  +step*0.5     ,endZ  +step*0.5     );
-						mc.init(gridSize,gridSize,gridSize,minMC,maxMC);
+						Vector3r minMC(startX+step.x()*0.5     ,startY+step.y()*0.5     ,startZ+step.z()*0.5     );
+						Vector3r maxMC(endX  +step.x()*0.5     ,endY  +step.y()*0.5     ,endZ  +step.z()*0.5     );
+						mc.init(gridSizex,gridSizey,gridSizez,minMC,maxMC);
 						// about waveValues3D FIXME(2) - resolve storage problems
-						mc.resizeScalarField(waveValues3D,gridSize,gridSize,gridSize);
+						mc.resizeScalarField(waveValues3D,gridSizex,gridSizey,gridSizez);
 
 						int i=0;
-						for(Real x=startX ; x<=endX ; x+=step,i++ ) {
+						for(Real x=startX ; x<=endX ; x+=step.x(),i++ ) {
 							int j=0;
-							for(Real y=startY ; y<=endY ; y+=step,j++ ) {
+							for(Real y=startY ; y<=endY ; y+=step.y(),j++ ) {
 								int k=0;
-								for(Real z=startZ ; z<=endZ ; z+=step,k++ ) {
+								for(Real z=startZ ; z<=endZ ; z+=step.z(),k++ ) {
 									// FIXME(2) - to jest kopiowanie!
 									// owszem - bez FFTW3 takie coś musi zostać, ale
 									// z nowymi kontenerami muszę móc to ominąć
@@ -270,16 +283,16 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	Vector3r p0(0,0,0),p1(0,0,0),p2(0,0,0),p3(0,0,0),p4(0,0,0);
 	Vector3r           n1(0,0,0),n2(0,0,0),n3(0,0,0),n4(0,0,0);
 	int i=0;
-	for(Real x=startX ; x<=endX ; x+=step,i++ )
+	for(Real x=startX ; x<=endX ; x+=step.x(),i++ )
 	{
 		int j=0;
-		for(Real y=startY ; y<=endY ; y+=step,j++ )
+		for(Real y=startY ; y<=endY ; y+=step.y(),j++ )
 		{
-			                p0=Vector3r(x     ,y     ,waveVals[i  ][j  ]);
-			if((j+1)<lenY){ p1=Vector3r(x     ,y+step,waveVals[i  ][j+1]);} else{ p1=p0;};
-			if((i+1)<lenX){ p2=Vector3r(x+step,y     ,waveVals[i+1][j  ]);} else{ p2=p0;};
-			if((j-1)>=0  ){ p3=Vector3r(x     ,y-step,waveVals[i  ][j-1]);} else{ p3=p0;};
-			if((i-1)>=0  ){ p4=Vector3r(x-step,y     ,waveVals[i-1][j  ]);} else{ p4=p0;};
+			                p0=Vector3r(x         ,y         ,waveVals[i  ][j  ]);
+			if((j+1)<lenY){ p1=Vector3r(x         ,y+step.y(),waveVals[i  ][j+1]);} else{ p1=p0;};
+			if((i+1)<lenX){ p2=Vector3r(x+step.x(),y         ,waveVals[i+1][j  ]);} else{ p2=p0;};
+			if((j-1)>=0  ){ p3=Vector3r(x         ,y-step.y(),waveVals[i  ][j-1]);} else{ p3=p0;};
+			if((i-1)>=0  ){ p4=Vector3r(x-step.x(),y         ,waveVals[i-1][j  ]);} else{ p4=p0;};
 			n1 = (p2-p0).cross(p1-p0);
 			n2 = (p3-p0).cross(p2-p0);
 			n3 = (p4-p0).cross(p3-p0);
@@ -337,15 +350,15 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	glColor3v(col);
 	for(int i=0 ; i<lenX-1 ; i++ )
 	{
-		Real x=startX+i*step;
+		Real x=startX+i*step.x();
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=0 ; j<lenY ; j++ )
 		{
-			Real y=startY+j*step;
-			glNormal3v(         wavNormV[i  ][j]);
-			glVertex3f(x     ,y,waveVals[i  ][j]);
-			glNormal3v(         wavNormV[i+1][j]);
-			glVertex3f(x+step,y,waveVals[i+1][j]);
+			Real y=startY+j*step.y();
+			glNormal3v(             wavNormV[i  ][j]);
+			glVertex3f(x         ,y,waveVals[i  ][j]);
+			glNormal3v(             wavNormV[i+1][j]);
+			glVertex3f(x+step.x(),y,waveVals[i+1][j]);
 		}
 		glEnd();
 	}
@@ -354,15 +367,15 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
 	for(int i=0 ; i<lenX-1 ; i++ )
 	{
-		Real x=startX+i*step;
+		Real x=startX+i*step.x();
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=lenY-1 ; j>=0 ; j-- )
 		{
-			Real y=startY+j*step;
-			glNormal3v(         wavNormV[i  ][j]);
-			glVertex3f(x     ,y,waveVals[i  ][j]);
-			glNormal3v(         wavNormV[i+1][j]);
-			glVertex3f(x+step,y,waveVals[i+1][j]);
+			Real y=startY+j*step.y();
+			glNormal3v(             wavNormV[i  ][j]);
+			glVertex3f(x         ,y,waveVals[i  ][j]);
+			glNormal3v(             wavNormV[i+1][j]);
+			glVertex3f(x+step.x(),y,waveVals[i+1][j]);
 		}
 		glEnd();
 	}
@@ -377,9 +390,12 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	Vector3r col                                              // color in which to draw the surface
 )
 {
-	Real step2 = step*0.5;
-	Real step3 = step*1.5;
-	Real step4 = step*2.0;
+	Real stepx  = step.x()    ;
+	Real stepx2 = step.x()*0.5;
+	Real stepy  = step.y()    ;
+	Real stepy2 = step.y()*0.5;
+	Real stepy3 = step.y()*1.5;
+	Real stepy4 = step.y()*2.0;
 	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
 	int lenX=wavNormV.size();
 	int lenY=wavNormV[0].size();
@@ -403,28 +419,28 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 // +→y,j
 	for(int i=CHOSEN_RANGE/2 ; i<(lenX-1-CHOSEN_RANGE/2) ; i++ ) // skip margin CHOSEN_RANGE/2 where interpolation was impossible
 	{
-		Real x=startX+i*step;
+		Real x=startX+i*stepx;
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
 		{
-			Real y=startY+j*step;
-			glNormal3v(                     wavNormV[i  ][j  ]); // 1
-			glVertex3f(x      ,y      ,     waveVals[i  ][j  ]); // 1
-			glNormal3v(                     wavNormV[i+1][j  ]); // 2
-			glVertex3f(x+step ,y      ,     waveVals[i+1][j  ]); // 2
-			glNormal3v(                extraWavNormV[i  ][j  ]); // 3
-			glVertex3f(x+step2,y+step2,extraWaveVals[i  ][j  ]); // 3
-			glNormal3v(                     wavNormV[i+1][j+1]); // 4
-			glVertex3f(x+step ,y+step ,     waveVals[i+1][j+1]); // 4
-			glNormal3v(                     wavNormV[i  ][j+1]); // 5
-			glVertex3f(x      ,y+step ,     waveVals[i  ][j+1]); // 5
-			glNormal3v(                extraWavNormV[i  ][j+1]); // 6
-			glVertex3f(x+step2,y+step3,extraWaveVals[i  ][j+1]); // 6
+			Real y=startY+j*stepy;
+			glNormal3v(                       wavNormV[i  ][j  ]); // 1
+			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
+			glNormal3v(                       wavNormV[i+1][j  ]); // 2
+			glVertex3f(x+stepx ,y       ,     waveVals[i+1][j  ]); // 2
+			glNormal3v(                  extraWavNormV[i  ][j  ]); // 3
+			glVertex3f(x+stepx2,y+stepy2,extraWaveVals[i  ][j  ]); // 3
+			glNormal3v(                       wavNormV[i+1][j+1]); // 4
+			glVertex3f(x+stepx ,y+stepy ,     waveVals[i+1][j+1]); // 4
+			glNormal3v(                       wavNormV[i  ][j+1]); // 5
+			glVertex3f(x       ,y+stepy ,     waveVals[i  ][j+1]); // 5
+			glNormal3v(                  extraWavNormV[i  ][j+1]); // 6
+			glVertex3f(x+stepx2,y+stepy3,extraWaveVals[i  ][j+1]); // 6
 			if((j+2)>=(lenY-CHOSEN_RANGE/2-2)) { // near the end draw the (7) and (8)
-			glNormal3v(                     wavNormV[i  ][j+2]); // 7
-			glVertex3f(x      ,y+step4,     waveVals[i  ][j+2]); // 7
-			glNormal3v(                     wavNormV[i+1][j+2]); // 8
-			glVertex3f(x+step ,y+step4,     waveVals[i+1][j+2]); // 8
+			glNormal3v(                       wavNormV[i  ][j+2]); // 7
+			glVertex3f(x       ,y+stepy4,     waveVals[i  ][j+2]); // 7
+			glNormal3v(                       wavNormV[i+1][j+2]); // 8
+			glVertex3f(x+stepx ,y+stepy4,     waveVals[i+1][j+2]); // 8
 			}
 		}
 		glEnd();
@@ -432,20 +448,20 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 		glBegin(GL_TRIANGLES);
 		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
 		{
-			Real y=startY+j*step;
-			glNormal3v(                     wavNormV[i  ][j  ]); // 1
-			glVertex3f(x      ,y      ,     waveVals[i  ][j  ]); // 1
-			glNormal3v(                extraWavNormV[i  ][j  ]); // 3
-			glVertex3f(x+step2,y+step2,extraWaveVals[i  ][j  ]); // 3
-			glNormal3v(                     wavNormV[i  ][j+1]); // 5
-			glVertex3f(x      ,y+step ,     waveVals[i  ][j+1]); // 5
+			Real y=startY+j*stepy;
+			glNormal3v(                       wavNormV[i  ][j  ]); // 1
+			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
+			glNormal3v(                  extraWavNormV[i  ][j  ]); // 3
+			glVertex3f(x+stepx2,y+stepy2,extraWaveVals[i  ][j  ]); // 3
+			glNormal3v(                       wavNormV[i  ][j+1]); // 5
+			glVertex3f(x       ,y+stepy ,     waveVals[i  ][j+1]); // 5
 
-			glNormal3v(                     wavNormV[i+1][j+1]); // 4
-			glVertex3f(x+step ,y+step ,     waveVals[i+1][j+1]); // 4
-			glNormal3v(                     wavNormV[i+1][j+2]); // 8
-			glVertex3f(x+step ,y+step4,     waveVals[i+1][j+2]); // 8
-			glNormal3v(                extraWavNormV[i  ][j+1]); // 6
-			glVertex3f(x+step2,y+step3,extraWaveVals[i  ][j+1]); // 6
+			glNormal3v(                       wavNormV[i+1][j+1]); // 4
+			glVertex3f(x+stepx ,y+stepy ,     waveVals[i+1][j+1]); // 4
+			glNormal3v(                       wavNormV[i+1][j+2]); // 8
+			glVertex3f(x+stepx ,y+stepy4,     waveVals[i+1][j+2]); // 8
+			glNormal3v(                  extraWavNormV[i  ][j+1]); // 6
+			glVertex3f(x+stepx2,y+stepy3,extraWaveVals[i  ][j+1]); // 6
 		}
 		glEnd();
 	}
@@ -454,28 +470,28 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
 	for(int i=CHOSEN_RANGE/2 ; i<(lenX-1-CHOSEN_RANGE/2) ; i++ )
 	{
-		Real x=startX+i*step;
+		Real x=startX+i*stepx;
 		glBegin(GL_TRIANGLE_STRIP);
 		for(int j=(lenY-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
 		{
-			Real y=startY+j*step;
-			glNormal3v(                     wavNormV[i  ][j  ]); // 1
-			glVertex3f(x      ,y      ,     waveVals[i  ][j  ]); // 1
-			glNormal3v(                     wavNormV[i+1][j  ]); // 2
-			glVertex3f(x+step ,y      ,     waveVals[i+1][j  ]); // 2
-			glNormal3v(                extraWavNormV[i  ][j-1]); // 3
-			glVertex3f(x+step2,y-step2,extraWaveVals[i  ][j-1]); // 3
-			glNormal3v(                     wavNormV[i+1][j-1]); // 4
-			glVertex3f(x+step ,y-step ,     waveVals[i+1][j-1]); // 4
-			glNormal3v(                     wavNormV[i  ][j-1]); // 5
-			glVertex3f(x      ,y-step ,     waveVals[i  ][j-1]); // 5
-			glNormal3v(                extraWavNormV[i  ][j-2]); // 6
-			glVertex3f(x+step2,y-step3,extraWaveVals[i  ][j-2]); // 6
+			Real y=startY+j*stepy;
+			glNormal3v(                       wavNormV[i  ][j  ]); // 1
+			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
+			glNormal3v(                       wavNormV[i+1][j  ]); // 2
+			glVertex3f(x+stepx ,y       ,     waveVals[i+1][j  ]); // 2
+			glNormal3v(                  extraWavNormV[i  ][j-1]); // 3
+			glVertex3f(x+stepx2,y-stepy2,extraWaveVals[i  ][j-1]); // 3
+			glNormal3v(                       wavNormV[i+1][j-1]); // 4
+			glVertex3f(x+stepx ,y-stepy ,     waveVals[i+1][j-1]); // 4
+			glNormal3v(                       wavNormV[i  ][j-1]); // 5
+			glVertex3f(x       ,y-stepy ,     waveVals[i  ][j-1]); // 5
+			glNormal3v(                  extraWavNormV[i  ][j-2]); // 6
+			glVertex3f(x+stepx2,y-stepy3,extraWaveVals[i  ][j-2]); // 6
 			if((j-2)<=(CHOSEN_RANGE/2)) { // near the end draw the (7) and (8)
-			glNormal3v(                     wavNormV[i  ][j-2]); // 7
-			glVertex3f(x      ,y-step4,     waveVals[i  ][j-2]); // 7
-			glNormal3v(                     wavNormV[i+1][j-2]); // 8
-			glVertex3f(x+step ,y-step4,     waveVals[i+1][j-2]); // 8
+			glNormal3v(                       wavNormV[i  ][j-2]); // 7
+			glVertex3f(x       ,y-stepy4,     waveVals[i  ][j-2]); // 7
+			glNormal3v(                       wavNormV[i+1][j-2]); // 8
+			glVertex3f(x+stepx ,y-stepy4,     waveVals[i+1][j-2]); // 8
 			}
 		}
 		glEnd();
@@ -483,20 +499,20 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 		glBegin(GL_TRIANGLES);
 		for(int j=(lenY-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
 		{
-			Real y=startY+j*step;
-			glNormal3v(                     wavNormV[i  ][j  ]); // 1
-			glVertex3f(x      ,y      ,     waveVals[i  ][j  ]); // 1
-			glNormal3v(                extraWavNormV[i  ][j-1]); // 3
-			glVertex3f(x+step2,y-step2,extraWaveVals[i  ][j-1]); // 3
-			glNormal3v(                     wavNormV[i  ][j-1]); // 5
-			glVertex3f(x      ,y-step ,     waveVals[i  ][j-1]); // 5
+			Real y=startY+j*stepy;
+			glNormal3v(                       wavNormV[i  ][j  ]); // 1
+			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
+			glNormal3v(                  extraWavNormV[i  ][j-1]); // 3
+			glVertex3f(x+stepx2,y-stepy2,extraWaveVals[i  ][j-1]); // 3
+			glNormal3v(                       wavNormV[i  ][j-1]); // 5
+			glVertex3f(x       ,y-stepy ,     waveVals[i  ][j-1]); // 5
 
-			glNormal3v(                     wavNormV[i+1][j-1]); // 4
-			glVertex3f(x+step ,y-step ,     waveVals[i+1][j-1]); // 4
-			glNormal3v(                     wavNormV[i+1][j-2]); // 8
-			glVertex3f(x+step ,y-step4,     waveVals[i+1][j-2]); // 8
-			glNormal3v(                extraWavNormV[i  ][j-2]); // 6
-			glVertex3f(x+step2,y-step3,extraWaveVals[i  ][j-2]); // 6
+			glNormal3v(                       wavNormV[i+1][j-1]); // 4
+			glVertex3f(x+stepx ,y-stepy ,     waveVals[i+1][j-1]); // 4
+			glNormal3v(                       wavNormV[i+1][j-2]); // 8
+			glVertex3f(x+stepx ,y-stepy4,     waveVals[i+1][j-2]); // 8
+			glNormal3v(                  extraWavNormV[i  ][j-2]); // 6
+			glVertex3f(x+stepx2,y-stepy3,extraWaveVals[i  ][j-2]); // 6
 		}
 		glEnd();
 	}
@@ -545,14 +561,9 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 
 void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	int lenX=waveVals.size();
-	int lenY=waveVals[0].size();
-	// FIXME - end
-
 	std::vector<std::vector<Vector3r> > wavNormV;
-	wavNormV.resize(int((endX-startX)/step)+1);
-	FOREACH(std::vector<Vector3r>& xx, wavNormV) {xx.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
+	wavNormV.resize(int((endX-startX)/step.x())+1);
+	FOREACH(std::vector<Vector3r>& xx, wavNormV) {xx.resize(int((endY-startY)/step.y())+1,Vector3r(0,0,0));};
 
 	calcNormalVectors(waveVals,wavNormV);
 
@@ -561,19 +572,18 @@ void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& w
 		glDrawSurface(waveVals,wavNormV,col);
 	} else {
 		std::vector<std::vector<Vector3r> > extraWavNormV;
-		extraWavNormV.resize(int((endX-startX)/step)+1);
-		FOREACH(std::vector<Vector3r>& xx, extraWavNormV) {xx.resize(int((endX-startX)/step)+1,Vector3r(0,0,0));};
+		extraWavNormV.resize(int((endX-startX)/step.x())+1);
+		FOREACH(std::vector<Vector3r>& xx, extraWavNormV) {xx.resize(int((endY-startY)/step.y())+1,Vector3r(0,0,0));};
 	
 		std::vector<std::vector<Real> > extraWaveVals;
-		extraWaveVals.resize(int((endX-startX)/step)+1);
-		FOREACH(std::vector<Real>& xx, extraWaveVals) {xx.resize(int((endX-startX)/step)+1,0);};
+		extraWaveVals.resize(int((endX-startX)/step.x())+1);
+		FOREACH(std::vector<Real>& xx, extraWaveVals) {xx.resize(int((endY-startY)/step.y())+1,0);};
 
 		interpolateExtraWaveValues(waveVals,extraWaveVals);
 		interpolateExtraNormalVectors(wavNormV,extraWavNormV);
 		
 		glDrawSurfaceInterpolated(waveVals,wavNormV,extraWaveVals,extraWavNormV,col);
 	}
-
 }
 
 #endif
