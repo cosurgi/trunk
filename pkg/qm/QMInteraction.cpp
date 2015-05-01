@@ -132,7 +132,7 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 		for(int j=startJ ; j<=endJ ; j++) 
 		{
 			if(i>=0 and i<val.size0(0))
-			if(j>=0 and j<val.size0(0))
+			if(j>=0 and j<val.size0(1))
 
 	// FIXME - 1D only
 			{
