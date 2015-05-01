@@ -201,6 +201,6 @@ bool Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics::go(
 	shared_ptr<IPhys>& iphys, 
 	Interaction* interaction)
 {
-	return true;
+	return true; // always a success. I had a serious bug when this was missing - interactions were deleted.
 }
 
