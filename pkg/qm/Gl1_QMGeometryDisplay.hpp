@@ -39,6 +39,8 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 			, // class description
 			"Renders :yref:`QMGeometryDisplay` object"
 			, // static public attributes
+			((bool,analyticUsesStepOfDiscrete,true,,"Analytic wavefunctions will use the step of last discrete wavefunction plotted."))
+			((bool,analyticUsesScaleOfDiscrete,true,,"Analytic wavefunctions will use the partsScale of last discrete wavefunction plotted."))
 		);
 	private:
 		TimeLimit timeLimit;
@@ -46,6 +48,9 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		
 		//! pointer to what's drawn right now
 		QMGeometryDisplay* g;
+		//! last step of a discrete wavefunction
+		static Vector3r lastDiscreteStep;
+		static Real lastDiscreteScale;
 
 		///! These are drawing functors, to speed up selection of drawing options
 		std::vector< std::function< bool    (                  ) > > partsToDraw;

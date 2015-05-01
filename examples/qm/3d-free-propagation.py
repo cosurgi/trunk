@@ -7,10 +7,6 @@ size_1d   = 15
 halfSize  = [size_1d,size_1d,size_1d]
 size      = [x * 2 for x in halfSize]
 
-Gl1_QMGeometryDisplay().partAbsolute=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partReal=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
 ## - it is compared with the same movement, but calculated analytically
@@ -42,7 +38,13 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9])
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.9,0.9,0.9]
+                                  ,partAbsolute=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                  ,partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                  ,partReal=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                  ,step=[0.4,0.4,0.4]
+                                  ,stepWait=0.5
+                                  ,threshold3D=0.00001)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
@@ -81,12 +83,6 @@ try:
 	qt.controller.setWindowTitle("3D free propagating packet")
 	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
-	#Gl1_QMGeometryDisplay().probability  =False
-	#Gl1_QMGeometryDisplay().partReal     =True
-	#Gl1_QMGeometryDisplay().partImaginary=False
-	Gl1_QMGeometryDisplay().step=[0.3,0.3,0.3]
-	Gl1_QMGeometryDisplay().stepWait=0.5
-        Gl1_QMGeometryDisplay().threshold3D=0.00001
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 

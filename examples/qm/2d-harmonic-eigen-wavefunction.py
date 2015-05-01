@@ -6,13 +6,6 @@ size_1d   = 10
 halfSize  = [size_1d,size_1d*1.5,0.1]
 size      = [x * 2 for x in halfSize]
 
-## scale up the graphics
-Gl1_QMGeometryDisplay().partsScale=10
-Gl1_QMGeometryDisplay().partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-Gl1_QMGeometryDisplay().stepWait=0.5
-
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]
 potentialHalfSize = halfSize
@@ -46,7 +39,11 @@ O.engines=[
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6],partsScale=10
+                                         , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , stepWait=0.5)
 analyticBody.material  = QMParameters()
 harmonicPacket         = HarmonicOscillatorEigenFunction(dim=dimensions,order=[harmonicOrder_x, harmonicOrder_y, 0])
 analyticBody.state     = harmonicPacket
@@ -54,7 +51,11 @@ O.bodies.append(analyticBody)     # do not append, it is used only to create the
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1],partsScale=10
+                                         , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                                         , stepWait=0.5)
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])

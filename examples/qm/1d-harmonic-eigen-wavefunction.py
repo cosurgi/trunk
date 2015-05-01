@@ -42,7 +42,7 @@ O.engines=[
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6],step=[0.03,0.1,0.1])
 analyticBody.material  = QMParameters()
 harmonicPacket         = HarmonicOscillatorEigenFunction(dim=dimensions,order=[harmonicOrder,0,0])
 analyticBody.state     = harmonicPacket

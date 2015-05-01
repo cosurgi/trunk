@@ -4,14 +4,8 @@
 # PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d,size_1d,0.1]
+halfSize  = [size_1d,size_1d*1.2,0.1]
 size      = [x * 2 for x in halfSize]
-
-## scale up the graphics
-Gl1_QMGeometryDisplay().partsScale=10
-#Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-#Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-#Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 
 # wavepacket parameters
 k0_x         = 3
@@ -21,7 +15,7 @@ gaussWidth_y = 2.0
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = [10.0,10.0,1]
+potentialHalfSize = halfSize
 potentialValue    = 0.0
 
 O.engines=[
@@ -41,7 +35,7 @@ O.engines=[
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6],partsScale=10)
 analyticBody.material  = QMParameters()
 gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
@@ -49,10 +43,10 @@ analyticBody.state     = gaussPacket
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1],partsScale=10)
 numericalBody.material  = QMParameters()
 #numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

@@ -23,6 +23,11 @@ YADE_PLUGIN(
 #include <lib/opengl/GLUtils.hpp>
 #include <lib/smoothing/Spline6Interpolate.hpp>
 
+Vector3r Gl1_QMGeometryDisplay::lastDiscreteStep            = Vector3r(-1,-1,-1);
+Real     Gl1_QMGeometryDisplay::lastDiscreteScale           = -1;
+bool     Gl1_QMGeometryDisplay::analyticUsesStepOfDiscrete  = true;
+bool     Gl1_QMGeometryDisplay::analyticUsesScaleOfDiscrete = true;
+
 CREATE_LOGGER(Gl1_QMGeometryDisplay);
 Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
 
@@ -93,6 +98,9 @@ void Gl1_QMGeometryDisplay::go(
 		                    g->step.x()=packetDiscrete->stepInPositionalRepresentation(0);
 		if(packet->dim > 1) g->step.y()=packetDiscrete->stepInPositionalRepresentation(1);
 		if(packet->dim > 2) g->step.z()=packetDiscrete->stepInPositionalRepresentation(2);
+
+		lastDiscreteStep  = g->step;
+		lastDiscreteScale = g->partsScale;
 	
 //OK	std::cerr << startX                   << " " << endX                   << "\n" 
 //OK		  << packetDiscrete->start(0) << " " << packetDiscrete->end(0) << "\n" 
@@ -101,6 +109,9 @@ void Gl1_QMGeometryDisplay::go(
 //OK		  << startZ                   << " " << endZ                   << "\n" 
 //OK		  << packetDiscrete->start(2) << " " << packetDiscrete->end(2) << "\n"; 
 
+	} else { // plotting analytic
+		if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
+		if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
 	}
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
@@ -136,6 +147,7 @@ void Gl1_QMGeometryDisplay::go(
 					// if(points == true) ... else ...
 					// 2D lines
 					if(wire == true or drawStyle[draw]()=="wire") {
+						glNormal3f(0,0,1);
 						glColor3v( colorToDraw[draw](col) );
 						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
 						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓

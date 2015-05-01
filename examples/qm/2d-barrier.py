@@ -7,12 +7,6 @@ size_1d   = 12
 halfSize  = [size_1d,size_1d,0.1]
 size      = [x * 2 for x in halfSize]
 
-## scale up the graphics
-Gl1_QMGeometryDisplay().partsScale=10
-#Gl1_QMGeometryDisplay().partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-#Gl1_QMGeometryDisplay().partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-#Gl1_QMGeometryDisplay().partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-
 # wavepacket parameters
 k0_x       = 2
 k0_y       = 4
@@ -54,7 +48,10 @@ analyticBody.state     = gaussPacket
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1],partsScale=10)
+					# partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+					# partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+					# partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 numericalBody.material  = QMParameters()
 numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7)]*dimensions)
 O.bodies.append(numericalBody)
@@ -86,7 +83,7 @@ O.bodies.append(potentialBody4)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.005
+O.dt=.1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -98,7 +95,6 @@ try:
 	qt.controller.setWindowTitle("2D potential well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometryDisplay().step=[0.2,0.2,0.2]
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 

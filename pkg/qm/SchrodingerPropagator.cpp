@@ -177,7 +177,7 @@ void SchrodingerKosloffPropagator::action()
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 			psi->tableValuesPosition=psi_dt;
-			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << std::abs(ak) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }
