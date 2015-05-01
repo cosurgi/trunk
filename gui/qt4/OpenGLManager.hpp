@@ -41,7 +41,7 @@ class OpenGLManager: public QObject{
 		virtual void closeViewSlot(int id=-1);
 		virtual void timerEvent(QTimerEvent* event);
 		virtual void startTimerSlot();
-		void centerAllViews();
+		void centerAllViews(Real suggestedRadius);
 	private:
 		boost::mutex viewsMutex;
 };

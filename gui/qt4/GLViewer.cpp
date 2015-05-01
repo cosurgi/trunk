@@ -116,7 +116,7 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	setKeyDescription(Qt::Key_9,"Load [Alt: save] view configuration #2");
 	setKeyDescription(Qt::Key_Space,"Center scene (same as Alt-C); clip plane: activate/deactivate");
 
-	centerScene();
+	centerScene(-1);
 }
 
 bool GLViewer::isManipulating(){
@@ -210,7 +210,7 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		// center around selected body
 		if(selectedName() >= 0 && (*(Omega::instance().getScene()->bodies)).exists(selectedName())) setSceneCenter(manipulatedFrame()->position());
 		// make all bodies visible
-		else centerScene();
+		else centerScene(-1);
 	}
 	else if(e->key()==Qt::Key_D &&(e->modifiers() & Qt::AltModifier)){ Body::id_t id; if((id=Omega::instance().getScene()->selectedBody)>=0){ const shared_ptr<Body>& b=Body::byId(id); b->setDynamic(!b->isDynamic()); LOG_INFO("Body #"<<id<<" now "<<(b->isDynamic()?"":"NOT")<<" dynamic"); } }
 	else if(e->key()==Qt::Key_D) {timeDispMask+=1; if(timeDispMask>(TIME_REAL|TIME_VIRT|TIME_ITER))timeDispMask=0; }
@@ -333,7 +333,7 @@ void GLViewer::centerMedianQuartile(){
 	long nBodies=scene->bodies->size();
 	if(nBodies<4) {
 		LOG_DEBUG("Less than 4 bodies, median makes no sense; calling centerScene() instead.");
-		return centerScene();
+		return centerScene(-1);
 	}
 	std::vector<Real> coords[3];
 	for(int i=0;i<3;i++)coords[i].reserve(nBodies);
@@ -353,7 +353,7 @@ void GLViewer::centerMedianQuartile(){
 	showEntireScene();
 }
 
-void GLViewer::centerScene(){
+void GLViewer::centerScene(Real suggestedRadius){
 	Scene* rb=Omega::instance().getScene().get();
 	if (!rb) return;
 	if(rb->isPeriodic){ centerPeriodic(); return; }
@@ -385,7 +385,7 @@ void GLViewer::centerScene(){
 	LOG_DEBUG("Got scene box min="<<min<<" and max="<<max);
 	Vector3r center = (max+min)*0.5;
 	Vector3r halfSize = (max-min)*0.5;
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=1;
+	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=(suggestedRadius>0)?suggestedRadius:1;
 	LOG_DEBUG("Scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	setSceneRadius(radius*3.0);

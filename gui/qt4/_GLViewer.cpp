@@ -36,7 +36,7 @@ class pyGLViewer{
 		void fitAABB(const Vector3r& min, const Vector3r& max){GLV;  glv->camera()->fitBoundingBox(qglviewer::Vec(min[0],min[1],min[2]),qglviewer::Vec(max[0],max[1],max[2]));}
 		void fitSphere(const Vector3r& center,Real radius){GLV;  glv->camera()->fitSphere(qglviewer::Vec(center[0],center[1],center[2]),radius);}
 		void showEntireScene(){GLV;  glv->camera()->showEntireScene();}
-		void center(bool median){GLV;  if(median)glv->centerMedianQuartile(); else glv->centerScene();}
+		void center(bool median,Real suggestedRadius){GLV;  if(median)glv->centerMedianQuartile(); else glv->centerScene(suggestedRadius);}
 		Vector2i get_screenSize(){GLV;  return Vector2i(glv->width(),glv->height());}
 		void set_screenSize(Vector2i t){ /*GLV;*/ OpenGLManager::self->emitResizeView(viewNo,t[0],t[1]);}
 		string pyStr(){return string("<GLViewer for view #")+boost::lexical_cast<string>(viewNo)+">";}
@@ -61,8 +61,20 @@ pyGLViewer createView(){
 	return pyGLViewer((*OpenGLManager::self->views.rbegin())->viewId);
 }
 
-py::list getAllViews(){ py::list ret; FOREACH(const shared_ptr<GLViewer>& v, OpenGLManager::self->views){ if(v) ret.append(pyGLViewer(v->viewId)); } return ret; };
-void centerViews(void){ OpenGLManager::self->centerAllViews(); }
+py::list getAllViews()
+{
+	py::list ret;
+	FOREACH(const shared_ptr<GLViewer>& v, OpenGLManager::self->views)
+	{
+		if(v) ret.append(pyGLViewer(v->viewId));
+	};
+	return ret;
+};
+
+void centerViews(Real suggestedRadius)
+{
+	OpenGLManager::self->centerAllViews(suggestedRadius);
+}
 
 shared_ptr<OpenGLRenderer> getRenderer(){ return OpenGLManager::self->renderer; }
 
@@ -73,7 +85,7 @@ BOOST_PYTHON_MODULE(_GLViewer){
 	glm->emitStartTimer();
 
 	py::def("View",createView,"Create a new 3d view.");
-	py::def("center",centerViews,"Center all views.");
+	py::def("center",centerViews,"center(suggestedRadius) - centers all views with suggestedRadius, which is used only if radius cannot be calculated.");
 	py::def("views",getAllViews,"Return list of all open :yref:`yade.qt.GLViewer` objects");
 	
 	py::def("Renderer",&getRenderer,"Return the active :yref:`OpenGLRenderer` object.");
@@ -95,7 +107,7 @@ BOOST_PYTHON_MODULE(_GLViewer){
 		.def("fitAABB",&pyGLViewer::fitAABB,(py::arg("mn"),py::arg("mx")),"Adjust scene bounds so that Axis-aligned bounding box given by its lower and upper corners *mn*, *mx* fits in.")
 		.def("fitSphere",&pyGLViewer::fitSphere,(py::arg("center"),py::arg("radius")),"Adjust scene bounds so that sphere given by *center* and *radius* fits in.")
 		.def("showEntireScene",&pyGLViewer::showEntireScene)
-		.def("center",&pyGLViewer::center,(py::arg("median")=true),"Center view. View is centered either so that all bodies fit inside (*median* = False), or so that 75\% of bodies fit inside (*median* = True).")
+		.def("center",&pyGLViewer::center,(py::arg("median")=true,py::arg("suggestedRadius")=-1.0f),"Center view. View is centered either so that all bodies fit inside (*median* = False), or so that 75\% of bodies fit inside (*median* = True). If radius cannot be determined automatically then suggestedRadius is used.")
 		.def("saveState",&pyGLViewer::saveState,(py::arg("stateFilename")=".qglviewer.xml"),"Save display parameters into a file. Saves state for both :yref:`GLViewer<yade._qt.GLViewer>` and associated :yref:`OpenGLRenderer`.")
 		.def("loadState",&pyGLViewer::loadState,(py::arg("stateFilename")=".qglviewer.xml"),"Load display parameters from file saved previously into.")
 		.def("__repr__",&pyGLViewer::pyStr).def("__str__",&pyGLViewer::pyStr)
