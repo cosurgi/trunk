@@ -510,6 +510,7 @@ class SerializableEditor(QFrame):
 				logging.debug("Got type %s from cxx type %s"%(repr(ret),cxxT))
 				if (ret == str) and (len(val)>0) and (val[0][:7]=="default"): return DropDownMenuFakeType
 				return (ret,)
+		if(cxxT == "Menu"): return DropDownMenuFakeType
 		logging.error("Unable to guess python type from cxx type '%s'"%cxxT)
 		return None
 	def mkAttrEntries(self):
