@@ -54,7 +54,9 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	
 	const Se3r& se31=state1.se3; const Se3r& se32=state2.se3;
 
-	// FIXME,FIXME - weird method of getting state1 ← needed for getting the FFT grid size
+std::cerr << "Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
+// FIXME,FIXME - weird method of getting state1 ← needed for getting the FFT grid size
+// FIXME,FIXME - and stupid, I have state1 and state2 !!! why didn't I use it???
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[c->id2]->state.get());
 	QMStateBarrier * pot=dynamic_cast<QMStateBarrier *>((*(scene->bodies))[c->id1]->state.get());
 

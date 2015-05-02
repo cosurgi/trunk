@@ -41,7 +41,7 @@ class QMParameters: public Material
 			supposed to be shared between various different instances of particles, thus\
 			it will make sense to create material for a fundamental particle\n\
 			\n\
-			But how does this apply to the simples Schrodinger wavepacket?\n\
+			But how does this apply to the simple Schrodinger wavepacket?\n\
 			\n\
 			Maybe eg. fermions and bosons will derive from this class too."
 			, // attributes, public variables
