@@ -5,6 +5,7 @@
 #include <functional>
 #include <pkg/common/GLDrawFunctors.hpp>
 #include "QMGeometryDisplay.hpp"
+#include "QMStateDiscrete.hpp"
 #include <lib/time/TimeLimit.hpp>
 #include <lib/computational-geometry/MarchingCube.hpp>
 #include <py/wrapper/Menu.hpp>
@@ -48,6 +49,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		
 		//! pointer to what's drawn right now
 		QMGeometryDisplay* g;
+		QMStateDiscrete*   pd;
 		//! last step of a discrete wavefunction
 		static Vector3r lastDiscreteStep;
 		static Real lastDiscreteScale;
@@ -58,10 +60,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		std::vector< std::function< Real    (std::complex<Real>) > > valueToDraw;
 		std::vector< std::function< Vector3r(Vector3r          ) > > colorToDraw;
 
-
-		// FIXME - after redundancy is removed, this should be removed too
-		Real startX,startY,startZ,endX,endY,endZ;
-
+		Vector3r start;
 		// FIXME(2) - when storage problems are resolved, remove this
 		std::vector<std::vector<Real> >                              waveValues2D;
 		std::vector<std::vector<std::vector<Real> > >                waveValues3D;

@@ -16,38 +16,45 @@ CREATE_LOGGER(QMStateDiscrete);
 // !! at least one virtual function in the .cpp file
 QMStateDiscrete::~QMStateDiscrete(){};
 
-void QMStateDiscrete::postLoad(QMStateDiscrete&)
-{
-	std::cerr<<"\nQMStateDiscrete postLoad\n";
-	std::cerr<<"firstRun="<<firstRun<<"\n";
-	if(firstRun) { // initialize from creator upon firstRun
-	firstRun = false;
+void QMStateDiscrete::calculateTableValuesPosition(QMStateAnalytic* localCreator)
+{// initialize from localCreator
 	if(this->dim == 1) {
-		if (gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete::postLoad(), should be dimension 1\n");
+		if (gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete: should be dimension 1\n");
 		tableValuesPosition.resize(gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<gridSize[0] ; i++)
-			tableValuesPosition.at(i) = creator->getValPos(Vector3r(iToX(i,0),0,0));
+			tableValuesPosition.at(i) = localCreator->getValPos(Vector3r(iToX(i,0),0,0));
 	} else if(this->dim == 2) {
-		if (gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete::postLoad(), should be dimension 2\n");
+		if (gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete: should be dimension 2\n");
 		tableValuesPosition.resize(gridSize,5);  // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<gridSize[0] ; i++)
 		for(size_t j=0 ; j<gridSize[1] ; j++)
-			tableValuesPosition.at    ( i,j ) = creator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
+			tableValuesPosition.at    ( i,j ) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
 		//OK - that was just to be safe
-		//	tableValuesPosition.atSafe({i,j}) = creator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
+		//	tableValuesPosition.atSafe({i,j}) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0));
 	} else if(this->dim == 3) {
-		if (gridSize.size() != 3) throw std::out_of_range("QMStateDiscrete::postLoad(), should be dimension 3\n");
+		if (gridSize.size() != 3) throw std::out_of_range("QMStateDiscrete: should be dimension 3\n");
 		tableValuesPosition.resize(gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<gridSize[0] ; i++)
 		for(size_t j=0 ; j<gridSize[1] ; j++)
 		for(size_t k=0 ; k<gridSize[2] ; k++)
-			tableValuesPosition.at    ( i,j,k ) = creator->getValPos(Vector3r(iToX(i,0),iToX(j,1),iToX(k,2)));
+			tableValuesPosition.at    ( i,j,k ) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),iToX(k,2)));
 	} else {
-		throw std::runtime_error("QMStateDiscrete() supports in 1,2 or 3 dimensions.");
+		throw std::runtime_error("QMStateDiscrete() supports only 1,2 or 3 dimensions, so far.");
 	}
-	} else { // not a firstRun, we have been just loaded from file
+};
+
+void QMStateDiscrete::postLoad(QMStateDiscrete&)
+{
+	std::cerr<<"\nQMStateDiscrete postLoad\n";
+	std::cerr<<"firstRun="<<firstRun<<"\n";
+	if(firstRun)
+	{
+		firstRun = false;
+		calculateTableValuesPosition(creator.get());
+	} else {// not a firstRun, we have been just loaded from file
+		// FIXME - NDimTable is nor serialized !!! loading doesn't work
+		std::cerr << "QMStateDiscrete::postLoad ← loading from file isn't implemented yet!\n";
 	};
-	//////////////FIXME qtHide="nowyKontener"; albo może nawet poprawić qtHide w klasie macierzystej, co za różnica(?) E, chyba lepiej tu, żeby było widać, że tu.
 };
 
 /// return complex quantum aplitude at given positional representation coordinates

@@ -77,6 +77,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real start(int d) { return (-size[d]*0.5+pos[d]);};
 		Real end  (int d) { return ( size[d]*0.5+pos[d]);};
 
+		void calculateTableValuesPosition(QMStateAnalytic* localCreator);
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 
 	private:

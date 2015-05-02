@@ -76,50 +76,39 @@ void Gl1_QMGeometryDisplay::go(
 	timeLimit.readWallClock();
 
 // FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that?
+// Answer: add -Wshadow to gcc options
 	g = static_cast<QMGeometryDisplay*>(shape.get());
 	if(menuSelection(g->partAbsolute)=="hidden" and menuSelection(g->partReal)=="hidden" and menuSelection(g->partImaginary)=="hidden") return; // nothing to draw
 
-// FIXME - careful! use different names than class members!!!
-	QMState*           packet         = static_cast<QMState*>(state.get());
-	QMStateDiscrete*   packetDiscrete = dynamic_cast<QMStateDiscrete*>(state.get());
-	Vector3r col = g->color;
-	
-// find extents to render
-// FIXME(2) maybe move that into some renderConfig class, with default values in O.body[#].shape and override in this class.
-	startX= -g->halfSize[0]; // + pos[0] ← FIXME
-	endX  =  g->halfSize[0]; // + pos[0] ← FIXME
-	startY= -g->halfSize[1]; // + pos[1] ← FIXME
-	endY  =  g->halfSize[1]; // + pos[1] ← FIXME
-	startZ= -g->halfSize[2]; // + pos[2] ← FIXME
-	endZ  =  g->halfSize[2]; // + pos[2] ← FIXME
-
-// FIXME(2) - allow to set some step in renderConfig for QMStateAnalytic in O.body.shape
-	if(packetDiscrete) {
-		                    g->step.x()=packetDiscrete->stepInPositionalRepresentation(0);
-		if(packet->dim > 1) g->step.y()=packetDiscrete->stepInPositionalRepresentation(1);
-		if(packet->dim > 2) g->step.z()=packetDiscrete->stepInPositionalRepresentation(2);
-
-		lastDiscreteStep  = g->step;
-		lastDiscreteScale = g->partsScale;
-	
-//OK	std::cerr << startX                   << " " << endX                   << "\n" 
-//OK		  << packetDiscrete->start(0) << " " << packetDiscrete->end(0) << "\n" 
-//OK	          << startY                   << " " << endY                   << "\n" 
-//OK		  << packetDiscrete->start(1) << " " << packetDiscrete->end(1) << "\n" 
-//OK		  << startZ                   << " " << endZ                   << "\n" 
-//OK		  << packetDiscrete->start(2) << " " << packetDiscrete->end(2) << "\n"; 
-
-	} else { // plotting analytic
-		if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
-		if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
+	pd = dynamic_cast<QMStateDiscrete*>(state.get());
+	if(not pd) {
+		QMStateAnalytic*   packetAnalytic = dynamic_cast<QMStateAnalytic*>(state.get());
+		if(packetAnalytic)
+		{
+			if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
+			if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
+			pd = packetAnalytic->prepareReturnStateDiscreteOptimised(g).get();
+		}
+	};
+	if (not pd) {
+		if(timeLimit.messageAllowed(5)) std::cerr << "ERROR: Cannot get QMStateDiscrete\n";
+		return;
 	}
+	Vector3r col = g->color;
+	start=Vector3r(0,0,0);
+	Vector3r end(0,0,0);
+	if(pd->dim > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0); } else { return; }
+	if(pd->dim > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1); }
+	if(pd->dim > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2); }
+	lastDiscreteStep  = g->step;
+	lastDiscreteScale = g->partsScale;
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
 	Real scalingFactor = (g->partsScale >= 0 ? ((g->partsScale==0)?(1):(g->partsScale)) : -1.0/g->partsScale);
 	for(size_t draw=0 ; draw<partsToDraw.size() ; draw++) {
 		if( partsToDraw[draw]() ) {
-			switch(packet->dim) {
+			switch(pd->dim) {
 				// FIXME(2) - add following
 				// 1D phase  , 2D phase  , 3D phase
 				// 1D argand , 2D argand , 3D Dirac-Argand
@@ -134,8 +123,8 @@ void Gl1_QMGeometryDisplay::go(
 					if(drawStyle[draw]()!="points") {
 						if(drawStyle[draw]()=="nodes") glBegin(GL_POINTS); else glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
-						for(Real x=startX ; x<endX ; x+=g->step.x() ) {
-							glVertex3d(x,0,valueToDraw[draw] ((packet->getValPos(Vector3r(x,0,0)))) *scalingFactor);
+						for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++ , _.x+=g->step.x() ) {
+							glVertex3d(_.x,0,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i))) *scalingFactor);
 						}
 						glEnd();
 					} // else "points"
@@ -149,40 +138,30 @@ void Gl1_QMGeometryDisplay::go(
 					if(wire == true or drawStyle[draw]()=="wire") {
 						glNormal3f(0,0,1);
 						glColor3v( colorToDraw[draw](col) );
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x()/*,i++ */ ) {
+						for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y()/*,j++*/ ) {
-								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
+							for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
+								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(g->stepWait)) break;
 						}
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y() ) {
+						for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
 							glBegin(GL_LINE_STRIP);
-							for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x() ) {
-								glVertex3d(x,y,valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0)))) *scalingFactor);
+							for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
+								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(g->stepWait)) break;
 						}
-						// FIXME - drawing wires is slower than drawSurface. Better to prepare data for wires, then call drawWires()
 					} else {
 					// 2D surface
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						waveValues2D.resize(int((endX-startX)/g->step.x()));
-						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(int((endY-startY)/g->step.y()),0);};
-						int i=0;
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						for(Real x=startX ; x< (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ ) {
-							int j=0;
-							for(Real y=startY ; y< (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ ) {
-								waveValues2D[i][j]=valueToDraw[draw] ((packet->getValPos(Vector3r(x,y,0))))*scalingFactor;
+						// FIXME!! ↓ is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
+						waveValues2D.resize(pd->gridSize[0]);
+						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(pd->gridSize[1]);};
+						for(size_t i=0 ; i<pd->gridSize[0] ; i++ ) {
+							for(size_t j=0 ; j<pd->gridSize[1] ; j++ ) {
+								waveValues2D[i][j]=valueToDraw[draw] ((pd->tableValuesPosition.at(i,j))) *scalingFactor;
 							}
 							if(timeLimit.tooLong(g->stepWait)) break;
 						}
@@ -197,35 +176,19 @@ void Gl1_QMGeometryDisplay::go(
 					// 3D lines
 					// 3D surface
 					if(true /* points == false */) {
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						int gridSizex=int((endX-startX)/g->step.x());
-						int gridSizey=int((endY-startY)/g->step.y());
-						int gridSizez=int((endZ-startZ)/g->step.z());
-						// FIXME(2) - reconsider if doing [draw] loop outside this if() slows things down - more reinitialization of mc 
-						// FIXME(3) -                     ↓ +pos[0]                    ↓ +pos[1]                    ↓ + pos[2]
-						Vector3r minMC(startX+g->step.x()*0.5         ,startY+g->step.y()*0.5         ,startZ+g->step.z()*0.5          );
-						Vector3r maxMC(endX  +g->step.x()*0.5         ,endY  +g->step.y()*0.5         ,endZ  +g->step.z()*0.5          );
-						mc.init(gridSizex,gridSizey,gridSizez,minMC,maxMC);
+						// FIXME!! ↓ is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
+						Vector3r minMC(start.x()+g->step.x()*0.5,start.y()+g->step.y()*0.5,start.z()+g->step.z()*0.5);
+						Vector3r maxMC(end.x()  +g->step.x()*0.5,end.y()  +g->step.y()*0.5,end.z()  +g->step.z()*0.5);
+						mc.init(pd->gridSize[0],pd->gridSize[1],pd->gridSize[2],minMC,maxMC);
 						// about waveValues3D FIXME(2) - resolve storage problems
-						mc.resizeScalarField(waveValues3D,gridSizex,gridSizey,gridSizez);
-
-						// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-						// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-						int i=0;
-						for(Real x=startX ; x < (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ ) {
-							int j=0;
-							for(Real y=startY ; y < (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ ) {
-								int k=0;
-								for(Real z=startZ ; z < (endZ - g->step.z()*0.5) ; z+=g->step.z(),k++ ) {
-									// FIXME(2) - to jest kopiowanie!
-									// owszem - bez FFTW3 takie coś musi zostać, ale
-									// z nowymi kontenerami muszę móc to ominąć
-									// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
-//// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem with endXYZ - it draws one element too much!! (outside table bounds)
-									
-									// FIXME - here's crash sometimes when step is changed "live" in inspect window
-									waveValues3D[i][j][k]=valueToDraw[draw] (packet->getValPos(Vector3r(x,y,z)));
+						mc.resizeScalarField(waveValues3D,pd->gridSize[0],pd->gridSize[1],pd->gridSize[2]);
+						for(size_t i=0 ; i<pd->gridSize[0] ; i++ ) {
+							for(size_t j=0 ; j<pd->gridSize[1] ; j++ ) {
+								for(size_t k=0 ; k<pd->gridSize[2] ; k++ ) {
+//// FIXME(1) - is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
+//// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
+//// FIXME - here's crash sometimes when step is changed "live" in inspect window
+									waveValues3D[i][j][k]=valueToDraw[draw] (pd->tableValuesPosition.at(i,j,k));
 								}
 							}
 							if(timeLimit.tooLong(g->stepWait)) break;
@@ -287,11 +250,6 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	std::vector<std::vector<Vector3r> >& wavNormV    // normal vectors necessary for propoer OpenGL rendering of the faces
 )
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	int lenX=wavNormV.size();
-	int lenY=wavNormV[0].size();
-	//FIXME - end
-
 	// Now I have waveVals[i][j] filled with values to plot. So calculate all normals. First normals for triangles
 	//      *        1                                                     
 	//    / |1\    / | \     wavNormV[i][j] stores normal for vertex[i][j] averaged from all 4 neigbour normals (except for edges)
@@ -300,20 +258,13 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	//      *        3    
 	Vector3r p0(0,0,0),p1(0,0,0),p2(0,0,0),p3(0,0,0),p4(0,0,0);
 	Vector3r           n1(0,0,0),n2(0,0,0),n3(0,0,0),n4(0,0,0);
-
-	// FIXME!! ↓ to jest s założenia źle, bo albo rysuję dyskretną albo analitycznyą. 
-	// FIXME!! ↓ Nie mogę tak wyznaczać rozmiaru ↓
-	int i=0;
-	for(Real x=startX ; x < (endX - g->step.x()*0.5) ; x+=g->step.x(),i++ )
-	{
-		int j=0;
-		for(Real y=startY ; y < (endY - g->step.y()*0.5) ; y+=g->step.y(),j++ )
-		{
-			                p0=Vector3r(x            ,y            ,waveVals[i  ][j  ]);
-			if((j+1)<lenY){ p1=Vector3r(x            ,y+g->step.y(),waveVals[i  ][j+1]);} else{ p1=p0;};
-			if((i+1)<lenX){ p2=Vector3r(x+g->step.x(),y            ,waveVals[i+1][j  ]);} else{ p2=p0;};
-			if((j-1)>=0  ){ p3=Vector3r(x            ,y-g->step.y(),waveVals[i  ][j-1]);} else{ p3=p0;};
-			if((i-1)>=0  ){ p4=Vector3r(x-g->step.x(),y            ,waveVals[i-1][j  ]);} else{ p4=p0;};
+	for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
+		for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
+			                              p0=Vector3r( _.x            ,__.y            ,waveVals[ _.i  ][__.j  ]);
+			if((__.j+1)<pd->gridSize[1]){ p1=Vector3r( _.x            ,__.y+g->step.y(),waveVals[ _.i  ][__.j+1]);} else{ p1=p0;};
+			if(( _.i+1)<pd->gridSize[0]){ p2=Vector3r( _.x+g->step.x(),__.y            ,waveVals[ _.i+1][__.j  ]);} else{ p2=p0;};
+			if((__.j  )>=1             ){ p3=Vector3r( _.x            ,__.y-g->step.y(),waveVals[ _.i  ][__.j-1]);} else{ p3=p0;};
+			if(( _.i  )>=1             ){ p4=Vector3r( _.x-g->step.x(),__.y            ,waveVals[ _.i-1][__.j  ]);} else{ p4=p0;};
 			n1 = (p2-p0).cross(p1-p0);
 			n2 = (p3-p0).cross(p2-p0);
 			n3 = (p4-p0).cross(p3-p0);
@@ -323,7 +274,7 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 			if(n2.squaredNorm()>0) { n2.normalize(); count++;};
 			if(n3.squaredNorm()>0) { n3.normalize(); count++;};
 			if(n4.squaredNorm()>0) { n4.normalize(); count++;};
-			wavNormV[i][j] = Vector3r(n1+n2+n3+n4)/(1.0*count);
+			wavNormV[ _.i][__.j] = Vector3r(n1+n2+n3+n4)/(1.0*count);
 		}
 	}
 }
@@ -356,11 +307,6 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	Vector3r col                                          // color in which to draw the surface
 )
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	int lenX=wavNormV.size();
-	int lenY=wavNormV[0].size();
-	//FIXME - end
-
 	// now draw surface
 	prepareGlSurfaceMaterial();
 
@@ -369,34 +315,30 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	//draw front
 	glCullFace(GL_BACK);
 	glColor3v(col);
-	for(int i=0 ; i<lenX-1 ; i++ )
-	{
-		Real x=startX+i*g->step.x();
+	for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0]-1 ; _.i++, _.x+=g->step.x() ) {
 		glBegin(GL_TRIANGLE_STRIP);
-		for(int j=0 ; j<lenY ; j++ )
-		{
-			Real y=startY+j*g->step.y();
-			glNormal3v(                wavNormV[i  ][j]);
-			glVertex3f(x            ,y,waveVals[i  ][j]);
-			glNormal3v(                wavNormV[i+1][j]);
-			glVertex3f(x+g->step.x(),y,waveVals[i+1][j]);
+		for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
+			glNormal3v(                      wavNormV[ _.i  ][__.j]);
+			glVertex3f( _.x            ,__.y,waveVals[ _.i  ][__.j]);
+			glNormal3v(                      wavNormV[ _.i+1][__.j]);
+			glVertex3f( _.x+g->step.x(),__.y,waveVals[ _.i+1][__.j]);
 		}
 		glEnd();
 	}
 	//********************* draw back side of this surface
 	//glCullFace(GL_BACK); // unnecessary
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
-	for(int i=0 ; i<lenX-1 ; i++ )
-	{
-		Real x=startX+i*g->step.x();
+	for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0]-1 ; _.i++, _.x+=g->step.x() ) {
 		glBegin(GL_TRIANGLE_STRIP);
-		for(int j=lenY-1 ; j>=0 ; j-- )
-		{
-			Real y=startY+j*g->step.y();
-			glNormal3v(                wavNormV[i  ][j]);
-			glVertex3f(x            ,y,waveVals[i  ][j]);
-			glNormal3v(                wavNormV[i+1][j]);
-			glVertex3f(x+g->step.x(),y,waveVals[i+1][j]);
+		// NOTE: this j goes downwards - size_t is unsigned, so I must not use j>=0 condition, because j rolls to +∞ after j--
+		// FIXME - is that an example of when not to use `size_t` type ? I had to declare extra `size_t jj(__.j-1);` below, to solve this
+		// and I had to start counting from `pd->gridSize[1]`, while I should start from `pd->gridSize[1]-1`
+		for(struct{size_t j;Real y;}__={pd->gridSize[1],start.y()+g->step.y()*(pd->gridSize[1]-1)} ; __.j>0 ; __.j--, __.y-=g->step.y() ) {
+			size_t jj(__.j-1);
+			glNormal3v(                      wavNormV[ _.i  ][  jj  ]);
+			glVertex3f( _.x            ,__.y,waveVals[ _.i  ][  jj  ]);
+			glNormal3v(                      wavNormV[ _.i+1][  jj  ]);
+			glVertex3f( _.x+g->step.x(),__.y,waveVals[ _.i+1][  jj  ]);
 		}
 		glEnd();
 	}
@@ -417,11 +359,7 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	Real stepy2 = g->step.y()*0.5;
 	Real stepy3 = g->step.y()*1.5;
 	Real stepy4 = g->step.y()*2.0;
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	int lenX=wavNormV.size();
-	int lenY=wavNormV[0].size();
-	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
-	//FIXME - end
+	const size_t CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
 
 	// now draw surface
 	prepareGlSurfaceMaterial();
@@ -438,13 +376,13 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 // x | ⋰ ⋱ | / \ |
 // ↑ 1  ?  5 ...(7)
 // +→y,j
-	for(int i=CHOSEN_RANGE/2 ; i<(lenX-1-CHOSEN_RANGE/2) ; i++ ) // skip margin CHOSEN_RANGE/2 where interpolation was impossible
+	for(size_t i=CHOSEN_RANGE/2 ; i<(pd->gridSize[0]-1-CHOSEN_RANGE/2) ; i++ ) // skip margin CHOSEN_RANGE/2 where interpolation was impossible
 	{
-		Real x=startX+i*stepx;
+		Real x=start.x()+i*stepx;
 		glBegin(GL_TRIANGLE_STRIP);
-		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
+		for(size_t j=CHOSEN_RANGE/2 ; j<(pd->gridSize[1]-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
 		{
-			Real y=startY+j*stepy;
+			Real y=start.y()+j*stepy;
 			glNormal3v(                       wavNormV[i  ][j  ]); // 1
 			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
 			glNormal3v(                       wavNormV[i+1][j  ]); // 2
@@ -457,7 +395,7 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 			glVertex3f(x       ,y+stepy ,     waveVals[i  ][j+1]); // 5
 			glNormal3v(                  extraWavNormV[i  ][j+1]); // 6
 			glVertex3f(x+stepx2,y+stepy3,extraWaveVals[i  ][j+1]); // 6
-			if((j+2)>=(lenY-CHOSEN_RANGE/2-2)) { // near the end draw the (7) and (8)
+			if((j+2)>=(pd->gridSize[1]-CHOSEN_RANGE/2-2)) { // near the end draw the (7) and (8)
 			glNormal3v(                       wavNormV[i  ][j+2]); // 7
 			glVertex3f(x       ,y+stepy4,     waveVals[i  ][j+2]); // 7
 			glNormal3v(                       wavNormV[i+1][j+2]); // 8
@@ -467,9 +405,9 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 		glEnd();
 // now draw triangles marked with "?"
 		glBegin(GL_TRIANGLES);
-		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
+		for(size_t j=CHOSEN_RANGE/2 ; j<(pd->gridSize[1]-CHOSEN_RANGE/2-2) ; j+=2 /* must draw two quadrants at a time */ )
 		{
-			Real y=startY+j*stepy;
+			Real y=start.y()+j*stepy;
 			glNormal3v(                       wavNormV[i  ][j  ]); // 1
 			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
 			glNormal3v(                  extraWavNormV[i  ][j  ]); // 3
@@ -489,13 +427,13 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	//********************* draw back side of this surface
 	//glCullFace(GL_BACK); // unnecessary
 	glColor3v(Vector3r(col.cwiseProduct(Vector3r(0.5,0.5,0.5)))); // back has darker colors
-	for(int i=CHOSEN_RANGE/2 ; i<(lenX-1-CHOSEN_RANGE/2) ; i++ )
+	for(size_t i=CHOSEN_RANGE/2 ; i<(pd->gridSize[0]-1-CHOSEN_RANGE/2) ; i++ )
 	{
-		Real x=startX+i*stepx;
+		Real x=start.x()+i*stepx;
 		glBegin(GL_TRIANGLE_STRIP);
-		for(int j=(lenY-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
+		for(size_t j=(pd->gridSize[1]-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
 		{
-			Real y=startY+j*stepy;
+			Real y=start.y()+j*stepy;
 			glNormal3v(                       wavNormV[i  ][j  ]); // 1
 			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
 			glNormal3v(                       wavNormV[i+1][j  ]); // 2
@@ -518,9 +456,9 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 		glEnd();
 // now draw triangles marked with "?"
 		glBegin(GL_TRIANGLES);
-		for(int j=(lenY-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
+		for(size_t j=(pd->gridSize[1]-CHOSEN_RANGE/2-1/*3*/) ; j>CHOSEN_RANGE/2 ; j-=2 )
 		{
-			Real y=startY+j*stepy;
+			Real y=start.y()+j*stepy;
 			glNormal3v(                       wavNormV[i  ][j  ]); // 1
 			glVertex3f(x       ,y       ,     waveVals[i  ][j  ]); // 1
 			glNormal3v(                  extraWavNormV[i  ][j-1]); // 3
@@ -545,15 +483,11 @@ void Gl1_QMGeometryDisplay::interpolateExtraWaveValues(
 	std::vector<std::vector<Real> >& extraWaveVals  // a 2D matrix shifted by +0.5,+0.5 from the previous one.
 )
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
-	int lenX=waveVals.size();
-	int lenY=waveVals[0].size();
-	// FIXME - end
+	const size_t CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
 
-	for(int i=CHOSEN_RANGE/2 ; i<(lenX-CHOSEN_RANGE/2) ; i++ ) // skip borders of width CHOSEN_RANGE/2 - cannot interpolate there
+	for(size_t i=CHOSEN_RANGE/2 ; i<(pd->gridSize[0]-CHOSEN_RANGE/2) ; i++ ) // skip borders of width CHOSEN_RANGE/2 - cannot interpolate there
 	{
-		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2) ; j++ )
+		for(size_t j=CHOSEN_RANGE/2 ; j<(pd->gridSize[1]-CHOSEN_RANGE/2) ; j++ )
 		{
 			extraWaveVals[i][j]=spline6InterpolatePoint2D<Real,Real>(waveVals,i+0.5,j+0.5);
 		}
@@ -565,15 +499,11 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 	std::vector<std::vector<Vector3r> >& extraWavNormV  // a 2D matrix shifted by +0.5,+0.5 from the previous one
 )
 {
-	//FIXME - get ranges from AABB or if not present - let user set them, and use some default.
-	const int CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
-	int lenX=wavNormV.size();
-	int lenY=wavNormV[0].size();
-	// FIXME - end
+	const size_t CHOSEN_RANGE=6; // FIXME - add option to select between sinc256 and spline36
 
-	for(int i=CHOSEN_RANGE/2 ; i<(lenX-CHOSEN_RANGE/2) ; i++ ) // skip borders of width CHOSEN_RANGE/2 - cannot interpolate there
+	for(size_t i=CHOSEN_RANGE/2 ; i<(pd->gridSize[0]-CHOSEN_RANGE/2) ; i++ ) // skip borders of width CHOSEN_RANGE/2 - cannot interpolate there
 	{
-		for(int j=CHOSEN_RANGE/2 ; j<(lenY-CHOSEN_RANGE/2) ; j++ )
+		for(size_t j=CHOSEN_RANGE/2 ; j<(pd->gridSize[1]-CHOSEN_RANGE/2) ; j++ )
 		{
 			extraWavNormV[i][j]=spline6InterpolatePoint2D<Vector3r,Real>(wavNormV,i+0.5,j+0.5);
 		}
@@ -582,7 +512,7 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 
 void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
-	std::vector<std::vector<Vector3r> > wavNormV(/*size=*/waveVals.size(),/*init=*/std::vector<Vector3r>(waveVals[0].size()));
+	std::vector<std::vector<Vector3r> > wavNormV(/*size=*/pd->gridSize[0],/*init=*/std::vector<Vector3r>(pd->gridSize[1]));
 	calcNormalVectors(waveVals,wavNormV);
 	if(not g->renderInterpolate)
 	{

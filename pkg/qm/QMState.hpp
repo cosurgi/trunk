@@ -21,10 +21,10 @@ class QMState: public State
 	public:
 		virtual Complexr getValPos(Vector3r xyz){throw;};    /// return complex quantum aplitude at given positional representation coordinates
 //		virtual Complexr getValInv(Vector3r xyz){};          /// return complex quantum aplitude at given wavenumber representation coordinates
-		virtual Complexr getValIJKPos(Vector3i ijk){throw;}; /// return complex quantum aplitude at given positional grid coordinates
+//		virtual Complexr getValIJKPos(Vector3i ijk){throw;}; /// return complex quantum aplitude at given positional grid coordinates
 //		virtual Complexr getValIJKInv(Vector3i ijk){};       /// return complex quantum aplitude at given wavenumber grid coordinates
-		virtual int      getDim(){ return dim;};             /// return number of dimensions
-		virtual Vector3r getExtentsIJK(){throw;};            /// return grid size
+//		virtual int      getDim(){ return dim;};             /// return number of dimensions
+//		virtual Vector3r getExtentsIJK(){throw;};            /// return grid size
 
 //////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// FIXME - only this one has a nice name, and is actually implemented, fix the others.
@@ -50,7 +50,7 @@ class QMState: public State
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
 			Yes, even mass must be removed, although it is back in few of derived classes."))
-			((int     ,dim     ,,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
+			((size_t     ,dim     ,,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
 			createIndex();
 			, // python bindings

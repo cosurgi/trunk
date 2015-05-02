@@ -19,6 +19,8 @@
  *  To allow propagation in time of these analytical solutions, the only universal attribute is current local time t
  *  (FIXME: currently nonrelativistic approach only).
  */
+class QMStateDiscrete;
+class QMGeometryDisplay;
 class QMStateAnalytic: public QMState
 {
 	public:
@@ -37,9 +39,16 @@ analytic solutions to various cases."
 			((Real,t,0,,"Current local time in this packet $t=0$, FIXME: nonrelativistic approach."))
 			, // constructor
 			createIndex();
+			lastOptimisationIter=-1;
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
+
+		boost::shared_ptr<QMStateDiscrete>& prepareReturnStateDiscreteOptimised(QMGeometryDisplay*);
+	private:
+		boost::shared_ptr<QMStateDiscrete> stateDiscreteOptimised;
+		long lastOptimisationIter;
+
 };
 REGISTER_SERIALIZABLE(QMStateAnalytic);
 
