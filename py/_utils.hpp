@@ -25,7 +25,6 @@ Real PWaveTimeStep();
 Real RayleighWaveTimeStep();
 
 py::tuple interactionAnglesHistogram(int axis, int mask=0, size_t bins=20, py::tuple aabb=py::tuple(), bool sphSph=0, Real minProjLen=1e-6);
-// BOOST_PYTHON_FUNCTION_OVERLOADS(interactionAnglesHistogram_overloads,interactionAnglesHistogram,1,5); // >>>>>>> Preparing for merge with upstream
 
 py::tuple bodyNumInteractionsHistogram(py::tuple aabb=py::tuple());
 
