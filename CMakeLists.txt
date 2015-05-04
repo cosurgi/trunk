@@ -549,8 +549,6 @@ ELSE(ENABLE_POTENTIAL_BLOCKS)
 ENDIF(ENABLE_POTENTIAL_BLOCKS)  
 #===========================================================
 
-
-
 IF (INSTALL_PREFIX)
   SET(CMAKE_INSTALL_PREFIX ${INSTALL_PREFIX})
   MESSAGE(WARNING "Use CMAKE_INSTALL_PREFIX option instead of INSTALL_PREFIX! It will be removed soon.")
