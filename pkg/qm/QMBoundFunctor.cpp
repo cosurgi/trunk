@@ -1,6 +1,6 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
  
-#include "Bo1_QM_Aabb.hpp"
+#include "QMBoundFunctor.hpp"
 
 YADE_PLUGIN((Bo1_QMGeometry_Aabb));
 

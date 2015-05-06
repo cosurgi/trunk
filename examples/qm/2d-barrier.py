@@ -26,11 +26,11 @@ potentialValue    = 100.0
 O.engines=[
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
-		Bo1_QMGeometryDisplay_Aabb(),
+		Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-		[Ig2_Box_QMGeometryDisplay_QMInteractionGeometry()],
+		[Ig2_Box_QMGeometry_QMInteractionGeometry()],
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
 		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
@@ -40,7 +40,7 @@ O.engines=[
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
 gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
@@ -48,7 +48,7 @@ analyticBody.state     = gaussPacket
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometryDisplay(halfSize=halfSize,color=[1,1,1],partsScale=10)
+numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1],partsScale=10)
 					# partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 					# partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 					# partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
