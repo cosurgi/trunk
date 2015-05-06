@@ -2,7 +2,7 @@
 
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscrete.hpp"
-#include "QMGeometryDisplay.hpp"
+#include "QMGeometry.hpp"
 #include <core/Omega.hpp>
 
 YADE_PLUGIN(
@@ -20,7 +20,7 @@ CREATE_LOGGER(QMStateAnalytic);
 // !! at least one virtual function in the .cpp file
 QMStateAnalytic::~QMStateAnalytic(){};
 
-boost::shared_ptr<QMStateDiscrete>& QMStateAnalytic::prepareReturnStateDiscreteOptimised(QMGeometryDisplay* qmg)
+boost::shared_ptr<QMStateDiscrete>& QMStateAnalytic::prepareReturnStateDiscreteOptimised(QMGeometry* qmg)
 {
 	if(dim > 3) {
 		std::cerr << "ERROR: QMStateAnalytic::prepareReturnStateDiscreteOptimised does not work with dim > 3\n";

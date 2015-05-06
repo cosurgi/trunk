@@ -6,7 +6,7 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
-// FIXME - Kosloff method benefits from higher precision, check 
+// FIXME - Kosloff method benefits a lot if higher precision numbers are used, check
 //   #include <boost/multiprecision/cpp_dec_float.hpp>
 //   and http://www.boost.org/doc/libs/1_54_0/libs/math/example/bessel_zeros_example_1.cpp
 #include <boost/math/special_functions/bessel.hpp>
@@ -77,7 +77,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		Real calcKosloffG(Real dt) { return dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
 		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
-		void calcPsiPlus_1(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
+		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
@@ -86,8 +86,8 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 			GlobalEngine
 			, // class description
 "Engine that propagates wavefunctions according to the time evolution operator of \
-Schrödinger equation. The solution to Shrödinger equation  ℍ̂ψ=iℏψ̇ uses the time evolution \
-operator  Û=exp(-iℍ̂t/ℏ), and is following: ψ=Ûψ. The wavefunction ψ is evolving in time and \
+Schrödinger equation. The solution to Shrödinger equation  ℍ̂ψ=iħψ̇ uses the time evolution \
+operator  Û=exp(-iℍ̂t/ħ), and is following: ψ=Ûψ. The wavefunction ψ is evolving in time and \
 here in SchrodingerKosloffPropagator it is calculated using Tal-Ezer and Kosloff approach \
 found in [TalEzer1984]_"
 			, // attributes, public variables

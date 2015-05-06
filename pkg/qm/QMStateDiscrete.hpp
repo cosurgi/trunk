@@ -19,7 +19,7 @@
 
 /*! @brief QMStateDiscrete contains state information about each particle.
  *
- * The information is expressed using discrete numerical representations. Most likely an N-dimensional gird.
+ * The information is expressed using discrete numerical representation using NDimTable class.
  * A spatial position representation is used. On this grid the complex amplitude is stored, which defines
  * the probability distribution. Grid size usually is in powers of two, because that's most useful for FFT.
  *

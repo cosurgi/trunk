@@ -96,7 +96,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	return ret;
 }
 
-void SchrodingerKosloffPropagator::calcPsiPlus_1(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
+void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
 	Real mass(1); // FIXME - this shouldn't be here
@@ -159,7 +159,7 @@ void SchrodingerKosloffPropagator::action()
 			NDimTable<Complexr>/*&*/ psi_dt(psi->tableValuesPosition); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
-			calcPsiPlus_1(psi_0,psi_1,psi);                 // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+			calc_Hnorm_psi(psi_0,psi_1,psi);                // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
 			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
@@ -169,7 +169,7 @@ void SchrodingerKosloffPropagator::action()
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
 				NDimTable<Complexr> psi_2;              // ψ₂     :
-				calcPsiPlus_1(psi_1,psi_2,psi);         // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+				calc_Hnorm_psi(psi_1,psi_2,psi);        // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
 				psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁

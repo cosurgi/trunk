@@ -17,7 +17,7 @@
  *
  * It contains:
  * - QuantumMechanicalBound            → finding spatial collisions                            - FIXME - add this one FIXME,2 - Aabb is enough!
- * - QMGeometryDisplay  → OpenGL graphical display, no physics related things!
+ * - QMGeometry  → OpenGL graphical display, no physics related things!
  * - QMParameters       → classification of indistinguishable quantum particles (fermions, bosons)
  * - QMState            → physical state specific to given particle instance
  *

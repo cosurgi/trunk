@@ -20,7 +20,7 @@
  *  (FIXME: currently nonrelativistic approach only).
  */
 class QMStateDiscrete;
-class QMGeometryDisplay;
+class QMGeometry;
 class QMStateAnalytic: public QMState
 {
 	public:
@@ -44,7 +44,7 @@ analytic solutions to various cases."
 		);
 		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
 
-		boost::shared_ptr<QMStateDiscrete>& prepareReturnStateDiscreteOptimised(QMGeometryDisplay*);
+		boost::shared_ptr<QMStateDiscrete>& prepareReturnStateDiscreteOptimised(QMGeometry*);
 	private:
 		boost::shared_ptr<QMStateDiscrete> stateDiscreteOptimised;
 		long lastOptimisationIter;

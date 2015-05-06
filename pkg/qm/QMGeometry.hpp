@@ -13,7 +13,7 @@
 *
 *********************************************************************************/
 
-/*! @brief QMGeometryDisplay contains geometrical information used to display the particle on screen.
+/*! @brief QMGeometry contains geometrical information used to display the particle on screen.
  *
  * Quantum particles have no geometry in classical sense. So in this class only
  * stuff neeeded for display of the wavefunction stored in state.
@@ -23,13 +23,13 @@
  * No physical/calculations related stuff here! Only display.
  *
  */
-class QMGeometryDisplay: public Shape
+class QMGeometry: public Shape
 {
 	public:
-		virtual ~QMGeometryDisplay();
+		virtual ~QMGeometry();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(
 			  // class name
-			QMGeometryDisplay
+			QMGeometry
 			, // base class
 			Shape
 			, // class description
@@ -57,9 +57,9 @@ class QMGeometryDisplay: public Shape
 			, // constructor
 			createIndex();
 		);
-		REGISTER_CLASS_INDEX(QMGeometryDisplay,Shape);
+		REGISTER_CLASS_INDEX(QMGeometry,Shape);
 };
-REGISTER_SERIALIZABLE(QMGeometryDisplay);
+REGISTER_SERIALIZABLE(QMGeometry);
 
 
 

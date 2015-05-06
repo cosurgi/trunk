@@ -9,7 +9,7 @@
 YADE_PLUGIN(
 	(QMInteractionPhysics)
 	(QMInteractionGeometry)
-	(Ig2_Box_QMGeometryDisplay_QMInteractionGeometry)
+	(Ig2_Box_QMGeometry_QMInteractionGeometry)
 	(Ip2_QMParameters_QMParameters_QMInteractionPhysics)
 	(Ip2_Material_QMParameters_QMInteractionPhysics)
 	(Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics)
@@ -41,7 +41,7 @@ QMInteractionGeometry::~QMInteractionGeometry(){};
 *
 *********************************************************************************/
 
-bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
+bool Ig2_Box_QMGeometry_QMInteractionGeometry::go(
 	const shared_ptr<Shape>& qm1, 
 	const shared_ptr<Shape>& qm2, 
 	const State& state1, 
@@ -54,7 +54,7 @@ bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::go(
 	
 	const Se3r& se31=state1.se3; const Se3r& se32=state2.se3;
 
-std::cerr << "Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
+std::cerr << "Ig2_Box_QMGeometry_QMInteractionGeometry : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
 // FIXME,FIXME - weird method of getting state1 ← needed for getting the FFT grid size
 // FIXME,FIXME - and stupid, I have state1 and state2 !!! why didn't I use it???
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[c->id2]->state.get());
@@ -66,7 +66,7 @@ std::cerr << "Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : " << state1.getC
 	// Real depth;
 
 	Box* obb             = static_cast<Box*>(qm1.get());
-//	QMGeometryDisplay* s = static_cast<QMGeometryDisplay*>(qm2.get());
+//	QMGeometry* s = static_cast<QMGeometry*>(qm2.get());
 
 	Vector3r extents1 = obb->extents;
 //	Vector3r extents2 = s  ->halfSize;
@@ -157,7 +157,7 @@ std::cerr << "Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : " << state1.getC
 
 
 
-bool Ig2_Box_QMGeometryDisplay_QMInteractionGeometry::goReverse(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2,
+bool Ig2_Box_QMGeometry_QMInteractionGeometry::goReverse(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2,
   const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c)
 {
 	c->swapOrder();

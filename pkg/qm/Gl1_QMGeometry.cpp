@@ -7,11 +7,11 @@
 *********************************************************************************/
 
 #ifdef YADE_OPENGL
-#include "Gl1_QMGeometryDisplay.hpp"
+#include "Gl1_QMGeometry.hpp"
 #include <core/Scene.hpp>
 
 YADE_PLUGIN(
-	(Gl1_QMGeometryDisplay)
+	(Gl1_QMGeometry)
 	);
 
 #include "QMBody.hpp"
@@ -23,15 +23,15 @@ YADE_PLUGIN(
 #include <lib/opengl/GLUtils.hpp>
 #include <lib/smoothing/Spline6Interpolate.hpp>
 
-Vector3r Gl1_QMGeometryDisplay::lastDiscreteStep            = Vector3r(-1,-1,-1);
-Real     Gl1_QMGeometryDisplay::lastDiscreteScale           = -1;
-bool     Gl1_QMGeometryDisplay::analyticUsesStepOfDiscrete  = true;
-bool     Gl1_QMGeometryDisplay::analyticUsesScaleOfDiscrete = true;
+Vector3r Gl1_QMGeometry::lastDiscreteStep            = Vector3r(-1,-1,-1);
+Real     Gl1_QMGeometry::lastDiscreteScale           = -1;
+bool     Gl1_QMGeometry::analyticUsesStepOfDiscrete  = true;
+bool     Gl1_QMGeometry::analyticUsesScaleOfDiscrete = true;
 
-CREATE_LOGGER(Gl1_QMGeometryDisplay);
-Gl1_QMGeometryDisplay::~Gl1_QMGeometryDisplay(){};
+CREATE_LOGGER(Gl1_QMGeometry);
+Gl1_QMGeometry::~Gl1_QMGeometry(){};
 
-Gl1_QMGeometryDisplay::Gl1_QMGeometryDisplay()
+Gl1_QMGeometry::Gl1_QMGeometry()
 {
 	partsToDraw.resize(0);
 	partsToDraw.push_back( [this](){ return menuSelection(g->partReal     )!="hidden" and not g->partsSquared; } );
@@ -66,7 +66,7 @@ Gl1_QMGeometryDisplay::Gl1_QMGeometryDisplay()
 	colorToDraw.push_back( [](Vector3r col)        { return col;                                               } ); // for probability use            original color
 };
 
-void Gl1_QMGeometryDisplay::go(
+void Gl1_QMGeometry::go(
 	const shared_ptr<Shape>& shape, 
 	const shared_ptr<State>& state,
 	bool wire,
@@ -77,7 +77,7 @@ void Gl1_QMGeometryDisplay::go(
 
 // FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that?
 // Answer: add -Wshadow to gcc options
-	g = static_cast<QMGeometryDisplay*>(shape.get());
+	g = static_cast<QMGeometry*>(shape.get());
 	if(menuSelection(g->partAbsolute)=="hidden" and menuSelection(g->partReal)=="hidden" and menuSelection(g->partImaginary)=="hidden") return; // nothing to draw
 
 	pd = dynamic_cast<QMStateDiscrete*>(state.get());
@@ -209,7 +209,7 @@ void Gl1_QMGeometryDisplay::go(
 
 };
 		
-void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
+void Gl1_QMGeometry::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
 {
 	prepareGlSurfaceMaterial();
 	glColor3v(col);
@@ -245,7 +245,7 @@ void Gl1_QMGeometryDisplay::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
 
 };
 
-void Gl1_QMGeometryDisplay::calcNormalVectors(
+void Gl1_QMGeometry::calcNormalVectors(
 	const std::vector<std::vector<Real> >& waveVals, // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	std::vector<std::vector<Vector3r> >& wavNormV    // normal vectors necessary for propoer OpenGL rendering of the faces
 )
@@ -279,7 +279,7 @@ void Gl1_QMGeometryDisplay::calcNormalVectors(
 	}
 }
 
-void Gl1_QMGeometryDisplay::prepareGlSurfaceMaterial()
+void Gl1_QMGeometry::prepareGlSurfaceMaterial()
 {
 	GLfloat mat[4];
 	mat[0] = g->renderSpecular/100.0;
@@ -301,7 +301,7 @@ void Gl1_QMGeometryDisplay::prepareGlSurfaceMaterial()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS,&sh);
 }
 
-void Gl1_QMGeometryDisplay::glDrawSurface(
+void Gl1_QMGeometry::glDrawSurface(
 	const std::vector<std::vector<Real> >& waveVals,      // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	const std::vector<std::vector<Vector3r> >& wavNormV,  // normal vectors necessary for proper OpenGL rendering of the faces
 	Vector3r col                                          // color in which to draw the surface
@@ -345,7 +345,7 @@ void Gl1_QMGeometryDisplay::glDrawSurface(
 	glShadeModel(GL_FLAT);
 }
 		
-void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
+void Gl1_QMGeometry::glDrawSurfaceInterpolated(
 	const std::vector<std::vector<Real> >&     waveVals,      // a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	const std::vector<std::vector<Vector3r> >& wavNormV,      // normal vectors necessary for proper OpenGL rendering of the faces
 	const std::vector<std::vector<Real> >&     extraWaveVals, // same, but shifted by +0.5,+0.5
@@ -478,7 +478,7 @@ void Gl1_QMGeometryDisplay::glDrawSurfaceInterpolated(
 	glShadeModel(GL_FLAT);
 }
 
-void Gl1_QMGeometryDisplay::interpolateExtraWaveValues(
+void Gl1_QMGeometry::interpolateExtraWaveValues(
 	const std::vector<std::vector<Real> >& waveVals,// a 2D matrix of wavefunction values evaluated at certain point in positional spatial space
 	std::vector<std::vector<Real> >& extraWaveVals  // a 2D matrix shifted by +0.5,+0.5 from the previous one.
 )
@@ -494,7 +494,7 @@ void Gl1_QMGeometryDisplay::interpolateExtraWaveValues(
 	}
 }
 
-void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
+void Gl1_QMGeometry::interpolateExtraNormalVectors(
 	const std::vector<std::vector<Vector3r> >& wavNormV,// a 2D matrix of normal vectors necessary for proper OpenGL rendering of the faces
 	std::vector<std::vector<Vector3r> >& extraWavNormV  // a 2D matrix shifted by +0.5,+0.5 from the previous one
 )
@@ -510,7 +510,7 @@ void Gl1_QMGeometryDisplay::interpolateExtraNormalVectors(
 	}
 }
 
-void Gl1_QMGeometryDisplay::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
+void Gl1_QMGeometry::drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col)
 {
 	std::vector<std::vector<Vector3r> > wavNormV(/*size=*/pd->gridSize[0],/*init=*/std::vector<Vector3r>(pd->gridSize[1]));
 	calcNormalVectors(waveVals,wavNormV);

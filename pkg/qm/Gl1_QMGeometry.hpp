@@ -4,7 +4,7 @@
 
 #include <functional>
 #include <pkg/common/GLDrawFunctors.hpp>
-#include "QMGeometryDisplay.hpp"
+#include "QMGeometry.hpp"
 #include "QMStateDiscrete.hpp"
 #include <lib/time/TimeLimit.hpp>
 #include <lib/computational-geometry/MarchingCube.hpp>
@@ -16,7 +16,7 @@
 *
 *********************************************************************************/
 
-class Gl1_QMGeometryDisplay: public GlShapeFunctor
+class Gl1_QMGeometry: public GlShapeFunctor
 {
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
@@ -28,17 +28,17 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		void glDrawSurfaceInterpolated(const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,Vector3r col);
 		void interpolateExtraWaveValues(const std::vector<std::vector<Real> >& waveVals,std::vector<std::vector<Real> >& extraWaveVals);
 		void interpolateExtraNormalVectors(const std::vector<std::vector<Vector3r> >& wavNormV,std::vector<std::vector<Vector3r> >& extraWavNormV);
-		Gl1_QMGeometryDisplay();
-		virtual ~Gl1_QMGeometryDisplay();
-		RENDERS(QMGeometryDisplay);
+		Gl1_QMGeometry();
+		virtual ~Gl1_QMGeometry();
+		RENDERS(QMGeometry);
 		DECLARE_LOGGER;
 		YADE_CLASS_BASE_DOC_STATICATTRS(
 			  // class name
-			Gl1_QMGeometryDisplay
+			Gl1_QMGeometry
 			, // base class
 			GlShapeFunctor
 			, // class description
-			"Renders :yref:`QMGeometryDisplay` object"
+			"Renders :yref:`QMGeometry` object"
 			, // static public attributes
 			((bool,analyticUsesStepOfDiscrete,true,,"Analytic wavefunctions will use the step of last discrete wavefunction plotted."))
 			((bool,analyticUsesScaleOfDiscrete,true,,"Analytic wavefunctions will use the partsScale of last discrete wavefunction plotted."))
@@ -48,7 +48,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		MarchingCube mc;
 		
 		//! pointer to what's drawn right now
-		QMGeometryDisplay* g;
+		QMGeometry* g;
 		QMStateDiscrete*   pd;
 		//! last step of a discrete wavefunction
 		static Vector3r lastDiscreteStep;
@@ -67,7 +67,7 @@ class Gl1_QMGeometryDisplay: public GlShapeFunctor
 		// FIXME(2) - jakoś inaczej przechowywać w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
 
 };
-REGISTER_SERIALIZABLE(Gl1_QMGeometryDisplay);
+REGISTER_SERIALIZABLE(Gl1_QMGeometry);
 
 #endif
 

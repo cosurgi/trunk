@@ -201,8 +201,8 @@ class NDimTable : private std::vector<K
 		// FIXME: should be 'K'-type not 'double'-type. But min(), max() works only with real numbers. 
 		// FIXME: this is because potential should be real valued (but isn't)
 		// FIXME: if it's 'double' here then better it should be 'Real' so that changing precision works correctly
-		double min(){double ret(std::real(this->front())); for(K v : (*this)){ret = std::min(std::real(v),ret);}; return ret;};
-		double max(){double ret(std::real(this->front())); for(K v : (*this)){ret = std::max(std::real(v),ret);}; return ret;};
+		double min() const {double ret(std::real(this->front())); for(K v : (*this)){ret = std::min(std::real(v),ret);}; return ret;};
+		double max() const {double ret(std::real(this->front())); for(K v : (*this)){ret = std::max(std::real(v),ret);}; return ret;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
 		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
@@ -266,7 +266,6 @@ class NDimTable : private std::vector<K
 /* OK */	int increment(std::vector<std::size_t>& pos_i) const
 		{
 			int number_of_times_it_carried_over(0);
-			bool done(false);
 			std::size_t rank_i(rank_d-1);
 			// increment last index (last index varies fastest)
 			pos_i[rank_i]++;

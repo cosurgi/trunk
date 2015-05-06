@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 #include "QMParameters.hpp"
-#include "QMGeometryDisplay.hpp"
+#include "QMGeometry.hpp"
 #include <pkg/common/Box.hpp>
 #include <lib/base/NDimTable.hpp>
 
@@ -99,21 +99,21 @@ REGISTER_SERIALIZABLE(QMInteractionGeometry);
 *
 *********************************************************************************/
 
-/*! @brief When QMGeometryDisplay collides with a Box (with potential) the
+/*! @brief When QMGeometry collides with a Box (with potential) the
  * geometry of their contact is calculated and stored in QMInteractionGeometry
  *
  */
 
-class Ig2_Box_QMGeometryDisplay_QMInteractionGeometry : public IGeomFunctor
+class Ig2_Box_QMGeometry_QMInteractionGeometry : public IGeomFunctor
 {
 	public :
 		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
 		virtual bool goReverse(	const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
-	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometryDisplay_QMInteractionGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMInteractionGeometry` from :yref:`Box` and :yref:`QMGeometryDisplay`, representing the box overlapped onto wavefunction in positional representation.")
-	FUNCTOR2D(Box,QMGeometryDisplay);
-	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometryDisplay);
+	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometry_QMInteractionGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMInteractionGeometry` from :yref:`Box` and :yref:`QMGeometry`, representing the box overlapped onto wavefunction in positional representation.")
+	FUNCTOR2D(Box,QMGeometry);
+	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometry);
 };
-REGISTER_SERIALIZABLE(Ig2_Box_QMGeometryDisplay_QMInteractionGeometry);
+REGISTER_SERIALIZABLE(Ig2_Box_QMGeometry_QMInteractionGeometry);
 
 
 /*********************************************************************************
