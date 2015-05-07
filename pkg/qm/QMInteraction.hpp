@@ -11,6 +11,7 @@
 #include <pkg/common/Box.hpp>
 #include <lib/base/NDimTable.hpp>
 
+#include "QMPotential.hpp"
 
 /*********************************************************************************
 *
@@ -22,7 +23,7 @@
  *
  * Currently I have only free moving particle without interactions, so it is not used yet.
  *
- * Evolution of interaction is governed by Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics:
+ * Evolution of interaction is governed by Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics:
  * that includes hamiltonian elements for each interaction.
  *
  */
@@ -47,52 +48,6 @@ class QMInteractionPhysics: public IPhys
 };
 REGISTER_SERIALIZABLE(QMInteractionPhysics);
 
-
-/*********************************************************************************
-*
-* Q U A N T U M   M E C H A N I C A L   I N T E R A C T I O N   G E O M E T R Y   (geometrical/spatial parameters of the contact)
-*
-*********************************************************************************/
-
-/*! @brief QMInteractionGeometry should describe geometrical aspects of interaction between two wave functions.
- *
- * Currently I have only free moving particle without interactions, so it is not used yet.
- *
- */
-class QMInteractionGeometry: public IGeom
-{
-	public:
-		virtual ~QMInteractionGeometry();
-		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
-			  // class name
-			QMInteractionGeometry
-			, // base class
-			IGeom
-			, // class description
-			"Geometric representation of a single interaction of the WaveFunction"
-			, // attributes, public variables
-//			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
-//			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))
-//			((Vector3r , halfSize1             , ,, "Size of 1st box."))
-//			((Vector3r , halfSize2             , ,, "Size of 2nd box."))
-			, // constructor
-			createIndex();
-			, // python bindings
-// FIXME (!1) - add ability to read potential values at given i,j,k,l,... coord
-// FIXME (!1)	.def("valAtIdx"     ,&QMStateDiscrete::valAtIdx     ,"Get potential value at coord idx, invoke for example: valAtIdx([10,20]) # for 2D")
-// FIXME (!1)	.def("valAtPos"     ,&QMStateDiscrete::valAtPos     ,"Get potential value at coord idx, invoke for example: valAtPos([1.0,2.2]) # for 2D")
-		);	
-		DECLARE_LOGGER;
-		REGISTER_CLASS_INDEX(QMInteractionGeometry,IGeom);
-	
-// FIXME (!1)	/*FIXME? Complexr*/ Real valAtIdx(NDimTable<Real>::DimN    idx){};
-// FIXME (!1)	/*FIXME? Complexr*/ Real valAtPos(NDimTable<Real>::DimReal pos){};
-
-		NDimTable<Complexr> potentialValues;     // Discrete values of potential
-
-};
-REGISTER_SERIALIZABLE(QMInteractionGeometry);
-
 /*********************************************************************************
 *
 * I G 2   B O X   W A V E F U N C T I O N   I N T E R A C T I O N                 (creates geometry of two overlapping entities)
@@ -100,20 +55,20 @@ REGISTER_SERIALIZABLE(QMInteractionGeometry);
 *********************************************************************************/
 
 /*! @brief When QMGeometry collides with a Box (with potential) the
- * geometry of their contact is calculated and stored in QMInteractionGeometry
+ * geometry of their contact is calculated and stored in QMPotGeometry
  *
  */
 
-class Ig2_Box_QMGeometry_QMInteractionGeometry : public IGeomFunctor
+class Ig2_Box_QMGeometry_QMPotGeometry : public IGeomFunctor
 {
 	public :
 		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
 		virtual bool goReverse(	const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
-	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometry_QMInteractionGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMInteractionGeometry` from :yref:`Box` and :yref:`QMGeometry`, representing the box overlapped onto wavefunction in positional representation.")
+	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometry_QMPotGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMPotGeometry` from :yref:`Box` and :yref:`QMGeometry`, representing the box overlapped onto wavefunction in positional representation.")
 	FUNCTOR2D(Box,QMGeometry);
 	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometry);
 };
-REGISTER_SERIALIZABLE(Ig2_Box_QMGeometry_QMInteractionGeometry);
+REGISTER_SERIALIZABLE(Ig2_Box_QMGeometry_QMPotGeometry);
 
 
 /*********************************************************************************
@@ -181,21 +136,21 @@ REGISTER_SERIALIZABLE(Ip2_Material_QMParameters_QMInteractionPhysics);
 /*! @brief In DEM it was used to calculate Fn and Fs between two interacting bodies,
  * so this function takes following input:
  *    QMInteractionPhysics
- *    QMInteractionGeometry
+ *    QMPotGeometry
  *    Interaction
  *
  * But what will it do? Maybe Quantum Field Theory will answer that.
  *
  */
 
-class Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics: public LawFunctor
+class Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics: public LawFunctor
 {
 	public:
 		virtual bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
-		FUNCTOR2D(QMInteractionGeometry,QMInteractionPhysics);
+		FUNCTOR2D(QMPotGeometry,QMInteractionPhysics);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
-			Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics
+			Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics
 			, // base class
 			LawFunctor
 			, // class description
@@ -207,5 +162,5 @@ class Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics: publ
 	);
 	DECLARE_LOGGER;
 };
-REGISTER_SERIALIZABLE(Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics);
+REGISTER_SERIALIZABLE(Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics);
 

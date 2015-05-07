@@ -25,7 +25,7 @@ O.engines=[
 		#[Law2_ScGeom_FrictPhys_CundallStrack()]
 	#),
 #	SchrodingerKosloffPropagator(),
-# FIXME: perhaps derive FreeMovingGaussianWavePacket from something so that this below could propagate harmonic oscillator too.
+# FIXME: perhaps derive QMPacketGaussianWave from something so that this below could propagate harmonic oscillator too.
 	SchrodingerAnalyticPropagator()
 ]
 
@@ -43,12 +43,12 @@ analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.9,0.9,0.9]
                                   ,partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                   ,partReal=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                   ,step=[0.4,0.4,0.4]
-                                  ,stepWait=0.5
+                                  ,renderMaxTime=0.5
                                   ,threshold3D=0.00001)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[1.5,0,0],m=1,a=[1.5,1.5,1.5],hbar=1)
+gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,0,0],t0=0,k0=[1.5,0,0],m=1,a0=[1.5,1.5,1.5],hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 

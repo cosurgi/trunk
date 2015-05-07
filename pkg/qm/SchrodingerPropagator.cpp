@@ -4,6 +4,7 @@
 #include "QMStateDiscrete.hpp"
 #include "SchrodingerPropagator.hpp"
 #include "QMInteraction.hpp"
+#include "QMPotential.hpp"
 #include <core/Scene.hpp>
 #include <unsupported/Eigen/FFT>
 #include <functional>   // std::plus, std::multiplies
@@ -56,7 +57,7 @@ Real SchrodingerKosloffPropagator::eMin()
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi={};
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
 		if(igeom) {
 			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
@@ -84,7 +85,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi={};
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
 		if(igeom) {
 			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
 			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
@@ -127,7 +128,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMInteractionGeometry* igeom=dynamic_cast<QMInteractionGeometry*>(i->geom.get());
+		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
 		if(igeom) {
 			Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 		}

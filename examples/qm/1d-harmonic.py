@@ -23,12 +23,12 @@ O.engines=[
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMInteractionGeometry for Box+QMGeometry
-		[Ig2_Box_QMGeometry_QMInteractionGeometry()],
+# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
+		[Ig2_Box_QMGeometry_QMPotGeometry()],
 # in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
-		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerKosloffPropagator(steps=-1),
 ]
@@ -42,7 +42,7 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a=[gaussWidth,0,0],hbar=1)
+gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a0=[gaussWidth,0,0],hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
@@ -66,7 +66,7 @@ O.bodies.append(potentialBody)
 #O.dt=.001
 #O.dt=.003
 ##O.dt=.005 # FIXME - noise explosion, why? (because steps=50)
-O.dt=.005 # works with steps=100
+O.dt=.05 # works with steps=100
 #O.dt=.01 # works a few cycles with steps=150
 #O.dt=.012 #is not working, even for steps=150
 #O.dt=.02 # is not working, even for steps=300

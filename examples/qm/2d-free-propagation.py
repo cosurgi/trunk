@@ -25,7 +25,7 @@ O.engines=[
 	#),
 #	SchrodingerKosloffPropagator(),
 	SchrodingerKosloffPropagator(steps=-1),
-# FIXME: perhaps derive FreeMovingGaussianWavePacket from something so that this below could propagate harmonic oscillator too.
+# FIXME: perhaps derive QMPacketGaussianWave from something so that this below could propagate harmonic oscillator too.
 	SchrodingerAnalyticPropagator()
 ]
 
@@ -42,7 +42,7 @@ analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.9,0.9,0.9],partsS
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,0,0],t0=0,k0=[0.4,2,0],m=1,a=[3,2,0],hbar=1)
+gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,0,0],t0=0,k0=[0.4,2,0],m=1,a0=[3,2,0],hbar=1)
 analyticBody.state     = gaussPacket
 O.bodies.append(analyticBody)
 

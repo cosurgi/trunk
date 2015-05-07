@@ -25,9 +25,9 @@ O.engines=[
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-		[Ig2_Box_QMGeometry_QMInteractionGeometry()],
+		[Ig2_Box_QMGeometry_QMPotGeometry()],
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
-		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerKosloffPropagator(),
 ]
@@ -37,7 +37,7 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6],partsScale=10)
 analyticBody.material  = QMParameters()
-gaussPacket            = FreeMovingGaussianWavePacket(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a=[gaussWidth_x,gaussWidth_y,0],hbar=1)
+gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a0=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 

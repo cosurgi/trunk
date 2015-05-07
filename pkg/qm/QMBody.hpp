@@ -32,16 +32,8 @@ class QMBody: public Body
 			, // base class
 			Body
 			, // class description
-			"Quantum mechanical body is a single 'body' (a particle) expressed in terms of quantum mechanics."
+			"Quantum mechanical body is a single 'body' (a particle) expressed in terms of quantum mechanics: with wavefunctions."
 			, // attributes, public variables
-//# FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
-//# invalid.  I think that we should rethink what base class State contains, so
-//# that in QM we would not need to use this hack to hide some variables.
-//# However it is great to note that only this little 'cosmetic' hack is needed
-//# to make Quantum Mechanics possible in yade
-//# See also: class QMState, class QMBody, gui/qt4/SerializableEditor.py
-//# Also I think this makes a possibility to make another Body for SPH model (see hacks inside Body.hpp YADE_SPH)
-///////////////////////////////////////////////////////
 //  -----→ to fix the inheritance tree we should remove
 //         following attributes from the base class
 			((string,qtHide,"chain clumpId flags qtHide",Attr::readonly,

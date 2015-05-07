@@ -23,12 +23,12 @@ O.engines=[
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMInteractionGeometry for Box+QMGeometry
-		[Ig2_Box_QMGeometry_QMInteractionGeometry()],
+# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
+		[Ig2_Box_QMGeometry_QMPotGeometry()],
 # in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
-		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(steps=-1 ), # auto
@@ -44,7 +44,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6],step=[0.03,0.1,0.1])
 analyticBody.material  = QMParameters()
-harmonicPacket         = HarmonicOscillatorEigenFunction(dim=dimensions,order=[harmonicOrder,0,0])
+harmonicPacket         = QMPacketHarmonicEigenFunc(dim=dimensions,energyLevel=[harmonicOrder,0,0])
 analyticBody.state     = harmonicPacket
 O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 

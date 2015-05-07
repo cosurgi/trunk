@@ -144,7 +144,7 @@ void Gl1_QMGeometry::go(
 								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
-							if(timeLimit.tooLong(g->stepWait)) break;
+							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
 						for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
 							glBegin(GL_LINE_STRIP);
@@ -152,7 +152,7 @@ void Gl1_QMGeometry::go(
 								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
-							if(timeLimit.tooLong(g->stepWait)) break;
+							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
 					} else {
 					// 2D surface
@@ -163,7 +163,7 @@ void Gl1_QMGeometry::go(
 							for(size_t j=0 ; j<pd->gridSize[1] ; j++ ) {
 								waveValues2D[i][j]=valueToDraw[draw] ((pd->tableValuesPosition.at(i,j))) *scalingFactor;
 							}
-							if(timeLimit.tooLong(g->stepWait)) break;
+							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
 						drawSurface(waveValues2D,colorToDraw[draw](col));
 					}
@@ -191,7 +191,7 @@ void Gl1_QMGeometry::go(
 									waveValues3D[i][j][k]=valueToDraw[draw] (pd->tableValuesPosition.at(i,j,k));
 								}
 							}
-							if(timeLimit.tooLong(g->stepWait)) break;
+							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
 						mc.computeTriangulation(waveValues3D,g->threshold3D);
 						// FIXME(2) - drawSurface or drawWires

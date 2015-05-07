@@ -20,12 +20,12 @@ O.engines=[
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMInteractionGeometry for Box+QMGeometry
-		[Ig2_Box_QMGeometry_QMInteractionGeometry()],
+# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
+		[Ig2_Box_QMGeometry_QMPotGeometry()],
 # in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
 		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
-# in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
-		[Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+# in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handled inside SchrodingerKosloffPropagator
+		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
 	),
 	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(steps=-1 ), # auto
@@ -43,9 +43,9 @@ analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6],partsS
                                          , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , stepWait=0.5)
+                                         , renderMaxTime=0.5)
 analyticBody.material  = QMParameters()
-harmonicPacket         = HarmonicOscillatorEigenFunction(dim=dimensions,order=[harmonicOrder_x, harmonicOrder_y, 0])
+harmonicPacket         = QMPacketHarmonicEigenFunc(dim=dimensions,energyLevel=[harmonicOrder_x, harmonicOrder_y, 0])
 analyticBody.state     = harmonicPacket
 O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
@@ -55,7 +55,7 @@ numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1],partsScale=
                                          , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , stepWait=0.5)
+                                         , renderMaxTime=0.5)
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])

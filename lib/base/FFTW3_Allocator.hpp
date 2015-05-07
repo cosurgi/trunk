@@ -16,6 +16,7 @@
 #include <memory>
 #include <fftw3.h>
 #include <limits>
+#include <iostream>
 
 template <typename T>
 class FFTW3_Allocator

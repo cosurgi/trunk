@@ -20,6 +20,8 @@
 #include <cmath>
 #include <complex>
 #include <stdexcept>
+#include <iostream>
+#include <boost/lexical_cast.hpp>
 
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
@@ -346,7 +348,7 @@ class NDimTable : private std::vector<K
 			} else
 			if(rank_d == 2) {
 				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-			};
+			} else { std::cerr << "fft error";exit(1);};
 			fftw_execute(p);
 			fftw_destroy_plan(p);
 			#else
@@ -370,7 +372,7 @@ class NDimTable : private std::vector<K
 			} else
 			if(rank_d == 2) {
 				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-			};
+			} else { std::cerr << "fft error";exit(1);};
 			fftw_execute(p);
 			this->operator/=(N);		
 			fftw_destroy_plan(p);

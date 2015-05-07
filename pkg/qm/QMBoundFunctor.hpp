@@ -8,7 +8,7 @@
 class Bo1_QMGeometry_Aabb : public BoundFunctor
 {
 	public :
-		void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
+		virtual void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
 	FUNCTOR1D(QMGeometry);
 	YADE_CLASS_BASE_DOC(
 		  // class name

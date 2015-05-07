@@ -8,11 +8,10 @@
 
 YADE_PLUGIN(
 	(QMInteractionPhysics)
-	(QMInteractionGeometry)
-	(Ig2_Box_QMGeometry_QMInteractionGeometry)
+	(Ig2_Box_QMGeometry_QMPotGeometry)
 	(Ip2_QMParameters_QMParameters_QMInteractionPhysics)
 	(Ip2_Material_QMParameters_QMInteractionPhysics)
-	(Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics)
+	(Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics)
 	);
 
 /*********************************************************************************
@@ -27,21 +26,11 @@ QMInteractionPhysics::~QMInteractionPhysics(){};
 
 /*********************************************************************************
 *
-* Q U A N T U M   M E C H A N I C A L   I N T E R A C T I O N   G E O M E T R Y   (geometrical/spatial parameters of the contact)
-*
-*********************************************************************************/
-CREATE_LOGGER(QMInteractionGeometry);
-// !! at least one virtual function in the .cpp file
-QMInteractionGeometry::~QMInteractionGeometry(){};
-
-
-/*********************************************************************************
-*
 * I G 2   B O X   W A V E F U N C T I O N   I N T E R A C T I O N                 (creates geometry of two overlapping entities)
 *
 *********************************************************************************/
 
-bool Ig2_Box_QMGeometry_QMInteractionGeometry::go(
+bool Ig2_Box_QMGeometry_QMPotGeometry::go(
 	const shared_ptr<Shape>& qm1, 
 	const shared_ptr<Shape>& qm2, 
 	const State& state1, 
@@ -54,7 +43,7 @@ bool Ig2_Box_QMGeometry_QMInteractionGeometry::go(
 	
 	const Se3r& se31=state1.se3; const Se3r& se32=state2.se3;
 
-std::cerr << "Ig2_Box_QMGeometry_QMInteractionGeometry : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
+std::cerr << "Ig2_Box_QMGeometry_QMPotGeometry : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
 // FIXME,FIXME - weird method of getting state1 ← needed for getting the FFT grid size
 // FIXME,FIXME - and stupid, I have state1 and state2 !!! why didn't I use it???
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[c->id2]->state.get());
@@ -79,7 +68,7 @@ std::cerr << "Ig2_Box_QMGeometry_QMInteractionGeometry : " << state1.getClassNam
 	//         Matrix3r boxAxis = boxAxisT.transpose();
 
 	Vector3r relPos12 = -1.0*(se32.position+shift2-se31.position); // relative position of centroids
-	shared_ptr<QMInteractionGeometry> igeom;
+	shared_ptr<QMPotGeometry> igeom;
 
 	//
 	// FIXME: assume that interaction always exists. WRONG! FIXME, FIXME.
@@ -89,8 +78,8 @@ std::cerr << "Ig2_Box_QMGeometry_QMInteractionGeometry : " << state1.getClassNam
 	//
 
 	bool isNew=!c->geom;
-	if (isNew) igeom = shared_ptr<QMInteractionGeometry>(new QMInteractionGeometry());
-	else igeom = YADE_PTR_CAST<QMInteractionGeometry>(c->geom);
+	if (isNew) igeom = shared_ptr<QMPotGeometry>(new QMPotGeometry());
+	else igeom = YADE_PTR_CAST<QMPotGeometry>(c->geom);
 	
 	//igeom->relativePosition21 = relPos12;
 	//// igeom->relativeOrientation21 = ; FIXME
@@ -157,7 +146,7 @@ std::cerr << "Ig2_Box_QMGeometry_QMInteractionGeometry : " << state1.getClassNam
 
 
 
-bool Ig2_Box_QMGeometry_QMInteractionGeometry::goReverse(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2,
+bool Ig2_Box_QMGeometry_QMPotGeometry::goReverse(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2,
   const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c)
 {
 	c->swapOrder();
@@ -196,9 +185,9 @@ void Ip2_Material_QMParameters_QMInteractionPhysics::go(const shared_ptr<Materia
 *           Here it will calculate potential acting between wavepackets or potential barriers
 *
 *********************************************************************************/
-CREATE_LOGGER(Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics);
+CREATE_LOGGER(Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics);
 
-bool Law2_QMInteractionGeometry_QMInteractionPhysics_QMInteractionPhysics::go(
+bool Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics::go(
 	shared_ptr<IGeom>& igeom, 
 	shared_ptr<IPhys>& iphys, 
 	Interaction* interaction)

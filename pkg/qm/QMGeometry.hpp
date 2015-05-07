@@ -45,14 +45,14 @@ class QMGeometry: public Shape
 			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
 			((int ,partsScale       ,1.0,,"Scaling of the wavefunction or potential. Positive number multiplies, negative divides by absolute value."))
 			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
-			((int ,renderAmbient    ,30,,"Amount of ambient light falling on surface"))
-			((int ,renderDiffuse    ,100,,"Amount of diffuse light reflected by surface"))
+			((int ,renderAmbient    ,30,Attr::hidden,"Amount of ambient light falling on surface"))
+			((int ,renderDiffuse    ,100,Attr::hidden,"Amount of diffuse light reflected by surface"))
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
-			((int ,renderShininess  ,50,,"Amount of shininess of the surface"))
+			((int ,renderShininess  ,50,Attr::hidden,"Amount of shininess of the surface"))
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
-			((int ,renderSpecular   ,10,,"Amount of specular light reflected by surface"))
+			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
 			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
-			((Real,stepWait         ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
+			((Real,renderMaxTime    ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 			, // constructor
 			createIndex();
@@ -60,6 +60,4 @@ class QMGeometry: public Shape
 		REGISTER_CLASS_INDEX(QMGeometry,Shape);
 };
 REGISTER_SERIALIZABLE(QMGeometry);
-
-
 
