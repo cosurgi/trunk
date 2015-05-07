@@ -80,26 +80,26 @@ REGISTER_SERIALIZABLE(Gl1_QMGeometry);
 
 #ifdef YADE_OPENGL
 // This will come later, when I will have some interactions going on....
-//class Gl1_QMInteractionPhysics: public GlIPhysFunctor
+//class Gl1_QMPotPhysics: public GlIPhysFunctor
 //{
 //	public: 
 //		virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
-//		virtual ~Gl1_QMInteractionPhysics();
-//		RENDERS(QMInteractionPhysics);
+//		virtual ~Gl1_QMPotPhysics();
+//		RENDERS(QMPotPhysics);
 //		DECLARE_LOGGER;
 //		YADE_CLASS_BASE_DOC_STATICATTRS(
 //			  // class name
-//			Gl1_QMInteractionPhysics
+//			Gl1_QMPotPhysics
 //			, // base class
 //			GlIPhysFunctor
 //			, // class description
-//			"Render :yref:`QMInteractionPhysics` interactions."
+//			"Render :yref:`QMPotPhysics` interactions."
 //			, // attributes, public variables
 //			((bool,abs,true,,"Show absolute probability"))
 //			((bool,real,false,,"Show only real component"))
 //			((bool,imag,false,,"Show only imaginary component"))
 //		);
 //};
-//REGISTER_SERIALIZABLE(Gl1_QMInteractionPhysics);
+//REGISTER_SERIALIZABLE(Gl1_QMPotPhysics);
 #endif
 

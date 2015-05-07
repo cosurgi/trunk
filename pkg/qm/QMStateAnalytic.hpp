@@ -44,7 +44,7 @@ analytic solutions to various cases."
 		);
 		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
 
-		boost::shared_ptr<QMStateDiscrete>& prepareReturnStateDiscreteOptimised(QMGeometry*);
+		const boost::shared_ptr<QMStateDiscrete>& prepareDiscrete(QMGeometry*);
 	private:
 		boost::shared_ptr<QMStateDiscrete> stateDiscreteOptimised;
 		long lastOptimisationIter;

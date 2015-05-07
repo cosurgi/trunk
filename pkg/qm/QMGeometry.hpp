@@ -4,6 +4,7 @@
 
 #include <pkg/common/Dispatching.hpp>
 #include <core/Scene.hpp>
+#include <pkg/common/Box.hpp>
 #include <py/wrapper/Menu.hpp>
 #include <stdexcept>
 
@@ -15,15 +16,15 @@
 
 /*! @brief QMGeometry contains geometrical information used to display the particle on screen.
  *
- * Quantum particles have no geometry in classical sense. So in this class only
- * stuff neeeded for display of the wavefunction stored in state.
+ * Quantum particles have no geometry in classical sense. So in this class only has
+ * stuff needed to configure the display of the wavefunction in QMState.
  *
  * Things like color, or if it's a wireframe to display, etc.
  *
  * No physical/calculations related stuff here! Only display.
  *
  */
-class QMGeometry: public Shape
+class QMGeometry: public Box
 {
 	public:
 		virtual ~QMGeometry();
@@ -31,15 +32,15 @@ class QMGeometry: public Shape
 			  // class name
 			QMGeometry
 			, // base class
-			Shape
+			Box
 			, // class description
-			"Wave function geomterical (prepared, maybe precomputed, for display on screen) information about a particle."
+			"Geomterical information about the wavefunction of a particle. Mostly display configuration, like color or renderShininess, but also size and display precision step."
 			, // attributes, public variables
-			((Vector3r,halfSize,,,
+/* Box::extents 	((Vector3r,halfSize,,,
 			"Analytical wavefunction is infinite, but computers are finite, so this is the spatial size \
 			in positional representation. It is used to create :yref:`Aabb`, so it also helps fiding particle collisions. \
 			If the wavefunctions were really infinite, then it would work nicely, but due to computer limitations this \
-			halfSize also covers the range of interactions between particles. Later it should work in 4D space-time."))
+			halfSize also covers the range of interactions between particles. Later it should work in 4D space-time.")) */
 			((Menu,partAbsolute     ,Menu({"default wire"   ,"hidden","nodes","big nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
 			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show imaginary component"))
 			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
@@ -52,12 +53,13 @@ class QMGeometry: public Shape
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
 			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
+			((Menu,stepRender       ,Menu({"default stripes","box","stripes","mesh"}),,"Show the steps on the grid."))
 			((Real,renderMaxTime    ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 			, // constructor
 			createIndex();
 		);
-		REGISTER_CLASS_INDEX(QMGeometry,Shape);
+		REGISTER_CLASS_INDEX(QMGeometry,Box);
 };
 REGISTER_SERIALIZABLE(QMGeometry);
 

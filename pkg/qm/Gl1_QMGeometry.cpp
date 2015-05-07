@@ -87,7 +87,7 @@ void Gl1_QMGeometry::go(
 		{
 			if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
 			if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
-			pd = packetAnalytic->prepareReturnStateDiscreteOptimised(g).get();
+			pd = packetAnalytic->prepareDiscrete(g).get();
 		}
 	};
 	if (not pd) {
@@ -206,6 +206,9 @@ void Gl1_QMGeometry::go(
 			}
 		}
 	}
+	if(menuSelection(g->stepRender)!="hidden")
+		if(timeLimit.messageAllowed(10))
+			std::cerr << "Gl1_QMGeometry: Drawing of grid steps is not ready yet.\n";
 
 };
 		
@@ -538,12 +541,12 @@ void Gl1_QMGeometry::drawSurface(const std::vector<std::vector<Real> >& waveVals
 #ifdef YADE_OPENGL
 
 // This will come later, when I will have some interactions going on.... FIXME - draw potentials !!
-//	CREATE_LOGGER(Gl1_QMInteractionPhysics);
-//	bool Gl1_QMInteractionPhysics::abs=true;
-//	bool Gl1_QMInteractionPhysics::real=false;
-//	bool Gl1_QMInteractionPhysics::imag=false;
-//	Gl1_QMInteractionPhysics::~Gl1_QMInteractionPhysics(){};
-//	void Gl1_QMInteractionPhysics::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame)
+//	CREATE_LOGGER(Gl1_QMPotPhysics);
+//	bool Gl1_QMPotPhysics::abs=true;
+//	bool Gl1_QMPotPhysics::real=false;
+//	bool Gl1_QMPotPhysics::imag=false;
+//	Gl1_QMPotPhysics::~Gl1_QMPotPhysics(){};
+//	void Gl1_QMPotPhysics::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame)
 //	{
 //	}
 

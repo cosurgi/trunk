@@ -18,18 +18,18 @@ CREATE_LOGGER(QMStateAnalytic);
 // !! at least one virtual function in the .cpp file
 QMStateAnalytic::~QMStateAnalytic(){};
 
-boost::shared_ptr<QMStateDiscrete>& QMStateAnalytic::prepareReturnStateDiscreteOptimised(QMGeometry* qmg)
+const boost::shared_ptr<QMStateDiscrete>& QMStateAnalytic::prepareDiscrete(QMGeometry* qmg)
 {
 	if(dim > 3) {
-		std::cerr << "ERROR: QMStateAnalytic::prepareReturnStateDiscreteOptimised does not work with dim > 3\n";
+		std::cerr << "ERROR: QMStateAnalytic::prepareDiscrete does not work with dim > 3\n";
 		exit(1);
 	}
 	std::vector<size_t> gridSize(dim);
 	std::vector<Real>   size(dim);
 	for(size_t i=0 ; i<dim ; i++) {
-		if(qmg->step[i]==0) { std::cerr << "ERROR: QMStateAnalytic::prepareReturnStateDiscreteOptimised: step is ZERO!\n"; exit(1);};
-		size    [i]=(         qmg->halfSize[i]*2.0              );
-		gridSize[i]=((size_t)(qmg->halfSize[i]*2.0/qmg->step[i]));
+		if(qmg->step[i]==0) { std::cerr << "ERROR: QMStateAnalytic::prepareDiscrete: step is ZERO!\n"; exit(1);};
+		size    [i]=(         qmg->extents[i]*2.0              );
+		gridSize[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
 	}
 	Scene* scene(Omega::instance().getScene().get());	// get scene
 	if(    lastOptimisationIter == scene->iter and stateDiscreteOptimised

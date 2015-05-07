@@ -10,22 +10,22 @@ size      = [x * 2 for x in halfSize]
 potentialCenter   = [ 0  ,0  ,0  ]
 potentialHalfSize = halfSize
 harmonicOrder_x   = 0
-harmonicOrder_y   = 1 
+harmonicOrder_y   = 1
 
 
 O.engines=[
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
-		Bo1_QMGeometry_Aabb(),
+	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
 # in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
 		[Ig2_Box_QMGeometry_QMPotGeometry()],
 # in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
-		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
+		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handled inside SchrodingerKosloffPropagator
-		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
 	),
 	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(steps=-1 ), # auto
@@ -39,7 +39,7 @@ O.engines=[
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6],partsScale=10
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10
                                          , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -51,7 +51,7 @@ O.bodies.append(analyticBody)     # do not append, it is used only to create the
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1],partsScale=10
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10
                                          , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']

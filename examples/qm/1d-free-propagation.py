@@ -15,7 +15,8 @@ size      = [x * 2 for x in halfSize]
 O.engines=[
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
-		Bo1_QMGeometry_Aabb(),
+	#	Bo1_QMGeometry_Aabb(),
+		Bo1_Box_Aabb(),
 	]),
 # No particle interactions yet, only a free propagating particle. First step will be to introduce
 # potentials, then interactions between moving particles.
@@ -38,7 +39,7 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = None
@@ -50,7 +51,7 @@ O.bodies.append(analyticBody)
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
 numericalBody.material  = None
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.

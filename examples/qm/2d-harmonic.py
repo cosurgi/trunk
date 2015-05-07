@@ -21,13 +21,13 @@ potentialValue    = 0.0
 O.engines=[
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
-		Bo1_QMGeometry_Aabb(),
+	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
 		[Ig2_Box_QMGeometry_QMPotGeometry()],
-		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
-		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
+		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
 	),
 	SchrodingerKosloffPropagator(),
 ]
@@ -35,7 +35,7 @@ O.engines=[
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6],partsScale=10)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10)
 analyticBody.material  = QMParameters()
 gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a0=[gaussWidth_x,gaussWidth_y,0],hbar=1)
 analyticBody.state     = gaussPacket
@@ -43,7 +43,7 @@ analyticBody.state     = gaussPacket
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1],partsScale=10)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10)
 numericalBody.material  = QMParameters()
 #numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
 numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])

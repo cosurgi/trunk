@@ -19,16 +19,16 @@ potentialValue    = 0.0
 O.engines=[
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
-		Bo1_QMGeometry_Aabb(),
+	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
 # in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
 		[Ig2_Box_QMGeometry_QMPotGeometry()],
 # in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
-		[Ip2_QMParameters_QMParameters_QMInteractionPhysics()],
+		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
 # in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
-		[Law2_QMPotGeometry_QMInteractionPhysics_QMInteractionPhysics()] 
+		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
 	),
 	SchrodingerKosloffPropagator(steps=-1),
 ]
@@ -40,7 +40,7 @@ O.engines=[
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(halfSize=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParameters()
 gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a0=[gaussWidth,0,0],hbar=1)
 analyticBody.state     = gaussPacket
@@ -48,7 +48,7 @@ analyticBody.state     = gaussPacket
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(halfSize=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
 numericalBody.material  = QMParameters()
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[2**12])
