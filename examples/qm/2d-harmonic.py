@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 2
 size_1d   = 10
 halfSize  = [size_1d,size_1d*1.2,0.1]
@@ -19,9 +18,11 @@ potentialHalfSize = halfSize
 potentialValue    = 0.0
 
 O.engines=[
+	StateDispatcher([
+		St1_QMPacketGaussianWave(),
+		St1_QMStateDiscrete()
+	]),
 	SpatialQuickSortCollider([
-	#InsertionSortCollider([
-	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
@@ -36,17 +37,16 @@ O.engines=[
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10)
-analyticBody.material  = QMParameters()
-gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],m=1,a0=[gaussWidth_x,gaussWidth_y,0],hbar=1)
+analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
+gaussPacket            = QMPacketGaussianWave(x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0])
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10)
-numericalBody.material  = QMParameters()
-#numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[(2**7),(2**6)])
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])
+numericalBody.material  = analyticBody.material
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[2**7,2**6])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

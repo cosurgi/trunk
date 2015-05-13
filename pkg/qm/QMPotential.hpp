@@ -2,13 +2,17 @@
 
 #pragma once
 
+#include <pkg/common/Dispatching.hpp>
 #include <lib/base/NDimTable.hpp>
 #include <core/IGeom.hpp>
 #include <core/IPhys.hpp>
+#include <pkg/common/Box.hpp>
+#include "QMGeometry.hpp"
+#include "QMParameters.hpp"
 
 /*********************************************************************************
 *
-* Q M   interaction   P O T E N T I A L   G E O M E T R Y
+* Q M   interaction   P O T E N T I A L   G E O M E T R Y            QMPotGeometry
 *
 *********************************************************************************/
 
@@ -39,7 +43,7 @@ class QMPotGeometry: public IGeom
 //			((vector<size_t>, gridSize1        , ,, "gridSize of 1st box."))
 //			((vector<size_t>, gridSize2        , ,, "gridSize of 2nd box."))
 			, // constructor
-			createIndex();
+			  createIndex();
 			, // python bindings
 // FIXME (!1) - add ability to read potential values at given i,j,k,l,... coord
 // FIXME (!1)	.def("valAtIdx"     ,&QMStateDiscrete::valAtIdx     ,"Get potential value at coord idx, invoke for example: valAtIdx([10,20]) # for 2D")
@@ -66,7 +70,7 @@ REGISTER_SERIALIZABLE(QMPotGeometry);
 
 /*********************************************************************************
 *
-* Q M   interaction   P O T E N T I A L   P H Y S I C S
+* Q M   interaction   P O T E N T I A L   P H Y S I C S               QMPotPhysics
 *
 *********************************************************************************/
 
@@ -85,8 +89,10 @@ class QMPotPhysics: public IPhys
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY( QMPotPhysics /* class name */, IPhys /* base class */
 			, "QMPotPhysics is the physical parameters concerning interaction happening between two particles" // class description
 			, // attributes, public variables
+			((Real  ,hbar  ,1               ,Attr::readonly,"Planck's constant $h$ divided by $2\\pi$: ħ=h/(2π)"))
+			((size_t,dim   ,                ,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
-			  createIndex();
+			createIndex();
 			, // python bindings
 		);
 	DECLARE_LOGGER;
@@ -96,20 +102,16 @@ REGISTER_SERIALIZABLE(QMPotPhysics);
 
 /*********************************************************************************
 *
-* I G 2   B O X   W A V E F U N C T I O N   I N T E R A C T I O N                 (creates geometry of two overlapping entities)
+* Ig2   Box   QMGeometry  →  QMPotGeometry
 *
 *********************************************************************************/
 
-/*! @brief When QMGeometry collides with a Box (with potential) the
- * geometry of their contact is calculated and stored in QMPotGeometry
+/*! @brief When QMGeometry collides with a Box which is a potential, the geometry of their contact is calculated and stored in QMPotGeometry
  *
+ *  Calculates geometrical contact of external potential (bounded by a BOX) on a wavefunction (bounded by QMGeometry).
  */
 
-#include <pkg/common/Dispatching.hpp>
-#include <pkg/common/Box.hpp>
-#include "QMGeometry.hpp"
-
-class Ig2_Box_QMGeometry_QMPotGeometry : public IGeomFunctor
+class Ig2_Box_QMGeometry_QMPotGeometry: public IGeomFunctor
 {
 	public :
 		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
@@ -117,7 +119,60 @@ class Ig2_Box_QMGeometry_QMPotGeometry : public IGeomFunctor
 	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometry_QMPotGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMPotGeometry` from :yref:`Box` and :yref:`QMGeometry`, representing the box overlapped onto wavefunction in positional representation.")
 	FUNCTOR2D(Box,QMGeometry);
 	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometry);
+	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(Ig2_Box_QMGeometry_QMPotGeometry);
+
+/*********************************************************************************
+*
+* Ig2   QMGeometry   QMGeometry  →  QMPotGeometry
+*
+*********************************************************************************/
+
+/*! @brief When QMGeometry collides with another QMGeometry things get interesting, because two wavefunction will get entangled.
+ *
+ *  The geometry of their contact is calculated and stored in QMPotGeometry.
+ *  Their wavefunction will later be subjected to a tensor product.
+ *
+ *  Important note: they do not need to have same size (extents), or same gridSize, or same step()
+ */
+
+class Ig2_QMGeometry_QMGeometry_QMPotGeometry: public IGeomFunctor
+{
+	public :
+		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
+		virtual bool goReverse(const shared_ptr<Shape>&, const shared_ptr<Shape>&, const State&, const State&, const Vector3r&, const bool&, const shared_ptr<Interaction>&){ throw std::logic_error("Ig2_QMGeometry_QMGeometry_QMPotGeometry::goReverse called, but the functor is symmetric."); };
+	YADE_CLASS_BASE_DOC(Ig2_QMGeometry_QMGeometry_QMPotGeometry,IGeomFunctor,"Create an interaction geometry :yref:`QMPotGeometry` from two :yref:`QMGeometry`, representing the entanglement of two wavefunctions in positional representation.")
+	FUNCTOR2D(QMGeometry,QMGeometry);
+	DEFINE_FUNCTOR_ORDER_2D(QMGeometry,QMGeometry);
+	DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Ig2_QMGeometry_QMGeometry_QMPotGeometry);
+
+/*********************************************************************************
+*
+* Ip2   QMParameters   QMParameters  →  QMPotPhysics
+*
+*********************************************************************************/
+
+/*! @brief When two QMParameters collide, the must have the same Planck's constant.
+ *
+ *  Important note: every IPhysFunctor must call it's parent's go() method so that
+ *  the higher level stuff gets taken care of.
+ */
+
+class Ip2_2xQMParameters_QMPotPhysics: public IPhysFunctor
+{
+	public:
+		virtual void go       (const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&);
+		virtual void goReverse(const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&){ throw std::logic_error("Ip2_2xQMParameters_QMPotPhysics::goReverse called, but it shouldn't be called, because it's symmetric."); };
+	YADE_CLASS_BASE_DOC(Ip2_2xQMParameters_QMPotPhysics,IPhysFunctor,"Create (but can't update) physical parameters of the interaction between two :yref:`QMParameters`, basically only Planck's constant.");
+	FUNCTOR2D(QMParameters,QMParameters);
+	DEFINE_FUNCTOR_ORDER_2D(QMChargedParticle,QMChargedParticle);
+	DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Ip2_2xQMParameters_QMPotPhysics);
 

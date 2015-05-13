@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "QMState.hpp"
-#include "QMStateAnalytic.hpp"
 #include <pkg/common/Dispatching.hpp>
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
 #include <lib/time/TimeLimit.hpp>
 #include <lib/base/NDimTable.hpp>
+#include "QMState.hpp"
+#include "QMStateAnalytic.hpp"
 
 /*********************************************************************************
 *
@@ -20,19 +20,14 @@
 /*! @brief QMStateDiscrete contains state information about each particle.
  *
  * The information is expressed using discrete numerical representation using NDimTable class.
- * A spatial position representation is used. On this grid the complex amplitude is stored, which defines
+ * A spatial position representation is used. On this grid the complex amplitude is stored, which also determines
  * the probability distribution. Grid size usually is in powers of two, because that's most useful for FFT.
  *
  */
 class QMStateDiscrete: public QMState
 {
 	public:
-		/// return complex quantum aplitude at given positional representation coordinates
-		virtual Complexr getValPos(Vector3r xyz);
-
-		/// return grid step, two point distance in the mesh in positional representation
 		virtual ~QMStateDiscrete();
-		void postLoad(QMStateDiscrete&);
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			QMStateDiscrete
@@ -43,7 +38,7 @@ class QMStateDiscrete: public QMState
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
-			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::triggerPostLoad,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
+			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::hidden,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
 			((vector<size_t>,gridSize,vector<size_t>({}),,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((vector<Real>,size,vector<Real>({}),,"Wavepacket size in position representation space."))
 			, // constructor
@@ -62,6 +57,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
 		// Find min/max wavelength and wavenumber for this FFT grid
+		/// return grid step, two point distance in the mesh in positional representation
 		virtual Real     stepInPositionalRepresentation(int dim){ return deltaX(dim); /*return size.at(d) / gridSize[d];*/};
 		Real deltaX   (int d)                                   { return size[d]/gridSize[d];};
 		Real lambdaMin(int d){return 2*deltaX(d);};
@@ -77,7 +73,8 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real start(int d) { return (-size[d]*0.5+pos[d]);};
 		Real end  (int d) { return ( size[d]*0.5+pos[d]);};
 
-		void calculateTableValuesPosition(QMStateAnalytic* localCreator);
+/* FIXME - haaaaa! chyba będę mogł to wywalić, gdy mapiszę St1_QMStateAnalytic !! */
+		void calculateTableValuesPosition(St1_QMStateAnalytic* localCreator, const QMParameters* par, const QMStateAnalytic*);
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 
 	private:
@@ -85,4 +82,19 @@ or directly by filling in the discrete values in the table. It is used for numer
 		
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
+
+class St1_QMStateDiscrete: public St1_QMState
+{
+	public:
+		virtual void go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*);
+		FUNCTOR1D(QMStateDiscrete);
+		YADE_CLASS_BASE_DOC(St1_QMStateDiscrete/* class name */, St1_QMState /* base class */
+			, "Functor creating :yref:`QMStateDiscrete` from :yref:`QMParametersDiscrete`." // class description
+		);
+/*FIXME, make it:	private: */
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
+		{ throw std::logic_error("St1_QMStateDiscrete was called directly.");};
+};
+REGISTER_SERIALIZABLE(St1_QMStateDiscrete);
 

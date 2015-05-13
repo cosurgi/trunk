@@ -4,6 +4,7 @@
 
 YADE_PLUGIN(
 	(QMPacketHarmonicEigenFunc)
+	(St1_QMPacketHarmonicEigenFunc)
 	);
 
 /*********************************************************************************
@@ -16,7 +17,7 @@ CREATE_LOGGER(QMPacketHarmonicEigenFunc);
 // !! at least one virtual function in the .cpp file
 QMPacketHarmonicEigenFunc::~QMPacketHarmonicEigenFunc(){};
 
-vector<boost::rational<signed long> > QMPacketHarmonicEigenFunc::hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > St1_QMPacketHarmonicEigenFunc::hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long> > c_even; // can't use static, because lambdaPerAlpha changes between calls
 	vector<boost::rational<signed long> > c_odd;
@@ -42,7 +43,7 @@ vector<boost::rational<signed long> > QMPacketHarmonicEigenFunc::hermitePolynomi
 	return a;
 }
 
-vector<boost::rational<signed long> > QMPacketHarmonicEigenFunc::hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
+vector<boost::rational<signed long> > St1_QMPacketHarmonicEigenFunc::hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
 {
 	vector<boost::rational<signed long>> a(hermitePolynomialCoefficients(order,lambdaPerAlpha));
 	vector<boost::rational<signed long>> b;
@@ -52,7 +53,7 @@ vector<boost::rational<signed long> > QMPacketHarmonicEigenFunc::hermitePolynomi
 	return b;
 }
 
-Complexr  QMPacketHarmonicEigenFunc::quantumOscillatorWavefunction( // assume hbar=1, mass=1, frequency=1
+Complexr  St1_QMPacketHarmonicEigenFunc::quantumOscillatorWavefunction( // assume hbar=1, mass=1, frequency=1
       unsigned int n                             // n - order of wavefunction
     , Real x          // position
 )
@@ -93,16 +94,28 @@ Complexr  QMPacketHarmonicEigenFunc::quantumOscillatorWavefunction( // assume hb
 //	return true;
 //}
 
-Complexr QMPacketHarmonicEigenFunc::getValPos(Vector3r pos)
-{
-	switch(this->dim) {
-		case 1 : return quantumOscillatorWavefunction((unsigned int)energyLevel[0],pos[0])*std::exp((-Mathr::I*(energyLevel[0]+0.5))*(this->t-t0));
+// FIXME: ↓
+#include <lib/time/TimeLimit.hpp>
 
-		case 2 : return quantumOscillatorWavefunction((unsigned int)energyLevel[0],pos[0])*std::exp((-Mathr::I*(energyLevel[0]+0.5))*(this->t-t0))*
-		                quantumOscillatorWavefunction((unsigned int)energyLevel[1],pos[1])*std::exp((-Mathr::I*(energyLevel[1]+0.5))*(this->t-t0));
+Complexr St1_QMPacketHarmonicEigenFunc::getValPos(Vector3r pos, const QMParameters* par, const QMState* qms)
+{
+	const QMPacketHarmonicEigenFunc* p = static_cast<const QMPacketHarmonicEigenFunc*>(qms);
+
+// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
+	static TimeLimit timeLimit; if(timeLimit.messageAllowed(10))
+	std::cerr << "St1_QMPacketHarmonicEigenFunc: Muszę dodać hbar oraz m i 'omega' ?? do listy argumentów. Skąd brać omega, btw? Nowa klasa QMParameters ← QMOscillator w którym byłaby częstotliwość omega??\n";
+// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
+
+	switch(par->dim) {
+		case 1 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0));
+		case 2 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*(p->energyLevel[1]+0.5))*(p->t-p->t0));
+		case 3 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*(p->energyLevel[1]+0.5))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[2],pos[2])*std::exp((-Mathr::I*(p->energyLevel[2]+0.5))*(p->t-p->t0));
 
 		default: break;
 	}
-	throw std::runtime_error("getValPos() works only in 1 or 2 dimensions.");
+	throw std::runtime_error("getValPos() works only in 1, 2 or 3 dimensions.");
 };
 

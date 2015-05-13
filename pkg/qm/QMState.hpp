@@ -6,6 +6,7 @@
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
 #include <stdexcept>
+#include "QMParameters.hpp"
 
 /*********************************************************************************
 *
@@ -19,7 +20,7 @@
 class QMState: public State
 {
 	public:
-		virtual Complexr getValPos(Vector3r xyz){throw;};    /// return complex quantum aplitude at given positional representation coordinates
+// FIXME? mogę w końcu to skasować?		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par){throw;};    /// return complex quantum aplitude at given positional representation coordinates
 //		virtual Complexr getValInv(Vector3r xyz){};          /// return complex quantum aplitude at given wavenumber representation coordinates
 //		virtual Complexr getValIJKPos(Vector3i ijk){throw;}; /// return complex quantum aplitude at given positional grid coordinates
 //		virtual Complexr getValIJKInv(Vector3i ijk){};       /// return complex quantum aplitude at given wavenumber grid coordinates
@@ -28,7 +29,7 @@ class QMState: public State
 
 //////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// FIXME - only this one has a nice name, and is actually implemented, fix the others.
-		virtual Real     stepInPositionalRepresentation(){throw;}; /// return grid step, two point distance in the mesh in positional representation
+/* FIXME - skasować? Przerobić? */		virtual Real     stepInPositionalRepresentation(){throw;}; /// return grid step, two point distance in the mesh in positional representation
 //////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -50,7 +51,6 @@ class QMState: public State
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
 			Yes, even mass must be removed, although it is back in few of derived classes."))
-			((size_t     ,dim     ,,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -59,4 +59,24 @@ class QMState: public State
 };
 REGISTER_SERIALIZABLE(QMState);
 
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   S T A T E   F U N C T O R
+*
+*********************************************************************************/
+
+class St1_QMState: public StateFunctor
+{
+	public:
+		virtual void go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*);
+		FUNCTOR1D(QMState);
+		YADE_CLASS_BASE_DOC(St1_QMState/* class name */, StateFunctor /* base class */
+			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
+		);
+/*FIXME, make it:	private: */
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
+		{ throw std::logic_error("St1_QMState::getValPos was called directly.");};
+};
+REGISTER_SERIALIZABLE(St1_QMState);
 

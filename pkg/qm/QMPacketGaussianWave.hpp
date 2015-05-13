@@ -24,14 +24,13 @@ class QMPacketGaussianWave: public QMStateAnalytic
 {
 	public:
 		virtual ~QMPacketGaussianWave();
-		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
 			QMPacketGaussianWave
 			, // base class
 			QMStateAnalytic
 			, // class description
-"This is an analytically described wave packet function $\\psi$ with a Gaussian shape defined using following forumla:\
+"This is an analytically described wave packet function $\\psi$ with a Gaussian shape defined using following forumla (in :yref: `St1_QMPacketGaussianWave`):\
 \n\n\
 .. math::\
 \n\n\
@@ -62,17 +61,33 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			((Vector3r,x0  ,Vector3r::Zero(),,"Initial wave packet center at $t=0$"))
 			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
 			((Vector3r,k0  ,Vector3r::Zero(),,"Initial wavenumber $k_0$"))
-			((Real    ,m   ,1               ,,"Particle mass"))
-			((Vector3r,a0  ,Vector3r::Zero(),,"Initial Gausian packet width $a$, sometimes called $\\sigma$"))
-			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
+			((Vector3r,a0  ,Vector3r::Zero(),,"Initial Gausian packet width $a_0$, sometimes called $\\sigma$"))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMPacketGaussianWave,QMStateAnalytic);
-	private:
-		Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real k0,Real m, Real a, Real h);
 };
 REGISTER_SERIALIZABLE(QMPacketGaussianWave);
+
+/*********************************************************************************
+*
+* F R E E L Y   M O V I N G   G A U S S I A N   W A V E P A C K E T   F U N C T O R
+*
+*********************************************************************************/
+
+class St1_QMPacketGaussianWave: public St1_QMStateAnalytic
+{
+	public:
+		FUNCTOR1D(QMPacketGaussianWave);
+		YADE_CLASS_BASE_DOC(St1_QMPacketGaussianWave /* class name */, St1_QMStateAnalytic /* base class */
+			, "Functor creating :yref:`QMPacketGaussianWave` from :yref:`QMParticle`." // class description
+		);
+/*FIXME, make it:	private: */
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
+		Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real t0,Real k0,Real m, Real a, Real h);
+};
+REGISTER_SERIALIZABLE(St1_QMPacketGaussianWave);
 

@@ -73,6 +73,14 @@ void Gl1_QMGeometry::go(
 	const GLViewInfo&
 )
 {
+
+// FIXME, FIXME, FIXME, ale jak????????????      ↓↓↓↓↓↓↓↓↓
+	shared_ptr<StateDispatcher> st;
+	FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
+	if(!st) { std::cerr << "Gl1_QMGeometry : StateDispatcher is missing.\n"; exit(1); };
+	st->action();
+// FIXME, FIXME, FIXME, ale jak????????????      ↑↑↑↑↑↑↑↑↑
+
 	timeLimit.readWallClock();
 
 // FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that?
@@ -87,28 +95,44 @@ void Gl1_QMGeometry::go(
 		{
 			if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
 			if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
-			pd = packetAnalytic->prepareDiscrete(g).get();
+
+				// FIXME, FIXME, FIXME, ale jak????????????      ↓↓↓↓↓↓↓↓↓
+					shared_ptr<StateDispatcher> st;
+					FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
+					if(!st) { std::cerr << "Gl1_QMGeometry : StateDispatcher is missing.\n"; exit(1); };
+				//	{ // FIXME - muszę zacząć używać ten mutex w tych wszystkich St1_*, żeby zmieniać `bool QMState::wasDrawn` lub `bool QMGeometry::wasUsed`
+				//	  // chyba go powinienem ustawiać w St1_*, ale tym "nadrzędnym" a nie w tych wszystkich getValPos
+				//	  // też coś o nim pisałem w St1_QMStateAnalytic::go
+				//		boost::unique_lock<boost::mutex> scoped_lock(updateMutex);
+				//		//return ++count;
+				//	}
+					st->action();
+				// FIXME, FIXME, FIXME, ale jak????????????      ↑↑↑↑↑↑↑↑↑
+
+			pd = packetAnalytic->stateDiscreteOptimised.get(); /*FIXME:   wtf?????/ prepareDiscrete(g,packetAnalytic->par_FIXME.get()).get();*/
 		}
-	};
+	} else {
+		lastDiscreteStep  = g->step;
+		lastDiscreteScale = g->partsScale;
+	}
 	if (not pd) {
 		if(timeLimit.messageAllowed(5)) std::cerr << "ERROR: Cannot get QMStateDiscrete\n";
 		return;
 	}
+
 	Vector3r col = g->color;
 	start=Vector3r(0,0,0);
 	Vector3r end(0,0,0);
-	if(pd->dim > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0); } else { return; }
-	if(pd->dim > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1); }
-	if(pd->dim > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2); }
-	lastDiscreteStep  = g->step;
-	lastDiscreteScale = g->partsScale;
+	if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0); } else { return; }
+	if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1); }
+	if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2); }
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
 	Real scalingFactor = (g->partsScale >= 0 ? ((g->partsScale==0)?(1):(g->partsScale)) : -1.0/g->partsScale);
 	for(size_t draw=0 ; draw<partsToDraw.size() ; draw++) {
 		if( partsToDraw[draw]() ) {
-			switch(pd->dim) {
+			switch(pd->gridSize.size()) {
 				// FIXME(2) - add following
 				// 1D phase  , 2D phase  , 3D phase
 				// 1D argand , 2D argand , 3D Dirac-Argand
@@ -207,7 +231,7 @@ void Gl1_QMGeometry::go(
 		}
 	}
 	if(menuSelection(g->stepRender)!="hidden")
-		if(timeLimit.messageAllowed(10))
+		if(timeLimit.messageAllowed(7))
 			std::cerr << "Gl1_QMGeometry: Drawing of grid steps is not ready yet.\n";
 
 };

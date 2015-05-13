@@ -23,7 +23,6 @@ class QMPacketHarmonicEigenFunc: public QMStateAnalytic
 {
 	public:
 		virtual ~QMPacketHarmonicEigenFunc();
-		virtual Complexr getValPos(Vector3r xyz);          /// return complex quantum aplitude at given positional representation coordinates
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 			  // class name
 			QMPacketHarmonicEigenFunc
@@ -68,10 +67,30 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMPacketHarmonicEigenFunc,QMStateAnalytic);
+};
+REGISTER_SERIALIZABLE(QMPacketHarmonicEigenFunc);
+
+
+/*********************************************************************************
+*
+* H A R M O N I C   O S C I L L A T O R   W A V E F U N C T I O N   F U N C T O R
+*
+*********************************************************************************/
+
+class St1_QMPacketHarmonicEigenFunc: public St1_QMStateAnalytic
+{
+	public:
+		FUNCTOR1D(QMPacketHarmonicEigenFunc);
+		YADE_CLASS_BASE_DOC(St1_QMPacketHarmonicEigenFunc /* class name */, St1_QMStateAnalytic /* base class */
+			, "Functor creating :yref:`QMPacketHarmonicEigenFunc` from :yref:`QMParameters`." // class description
+		);
+/*FIXME, make it:	private: */
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
 	private:
 		vector<boost::rational<signed long> > hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
 		vector<boost::rational<signed long> > hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
 		Complexr  quantumOscillatorWavefunction(unsigned int,Real); // FIXME: assume hbar=1, mass=1, frequency=1
 };
-REGISTER_SERIALIZABLE(QMPacketHarmonicEigenFunc);
+REGISTER_SERIALIZABLE(St1_QMPacketHarmonicEigenFunc);
 

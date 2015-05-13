@@ -4,6 +4,7 @@
 
 YADE_PLUGIN(
 	(QMPacketGaussianWave)
+	(St1_QMPacketGaussianWave)
 	);
 
 /*********************************************************************************
@@ -15,10 +16,17 @@ CREATE_LOGGER(QMPacketGaussianWave);
 // !! at least one virtual function in the .cpp file
 QMPacketGaussianWave::~QMPacketGaussianWave(){};
 
-Complexr QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
+/*********************************************************************************
+*
+* F R E E L Y   M O V I N G   G A U S S I A N   W A V E P A C K E T   F U N C T O R
+*
+*********************************************************************************/
+
+Complexr St1_QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
 	Real x,    // position where wavepacket is calculated
 	Real x0,   // initial position of wavepacket centar at time t=0
 	Real t,    // time when wavepacket is evaluated
+	Real t0,   // initial time
 //
 //	Real k,    // wavenumber at which wavepacket is calculated - commented out, since we use position representation here
 //
@@ -43,17 +51,20 @@ Complexr QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
 	);
 };
 		
-Complexr QMPacketGaussianWave::getValPos(Vector3r pos)
+Complexr St1_QMPacketGaussianWave::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
 {
-	switch(this->dim) {
-		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a0[0],hbar);
+	const QMPacketGaussianWave* p = static_cast<const QMPacketGaussianWave*>(qms);
+	const QMParticle* par = dynamic_cast<const QMParticle*>(pm);
+	if(not par) { throw std::runtime_error("ERROR: St1_QMPacketGaussianWave nas no QMParticle, but rather `"+std::string(pm?pm->getClassName():"")+"`");};
+	switch(par->dim) {
+		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar);
 
-		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a0[0],hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a0[1],hbar);
+		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar);
 
-		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],x0[0],this->t,k0[0],m,a0[0],hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],x0[1],this->t,k0[1],m,a0[1],hbar)*
-				waveFunctionValue_1D_positionRepresentation(pos[2],x0[2],this->t,k0[2],m,a0[2],hbar);
+		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar)*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar)*
+				waveFunctionValue_1D_positionRepresentation(pos[2],p->x0[2],p->t,p->t0,p->k0[2],par->m,p->a0[2],par->hbar);
 				// FIXME - interesting thing: adding a new dimension is just a multiplication.
 				//         but calculating probability is multiplication by conjugate.
 				//         just as time is really just another dimension, but in Minkowski metric.

@@ -14,9 +14,11 @@ harmonicOrder_y   = 1
 
 
 O.engines=[
+	StateDispatcher([
+		St1_QMPacketHarmonicEigenFunc(),
+		St1_QMStateDiscrete()
+	]),
 	SpatialQuickSortCollider([
-	#InsertionSortCollider([
-	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
@@ -44,8 +46,8 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsSc
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , renderMaxTime=0.5)
-analyticBody.material  = QMParameters()
-harmonicPacket         = QMPacketHarmonicEigenFunc(dim=dimensions,energyLevel=[harmonicOrder_x, harmonicOrder_y, 0])
+analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
+harmonicPacket         = QMPacketHarmonicEigenFunc(energyLevel=[harmonicOrder_x, harmonicOrder_y, 0])
 analyticBody.state     = harmonicPacket
 O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
@@ -56,9 +58,9 @@ numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=1
                                          , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                                          , renderMaxTime=0.5)
-numericalBody.material  = QMParameters()
+numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,dim=dimensions,size=size,gridSize=[2**6,2**7])
+numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,size=size,gridSize=[2**6,2**7])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

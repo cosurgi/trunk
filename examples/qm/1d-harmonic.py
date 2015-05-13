@@ -17,6 +17,10 @@ potentialValue    = 0.0
 
 
 O.engines=[
+	StateDispatcher([
+		St1_QMPacketGaussianWave(),
+		St1_QMStateDiscrete()
+	]),
 	SpatialQuickSortCollider([
 	#InsertionSortCollider([
 	#	Bo1_QMGeometry_Aabb(),
@@ -41,17 +45,17 @@ O.engines=[
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
-analyticBody.material  = QMParameters()
-gaussPacket            = QMPacketGaussianWave(dim=dimensions,x0=[0,0,0],t0=0,k0=[k0_x,0,0],m=1,a0=[gaussWidth,0,0],hbar=1)
+analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
+gaussPacket            = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[k0_x,0,0],a0=[gaussWidth,0,0])
 analyticBody.state     = gaussPacket
 #O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
 
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
-numericalBody.material  = QMParameters()
+numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,dim=dimensions,size=size,gridSize=[2**12])
+numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[2**12])
 O.bodies.append(numericalBody)
 
 ## 3: The box with potential

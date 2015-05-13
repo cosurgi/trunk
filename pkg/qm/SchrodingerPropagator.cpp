@@ -34,6 +34,7 @@ void SchrodingerAnalyticPropagator::action()
 	const Real& dt=scene->dt;
 //	const Real& time=scene->time;
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
+//		std::cerr << "SchrodingerAnalyticPropagator, " << b->state->getClassName() << "\n";
 		QMStateAnalytic* analytic=dynamic_cast<QMStateAnalytic*>(b->state.get());
 //		const Body::id_t& id=b->getId();
 		if(analytic) {
@@ -154,6 +155,7 @@ void SchrodingerKosloffPropagator::action()
 	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
+//		std::cerr << "SchrodingerKosloffPropagator, " << b->state->getClassName() << "\n";
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 //		const Body::id_t& id=b->getId();
 		if(psi) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
@@ -179,6 +181,7 @@ void SchrodingerKosloffPropagator::action()
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 			psi->tableValuesPosition=psi_dt;
 			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMPotPhysics, lub obok.\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }

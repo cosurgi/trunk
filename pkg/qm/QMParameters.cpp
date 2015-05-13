@@ -1,10 +1,10 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMParameters.hpp"
-#include <core/Scene.hpp>
 
 YADE_PLUGIN(
 	(QMParameters)
+	(QMParticle)
 	);
 
 /*********************************************************************************
@@ -16,4 +16,12 @@ CREATE_LOGGER(QMParameters);
 // !! at least one virtual function in the .cpp file
 QMParameters::~QMParameters(){};
 
+/*********************************************************************************
+*
+* Q M   P A R T I C L E   with mass
+*
+*********************************************************************************/
+CREATE_LOGGER(QMParticle);
+// !! at least one virtual function in the .cpp file
+QMParticle::~QMParticle(){};
 
