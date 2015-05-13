@@ -1,10 +1,42 @@
 #include<pkg/common/Dispatching.hpp>
 
-YADE_PLUGIN((BoundFunctor)(IGeomFunctor)(IPhysFunctor)(LawFunctor)(BoundDispatcher)(IGeomDispatcher)(IPhysDispatcher)(LawDispatcher));
+YADE_PLUGIN((StateFunctor)(BoundFunctor)(IGeomFunctor)(IPhysFunctor)(LawFunctor)(StateDispatcher)(BoundDispatcher)(IGeomDispatcher)(IPhysDispatcher)(LawDispatcher));
+StateFunctor::~StateFunctor(){};
 BoundFunctor::~BoundFunctor(){};
 IGeomFunctor::~IGeomFunctor(){};
 IPhysFunctor::~IPhysFunctor(){};
 LawFunctor::~LawFunctor(){};
+
+
+/********************************************************************
+                      StateDispatcher
+*********************************************************************/
+
+CREATE_LOGGER(StateDispatcher);
+
+void StateDispatcher::action()
+{
+	updateScenePtr();
+	shared_ptr<BodyContainer>& bodies = scene->bodies;
+	const long numBodies=(long)bodies->size();
+	#ifdef YADE_OPENMP
+	#pragma omp parallel for num_threads(ompThreads>0 ? min(ompThreads,omp_get_max_threads()) : omp_get_max_threads())
+	#endif
+	for(int id=0; id<numBodies; id++){
+		if(!bodies->exists(id)) continue; // don't delete this check  - Janek
+		const shared_ptr<Body>& b=(*bodies)[id];
+		processBody(b);
+	}
+}
+
+void StateDispatcher::processBody(const shared_ptr<Body>& b)
+{
+	shared_ptr<Material>& material = b->material;
+	shared_ptr<State>&    state    = b->state;
+	if(!state or !material) return;
+	if(!state->stateFunctor){ state->stateFunctor=this->getFunctor1D(state); if(!state->stateFunctor) return; }
+	state->stateFunctor->go(state,material,b.get());
+}
 
 
 /********************************************************************

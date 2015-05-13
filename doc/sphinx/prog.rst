@@ -213,6 +213,7 @@ Although for historical reasons the naming scheme is not completely consistent, 
 	========================== ================ ====================== ============== ===================== ===============
 	dispatcher                 arity            dispatch types         created type   functor type          functor prefix
 	========================== ================ ====================== ============== ===================== ===============
+	:yref:`StateDispatcher`    1                :yref:`State`          :yref:`State`  :yref:`StateFunctor`  ``St1``
 	:yref:`BoundDispatcher`    1                :yref:`Shape`          :yref:`Bound`  :yref:`BoundFunctor`  ``Bo1``
 	:yref:`IGeomDispatcher`    2 (symetric)     2 × :yref:`Shape`      :yref:`IGeom`  :yref:`IGeomFunctor`  ``Ig2``
 	:yref:`IPhysDispatcher`    2 (symetric)     2 × :yref:`Material`   :yref:`IPhys`  :yref:`IPhysFunctor`  ``Ip2``
@@ -220,7 +221,9 @@ Although for historical reasons the naming scheme is not completely consistent, 
 	                                            :yref:`IPhys`
 	========================== ================ ====================== ============== ===================== ===============
 
-	Respective abstract functors for each dispatchers are :yref:`BoundFunctor`, :yref:`IGeomFunctor`, :yref:`IPhysFunctor` and :yref:`LawFunctor`.
+	Respective abstract functors for each dispatchers are :yref:`StateFunctor`, :yref:`BoundFunctor`, :yref:`IGeomFunctor`, :yref:`IPhysFunctor` and :yref:`LawFunctor`.
+
+.. note:: :yref: `StateFunctor` is not explicitly creating :yref: `State`, since a correct derivative of class :yref: `State` must already exist in order to have correct dispatching. The real purpose of :yref: `StateFunctor` is to fill `State` class with correctly precalculated data depending on :yref: `Material` and other :yref: `Body` components, like :yref: `Shape`.
 
 :ref:`Functors<inheritanceGraphFunctor>`
 	Functor name is composed of 3 parts, separated by underscore.
@@ -963,6 +966,7 @@ Classes entering the dispatch mechanism must provide for fast identification of 
 ==================== ===========================
 Top-level Indexable  used by
 ==================== ===========================
+:yref:`State`        :yref:`StateFunctor`,
 :yref:`Shape`        :yref:`BoundFunctor`, :yref:`IGeomDispatcher`
 :yref:`Material`     :yref:`IPhysDispatcher`
 :yref:`IPhys`        :yref:`LawDispatcher`

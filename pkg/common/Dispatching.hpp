@@ -15,6 +15,17 @@
 	functors
 *********************/
 
+class StateFunctor: public Functor1D<
+	/*dispatch types*/ State,
+	/*return type*/    void,
+	/*argument types*/ TYPELIST_3(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*)
+>{
+	public: virtual ~StateFunctor();
+	YADE_CLASS_BASE_DOC(StateFunctor,Functor,"Functor for creating/updating :yref:`Body::state` objects.");
+};
+REGISTER_SERIALIZABLE(StateFunctor);
+
+
 class BoundFunctor: public Functor1D<
 	/*dispatch types*/ Shape,
 	/*return type*/    void ,
@@ -72,6 +83,18 @@ REGISTER_SERIALIZABLE(LawFunctor);
 /********
 	dispatchers
 *********************/
+
+class StateDispatcher:	public Dispatcher1D<
+	/* functor type*/ StateFunctor
+>{
+	public:
+		virtual void action();
+		void processBody(const shared_ptr<Body>&);
+	DECLARE_LOGGER;
+	YADE_DISPATCHER1D_FUNCTOR_DOC_ATTRS_CTOR_PY(StateDispatcher,StateFunctor,/* doc is optional*/,/*attrs*/,/*ctor*/,/*py*/);
+};
+REGISTER_SERIALIZABLE(StateDispatcher);
+
 
 class BoundDispatcher: public Dispatcher1D<	
 	/* functor type*/ BoundFunctor

@@ -502,7 +502,7 @@ class SerializableEditor(QFrame):
 			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,'DropDownMenu':DropDownMenuFakeType,
 			'string':str,
 			#'BodyCallback':BodyCallback,
-			'IntrCallback':IntrCallback,'BoundFunctor':BoundFunctor,'IGeomFunctor':IGeomFunctor,'IPhysFunctor':IPhysFunctor,'LawFunctor':LawFunctor,'KinematicEngine':KinematicEngine,
+			'IntrCallback':IntrCallback,'StateFunctor':StateFunctor,'BoundFunctor':BoundFunctor,'IGeomFunctor':IGeomFunctor,'IPhysFunctor':IPhysFunctor,'LawFunctor':LawFunctor,'KinematicEngine':KinematicEngine,
 			'GlShapeFunctor':GlShapeFunctor,'GlStateFunctor':GlStateFunctor,'GlIGeomFunctor':GlIGeomFunctor,'GlIPhysFunctor':GlIPhysFunctor,'GlBoundFunctor':GlBoundFunctor,'GlExtraDrawer':GlExtraDrawer
 		}
 		for T,ret in vecMap.items():

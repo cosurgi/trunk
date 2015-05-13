@@ -201,6 +201,7 @@ BOOST_PYTHON_MODULE(_customConverters){
 		VECTOR_SEQ_CONV(shared_ptr<Engine>);
 		VECTOR_SEQ_CONV(shared_ptr<Material>);
 		VECTOR_SEQ_CONV(shared_ptr<Serializable>);
+		VECTOR_SEQ_CONV(shared_ptr<StateFunctor>);
 		VECTOR_SEQ_CONV(shared_ptr<BoundFunctor>);
 		VECTOR_SEQ_CONV(shared_ptr<IGeomFunctor>);
 		VECTOR_SEQ_CONV(shared_ptr<IPhysFunctor>);
