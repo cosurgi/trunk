@@ -1,6 +1,6 @@
 #define DEBUG_NDIMTABLE
 
-#define YADE_FFTW3
+//#define YADE_FFTW3
 #include <iostream>
 #include "lib/base/NDimTable.hpp"
 #include <complex>

@@ -72,17 +72,36 @@ class FFTW3_Allocator
 		struct FFTW3_Memory;
 };
 
+///// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for int.
+//template <>
+//struct FFTW3_Allocator<int>::FFTW3_Memory
+//{
+//	static void* malloc(size_t n) {
+//		#warning "FFTW will not work for int type"
+//		return malloc(n *sizeof(int) );
+//	}
+//
+//	static void free(void *p) {
+//		free(p);
+//	}
+//};
+
+
 /// Specialization of struct FFTW3_Allocator<>::FFTW3_Memory for float precision.
 template <>
 struct FFTW3_Allocator<float>::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
+		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_malloc("<<n<<")\n";
+		#endif
 		return fftwf_malloc(n);
 	}
 
 	static void free(void *p) {
+		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_FREE\n";
+		#endif
 		fftwf_free(p);
 	}
 };
@@ -92,12 +111,16 @@ template <>
 struct FFTW3_Allocator<std::complex<float> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
+		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_malloc("<<n<<")\n";
+		#endif
 		return fftwf_malloc(n);
 	}
 
 	static void free(void *p) {
+		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_FREE\n";
+		#endif
 		fftwf_free(p);
 	}
 };

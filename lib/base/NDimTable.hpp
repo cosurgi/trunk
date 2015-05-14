@@ -21,6 +21,7 @@
 #include <complex>
 #include <stdexcept>
 #include <iostream>
+#include <iomanip>
 #include <boost/lexical_cast.hpp>
 
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
@@ -28,6 +29,8 @@
 #ifdef YADE_FFTW3
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
+
+std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 
 class FFT {};
 
@@ -196,6 +199,27 @@ class NDimTable : private std::vector<K
 /* OK */	const reference at(std::size_t i,std::size_t j)              const{ assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
 /* OK */	const reference at(std::size_t i,std::size_t j,std::size_t k)const{ assert(rank_d==3); return parent::operator[](k+dim_n[2]*(j+i*dim_n[1])); };
 
+/* OK */	bool operator != (const NDimTable& o) { return not ((*this)==o); }
+/* OK */	bool operator == (const NDimTable& o) {
+			if( (rank_d != o.rank()) or (dim_n != o.dim())) return false;
+			auto it_2 = o.begin();
+			for(auto it_1 = this->begin(); it_1 != this->end(); ++it_1, ++it_2) if( *it_1 != *it_2) return false;
+			return true;
+		};
+/* OK */	bool compareEpsilon(const NDimTable& o, not_complex eps) {
+			if( (rank_d != o.rank()) or (dim_n != o.dim())) return false;
+			auto it_2 = o.begin();
+			DimN pos_i(rank_d,0);
+			for(auto it_1 = this->begin(); it_1 != this->end(); ++it_1, ++it_2) {
+				if( std::abs(*it_1 - *it_2) > eps ) 
+				{
+					std::cerr << "[" << pos_i << "] error: " << boost::lexical_cast<std::string>(std::abs(*it_1 - *it_2)) << " > " << boost::lexical_cast<std::string>(eps) << "\n";
+					return false;
+				}
+				increment(pos_i);
+			}
+			return true;
+		};
 		// elementwise operations
 		NDimTable& operator  = (const NDimTable& )=default;
 		NDimTable& operator  = (      NDimTable&&)=default;
@@ -217,7 +241,6 @@ class NDimTable : private std::vector<K
 		// FIXME: if it's 'double' here then better it should be 'Real' so that changing precision works correctly
 		not_complex minReal() const {not_complex ret(std::real(this->front())); for(K v : (*this)){ret  = std::min(std::real(v),ret);}; return ret;};
 		not_complex maxReal() const {not_complex ret(std::real(this->front())); for(K v : (*this)){ret  = std::max(std::real(v),ret);}; return ret;};
-		K           sumAll()  const {K           ret(          0             ); for(K v : (*this)){ret += v                         ;}; return ret;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
 		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
@@ -330,19 +353,77 @@ class NDimTable : private std::vector<K
 			}
 		};
 
-		void print(std::ostream& os) const
+/* OK */	DimN marginalDistributionIndexContraction(const DimN& pos,const std::vector<short int>& remain)
+		{
+			DimN ret={};
+			for(size_t i=0 ; i<remain.size() ; i++) {
+				if(remain[i]==1) ret.push_back(pos[i]);
+			};
+			return std::move(ret);
+		};
+
+/* OK */	K sumAll() const {K ret(0); for(K v : (*this)){ret += v;}; return ret;};
+/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain)
+		{
+			assert(remain.size()==rank_d);
+			DimN dim_new={};
+			for(size_t i=0 ; i<rank_d ; i++) {
+				assert(remain[i]==0 or remain[i]==1);
+				if(remain[i]==1) dim_new.push_back(dim_n[i]);
+			};
+			NDimTable<K> ret(dim_new,0);
+			DimN pos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i);
+				increment(pos_i);
+			}
+			return std::move(ret);
+		};
+
+/* OK */	K integrateAll(std::vector<not_complex> spatial_sizes) const
+		{
+			assert(spatial_sizes.size()==rank_d);
+			not_complex cell_volume(1);
+			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+			K ret(0); for(K v : (*this)){ret += v*cell_volume;}; return ret;
+		};
+/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes)
+		{
+			assert(remain.size()==rank_d);
+			assert(spatial_sizes.size()==rank_d);
+			DimN dim_new={};
+			not_complex cell_volume(1);
+			for(size_t i=0 ; i<rank_d ; i++) {
+				assert(remain[i]==0 or remain[i]==1);
+				if(remain[i]==1) dim_new.push_back(dim_n[i]);
+				else cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+			};
+			NDimTable<K> ret(dim_new,0);
+			DimN pos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*cell_volume;
+				increment(pos_i);
+			}
+			return std::move(ret);
+		};
+
+		void print(std::ostream& os,std::string l,int width) const
 		{
 			if(rank_d==0) return;
 			std::vector<std::size_t> pos_i(rank_d,0);
 			for(std::size_t total_i=0;total_i < total; total_i++)
 			{
-				os << parent::operator[](total_i) << " ";
+				os << l << "[" << pos_i << "]=" << std::setw(width) << parent::operator[](total_i) << "\t";
 				int n(increment(pos_i));
 				for(int i=0;i<n;i++)
 					os << "\n";
 			}
 		}
-		void print() const { print(std::cout);};
+		void print() const { print(std::cout,"",0);};
+		void print(std::ostream& os) const { print(os,"",0);};
+		void print(std::string label,int width) const { print(std::cout,label,width);};
 
 		// FFTW3, here or there?
 
