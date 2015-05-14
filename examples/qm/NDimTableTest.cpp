@@ -1,3 +1,4 @@
+#define DEBUG_NDIMTABLE
 
 #define YADE_FFTW3
 #include <iostream>
@@ -84,19 +85,30 @@ int main(void){
 	parts.push_back(&T2);
 	NDimTable<float> T3(parts);
 	std::cout << "constructed, print now ---- checking TENSOR PRODUCT\n";
+	double minRealT3(T3.at(0,0,0)),maxRealT3(T3.at(0,0,0)),sumAllT3(0);
 	for(int i=0 ; i<3; i++) {
 		for(int j=0 ; j<4 ; j++) {
 			for(int k=0 ; k<5 ; k++) {
 				std::cout << T3.at(i,j,k) << " (" << (100*i+10*j +1)*(1000*k+1000) << ")   " ;
 				assert  (    T3.at(i,j,k) ==         (100*i+10*j +1)*(1000*k+1000) );
+				minRealT3 = std::min(minRealT3,  (double)    (100*i+10*j +1)*(1000*k+1000)    );
+				maxRealT3 = std::max(maxRealT3,  (double)    (100*i+10*j +1)*(1000*k+1000)    );
+				sumAllT3  +=                                (100*i+10*j +1)*(1000*k+1000)     ;
 				//std::cout << T1.at(i,j) << " ";
 			};
 			std::cout << "\n";
 		};
 		std::cout << "\n";
 	};
+	std::cerr.precision(20);
+	std::cerr << "checking minReal.T3: " << minRealT3  << "  " <<  T3.minReal() << "\n";
+	std::cerr << "checking maxReal.T3: " << maxRealT3  << "  " <<  T3.maxReal() << "\n";
+	std::cerr << "checking sumAll.T3 : " << sumAllT3   << "  " <<  T3.sumAll()  << "\n";
+	assert(minRealT3 == T3.minReal());
+	assert(maxRealT3 == T3.maxReal());
+	assert(sumAllT3  == T3.sumAll());
 
-	std::cout << "checking print() call\n\n";
+	std::cout << "checking print() call on T3\n\n";
 	T3.print();
 	
 	std::cout << "T4\n";
@@ -246,8 +258,8 @@ int main(void){
 	in.becomesIFFT(out);
 	in.print();
 	out.print();
-	std::cout << "\n" << out.max();
-	std::cout << "\n" << out.min();
+	std::cout << "last printed tensor, out.maxReal() is " << out.maxReal() << "\n";
+	std::cout << "last printed tensor, out.minReal() is " << out.minReal() << "\n";
 // debug output:
 // FIXME, FIXME - add this to yade --check or test.
 // FIXME, FIXME - this is important, because various FFT libraries divide by sqrt(N) or some other numbers.

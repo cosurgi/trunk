@@ -47,7 +47,10 @@ constructed, print now ---- checking TENSOR PRODUCT
 221000 (221000)   442000 (442000)   663000 (663000)   884000 (884000)   1.105e+06 (1105000)   
 231000 (231000)   462000 (462000)   693000 (693000)   924000 (924000)   1.155e+06 (1155000)   
 
-checking print() call
+checking minReal.T3: 1000  1000
+checking maxReal.T3: 1155000  1155000
+checking sumAll.T3 : 20880000  20880000
+checking print() call on T3
 
 1000 2000 3000 4000 5000 
 11000 22000 33000 44000 55000 
@@ -329,6 +332,22 @@ conversion! rank:2
 101 111 121 131 
 201 211 221 231 
 
+new tensor rank=1
+new tensor dim_n: 8, 
+new tensor total=8
+new tensor rank=1
+new tensor dim_n: 8, 
+new tensor total=8
+(10,0) (20,0) (1,0) (-4,0) (5,0) (6,0) (0,0) (1,0) 
+(0,0) (0,0) (0,0) (0,0) (0,0) (0,0) (0,0) (0,0) 
+move failed! rank:1
+(10,0) (20,0) (1,0) (-4,0) (5,0) (6,0) (0,0) (1,0) 
+(39,0) (18.435,-7.36396) (14,-29) (-8.43503,-5.36396) (-7,0) (-8.43503,5.36396) (14,29) (18.435,7.36396) 
+move failed! rank:1
+(10,0) (20,0) (1,0) (-4,0) (5,0) (6,0) (0,0) (1,0) 
+(39,0) (18.435,-7.36396) (14,-29) (-8.43503,-5.36396) (-7,0) (-8.43503,5.36396) (14,29) (18.435,7.36396) 
+last printed tensor, out.maxReal() is 39
+last printed tensor, out.minReal() is -8.43503
 ----- fftwf_FREE
 ----- fftwf_FREE
 ----- fftwf_FREE

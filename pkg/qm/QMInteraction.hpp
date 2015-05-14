@@ -35,39 +35,13 @@ class Ip2_QMParameters_QMParameters_QMPotPhysics: public IPhysFunctor
 			, // base class
 			IPhysFunctor
 			, // class description
-			"Currently does nothing"
+			"Convert :yref:`QMParameters` instance and :yref:`QMParameters` instance to \
+			:yref:`QMPotPhysics` with corresponding parameters."
 			, // attributes, public variables
 //			((long,nothing,10,,"placeholder"))
 		);
 };
 REGISTER_SERIALIZABLE(Ip2_QMParameters_QMParameters_QMPotPhysics);
-
-
-/*! @brief When any Material meets the QMParameters a QMPotPhysics is made.
- *
- * This can be used for infinite potential wells, where the DEM boxes serve as walls.
- *
- */
-
-class Ip2_Material_QMParameters_QMPotPhysics: public IPhysFunctor
-{
-	public:
-		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
-		FUNCTOR2D(Material,QMParameters);
-		DECLARE_LOGGER;
-		YADE_CLASS_BASE_DOC_ATTRS(
-			  // class name
-			Ip2_Material_QMParameters_QMPotPhysics
-			, // base class
-			IPhysFunctor
-			, // class description
-			"Convert :yref:`QMParameters` instance and :yref:`Material` instance to \
-			:yref:`QMPotPhysics` with corresponding parameters."
-			, // attributes, public variables
-		);
-};
-REGISTER_SERIALIZABLE(Ip2_Material_QMParameters_QMPotPhysics);
-
 
 /*********************************************************************************
 *

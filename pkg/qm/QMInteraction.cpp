@@ -8,7 +8,6 @@
 
 YADE_PLUGIN(
 	(Ip2_QMParameters_QMParameters_QMPotPhysics)
-	(Ip2_Material_QMParameters_QMPotPhysics)
 	(Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics)
 	);
 
@@ -32,10 +31,6 @@ void Ip2_QMParameters_QMParameters_QMPotPhysics::go(
 	
 	interaction->phys = shared_ptr<QMPotPhysics>(new QMPotPhysics());
 	std::cerr <<"####### iphys created in QMInteraction\n";
-}
-
-CREATE_LOGGER(Ip2_Material_QMParameters_QMPotPhysics);
-void Ip2_Material_QMParameters_QMPotPhysics::go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction){
 }
 
 /*********************************************************************************

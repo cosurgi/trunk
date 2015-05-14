@@ -53,6 +53,10 @@ class NDimTable : private std::vector<K
 		typedef std::size_t        size_type;
 		typedef std::ptrdiff_t     difference_type;
 
+		template<typename Num> struct real_type                     {typedef Num type;};
+		template<typename Num> struct real_type<std::complex<Num> > {typedef Num type;};
+		typedef typename real_type<K>::type not_complex;
+
 		template<typename L> friend class NDimTable;
 	public:
 		typedef std::vector<std::size_t>  DimN;
@@ -80,16 +84,18 @@ class NDimTable : private std::vector<K
 			for(std::size_t i=0 ; i<others.size() ; i++) { dim_n.insert( dim_n.end(), others[i]->dim_n.begin(), others[i]->dim_n.end() ); };
 			total  = 1;            // total numer of elements (really explodes)
 			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
-			
-//			printDebugInfo();
+			#ifdef DEBUG_NDIMTABLE
+			printDebugInfo();
+			#endif
 		}
 		inline void calcDimRankTotal(const std::vector<std::size_t>& d) {
 			dim_n  = d;
 			rank_d = dim_n.size();
 			total  = 1;
-			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };
-			
-//			printDebugInfo();
+			BOOST_FOREACH( std::size_t d_n, dim_n ) { total *= d_n; };	
+			#ifdef DEBUG_NDIMTABLE
+			printDebugInfo();
+			#endif
 		}
 		// element access: http://www.fftw.org/fftw3_doc/Row_002dmajor-Format.html#Row_002dmajor-Format
 		// element is located at the position iᵈ⁻¹ + nᵈ⁻¹ *(iᵈ⁻² + nᵈ⁻² *( ... n³*( i² + n²*(i¹ + n¹ * i⁰))))
@@ -126,18 +132,24 @@ class NDimTable : private std::vector<K
 		NDimTable(const NDimTable& other) 
 			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
 		{
-//			std::cerr << "move failed! rank:" << rank_d << "\n";
+			#ifdef DEBUG_NDIMTABLE
+			std::cerr << "move failed! rank:" << rank_d << "\n";
+			#endif
 		};
 		template<typename L> NDimTable(const NDimTable<L>& other) 
 			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
 		{
+			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "conversion! rank:" << rank_d << "\n";
+			#endif
 		};
 		// move constructor
 		NDimTable(NDimTable&& other)
 			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
 		{
-//			std::cerr << "moved! rank:" << rank_d << "\n";
+			#ifdef DEBUG_NDIMTABLE
+			std::cerr << "moved! rank:" << rank_d << "\n";
+			#endif
 			other={};
 		};
 		// tensor product constructor
@@ -203,8 +215,9 @@ class NDimTable : private std::vector<K
 		// FIXME: should be 'K'-type not 'double'-type. But min(), max() works only with real numbers. 
 		// FIXME: this is because potential should be real valued (but isn't)
 		// FIXME: if it's 'double' here then better it should be 'Real' so that changing precision works correctly
-		double min() const {double ret(std::real(this->front())); for(K v : (*this)){ret = std::min(std::real(v),ret);}; return ret;};
-		double max() const {double ret(std::real(this->front())); for(K v : (*this)){ret = std::max(std::real(v),ret);}; return ret;};
+		not_complex minReal() const {not_complex ret(std::real(this->front())); for(K v : (*this)){ret  = std::min(std::real(v),ret);}; return ret;};
+		not_complex maxReal() const {not_complex ret(std::real(this->front())); for(K v : (*this)){ret  = std::max(std::real(v),ret);}; return ret;};
+		K           sumAll()  const {K           ret(          0             ); for(K v : (*this)){ret += v                         ;}; return ret;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
 		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
