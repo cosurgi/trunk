@@ -53,7 +53,7 @@ class QMGeometry: public Box
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
 			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
-			((Menu,stepRender       ,Menu({"default stripes","box","stripes","mesh"}),,"Show the steps on the grid."))
+			((Menu,stepRender       ,Menu({"default frame","hidden","frame","stripes","mesh"}),,"Show the steps on the grid."))
 			((Real,renderMaxTime    ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 			, // constructor

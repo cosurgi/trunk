@@ -34,6 +34,15 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 }
 
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME wywalić to do St1_*
+//
+// może w ten sposób, że:             QMState
+//                                       ↑
+//                                QMStateDiscrete     
+//                                       ↑                ??
+//                                QMStateAnalytic
+//                                   ↑        ↑
+//                  QMPacketGaussianWave  QMPacketHarmonicEigenFunc        
+//
 void QMStateDiscrete::calculateTableValuesPosition(St1_QMStateAnalytic* localCreator, const QMParameters* par, const QMStateAnalytic* qms)
 {// initialize from localCreator
 	if(not firstRun) return;

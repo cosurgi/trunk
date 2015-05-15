@@ -86,7 +86,10 @@ void Gl1_QMGeometry::go(
 // FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that?
 // Answer: add -Wshadow to gcc options
 	g = static_cast<QMGeometry*>(shape.get());
-	if(menuSelection(g->partAbsolute)=="hidden" and menuSelection(g->partReal)=="hidden" and menuSelection(g->partImaginary)=="hidden") return; // nothing to draw
+	if(	menuSelection(g->partAbsolute)=="hidden"  and
+		menuSelection(g->partReal)=="hidden"      and
+		menuSelection(g->partImaginary)=="hidden" and
+		menuSelection(g->stepRender)=="hidden"       ) return; // nothing to draw
 
 	pd = dynamic_cast<QMStateDiscrete*>(state.get());
 	if(not pd) {
@@ -120,12 +123,12 @@ void Gl1_QMGeometry::go(
 		return;
 	}
 
-	Vector3r col = g->color;
-	start=Vector3r(0,0,0);
-	Vector3r end(0,0,0);
-	if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0); } else { return; }
-	if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1); }
-	if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2); }
+	Vector3r col = g->color;                  //                                                                  1   2   3   4   5   
+	start=Vector3r(0,0,0);                    // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
+	Vector3r end(0,0,0);                      //                                                                    1   2   3   4   5  ↓↓↓↓↓
+	if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0)- g->step.x(); } else { return; }
+	if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1)- g->step.y(); }
+	if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2)- g->step.z(); }
 
 // FIXME(2) - perform here all requested tensor contractions: 3D→2D→1D, and slicing. Or maybe in O.body.shape, according to renderConfig?
 
@@ -153,7 +156,6 @@ void Gl1_QMGeometry::go(
 						glEnd();
 					} // else "points"
 				break;
-
 				case 2:
 					// FIXME(2) - add points, with point density reflecting the value
 					// 2D points
@@ -192,7 +194,6 @@ void Gl1_QMGeometry::go(
 						drawSurface(waveValues2D,colorToDraw[draw](col));
 					}
 				break;
-
 				case 3:
 					// FIXME(2) - add points, with point density reflecting the value
 					// 3D points
@@ -202,7 +203,7 @@ void Gl1_QMGeometry::go(
 					if(true /* points == false */) {
 						// FIXME!! ↓ is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
 						Vector3r minMC(start.x()+g->step.x()*0.5,start.y()+g->step.y()*0.5,start.z()+g->step.z()*0.5);
-						Vector3r maxMC(end.x()  +g->step.x()*0.5,end.y()  +g->step.y()*0.5,end.z()  +g->step.z()*0.5);
+						Vector3r maxMC(end.x()  +g->step.x()*1.5,end.y()  +g->step.y()*1.5,end.z()  +g->step.z()*1.5);
 						mc.init(pd->gridSize[0],pd->gridSize[1],pd->gridSize[2],minMC,maxMC);
 						// about waveValues3D FIXME(2) - resolve storage problems
 						mc.resizeScalarField(waveValues3D,pd->gridSize[0],pd->gridSize[1],pd->gridSize[2]);
@@ -222,7 +223,6 @@ void Gl1_QMGeometry::go(
 						glDrawMarchingCube(mc,colorToDraw[draw](col));
 					}
 				break;
-
 				default:
 					if(timeLimit.messageAllowed(5))
 						std::cerr << "4D or more dimensions plotting is not ready yet\n";
@@ -230,10 +230,81 @@ void Gl1_QMGeometry::go(
 			}
 		}
 	}
-	if(menuSelection(g->stepRender)!="hidden")
-		if(timeLimit.messageAllowed(7))
-			std::cerr << "Gl1_QMGeometry: Drawing of grid steps is not ready yet.\n";
-
+	if(menuSelection(g->stepRender)!="hidden") {
+		switch(pd->gridSize.size()) {
+			case 1:	glBegin(GL_LINE_STRIP); // "frame"
+				glNormal3f(0,0,1);
+				glColor3v( /*colorToDraw[draw]*/(col) );
+				glVertex3d(start.x(),0,0); glVertex3d(end.x(),0,0);
+				glEnd();
+				if(menuSelection(g->stepRender)=="stripes" or menuSelection(g->stepRender)=="mesh") {
+					glBegin(GL_LINES);
+					for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++ , _.x+=g->step.x() ) {
+						glVertex3d(_.x,0, -g->step.x()*0.3); glVertex3d(_.x,0,  g->step.x()*0.3);
+					}
+					glEnd();
+				};
+			break;
+			case 2:	glBegin(GL_LINE_LOOP);
+				glNormal3f(0,0,1);
+				glColor3v( /*colorToDraw[draw]*/(col) );
+				glVertex3d(start.x(),start.y(),0); glVertex3d(start.x(),end.y()  ,0);
+				glVertex3d(end.x()  ,end.y()  ,0); glVertex3d(end.x()  ,start.y(),0);
+				glEnd();
+				if(menuSelection(g->stepRender)=="stripes" or menuSelection(g->stepRender)=="mesh") {
+					glBegin(GL_LINES);
+					for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
+						glVertex3d(_.x,start.y(),0); glVertex3d(_.x,end.y(),0);
+					}
+					for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
+						glVertex3d(start.x(),__.y,0); glVertex3d(end.x(),__.y,0);
+					}
+					glEnd();
+					if(timeLimit.tooLong(g->renderMaxTime)) break;
+				};
+			break;
+			case 3:	glPushMatrix();
+				glTranslatev(Vector3r(-0.5*(g->step)));
+				glScalev(Vector3r(end-start));
+				glColor3v( /*colorToDraw[draw]*/(col) );
+				glutWireCube(1);
+				glPopMatrix();
+				if(menuSelection(g->stepRender)=="stripes" or menuSelection(g->stepRender)=="mesh") {
+					glBegin(GL_LINES);
+					glColor3v( /*colorToDraw[draw]*/(col) );
+					for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
+						glVertex3d(_.x      ,start.y(),start.z()); glVertex3d(_.x      ,end  .y(),start.z());
+						glVertex3d(_.x      ,start.y(),end  .z()); glVertex3d(_.x      ,end  .y(),end  .z());	                                                                     
+						glVertex3d(_.x      ,start.y(),start.z()); glVertex3d(_.x      ,start.y(),end  .z());
+						glVertex3d(_.x      ,end  .y(),start.z()); glVertex3d(_.x      ,end  .y(),end  .z());
+					}
+					for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
+						glVertex3d(start.x(),__.y     ,start.z()); glVertex3d(end  .x(),__.y     ,start.z());
+						glVertex3d(start.x(),__.y     ,end  .z()); glVertex3d(end  .x(),__.y     ,end  .z());
+						glVertex3d(start.x(),__.y     ,start.z()); glVertex3d(start.x(),__.y     ,end  .z());
+						glVertex3d(end  .x(),__.y     ,start.z()); glVertex3d(end  .x(),__.y     ,end  .z());
+					}
+					for(struct{size_t k;Real z;}___={0,start.z()} ; ___.k<pd->gridSize[2] ; ___.k++, ___.z+=g->step.z() ) {
+						glVertex3d(start.x(),start.y(),___.z    ); glVertex3d(end  .x(),start.y(),___.z    );
+						glVertex3d(start.x(),end  .y(),___.z    ); glVertex3d(end  .x(),end  .y(),___.z    );
+						glVertex3d(start.x(),start.y(),___.z    ); glVertex3d(start.x(),end  .y(),___.z    );
+						glVertex3d(end  .x(),start.y(),___.z    ); glVertex3d(end  .x(),end  .y(),___.z    );
+					}
+					glEnd();
+					if(timeLimit.tooLong(g->renderMaxTime)) break;
+				}
+				if(menuSelection(g->stepRender)=="mesh")
+					if(timeLimit.messageAllowed(10))
+						std::cerr << "Drawing mesh inside 3D is not ready yet\n";
+			break;
+			default:
+				if(timeLimit.messageAllowed(5))
+					std::cerr << "4D or more dimensions frame plotting is not ready yet\n";
+			break;
+		}
+	}// else if(menuSelection(g->stepRender)!="hidden")
+	//	if(timeLimit.messageAllowed(2))
+	//		std::cerr << "Gl1_QMGeometry: Drawing of grid steps is not ready yet.\n";
 };
 		
 void Gl1_QMGeometry::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
