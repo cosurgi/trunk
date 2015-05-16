@@ -26,6 +26,6 @@ CREATE_LOGGER(St1_QMState);
 // !! at least one virtual function in the .cpp file
 
 void St1_QMState::go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*){
-	throw std::logic_error("St1_QMState::go was called directly.");
+	throw std::runtime_error("\n\nSt1_QMState::go was called directly.\n\n");
 };
 

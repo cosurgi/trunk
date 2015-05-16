@@ -55,7 +55,8 @@ Complexr St1_QMPacketGaussianWave::getValPos(Vector3r pos , const QMParameters* 
 {
 	const QMPacketGaussianWave* p = static_cast<const QMPacketGaussianWave*>(qms);
 	const QMParticle* par = dynamic_cast<const QMParticle*>(pm);
-	if(not par) { throw std::runtime_error("ERROR: St1_QMPacketGaussianWave nas no QMParticle, but rather `"+std::string(pm?pm->getClassName():"")+"`");};
+	if(not par) { throw std::runtime_error("\n\nERROR: St1_QMPacketGaussianWave nas no QMParticle, but rather `"
+		+std::string(pm?pm->getClassName():"")+"`\n\n");};
 	switch(par->dim) {
 		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar);
 
@@ -70,6 +71,6 @@ Complexr St1_QMPacketGaussianWave::getValPos(Vector3r pos , const QMParameters* 
 				//         just as time is really just another dimension, but in Minkowski metric.
 		default: break;
 	}
-	throw std::runtime_error("getValPos() works only in 1,2 or 3 dimensions.");
+	throw std::runtime_error("\n\nSt1_QMPacketGaussianWave::getValPos() works only in 1,2 or 3 dimensions.\n\n");
 };
 

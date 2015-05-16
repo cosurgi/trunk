@@ -27,11 +27,17 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 	QMGeometry*      qmg     = dynamic_cast<QMGeometry*     >(b->shape.get());
 	if(!qmstate or !par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No state, no material. Cannot proceed."; exit(1);};
 	size_t dim = par->dim;
-	if(dim > 3) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go does not work with dim > 3.");};
+	if(dim > 3) { throw std::runtime_error("\n\nERROR: St1_QMStateDiscrete::go does not work with dim > 3.\n\n");};
 	std::vector<size_t> gridSizeNew(dim);
 	std::vector<Real>   sizeNew(dim);
 	for(size_t i=0 ; i<dim ; i++) {
-		if(qmg->step[i]==0) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go: step is ZERO!");};
+
+	// FIXME - bardzo dziwne miejsce do resetowanie step() w Gl1_QMGeometry, przecież tym się zajmuje St1_QMStateDiscrete::go !!!
+	//if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0)- g->step.x(); } else { return; }
+	//if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1)- g->step.y(); }
+	//if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2)- g->step.z(); }
+
+		if(qmg->step[i]==0) { throw std::runtime_error("\n\nERROR: St1_QMStateDiscrete::go: step is ZERO!\n\n");};
 		sizeNew    [i]=(         qmg->extents[i]*2.0              );
 		gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
 	}
@@ -57,12 +63,12 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, 
 	if(not qms->firstRun) return;
 	qms->firstRun=false;
 	if(par->dim == 1) {
-		if (qms->gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete: should be dimension 1\n");
+		if (qms->gridSize.size() != 1) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 1\n\n");
 		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
 			qms->tableValuesPosition.at(i) = this->getValPos(Vector3r(qms->iToX(i,0),0,0),par,qms);
 	} else if(par->dim == 2) {
-		if (qms->gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete: should be dimension 2\n");
+		if (qms->gridSize.size() != 2) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 2\n\n");
 		qms->tableValuesPosition.resize(qms->gridSize,5);  // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
 		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
@@ -70,14 +76,14 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, 
 		//OK - that was just to be safe
 		//	tableValuesPosition.atSafe({i,j}) = this->getValPos(Vector3r(iToX(i,0),iToX(j,1),0),par);
 	} else if(par->dim == 3) {
-		if (qms->gridSize.size() != 3) throw std::out_of_range("QMStateDiscrete: should be dimension 3\n");
+		if (qms->gridSize.size() != 3) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 3\n\n");
 		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
 		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
 		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
 		for(size_t k=0 ; k<qms->gridSize[2] ; k++)
 			qms->tableValuesPosition.at    ( i,j,k ) = this->getValPos(Vector3r(qms->iToX(i,0),qms->iToX(j,1),qms->iToX(k,2)),par,qms);
 	} else {
-		throw std::runtime_error("QMStateDiscrete() supports only 1,2 or 3 dimensions, so far.");
+		throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
 	}
 };
 

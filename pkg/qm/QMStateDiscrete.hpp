@@ -104,7 +104,7 @@ class St1_QMStateDiscrete: public St1_QMState
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
-		{ throw std::logic_error("St1_QMStateDiscrete was called directly.");};
+		{ throw std::logic_error("\n\nSt1_QMStateDiscrete was called directly.\n\n");};
 
 		void calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete*);
 };

@@ -86,7 +86,7 @@ class St1_QMState: public StateFunctor
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
-		{ throw std::logic_error("St1_QMState::getValPos was called directly.");};
+		{ throw std::runtime_error("\n\nSt1_QMState::getValPos was called directly.\n\n");};
 };
 REGISTER_SERIALIZABLE(St1_QMState);
 

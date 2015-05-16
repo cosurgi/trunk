@@ -29,6 +29,6 @@ CREATE_LOGGER(St1_QMStateAnalytic);
 
 Complexr St1_QMStateAnalytic::getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 {
-	throw std::logic_error("St1_QMStateAnalytic::getValPos was called directly.");
+	throw std::runtime_error("\n\nSt1_QMStateAnalytic::getValPos was called directly.\n\n");
 };
 

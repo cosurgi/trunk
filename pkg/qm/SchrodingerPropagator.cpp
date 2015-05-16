@@ -3,7 +3,6 @@
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscrete.hpp"
 #include "SchrodingerPropagator.hpp"
-#include "QMInteraction.hpp"
 #include "QMPotential.hpp"
 #include <core/Scene.hpp>
 #include <unsupported/Eigen/FFT>
