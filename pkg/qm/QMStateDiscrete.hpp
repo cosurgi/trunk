@@ -84,6 +84,13 @@ or directly by filling in the discrete values in the table. It is used for numer
 							 // Ale to nie koniec: ja chciałem przesuwać siatki względem siebie, żeby się nie 
 							 // nakładały ładunki i żeby nie było dzielenia przez zero!!!
 							 // FIXME, FIXME, FIXME,  FIXME,  FIXME,  FIXME,  FIXME,  FIXME,  FIXME
+							 //
+                                                         // this FIXME is copied from Gl1_QMGeometry, I need to think about this.
+                                                         //                                                                  1   2   3   4   5   
+                                                         // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
+                                                         //                                                                    1   2   3   4   5  ↓↓↓↓↓
+                                                         // maybe change the start() and end() values in QMStateDiscrete ???
+
 
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 

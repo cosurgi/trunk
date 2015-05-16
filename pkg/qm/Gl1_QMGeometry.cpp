@@ -123,6 +123,8 @@ void Gl1_QMGeometry::go(
 	Vector3r col = g->color;                  //                                                                  1   2   3   4   5   
 	start=Vector3r(0,0,0);                    // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
 	Vector3r end(0,0,0);                      //                                                                    1   2   3   4   5  ↓↓↓↓↓
+						  // maybe change the start() and end() values in QMStateDiscrete ???
+
 
 	// FIXME - bardzo dziwne miejsce do resetowanie step(), przecież tym się zajmuje St1_QMStateDiscrete::go !!!
 	// FIXME - it's not a job of Gl1_QMGeometry to modify the QMGeometry->step  !!!
