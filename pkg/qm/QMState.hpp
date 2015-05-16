@@ -8,6 +8,16 @@
 #include <stdexcept>
 #include "QMParameters.hpp"
 
+//
+//                                    QMState
+//                                       ↑
+//                                QMStateDiscrete
+//                                       ↑
+//                                QMStateAnalytic
+//                                   ↑        ↑
+//                  QMPacketGaussianWave  QMPacketHarmonicEigenFunc
+//
+
 /*********************************************************************************
 *
 * Q U A N T U M   M E C H A N I C A L   S T A T E

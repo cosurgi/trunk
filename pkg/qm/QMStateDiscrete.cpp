@@ -26,10 +26,8 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 	QMParameters*    par     = dynamic_cast<QMParameters*   >(mat.get());
 	QMGeometry*      qmg     = dynamic_cast<QMGeometry*     >(b->shape.get());
 	if(!qmstate or !par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No state, no material. Cannot proceed."; exit(1);};
-/////////////////////////////////////// St1_QMStateAnalytic
-	// dynamic means that it takes part in calculations
-	// not dynamic means it's either pure analytical solution or a potential
 	if( not b->isDynamic() ) { // anlytical
+	// not dynamic means it's either pure analytical solution or a potential
 		QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
 		if(!stAn) { std::cerr << "ERROR: St1_QMStateDiscrete::go : QMStateAnalytic not found."; exit(1);};
 		size_t dim = par->dim;
@@ -49,32 +47,11 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 		qmstate->size     = sizeNew;
 		this->calculateTableValuesPosition(par,stAn);
 		stAn->lastOptimisationIter = scene->iter;
-/////////////////////////////////////// St1_QMStateAnalytic
-	} else { // discrete
-
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         shared_ptr<StateDispatcher> st;
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         if(!st) { throw std::runtime_error("St1_QMStateDiscrete::go : StateDispatcher is missing.\n"); };
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         shared_ptr<St1_QMStateAnalytic> fa;
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         FOREACH(auto& f, st->functors){ if(f->get1DFunctorType1() == qmstate->creator->getClassName() ) { fa=YADE_PTR_DYN_CAST<St1_QMStateAnalytic>(f); break; } }
-	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         if(not fa) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go can't find St1_"+qmstate->creator->getClassName()+"() for its `creator` in StateDispatcher([...]). Did you forget to add it there?\n"); };
-
+	} else {
+	// dynamic means that it takes part in calculations
 		this->calculateTableValuesPosition(par,qmstate);
-
 	}
-} /////////////////////////////////////////     MERGE
-
-// FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME wywalić to do St1_*
-//
-// może w ten sposób, że:             QMState
-//                                       ↑
-//                                QMStateDiscrete     
-//                                       ↑                ??
-//                                QMStateAnalytic
-//                                   ↑        ↑
-//                  QMPacketGaussianWave  QMPacketHarmonicEigenFunc        
-//
-
+}
 
 void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete* qms)
 {// initialize from this   //////////////////////////////////////////// MERGE
@@ -104,20 +81,4 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, 
 		throw std::runtime_error("QMStateDiscrete() supports only 1,2 or 3 dimensions, so far.");
 	}
 };
-
-
-//FIXME - a może tutaj kontrakcję??
-//
-//FIXME, delete /// return complex quantum aplitude at given positional representation coordinates
-//FIXME, delete Complexr QMStateDiscrete::getValPos(Vector3r xyz, const QMParameters* par) // FIXME - should take   std::vector<Real> (probably? - maybe useful for 4D?)
-//FIXME, delete {
-//FIXME, delete 	switch(par->dim) {
-//FIXME, delete 	// FIXME(2) - should instead give just `const ref&` to this table, but GLDraw has problem - draws one too much!!
-//FIXME, delete 	// FIXME - must work for all dimensions, with contractions !!!!!!
-//FIXME, delete 		case 1 : return tableValuesPosition.atSafe({xToI(xyz[0],0)                              }); break;
-//FIXME, delete 		case 2 : return tableValuesPosition.atSafe({xToI(xyz[0],0),xToI(xyz[1],1)               }); break;
-//FIXME, delete 		case 3 : return tableValuesPosition.atSafe({xToI(xyz[0],0),xToI(xyz[1],1),xToI(xyz[2],2)}); break;
-//FIXME, delete 		default: throw std::runtime_error("Wrong dimension! This code in QMStateDiscrete::getValPos should be unreachable");
-//FIXME, delete 	}
-//FIXME, delete };
 
