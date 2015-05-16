@@ -632,12 +632,12 @@ void Gl1_QMGeometry::drawSurface(const std::vector<std::vector<Real> >& waveVals
 #ifdef YADE_OPENGL
 
 // This will come later, when I will have some interactions going on.... FIXME - draw potentials !!
-//	CREATE_LOGGER(Gl1_QMPotPhysics);
-//	bool Gl1_QMPotPhysics::abs=true;
-//	bool Gl1_QMPotPhysics::real=false;
-//	bool Gl1_QMPotPhysics::imag=false;
-//	Gl1_QMPotPhysics::~Gl1_QMPotPhysics(){};
-//	void Gl1_QMPotPhysics::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame)
+//	CREATE_LOGGER(Gl1_QMIPhys);
+//	bool Gl1_QMIPhys::abs=true;
+//	bool Gl1_QMIPhys::real=false;
+//	bool Gl1_QMIPhys::imag=false;
+//	Gl1_QMIPhys::~Gl1_QMIPhys(){};
+//	void Gl1_QMIPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame)
 //	{
 //	}
 

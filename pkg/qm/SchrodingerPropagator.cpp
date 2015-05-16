@@ -60,7 +60,7 @@ Real SchrodingerKosloffPropagator::eMin()
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi={};
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
+		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
 		if(igeom) {
 			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
@@ -88,7 +88,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi={};
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
+		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
 		if(igeom) {
 			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
 			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
@@ -131,7 +131,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMPotGeometry* igeom=dynamic_cast<QMPotGeometry*>(i->geom.get());
+		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
 		if(igeom) {
 			Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
 		}
@@ -183,7 +183,7 @@ void SchrodingerKosloffPropagator::action()
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 			psi->tableValuesPosition=psi_dt;
 			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
-			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMPotPhysics, lub obok.\n";
+			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();

@@ -28,7 +28,6 @@
  *
  */
 
-// FIXME: perhaps derive QMPacketGaussianWave from something so that this below could propagate harmonic oscillator too.
 class SchrodingerAnalyticPropagator: public GlobalEngine
 {
 	public:
