@@ -93,8 +93,9 @@ void Gl1_QMGeometry::go(
 
 	pd = dynamic_cast<QMStateDiscrete*>(state.get());
 	if(pd->blockedDOFs == State::DOF_ALL) { // is analytic, or is a potential
-		if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
-		if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
+		if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0                       ) { g->step       = lastDiscreteStep; }
+		if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0 and  g->partsScale > 0) { g->partsScale = lastDiscreteScale; }
+                // a little hack for now: don't rescale if it's negative (division)   ↑
 
 			// FIXME, FIXME, FIXME, ale jak????????????      ↓↓↓↓↓↓↓↓↓
 				shared_ptr<StateDispatcher> st;
@@ -122,6 +123,9 @@ void Gl1_QMGeometry::go(
 	Vector3r col = g->color;                  //                                                                  1   2   3   4   5   
 	start=Vector3r(0,0,0);                    // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
 	Vector3r end(0,0,0);                      //                                                                    1   2   3   4   5  ↓↓↓↓↓
+
+	// FIXME - bardzo dziwne miejsce do resetowanie step(), przecież tym się zajmuje St1_QMStateDiscrete::go !!!
+	// FIXME - it's not a job of Gl1_QMGeometry to modify the QMGeometry->step  !!!
 	if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0)- g->step.x(); } else { return; }
 	if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1)- g->step.y(); }
 	if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2)- g->step.z(); }
