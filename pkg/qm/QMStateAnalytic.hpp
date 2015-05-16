@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "QMState.hpp"
+#include "QMStateDiscrete.hpp"
 #include <pkg/common/Dispatching.hpp>
 #include <core/GlobalEngine.hpp>
 #include <core/Scene.hpp>
@@ -23,17 +23,9 @@
  *
  *    Real t   → local time in this analytic wavefunction
  *
- *    boost::shared_ptr<QMStateDiscrete>& stateDiscreteOptimised
- *             → it is used for faster display on screen. I has its own discrete representation. But (FIXME) the Gl1_QMGeometry makes
- *               sure that it's up to date. It respects `size` and `step` set in QMGeometry
- *               // FIXME.2 - after fixing all those functions in QMState, I guess that it can become a private variable member and expose it only
- *                            through a unified interface in QMState
- *
  */
 
-class QMStateDiscrete;
-class QMGeometry;
-class QMStateAnalytic: public QMState
+class QMStateAnalytic: public QMStateDiscrete
 {
 	public:
 		virtual ~QMStateAnalytic();
@@ -41,7 +33,7 @@ class QMStateAnalytic: public QMState
 			  // class name
 			QMStateAnalytic
 			, // base class
-			QMState
+			QMStateDiscrete
 			, // class description
 "Analytic quantum mechanical state. It is expressed in terms of a mathematical function, which can be pretty arbitrary. It can be used to initialize \
 the quantum mechanical state to be discretized into an NDimTable, or to make comparisons between simulation results and analytical solutions. \
@@ -53,10 +45,9 @@ Derived classes will be specific analytic solutions to various cases."
 			lastOptimisationIter=-1;
 			, // python bindings
 		);
-		REGISTER_CLASS_INDEX(QMStateAnalytic,QMState);
+		REGISTER_CLASS_INDEX(QMStateAnalytic,QMStateDiscrete);
 
 /* FIXME: make it	private: */
-		boost::shared_ptr<QMStateDiscrete> stateDiscreteOptimised;
 		long lastOptimisationIter;
 
 };
@@ -71,18 +62,16 @@ REGISTER_SERIALIZABLE(QMStateAnalytic);
 *
 *********************************************************************************/
 
-class St1_QMStateAnalytic: public St1_QMState
+class St1_QMStateAnalytic: public St1_QMStateDiscrete
 {
 	public:
-		virtual void go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*);
 		FUNCTOR1D(QMStateAnalytic);
-		YADE_CLASS_BASE_DOC(St1_QMStateAnalytic/* class name */, St1_QMState /* base class */
+		YADE_CLASS_BASE_DOC(St1_QMStateAnalytic/* class name */, St1_QMStateDiscrete /* base class */
 			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
 		);
-/*FIXME, make it:	private: */
+	private:
 		//! return complex quantum aplitude at given positional representation coordinates
-		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
-		{ throw std::logic_error("St1_QMStateAnalytic::getValPos was called directly.");};
+		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
 };
 REGISTER_SERIALIZABLE(St1_QMStateAnalytic);
 

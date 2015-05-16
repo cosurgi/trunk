@@ -36,25 +36,25 @@ O.engines=[
 
 ## Two particles are created - the analytical one, and the numerical one. They
 ## do not interact, they are two separate calculations in fact.
+displayOptions         = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'step':[0.4,0.4,0.4]
+                          ,'renderMaxTime':0.5
+                          ,'threshold3D':0.00001}
 
 ## The analytical one:
-
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9]
-                                  ,partAbsolute=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                  ,partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                  ,partReal=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                  ,step=[0.4,0.4,0.4]
-                                  ,renderMaxTime=0.5
-                                  ,threshold3D=0.00001)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacket            = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[1.5,0,0],a0=[1.5,1.5,1.5])
-analyticBody.state     = gaussPacket
-O.bodies.append(analyticBody)
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[1.5,0,0],'a0':[1.5,1.5,1.5],'size':size} #,gridSize=[16]*dimensions)
+analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## The numerical one:
 numericalBody = QMBody()
@@ -65,8 +65,9 @@ numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[16]*dimensions)
-#O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketGaussianWave(gridSize=[16]*dimensions,**gaussPacketArg)
+#nid=O.bodies.append(numericalBody)
+#O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
 O.dt=.1

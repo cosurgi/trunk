@@ -37,8 +37,10 @@ void SchrodingerAnalyticPropagator::action()
 //		std::cerr << "SchrodingerAnalyticPropagator, " << b->state->getClassName() << "\n";
 		QMStateAnalytic* analytic=dynamic_cast<QMStateAnalytic*>(b->state.get());
 //		const Body::id_t& id=b->getId();
-		if(analytic) {
+		if(analytic and /* FIXME? not sure... will it try to propagate potentials?? */ (not b->isDynamic()) ) {
 			analytic->t += dt;
+//std::cerr << "SchrodingerAnalyticPropagator t+=dt " << b->getId() << "\n";
+
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }
@@ -158,7 +160,7 @@ void SchrodingerKosloffPropagator::action()
 //		std::cerr << "SchrodingerKosloffPropagator, " << b->state->getClassName() << "\n";
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 //		const Body::id_t& id=b->getId();
-		if(psi) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
+		if(psi and /* FIXME - should propagate miscParams ?? */ b->isDynamic() ) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
 			NDimTable<Complexr>/*&*/ psi_dt(psi->tableValuesPosition); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
@@ -182,6 +184,7 @@ void SchrodingerKosloffPropagator::action()
 			psi->tableValuesPosition=psi_dt;
 			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMPotPhysics, lub obok.\n";
+//std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
 		}
 	} YADE_PARALLEL_FOREACH_BODY_END();
 }

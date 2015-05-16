@@ -2,7 +2,7 @@
 
 #include "QMInteraction.hpp"
 #include "QMStateDiscrete.hpp"
-#include "QMStateBarrier.hpp"
+#include "QMPotentialBarrier.hpp"
 #include <core/Scene.hpp>
 #include <lib/base/Math.hpp>
 

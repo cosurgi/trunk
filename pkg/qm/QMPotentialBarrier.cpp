@@ -1,6 +1,6 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
-#include "QMStateBarrier.hpp"
+#include "QMPotentialBarrier.hpp"
 #include <core/Scene.hpp>
 
 YADE_PLUGIN(

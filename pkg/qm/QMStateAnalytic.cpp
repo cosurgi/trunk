@@ -27,35 +27,8 @@ QMStateAnalytic::~QMStateAnalytic(){};
 CREATE_LOGGER(St1_QMStateAnalytic);
 // !! at least one virtual function in the .cpp file
 
-void St1_QMStateAnalytic::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
+Complexr St1_QMStateAnalytic::getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 {
-	QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
-	QMParameters*      par  = dynamic_cast<QMParameters*   >(mat.get());
-	QMGeometry*        qmg  = dynamic_cast<QMGeometry*     >(b->shape.get());
-
-	if(!stAn or !par or !qmg) { std::cerr << "ERROR: No state, no material. Cannot proceed."; exit(1);};
-
-	size_t dim = par->dim;
-	if(dim > 3) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go does not work with dim > 3.");};
-	std::vector<size_t> gridSize(dim);
-	std::vector<Real>   size(dim);
-	for(size_t i=0 ; i<dim ; i++) {
-		if(qmg->step[i]==0) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go: step is ZERO!");};
-		size    [i]=(         qmg->extents[i]*2.0              );
-		gridSize[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
-	}
-	if(    (stAn->lastOptimisationIter == scene->iter) and (stAn->stateDiscreteOptimised)
-	   and (stAn->stateDiscreteOptimised->gridSize==gridSize) and (stAn->stateDiscreteOptimised->size==size))
-		return;
-	if(not stAn->stateDiscreteOptimised)
-		stAn->stateDiscreteOptimised = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
-
-	stAn->stateDiscreteOptimised->firstRun = true;
-	stAn->stateDiscreteOptimised->creator  = boost::shared_ptr<QMStateAnalytic>();
-	stAn->stateDiscreteOptimised->gridSize = gridSize;
-	stAn->stateDiscreteOptimised->size     = size;
-	stAn->stateDiscreteOptimised->calculateTableValuesPosition(this,par,stAn);
-
-	stAn->lastOptimisationIter = scene->iter;
+	throw std::logic_error("St1_QMStateAnalytic::getValPos was called directly.");
 };
 

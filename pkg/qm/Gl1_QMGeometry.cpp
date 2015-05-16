@@ -92,28 +92,24 @@ void Gl1_QMGeometry::go(
 		menuSelection(g->stepRender)=="hidden"       ) return; // nothing to draw
 
 	pd = dynamic_cast<QMStateDiscrete*>(state.get());
-	if(not pd) {
-		QMStateAnalytic*   packetAnalytic = dynamic_cast<QMStateAnalytic*>(state.get());
-		if(packetAnalytic)
-		{
-			if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
-			if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
+	if(pd->blockedDOFs == State::DOF_ALL) { // is analytic, or is a potential
+		if(analyticUsesStepOfDiscrete  and lastDiscreteStep[0] > 0) { g->step       = lastDiscreteStep; }
+		if(analyticUsesScaleOfDiscrete and lastDiscreteScale   > 0) { g->partsScale = lastDiscreteScale; }
 
-				// FIXME, FIXME, FIXME, ale jak????????????      ↓↓↓↓↓↓↓↓↓
-					shared_ptr<StateDispatcher> st;
-					FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
-					if(!st) { std::cerr << "Gl1_QMGeometry : StateDispatcher is missing.\n"; exit(1); };
-				//	{ // FIXME - muszę zacząć używać ten mutex w tych wszystkich St1_*, żeby zmieniać `bool QMState::wasDrawn` lub `bool QMGeometry::wasUsed`
-				//	  // chyba go powinienem ustawiać w St1_*, ale tym "nadrzędnym" a nie w tych wszystkich getValPos
-				//	  // też coś o nim pisałem w St1_QMStateAnalytic::go
-				//		boost::unique_lock<boost::mutex> scoped_lock(updateMutex);
-				//		//return ++count;
-				//	}
-					st->action();
-				// FIXME, FIXME, FIXME, ale jak????????????      ↑↑↑↑↑↑↑↑↑
-
-			pd = packetAnalytic->stateDiscreteOptimised.get(); /*FIXME:   wtf?????/ prepareDiscrete(g,packetAnalytic->par_FIXME.get()).get();*/
-		}
+			// FIXME, FIXME, FIXME, ale jak????????????      ↓↓↓↓↓↓↓↓↓
+				shared_ptr<StateDispatcher> st;
+				FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
+				if(!st) { std::cerr << "Gl1_QMGeometry : StateDispatcher is missing.\n"; exit(1); };
+			//	{ // FIXME - muszę zacząć używać ten mutex w tych wszystkich St1_*, żeby zmieniać `bool QMState::wasDrawn` lub `bool QMGeometry::wasUsed`
+			//	  // chyba go powinienem ustawiać w St1_*, ale tym "nadrzędnym" a nie w tych wszystkich getValPos
+			//	  // też coś o nim pisałem w St1_QMStateAnalytic::go
+			//		boost::unique_lock<boost::mutex> scoped_lock(updateMutex);
+			//		//return ++count;
+			//	}
+				if(timeLimit.messageAllowed(8)) std::cerr << "Czy to wywołanie StateDispatcher->action() jest potrzebne?\n";
+				st->action();
+			// FIXME, FIXME, FIXME, ale jak????????????      ↑↑↑↑↑↑↑↑↑
+		//pd = packetAnalytic->stateDiscreteOptimised.get(); /*FIXME:   wtf?????/ prepareDiscrete(g,packetAnalytic->par_FIXME.get()).get();*/
 	} else {
 		lastDiscreteStep  = g->step;
 		lastDiscreteScale = g->partsScale;

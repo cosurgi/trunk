@@ -37,7 +37,7 @@ CREATE_LOGGER(Ig2_Box_QMGeometry_QMPotGeometry);
 
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, wywalić to:
 #include "QMStateDiscrete.hpp"
-#include "QMStateBarrier.hpp"
+#include "QMPotentialBarrier.hpp"
 
 bool Ig2_Box_QMGeometry_QMPotGeometry::go(
 	  const shared_ptr<Shape>&    qm1, const shared_ptr<Shape>&    qm2

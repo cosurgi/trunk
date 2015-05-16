@@ -9,7 +9,6 @@
 #include <lib/time/TimeLimit.hpp>
 #include <lib/base/NDimTable.hpp>
 #include "QMState.hpp"
-#include "QMStateAnalytic.hpp"
 
 /*********************************************************************************
 *
@@ -22,6 +21,12 @@
  * The information is expressed using discrete numerical representation using NDimTable class.
  * A spatial position representation is used. On this grid the complex amplitude is stored, which also determines
  * the probability distribution. Grid size usually is in powers of two, because that's most useful for FFT.
+ *
+ *  Member variables:
+ *
+ *    bool firstRun             → marks whether the discrete grid was already initialised
+ *    vector<size_t>  gridSize  → grid size in all dimensions
+ *    vector<Real>    size      → spatial size in all dimensions  // FIXME - synchronize with body->shape->extents
  *
  */
 class QMStateDiscrete: public QMState
@@ -38,7 +43,6 @@ class QMStateDiscrete: public QMState
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
 			((bool      ,firstRun,true,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
-			((boost::shared_ptr<QMStateAnalytic>,creator,,Attr::hidden,"Analytic wavepacket used to create the discretized version for calculations. The analytic shape can be anything: square packets, triangle, Gaussian - as long as it is normalized."))
 			((vector<size_t>,gridSize,vector<size_t>({}),,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			((vector<Real>,size,vector<Real>({}),,"Wavepacket size in position representation space, for each DOF. Can be higher than 4D due to tensor products between wavefunctions."))
 			, // constructor
@@ -73,8 +77,6 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real start(int d) { return (-size[d]*0.5+pos[d]);};
 		Real end  (int d) { return ( size[d]*0.5+pos[d]);};
 
-/* FIXME - haaaaa! chyba będę mogł to wywalić, gdy mapiszę St1_QMStateAnalytic !! */
-		void calculateTableValuesPosition(St1_QMStateAnalytic* localCreator, const QMParameters* par, const QMStateAnalytic*);
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 
 	private:
@@ -91,10 +93,12 @@ class St1_QMStateDiscrete: public St1_QMState
 		YADE_CLASS_BASE_DOC(St1_QMStateDiscrete/* class name */, St1_QMState /* base class */
 			, "Functor creating :yref:`QMStateDiscrete` from :yref:`QMParametersDiscrete`." // class description
 		);
-/*FIXME, make it:	private: */
+	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 		{ throw std::logic_error("St1_QMStateDiscrete was called directly.");};
+
+		void calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete*);
 };
 REGISTER_SERIALIZABLE(St1_QMStateDiscrete);
 

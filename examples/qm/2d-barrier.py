@@ -25,7 +25,6 @@ potentialValue    = 100.0
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -43,9 +42,10 @@ O.engines=[
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacket            = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0])
-analyticBody.state     = gaussPacket
-#O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'size':size,'gridSize':[2**6,2**7]}
+analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+#nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
+#O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
@@ -54,8 +54,9 @@ numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=1
 					# partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 					# partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 numericalBody.material  = analyticBody.material
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[2**6,2**7])
-O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody1 = QMBody()

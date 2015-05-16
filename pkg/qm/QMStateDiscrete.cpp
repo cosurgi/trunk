@@ -1,6 +1,9 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMStateDiscrete.hpp"
+#include "QMStateAnalytic.hpp"
+#include "QMParameters.hpp"
+#include "QMGeometry.hpp"
 #include <core/Scene.hpp>
 
 YADE_PLUGIN(
@@ -19,19 +22,47 @@ QMStateDiscrete::~QMStateDiscrete(){};
 
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
 {
-	QMStateDiscrete* stDi = static_cast<QMStateDiscrete*>(state.get());
-	QMParameters*    par  = dynamic_cast<QMParameters*   >(mat.get());
-	if(not par) { throw std::runtime_error("ERROR: St1_QMStateDiscrete nas no QMParameters, but rather `"+std::string(mat?mat->getClassName():"")+"`");};
+	QMStateDiscrete* qmstate = static_cast <QMStateDiscrete*>(state.get());
+	QMParameters*    par     = dynamic_cast<QMParameters*   >(mat.get());
+	QMGeometry*      qmg     = dynamic_cast<QMGeometry*     >(b->shape.get());
+	if(!qmstate or !par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No state, no material. Cannot proceed."; exit(1);};
+/////////////////////////////////////// St1_QMStateAnalytic
+	// dynamic means that it takes part in calculations
+	// not dynamic means it's either pure analytical solution or a potential
+	if( not b->isDynamic() ) { // anlytical
+		QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
+		if(!stAn) { std::cerr << "ERROR: St1_QMStateDiscrete::go : QMStateAnalytic not found."; exit(1);};
+		size_t dim = par->dim;
+		if(dim > 3) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go does not work with dim > 3.");};
+		std::vector<size_t> gridSizeNew(dim);
+		std::vector<Real>   sizeNew(dim);
+		for(size_t i=0 ; i<dim ; i++) {
+			if(qmg->step[i]==0) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go: step is ZERO!");};
+			sizeNew    [i]=(         qmg->extents[i]*2.0              );
+			gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
+		}
+		if(    (stAn->lastOptimisationIter == scene->iter) 
+		   and (gridSizeNew==qmstate->gridSize) and (sizeNew==qmstate->size))
+			return;
+		qmstate->firstRun = true;
+		qmstate->gridSize = gridSizeNew;
+		qmstate->size     = sizeNew;
+		this->calculateTableValuesPosition(par,stAn);
+		stAn->lastOptimisationIter = scene->iter;
+/////////////////////////////////////// St1_QMStateAnalytic
+	} else { // discrete
 
-	shared_ptr<StateDispatcher> st;
-	FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
-	if(!st) { throw std::runtime_error("St1_QMStateDiscrete::go : StateDispatcher is missing.\n"); };
-	shared_ptr<St1_QMStateAnalytic> fa;
-	FOREACH(auto& f, st->functors){ if(f->get1DFunctorType1() == stDi->creator->getClassName() ) { fa=YADE_PTR_DYN_CAST<St1_QMStateAnalytic>(f); break; } }
-	if(not fa) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go can't find St1_"+stDi->creator->getClassName()+"() for its `creator` in StateDispatcher([...]). Did you forget to add it there?\n"); };
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         shared_ptr<StateDispatcher> st;
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         FOREACH(shared_ptr<Engine>& e, scene->engines){ st=YADE_PTR_DYN_CAST<StateDispatcher>(e); if(st) break; }
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         if(!st) { throw std::runtime_error("St1_QMStateDiscrete::go : StateDispatcher is missing.\n"); };
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         shared_ptr<St1_QMStateAnalytic> fa;
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         FOREACH(auto& f, st->functors){ if(f->get1DFunctorType1() == qmstate->creator->getClassName() ) { fa=YADE_PTR_DYN_CAST<St1_QMStateAnalytic>(f); break; } }
+	// to było zanim zrobiłem St1_QMStateDiscrete ←⋯← St1_QMPacketGaussianWave         if(not fa) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go can't find St1_"+qmstate->creator->getClassName()+"() for its `creator` in StateDispatcher([...]). Did you forget to add it there?\n"); };
 
-	stDi->calculateTableValuesPosition(fa.get(),par,stDi->creator.get());
-}
+		this->calculateTableValuesPosition(par,qmstate);
+
+	}
+} /////////////////////////////////////////     MERGE
 
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME wywalić to do St1_*
 //
@@ -43,34 +74,37 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 //                                   ↑        ↑
 //                  QMPacketGaussianWave  QMPacketHarmonicEigenFunc        
 //
-void QMStateDiscrete::calculateTableValuesPosition(St1_QMStateAnalytic* localCreator, const QMParameters* par, const QMStateAnalytic* qms)
-{// initialize from localCreator
-	if(not firstRun) return;
-	firstRun=false;
+
+
+void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete* qms)
+{// initialize from this   //////////////////////////////////////////// MERGE
+	if(not qms->firstRun) return;
+	qms->firstRun=false;
 	if(par->dim == 1) {
-		if (gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete: should be dimension 1\n");
-		tableValuesPosition.resize(gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<gridSize[0] ; i++)
-			tableValuesPosition.at(i) = localCreator->getValPos(Vector3r(iToX(i,0),0,0),par,qms);
+		if (qms->gridSize.size() != 1) throw std::out_of_range("QMStateDiscrete: should be dimension 1\n");
+		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
+		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
+			qms->tableValuesPosition.at(i) = this->getValPos(Vector3r(qms->iToX(i,0),0,0),par,qms);
 	} else if(par->dim == 2) {
-		if (gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete: should be dimension 2\n");
-		tableValuesPosition.resize(gridSize,5);  // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<gridSize[0] ; i++)
-		for(size_t j=0 ; j<gridSize[1] ; j++)
-			tableValuesPosition.at    ( i,j ) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0),par,qms);
+		if (qms->gridSize.size() != 2) throw std::out_of_range("QMStateDiscrete: should be dimension 2\n");
+		qms->tableValuesPosition.resize(qms->gridSize,5);  // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
+		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
+		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
+			qms->tableValuesPosition.at    ( i,j ) = this->getValPos(Vector3r(qms->iToX(i,0),qms->iToX(j,1),0),par,qms);
 		//OK - that was just to be safe
-		//	tableValuesPosition.atSafe({i,j}) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),0),par);
+		//	tableValuesPosition.atSafe({i,j}) = this->getValPos(Vector3r(iToX(i,0),iToX(j,1),0),par);
 	} else if(par->dim == 3) {
-		if (gridSize.size() != 3) throw std::out_of_range("QMStateDiscrete: should be dimension 3\n");
-		tableValuesPosition.resize(gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<gridSize[0] ; i++)
-		for(size_t j=0 ; j<gridSize[1] ; j++)
-		for(size_t k=0 ; k<gridSize[2] ; k++)
-			tableValuesPosition.at    ( i,j,k ) = localCreator->getValPos(Vector3r(iToX(i,0),iToX(j,1),iToX(k,2)),par,qms);
+		if (qms->gridSize.size() != 3) throw std::out_of_range("QMStateDiscrete: should be dimension 3\n");
+		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
+		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
+		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
+		for(size_t k=0 ; k<qms->gridSize[2] ; k++)
+			qms->tableValuesPosition.at    ( i,j,k ) = this->getValPos(Vector3r(qms->iToX(i,0),qms->iToX(j,1),qms->iToX(k,2)),par,qms);
 	} else {
 		throw std::runtime_error("QMStateDiscrete() supports only 1,2 or 3 dimensions, so far.");
 	}
 };
+
 
 //FIXME - a może tutaj kontrakcję??
 //

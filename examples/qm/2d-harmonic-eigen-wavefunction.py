@@ -16,7 +16,6 @@ harmonicOrder_y   = 1
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketHarmonicEigenFunc(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -38,30 +37,30 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
+
+displayOptions         = { 'partsScale':10
+                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'renderMaxTime':0.5}
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10
-                                         , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , renderMaxTime=0.5)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],**displayOptions)
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-harmonicPacket         = QMPacketHarmonicEigenFunc(energyLevel=[harmonicOrder_x, harmonicOrder_y, 0])
-analyticBody.state     = harmonicPacket
-O.bodies.append(analyticBody)     # do not append, it is used only to create the numerical one
+harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'size':size,'gridSize':[2**6,2**7]}
+analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10
-                                         , partAbsolute=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , partReal=['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                                         , renderMaxTime=0.5)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions)
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,size=size,gridSize=[2**6,2**7])
-O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()

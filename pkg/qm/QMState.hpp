@@ -47,7 +47,7 @@ class QMState: public State
 			, // class description
 			"Quantum mechanical state."
 			, // attributes, public variables
-			((string,qtHide,"angMom angVel blockedDOFs densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,
+			((string,qtHide,"angMom angVel densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
 			Yes, even mass must be removed, although it is back in few of derived classes."))
@@ -73,7 +73,7 @@ class St1_QMState: public StateFunctor
 		YADE_CLASS_BASE_DOC(St1_QMState/* class name */, StateFunctor /* base class */
 			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
 		);
-/*FIXME, make it:	private: */
+	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 		{ throw std::logic_error("St1_QMState::getValPos was called directly.");};

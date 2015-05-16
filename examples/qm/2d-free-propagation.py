@@ -14,10 +14,8 @@ size      = [x * 2 for x in halfSize]
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
-	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 # No particle interactions yet, only a free propagating particle. First step will be to introduce
@@ -45,9 +43,10 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],partsSc
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacket            = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[0.4,2,0],a0=[3,2,0])
-analyticBody.state     = gaussPacket
-O.bodies.append(analyticBody)
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'size':size,'gridSize':[128,64]}
+analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## The numerical one:
 numericalBody = QMBody()
@@ -58,8 +57,9 @@ numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[128,64])
-O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
 O.dt=.02

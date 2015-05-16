@@ -19,11 +19,8 @@ harmonicOrder     = 15
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketHarmonicEigenFunc(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
-	#InsertionSortCollider([
-	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
@@ -48,17 +45,19 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],step=[0.03,0.1,0.1])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-harmonicPacket         = QMPacketHarmonicEigenFunc(energyLevel=[harmonicOrder,0,0])
-analyticBody.state     = harmonicPacket
-O.bodies.append(analyticBody)
+harmonicPacketArg      = {'energyLevel':[harmonicOrder,0,0],'size':size,'gridSize':[2**13]}
+analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=harmonicPacket,size=size,gridSize=[(2**13)])
-O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()

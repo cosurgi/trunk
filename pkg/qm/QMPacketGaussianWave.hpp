@@ -84,7 +84,7 @@ class St1_QMPacketGaussianWave: public St1_QMStateAnalytic
 		YADE_CLASS_BASE_DOC(St1_QMPacketGaussianWave /* class name */, St1_QMStateAnalytic /* base class */
 			, "Functor creating :yref:`QMPacketGaussianWave` from :yref:`QMParticle`." // class description
 		);
-/*FIXME, make it:	private: */
+	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
 		Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real t0,Real k0,Real m, Real a, Real h);

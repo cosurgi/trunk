@@ -14,7 +14,6 @@ size      = [x * 2 for x in halfSize]
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -39,25 +38,27 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=["default hidden","hidden","frame","stripes","mesh"])
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacket            = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[5,0,0],a0=[0.5,0,0])
-analyticBody.state     = gaussPacket
-O.bodies.append(analyticBody)
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[5,0,0],'a0':[0.5,0,0],'size':size,'gridSize':[2**12]}
+analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## The numerical one:
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=["default hidden","hidden","frame","stripes","mesh"])
 numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMStateDiscrete(creator=gaussPacket,size=size,gridSize=[2**12])
-O.bodies.append(numericalBody)
+numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
 #O.dt=.000001
