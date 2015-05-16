@@ -178,6 +178,11 @@ class NDimTable : private std::vector<K
 			calcDimRankTotal(other.dim_n);
 			parent::resize(total);
 		};
+/* OK */	void resize(const NDimTable& other, value_type init) {
+			if(dim_n==other.dim_n) return;
+			calcDimRankTotal(other.dim_n);
+			parent::resize(total,init);
+		};
 
 		// capacity
 		std::size_t                     size_total()         const { return total;     }; // return total number of elements
