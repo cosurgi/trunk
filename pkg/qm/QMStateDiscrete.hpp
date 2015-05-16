@@ -28,6 +28,8 @@
  *    vector<size_t>  gridSize  → grid size in all dimensions
  *    vector<Real>    size      → spatial size in all dimensions  // FIXME - synchronize with body->shape->extents
  *
+ *    NDimTable<Complexr> tableValuesPosition   → the wavefunction, in discrete positional representation
+ *
  */
 class QMStateDiscrete: public QMState
 {
@@ -74,8 +76,14 @@ or directly by filling in the discrete values in the table. It is used for numer
 		size_t xToI(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    size[d]    ); };
 		size_t kToI(Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
 
-		Real start(int d) { return (-size[d]*0.5+pos[d]);};
-		Real end  (int d) { return ( size[d]*0.5+pos[d]);};
+		Real start(int d) { return (-size[d]*0.5 /*    FIXME????? co z tym położeniem?????   +pos[d]  */);};
+		Real end  (int d) { return ( size[d]*0.5 /*    FIXME????? co z tym położeniem?????   +pos[d]  */);};
+                                                         // ↑ okazuje się, że mi rysuje w złym miejscu potencjały, i nie dziwne, bo Gl1_QMGeometry
+							 // bierze start() i end(). I tam rysuje. Podczas gdy Functor jest wywoływany już przesunięty
+							 // i obrócony żeby rysować obiekt w lokalnym układzie współrzędnych
+							 // Ale to nie koniec: ja chciałem przesuwać siatki względem siebie, żeby się nie 
+							 // nakładały ładunki i żeby nie było dzielenia przez zero!!!
+							 // FIXME, FIXME, FIXME,  FIXME,  FIXME,  FIXME,  FIXME,  FIXME,  FIXME
 
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 
