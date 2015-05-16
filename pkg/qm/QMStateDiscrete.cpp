@@ -26,31 +26,30 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 	QMParameters*    par     = dynamic_cast<QMParameters*   >(mat.get());
 	QMGeometry*      qmg     = dynamic_cast<QMGeometry*     >(b->shape.get());
 	if(!qmstate or !par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No state, no material. Cannot proceed."; exit(1);};
+	size_t dim = par->dim;
+	if(dim > 3) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go does not work with dim > 3.");};
+	std::vector<size_t> gridSizeNew(dim);
+	std::vector<Real>   sizeNew(dim);
+	for(size_t i=0 ; i<dim ; i++) {
+		if(qmg->step[i]==0) { throw std::runtime_error("ERROR: St1_QMStateDiscrete::go: step is ZERO!");};
+		sizeNew    [i]=(         qmg->extents[i]*2.0              );
+		gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
+	}
 	if( not b->isDynamic() ) { // anlytical
 	// not dynamic means it's either pure analytical solution or a potential
 		QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
 		if(!stAn) { std::cerr << "ERROR: St1_QMStateDiscrete::go : QMStateAnalytic not found."; exit(1);};
-		size_t dim = par->dim;
-		if(dim > 3) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go does not work with dim > 3.");};
-		std::vector<size_t> gridSizeNew(dim);
-		std::vector<Real>   sizeNew(dim);
-		for(size_t i=0 ; i<dim ; i++) {
-			if(qmg->step[i]==0) { throw std::runtime_error("ERROR: St1_QMStateAnalytic::go: step is ZERO!");};
-			sizeNew    [i]=(         qmg->extents[i]*2.0              );
-			gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
-		}
-		if(    (stAn->lastOptimisationIter == scene->iter) 
-		   and (gridSizeNew==qmstate->gridSize) and (sizeNew==qmstate->size))
+		if((stAn->lastOptimisationIter == scene->iter) and (gridSizeNew==qmstate->gridSize) and (sizeNew==qmstate->size))
 			return;
-		qmstate->firstRun = true;
+		qmstate->firstRun = true; // so it is always generated from the analytical formula
 		qmstate->gridSize = gridSizeNew;
-		qmstate->size     = sizeNew;
-		this->calculateTableValuesPosition(par,stAn);
 		stAn->lastOptimisationIter = scene->iter;
-	} else {
-	// dynamic means that it takes part in calculations
-		this->calculateTableValuesPosition(par,qmstate);
 	}
+	// dynamic means that it takes part in calculations
+	if(qmstate->firstRun) {
+		qmstate->size     = sizeNew;
+	}
+	this->calculateTableValuesPosition(par,qmstate);
 }
 
 void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete* qms)
