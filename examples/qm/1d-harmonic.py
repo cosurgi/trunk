@@ -3,7 +3,7 @@
 
 dimensions= 1
 size_1d   = 100
-halfSize  = [size_1d,0.1,0.1]
+halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
 size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
@@ -13,26 +13,30 @@ gaussWidth = 0.5
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
 potentialHalfSize = Vector3(size_1d,3,3)
-potentialValue    = 0.0
-
+potentialCoefficient= [0.5,0.5,0.5]
 
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
+		St1_QMStateHarmonic(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
-		[Ig2_Box_QMGeometry_QMPotGeometry()],
-# in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
-		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
-# in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handles inside SchrodingerKosloffPropagator
-		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
+		[Ig2_2xQMGeometry_QMIGeom()],
+		[Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()],
+		[Law2_QMIGeom_QMIPhysHarmonic()]
 	),
 	SchrodingerKosloffPropagator(steps=-1),
 ]
+
+stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
+stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
+displayOptions   = { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']}
+
 
 ## Create:
 # 1. analytical gauss packet - only use it to initialise the discrete packet
@@ -59,9 +63,9 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = Box(extents=potentialHalfSize ,wire=True)
-potentialBody.material  = QMParameters()
-potentialBody.state     = QMStateBarrier(se3=[potentialCenter,Quaternion((1,0,0),0)],potentialValue=potentialValue,potentialType=1)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,stepRender=stepRenderHide,partsScale=-10,**displayOptions)
+potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.state     = QMStateHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations

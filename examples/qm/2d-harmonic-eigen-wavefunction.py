@@ -3,12 +3,14 @@
 
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d,size_1d*1.5,0.1]
+halfSize  = [size_1d,size_1d*1.5,0.1]           # FIXME: halfSize  = [size_1d,size_1d*1.5]
 size      = [x * 2 for x in halfSize]
 
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]
 potentialHalfSize = halfSize
+potentialCoefficient= [0.5,0.5,0.5]
+
 harmonicOrder_x   = 0
 harmonicOrder_y   = 1
 
@@ -16,17 +18,15 @@ harmonicOrder_y   = 1
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketHarmonicEigenFunc(),
+		St1_QMStateHarmonic(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-# in DEM was: Ig2_Box_Sphere_ScGeom  → Constructs QMPotGeometry for Box+QMGeometry
-		[Ig2_Box_QMGeometry_QMPotGeometry()],
-# in DEM was: Ip2_FrictMat_FrictMat_FrictPhys()     → SKIP: no material parameters so far
-		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
-# in DEM was: Law2_ScGeom_FrictPhys_CundallStrack() → SKIP: potential is handled inside SchrodingerKosloffPropagator
-		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
+		[Ig2_2xQMGeometry_QMIGeom()],
+		[Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()],
+		[Law2_QMIGeom_QMIPhysHarmonic()]
 	),
 	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(steps=-1 ), # auto
@@ -37,12 +37,16 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-
 displayOptions         = { 'partsScale':10
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'renderMaxTime':0.5}
+displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]}
+
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
@@ -64,9 +68,9 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = Box(extents=potentialHalfSize ,wire=True)
-potentialBody.material  = QMParameters()
-potentialBody.state     = QMStateBarrier(se3=[potentialCenter,Quaternion((1,0,0),0)],potentialType=1)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
+potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.state     = QMStateHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations

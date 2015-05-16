@@ -36,18 +36,19 @@ O.engines=[
 
 ## Two particles are created - the analytical one, and the numerical one. They
 ## do not interact, they are two separate calculations in fact.
-displayOptions         = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'step':[0.4,0.4,0.4]
-                          ,'renderMaxTime':0.5
-                          ,'threshold3D':0.00001}
+stepRenderFrame   =["default frame","hidden","frame","stripes","mesh"]
+displayOptions    = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                     ,'step':[0.4,0.4,0.4]
+                     ,'renderMaxTime':0.5
+                     ,'threshold3D':0.00001}
 
 ## The analytical one:
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],stepRender=stepRenderFrame,**displayOptions)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
@@ -70,7 +71,7 @@ numericalBody.state     = QMPacketGaussianWave(gridSize=[16]*dimensions,**gaussP
 #O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
-O.dt=.1
+O.dt=.5
 
 print "==========================================="
 print "=======                             ======="

@@ -3,7 +3,7 @@
 
 dimensions= 1
 size_1d   = 100 if dimensions==1 else 10
-halfSize  = [size_1d,0.1,0.1]
+halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
 size      = [x * 2 for x in halfSize]
 
 ## This is a simple test:
@@ -18,17 +18,11 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-# No particle interactions yet, only a free propagating particle. First step will be to introduce
-# potentials, then interactions between moving particles.
-	#InteractionLoop(
-		#[Ig2_Sphere_Sphere_ScGeom(),Ig2_Box_Sphere_ScGeom()],
-		#[Ip2_FrictMat_FrictMat_FrictPhys()],
-		#[Law2_ScGeom_FrictPhys_CundallStrack()]
-	#),
 	SchrodingerKosloffPropagator(), #steps=200),
 	SchrodingerAnalyticPropagator()
 ]
 
+stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
 
 ## Two particles are created - the analytical one, and the numerical one. They
 ## do not interact, they are two separate calculations in fact.
@@ -38,7 +32,7 @@ O.engines=[
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=["default hidden","hidden","frame","stripes","mesh"])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=stepRenderHide)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
@@ -51,7 +45,7 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=["default hidden","hidden","frame","stripes","mesh"])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=stepRenderHide)
 numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
@@ -75,6 +69,7 @@ try:
 	qt.controller.setWindowTitle("1D free prop. of gaussian packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 except ImportError:
 	pass
 

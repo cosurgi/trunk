@@ -3,7 +3,7 @@
 
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d,size_1d*1.5,0.1]
+halfSize  = [size_1d,size_1d*1.5,0.1]           # FIXME: halfSize  = [size_1d,size_1d*1.5]
 size      = [x * 2 for x in halfSize]
 
 ## This is a simple test:
@@ -18,14 +18,6 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-# No particle interactions yet, only a free propagating particle. First step will be to introduce
-# potentials, then interactions between moving particles.
-	#InteractionLoop(
-		#[Ig2_Sphere_Sphere_ScGeom(),Ig2_Box_Sphere_ScGeom()],
-		#[Ip2_FrictMat_FrictMat_FrictPhys()],
-		#[Law2_ScGeom_FrictPhys_CundallStrack()]
-	#),
-#	SchrodingerKosloffPropagator(),
 	SchrodingerKosloffPropagator(steps=-1),
 	SchrodingerAnalyticPropagator()
 ]
@@ -74,7 +66,6 @@ try:
 	qt.controller.setWindowTitle("2D free propagating packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometry().step=[0.2,0.2,0.2]
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 

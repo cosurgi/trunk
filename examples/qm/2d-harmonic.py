@@ -3,7 +3,7 @@
 
 dimensions= 2
 size_1d   = 10
-halfSize  = [size_1d,size_1d*1.2,0.1]
+halfSize  = [size_1d*2,size_1d*1.2,0.1]           # FIXME: halfSize  = [size_1d,size_1d*1.2]
 size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
@@ -11,6 +11,7 @@ k0_x         = 3
 k0_y         = 2
 gaussWidth_x = 1.0
 gaussWidth_y = 2.0
+potentialCoefficient= [0.2,0.5,0.5]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
@@ -20,18 +21,23 @@ potentialValue    = 0.0
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
+		St1_QMStateHarmonic(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
 	InteractionLoop(
-		[Ig2_Box_QMGeometry_QMPotGeometry()],
-		[Ip2_QMParameters_QMParameters_QMPotPhysics()],
-		[Law2_QMPotGeometry_QMPotPhysics_QMPotPhysics()]
+		[Ig2_2xQMGeometry_QMIGeom()],
+		[Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()],
+		[Law2_QMIGeom_QMIPhysHarmonic()]
 	),
 	SchrodingerKosloffPropagator(),
 ]
 
+displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]}
 
 ## 1: Analytical packet
 analyticBody = QMBody()
@@ -52,9 +58,9 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = Box(extents=potentialHalfSize ,wire=True)
-potentialBody.material  = QMParameters()
-potentialBody.state     = QMStateBarrier(se3=[potentialCenter,Quaternion((1,0,0),0)],potentialValue=potentialValue,potentialType=1)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
+potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.state     = QMStateHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
@@ -71,7 +77,6 @@ try:
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.controller.setWindowTitle("Gaussian packet in 2D harmonic potential")
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometry().step=[0.2,0.2,0.2]
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 
