@@ -81,6 +81,7 @@ void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::go(
 	const QMParametersBarrier* qm2 = static_cast<QMParametersBarrier*>(m2.get());
 
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
+//        but then - the potential itself shall be drawn just like before: as a Box ??
 	pot->height = qm2->height;
 }
 

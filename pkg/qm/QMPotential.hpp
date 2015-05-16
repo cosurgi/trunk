@@ -160,30 +160,6 @@ class QMIPhys: public IPhys
 };
 REGISTER_SERIALIZABLE(QMIPhys);
 
-/////// FIXME: delete     /*********************************************************************************
-/////// FIXME: delete     *
-/////// FIXME: delete     * Ig2   Box   QMGeometry  →  QMIGeom
-/////// FIXME: delete     *
-/////// FIXME: delete     *********************************************************************************/
-/////// FIXME: delete     
-/////// FIXME: delete     /*! @brief When QMGeometry collides with a Box which is a potential, the geometry of their contact is calculated and stored in QMIGeom
-/////// FIXME: delete      *
-/////// FIXME: delete      *  Calculates geometrical contact of external potential (bounded by a BOX) on a wavefunction (bounded by QMGeometry).
-/////// FIXME: delete      */
-/////// FIXME: delete     
-/////// FIXME: delete     class Ig2_Box_QMGeometry_QMIGeom: public IGeomFunctor
-/////// FIXME: delete     {
-/////// FIXME: delete     	public :
-/////// FIXME: delete     		virtual bool go(const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
-/////// FIXME: delete     		virtual bool goReverse(	const shared_ptr<Shape>& qm1, const shared_ptr<Shape>& qm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
-/////// FIXME: delete     	YADE_CLASS_BASE_DOC(Ig2_Box_QMGeometry_QMIGeom,IGeomFunctor,"Create an interaction geometry :yref:`QMIGeom` from :yref:`Box` and :yref:`QMGeometry`, representing the box overlapped onto wavefunction in positional representation.")
-/////// FIXME: delete     	FUNCTOR2D(Box,QMGeometry);
-/////// FIXME: delete     	DEFINE_FUNCTOR_ORDER_2D(Box,QMGeometry);
-/////// FIXME: delete     	DECLARE_LOGGER;
-/////// FIXME: delete     };
-/////// FIXME: delete     
-/////// FIXME: delete     REGISTER_SERIALIZABLE(Ig2_Box_QMGeometry_QMIGeom);
-
 /*********************************************************************************
 *
 * Ig2   QMGeometry   QMGeometry  →  QMIGeom

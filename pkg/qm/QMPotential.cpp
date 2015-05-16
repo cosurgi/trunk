@@ -42,136 +42,6 @@ CREATE_LOGGER(QMIPhys);
 // !! at least one virtual function in the .cpp file
 QMIPhys::~QMIPhys(){};
 
-//FIXME: rm   /*********************************************************************************
-//FIXME: rm   *
-//FIXME: rm   * Ig2   Box   QMGeometry  →  QMIGeom
-//FIXME: rm   *
-//FIXME: rm   *********************************************************************************/
-//FIXME: rm   CREATE_LOGGER(Ig2_Box_QMGeometry_QMIGeom);
-//FIXME: rm   
-//FIXME: rm   // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, wywalić to:
-//FIXME: rm   #include "QMStateDiscrete.hpp"
-//FIXME: rm   #include "QMPotentialBarrier.hpp"
-//FIXME: rm   
-//FIXME: rm   bool Ig2_Box_QMGeometry_QMIGeom::go(
-//FIXME: rm   	  const shared_ptr<Shape>&    qm1, const shared_ptr<Shape>&    qm2
-//FIXME: rm   	, const State& state1            , const State& state2
-//FIXME: rm   	, const Vector3r& shift2         // dem legacy       ← that's for periodic boundaries
-//FIXME: rm   	, const bool& forceRecalculation // dem legacy FIXME ← I guess it's an override to force interaction even when it should not exist
-//FIXME: rm   	, const shared_ptr<Interaction>& c)
-//FIXME: rm   {
-//FIXME: rm   /// 	if(c->geom) return true; // FIXME - this skips updating if geometry changes !!
-//FIXME: rm   /// 
-//FIXME: rm   /// 	const Se3r& se31=state1.se3; const Se3r& se32=state2.se3;
-//FIXME: rm   /// 
-//FIXME: rm   /// ////////////////////////////std::cerr << "Ig2_Box_QMGeometry_QMIGeom : " << state1.getClassName() << " "  << state2.getClassName() << "\n";
-//FIXME: rm   /// // FIXME,FIXME - weird method of getting state1 ← needed for getting the FFT grid size
-//FIXME: rm   /// // FIXME,FIXME - and stupid, I have state1 and state2 !!! why didn't I use it???
-//FIXME: rm   /// 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[c->id2]->state.get());
-//FIXME: rm   /// 	QMStateBarrier * pot=dynamic_cast<QMStateBarrier *>((*(scene->bodies))[c->id1]->state.get());
-//FIXME: rm   /// 
-//FIXME: rm   /// 	if(!psi or !pot) return false;
-//FIXME: rm   /// 
-//FIXME: rm   /// 	Vector3r pt1,pt2,normal;
-//FIXME: rm   /// 	// Real depth;
-//FIXME: rm   /// 
-//FIXME: rm   /// 	Box* obb             = static_cast<Box*>(qm1.get());
-//FIXME: rm   /// //	QMGeometry* s = static_cast<QMGeometry*>(qm2.get());
-//FIXME: rm   /// 
-//FIXME: rm   /// 	Vector3r extents1 = obb->extents;
-//FIXME: rm   /// //	Vector3r extents2 = s  ->halfSize;
-//FIXME: rm   /// 
-//FIXME: rm   /// 	//
-//FIXME: rm   /// 	// FIXME: do we need rotation matrix? Can't quaternion do just fine?
-//FIXME: rm   /// 	// FIXME - ignore rotation for now, there was a Box ←→ Box interaction in older yade version. I could use it here
-//FIXME: rm   /// 	//
-//FIXME: rm   /// 	//         Matrix3r boxAxisT=se31.orientation.toRotationMatrix();
-//FIXME: rm   /// 	//         Matrix3r boxAxis = boxAxisT.transpose();
-//FIXME: rm   /// 
-//FIXME: rm   /// 	Vector3r relPos12 = -1.0*(se32.position+shift2-se31.position); // relative position of centroids
-//FIXME: rm   /// 	shared_ptr<QMIGeom> igeom;
-//FIXME: rm   /// 
-//FIXME: rm   /// 	//
-//FIXME: rm   /// 	// FIXME: assume that interaction always exists. WRONG! FIXME, FIXME.
-//FIXME: rm   /// 	// I could use depth calculation from Box ←→ Box interaction
-//FIXME: rm   /// 	//
-//FIXME: rm   /// 	// if (depth<0 && !c->isReal() && !force) return false;
-//FIXME: rm   /// 	//
-//FIXME: rm   /// 
-//FIXME: rm   /// 	bool isNew=!c->geom;
-//FIXME: rm   /// 	if (isNew) igeom = shared_ptr<QMIGeom>(new QMIGeom());
-//FIXME: rm   /// 	else igeom = YADE_PTR_CAST<QMIGeom>(c->geom);
-//FIXME: rm   /// 
-//FIXME: rm   /// 	//igeom->relativePosition21 = relPos12;
-//FIXME: rm   /// 	//// igeom->relativeOrientation21 = ; FIXME
-//FIXME: rm   /// 	//igeom->halfSize1 = extents1;
-//FIXME: rm   /// 	//igeom->halfSize2 = extents2;
-//FIXME: rm   /// 
-//FIXME: rm   /// 	NDimTable<Complexr>& val(igeom->potentialValues);
-//FIXME: rm   /// 	val.resize(psi->tableValuesPosition); // use size of grid for ψ₀ to write potential data into igeom→potentialValues
-//FIXME: rm   /// 
-//FIXME: rm   /// 
-//FIXME: rm   /// 	if(psi->gridSize.size()==1) {
-//FIXME: rm   /// 		// FIXME - 1D only
-//FIXME: rm   /// 		size_t startI=psi->xToI(relPos12[0]-extents1[0],0);
-//FIXME: rm   /// 		size_t endI  =psi->xToI(relPos12[0]+extents1[0],0);
-//FIXME: rm   /// 
-//FIXME: rm   /// 	// FIXME - remove cerr
-//FIXME: rm   /// //		std::cerr << startI << " " << endI << " " << relPos12[0] << " "
-//FIXME: rm   /// //			  << extents1[0] << " " << psi->tableValuesPosition.size0(0) << " " << val.size0(0) << " " << pot->potentialValue << "\n";
-//FIXME: rm   /// 
-//FIXME: rm   /// 		for(size_t i=startI ; i<=endI ; i++) {
-//FIXME: rm   /// 			if(i>=0 and i<val.size0(0))
-//FIXME: rm   /// 
-//FIXME: rm   /// 	// FIXME - 1D only
-//FIXME: rm   /// 			{
-//FIXME: rm   /// 				switch(pot->potentialType) {
-//FIXME: rm   /// 					case 0 : val.at(i)=pot->potentialValue; break;
-//FIXME: rm   /// 					case 1 : val.at(i)=std::pow(psi->iToX(i,0),2)*0.5; break;
-//FIXME: rm   /// 					default : std::cerr << "Unknown potential type\n";break;
-//FIXME: rm   /// 				}
-//FIXME: rm   /// 			}
-//FIXME: rm   /// 		}
-//FIXME: rm   /// 	}
-//FIXME: rm   /// 	if(psi->gridSize.size()==2) {
-//FIXME: rm   /// 		// FIXME - 2D only, NOT general :(((
-//FIXME: rm   /// 		size_t startI=psi->xToI(relPos12[0]-extents1[0],0);
-//FIXME: rm   /// 		size_t endI  =psi->xToI(relPos12[0]+extents1[0],0);
-//FIXME: rm   /// 		size_t startJ=psi->xToI(relPos12[1]-extents1[1],1);
-//FIXME: rm   /// 		size_t endJ  =psi->xToI(relPos12[1]+extents1[1],1);
-//FIXME: rm   /// 
-//FIXME: rm   /// 		for(size_t i=startI ; i<=endI ; i++)
-//FIXME: rm   /// 		for(size_t j=startJ ; j<=endJ ; j++)
-//FIXME: rm   /// 		{
-//FIXME: rm   /// 			if(i>=0 and i<val.size0(0))
-//FIXME: rm   /// 			if(j>=0 and j<val.size0(1))
-//FIXME: rm   /// 
-//FIXME: rm   /// 	// FIXME - 1D only
-//FIXME: rm   /// 			{
-//FIXME: rm   /// 				switch(pot->potentialType) { ////////// !!!!!!!!!!!! FIXME!!!!!!!!!!!!!
-//FIXME: rm   /// 					// niech woła właściwą funkcję z odpowiedniego potencjału, zamiast tuaj to liczyć.
-//FIXME: rm   /// 					case 0 : val.at(i,j)=pot->potentialValue; break;
-//FIXME: rm   /// 					case 1 : val.at(i,j)=  std::pow(psi->iToX(i,0),2)*0.5
-//FIXME: rm   /// 					                      +std::pow(psi->iToX(j,1),2)*0.5; break;
-//FIXME: rm   /// 					default : std::cerr << "Unknown potential type\n";break;
-//FIXME: rm   /// 				}
-//FIXME: rm   /// 			}
-//FIXME: rm   /// 		}
-//FIXME: rm   /// 	}
-//FIXME: rm   /// 
-//FIXME: rm   /// 
-//FIXME: rm   /// 	c->geom = igeom;
-//FIXME: rm   /// 	std::cerr <<"####### igeom created in QMInteraction\n";
-//FIXME: rm   	return true;
-//FIXME: rm   }
-//FIXME: rm   
-//FIXME: rm   bool Ig2_Box_QMGeometry_QMIGeom::goReverse(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2,
-//FIXME: rm     const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c)
-//FIXME: rm   {
-//FIXME: rm   	c->swapOrder();
-//FIXME: rm   	return go(cm2,cm1,state2,state1,-shift2,force,c);
-//FIXME: rm   }
-
 /*********************************************************************************
 *
 * Ig2   QMGeometry   QMGeometry  →  QMIGeom
@@ -255,6 +125,8 @@ CREATE_LOGGER(Law2_QMIGeom_QMIPhys_GlobalWavefunction);
 
 bool Law2_QMIGeom_QMIPhys_GlobalWavefunction::go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*)
 {
+	// FIXME - create global (fermion wavefunction) particle   wavefunction here ?! 
+	// FIXME - create global (bozon wavefunction)   interaction (potential) here ?!
 	return false;
 };
 

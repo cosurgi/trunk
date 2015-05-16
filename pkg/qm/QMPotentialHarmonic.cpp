@@ -48,6 +48,7 @@ Complexr St1_QMStateHarmonic::getValPos(Vector3r pos , const QMParameters* pm, c
 	Real Cx=harmonic->coefficient[0],Cy=harmonic->coefficient[1],Cz=harmonic->coefficient[2];
 	switch(harmonic->dim) {
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
+//        but then - the potential itself shall be drawn just like before: as a Box ??
 		case 1 : return Cx*x*x;
 		case 2 : return Cx*x*x+Cy*y*y;
 		case 3 : return Cx*x*x+Cy*y*y+Cz*z*z;
@@ -145,5 +146,4 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 	}
 	return true;
 };
-
 
