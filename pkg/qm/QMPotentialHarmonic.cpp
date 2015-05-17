@@ -114,19 +114,20 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 {
 	if(timeLimitH.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonic::go  START!\n";
 
-	QMIGeom*         qmigeom  = static_cast<QMIGeom*       >(g.get());
+	QMIGeom*         qmigeom  = static_cast<QMIGeom*        >(g.get());
 	QMIPhysHarmonic* harmonic = static_cast<QMIPhysHarmonic*>(p.get());
 
 	//FIXME
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 	NDimTable<Complexr>& val(qmigeom->potentialValues);
-	val.resize(psi->tableValuesPosition,0);
+	val.resize(psi->tableValuesPosition,0);                   // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie się się idealnie nakrywają.
+	if(timeLimitH.messageAllowed(2) and qmigeom->relPos21!=Vector3r(0,0,0)) std::cerr << "Law2_QMIGeom_QMIPhysHarmonic::go  potencjał się nie nakrywa z funkcją falową!\n";
 	if(psi->gridSize.size()==1) {
 		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
 		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
 		for(size_t i=startI ; i<=endI ; i++) {
-			if(i>=0 and i<val.size0(0))
-				val.at(i)=std::pow(psi->iToX(i,0),2)*harmonic->coefficient[0];
+			if(i>=0 and i<val.size0(0))               // ↓ FIXME? (2↑) teraz SchrodingerKosloffPropagator po prostu dodaje NDimTable, nie patrzy na ich względne położenia. Czyli nie mogę ich tak po prostu dodawać.
+				val.at(i)=std::pow(psi->iToX(i,0) /* -qmigeom->relPos21[0] */,2) *harmonic->coefficient[0];
 		}
 	}
 	if(psi->gridSize.size()==2) {
@@ -140,8 +141,8 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 		{
 			if(i>=0 and i<val.size0(0))
 			if(j>=0 and j<val.size0(1))
-				val.at(i,j)=  std::pow(psi->iToX(i,0),2)*harmonic->coefficient[0]
-				             +std::pow(psi->iToX(j,1),2)*harmonic->coefficient[1];
+				val.at(i,j)=  std::pow(psi->iToX(i,0) /* -qmigeom->relPos21[0] */ ,2)*harmonic->coefficient[0]
+				             +std::pow(psi->iToX(j,1) /* -qmigeom->relPos21[1] */ ,2)*harmonic->coefficient[1];
 		}
 	}
 	return true;

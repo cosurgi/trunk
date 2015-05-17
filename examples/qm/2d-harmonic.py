@@ -15,7 +15,7 @@ potentialCoefficient= [0.2,0.5,0.5]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = halfSize
+potentialHalfSize = halfSize # size ??
 potentialValue    = 0.0
 
 O.engines=[
