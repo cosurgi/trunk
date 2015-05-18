@@ -59,42 +59,42 @@ REGISTER_SERIALIZABLE(QMParticleHarmonic);
 
 /*********************************************************************************
 *
-* Q M   S T A T E    H A R M O N I C                               QMStateHarmonic
+* Q M   S T A T E    H A R M O N I C                         QMStPotentialHarmonic
 *
 *********************************************************************************/
 
-/*! @brief QMStateHarmonic is an analytical representation for harmonic potential.
+/*! @brief QMStPotentialHarmonic is an analytical representation for harmonic potential.
  * 
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStateHarmonic to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
+ *  call St1_QMStPotentialHarmonic to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
  */
 
-class QMStateHarmonic: public QMStatePotential
+class QMStPotentialHarmonic: public QMStatePotential
 {
 	public:
-		virtual ~QMStateHarmonic();
-		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStateHarmonic /* class name*/, QMStatePotential /* base class */
+		virtual ~QMStPotentialHarmonic();
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStPotentialHarmonic /* class name*/, QMStatePotential /* base class */
 			, "It's an unmovable potential barrier: a source of potential (interaction)" // class description
 			, // attributes, public variables
 			, // constructor
 			  createIndex();
 	);
-	REGISTER_CLASS_INDEX(QMStateHarmonic,QMStatePotential);
+	REGISTER_CLASS_INDEX(QMStPotentialHarmonic,QMStatePotential);
 };
-REGISTER_SERIALIZABLE(QMStateHarmonic);
+REGISTER_SERIALIZABLE(QMStPotentialHarmonic);
 
 /*********************************************************************************
 *
-* Q M   S T A T E    H A R M O N I C   F U N C T O R               QMStateHarmonic
+* Q M   S T A T E    H A R M O N I C   F U N C T O R         QMStPotentialHarmonic
 *
 *********************************************************************************/
 
-class St1_QMStateHarmonic: public St1_QMStateAnalytic
+class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic
 {
 	public:
-		FUNCTOR1D(QMStateHarmonic);
-		YADE_CLASS_BASE_DOC(St1_QMStateHarmonic/* class name */, St1_QMStateAnalytic /* base class */
-			, "Functor creating :yref:`QMStateHarmonic` from :yref:`QMParametersHarmonic`." // class description
+		FUNCTOR1D(QMStPotentialHarmonic);
+		YADE_CLASS_BASE_DOC(St1_QMStPotentialHarmonic/* class name */, St1_QMStateAnalytic /* base class */
+			, "Functor creating :yref:`QMStPotentialHarmonic` from :yref:`QMParametersHarmonic`." // class description
 		);
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
@@ -102,7 +102,7 @@ class St1_QMStateHarmonic: public St1_QMStateAnalytic
 //        but then - the potential itself shall be drawn just like before: as a Box ??
 /* FIXME: duplicate with Law2_* */		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
 };
-REGISTER_SERIALIZABLE(St1_QMStateHarmonic);
+REGISTER_SERIALIZABLE(St1_QMStPotentialHarmonic);
 
 /*********************************************************************************
 *

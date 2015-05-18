@@ -18,7 +18,7 @@ potentialCoefficient= [0.5,0.5,0.5]
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateHarmonic(),
+		St1_QMStPotentialHarmonic(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -65,7 +65,7 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,stepRender=stepRenderHide,partsScale=-10,**displayOptions)
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
-potentialBody.state     = QMStateHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
+potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations

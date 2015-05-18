@@ -19,7 +19,7 @@ potentialValue    = 23000/2
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateBarrier(),
+		St1_QMStPotentialBarrier(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -61,13 +61,13 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 potentialBody1 = QMBody()
 potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,stepRender=stepRenderStripes)
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody1.state     = QMStateBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
+potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
 potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,stepRender=stepRenderStripes)
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody2.state     = QMStateBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
+potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
 
 ## Define timestep for the calculations

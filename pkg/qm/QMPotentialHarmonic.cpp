@@ -8,8 +8,8 @@ TimeLimit timeLimitH; // FIXME - remove when finshed fixing
 YADE_PLUGIN(
 	(QMParametersHarmonic)
 	(QMParticleHarmonic)
-	(QMStateHarmonic)
-	(St1_QMStateHarmonic)
+	(QMStPotentialHarmonic)
+	(St1_QMStPotentialHarmonic)
 	(QMIPhysHarmonic)
 	(QMIPhysHarmonicParticles)
 	(Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic)
@@ -38,24 +38,24 @@ QMParticleHarmonic::~QMParticleHarmonic(){};
 
 /*********************************************************************************
 *
-* Q M   S T A T E    H A R M O N I C                               QMStateHarmonic
+* Q M   S T A T E    H A R M O N I C                         QMStPotentialHarmonic
 *
 *********************************************************************************/
-CREATE_LOGGER(QMStateHarmonic);
+CREATE_LOGGER(QMStPotentialHarmonic);
 // !! at least one virtual function in the .cpp file
-QMStateHarmonic::~QMStateHarmonic(){};
+QMStPotentialHarmonic::~QMStPotentialHarmonic(){};
 
 /*********************************************************************************
 *
-* Q M   S T A T E    H A R M O N I C   F U N C T O R               QMStateHarmonic
+* Q M   S T A T E    H A R M O N I C   F U N C T O R         QMStPotentialHarmonic
 *
 *********************************************************************************/
 
-Complexr St1_QMStateHarmonic::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
+Complexr St1_QMStPotentialHarmonic::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
 {
-	//const QMStateHarmonic*        state = static_cast <const QMStateHarmonic*>(qms);
+	//const QMStPotentialHarmonic*        state = static_cast <const QMStPotentialHarmonic*>(qms);
 	const QMParametersHarmonic* harmonic = dynamic_cast<const QMParametersHarmonic*>(pm);
-	if(not harmonic) { throw std::runtime_error("\n\nERROR: St1_QMStateHarmonic nas no QMParametersHarmonic, but rather `"
+	if(not harmonic) { throw std::runtime_error("\n\nERROR: St1_QMStPotentialHarmonic nas no QMParametersHarmonic, but rather `"
 		+std::string(pm?pm->getClassName():"")+"`.\n\n");};
 	Real x =pos[0]                  ,y =pos[1]                  ,z =pos[2];
 	Real Cx=harmonic->coefficient[0],Cy=harmonic->coefficient[1],Cz=harmonic->coefficient[2];
@@ -67,7 +67,7 @@ Complexr St1_QMStateHarmonic::getValPos(Vector3r pos , const QMParameters* pm, c
 		case 3 : return Cx*x*x+Cy*y*y+Cz*z*z;
 		default: break;
 	};
-	throw std::runtime_error("\n\nSt1_QMStateHarmonic::getValPos - wrong number of dimensions.\n\n");
+	throw std::runtime_error("\n\nSt1_QMStPotentialHarmonic::getValPos - wrong number of dimensions.\n\n");
 };
 
 /*********************************************************************************

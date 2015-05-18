@@ -25,7 +25,7 @@ potentialValue    = 100
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateBarrier(),
+		St1_QMStPotentialBarrier(),
 	]),
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
@@ -67,25 +67,25 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 potentialBody1 = QMBody()
 potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,**displayOptionsPot)
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody1.state     = QMStateBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
+potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
 potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,**displayOptionsPot)
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody2.state     = QMStateBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
+potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
 
 potentialBody3 = QMBody()
 potentialBody3.shape     = QMGeometry(extents=potentialHalfSizeA,partsScale=-potentialValue,**displayOptionsPot)
 potentialBody3.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody3.state     = QMStateBarrier(se3=[potentialCenter1a,Quaternion((1,0,0),0)])
+potentialBody3.state     = QMStPotentialBarrier(se3=[potentialCenter1a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody3)
 
 potentialBody4 = QMBody()
 potentialBody4.shape     = QMGeometry(extents=potentialHalfSizeA,partsScale=-potentialValue,**displayOptionsPot)
 potentialBody4.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
-potentialBody4.state     = QMStateBarrier(se3=[potentialCenter2a,Quaternion((1,0,0),0)])
+potentialBody4.state     = QMStPotentialBarrier(se3=[potentialCenter2a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody4)
 
 ## Define timestep for the calculations

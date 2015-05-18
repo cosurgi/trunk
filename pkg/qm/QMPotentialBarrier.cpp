@@ -7,8 +7,8 @@ TimeLimit timeLimitB; // FIXME - remove when finshed fixing
 
 YADE_PLUGIN(
 	(QMParametersBarrier)
-	(QMStateBarrier)
-	(St1_QMStateBarrier)
+	(QMStPotentialBarrier)
+	(St1_QMStPotentialBarrier)
 	(QMIPhysBarrier)
 	(Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier)
 	(Law2_QMIGeom_QMIPhysBarrier)
@@ -25,24 +25,24 @@ QMParametersBarrier::~QMParametersBarrier(){};
 
 /*********************************************************************************
 *
-* Q M   S T A T E    B A R R I E R                                  QMStateBarrier
+* Q M   S T A T E    B A R R I E R                            QMStPotentialBarrier
 *
 *********************************************************************************/
-CREATE_LOGGER(QMStateBarrier);
+CREATE_LOGGER(QMStPotentialBarrier);
 // !! at least one virtual function in the .cpp file
-QMStateBarrier::~QMStateBarrier(){};
+QMStPotentialBarrier::~QMStPotentialBarrier(){};
 
 /*********************************************************************************
 *
-* Q M   S T A T E    B A R R I E R   F U N C T O R                  QMStateBarrier
+* Q M   S T A T E    B A R R I E R   F U N C T O R            QMStPotentialBarrier
 *
 *********************************************************************************/
 
-Complexr St1_QMStateBarrier::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
+Complexr St1_QMStPotentialBarrier::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
 {
-	//const QMStateBarrier*        state = static_cast <const QMStateBarrier*>(qms);
+	//const QMStPotentialBarrier*        state = static_cast <const QMStPotentialBarrier*>(qms);
 	const QMParametersBarrier* barrier = dynamic_cast<const QMParametersBarrier*>(pm);
-	if(not barrier) { throw std::runtime_error("\n\nERROR: St1_QMStateBarrier::getValPos() nas no QMParametersBarrier, but rather `"
+	if(not barrier) { throw std::runtime_error("\n\nERROR: St1_QMStPotentialBarrier::getValPos() nas no QMParametersBarrier, but rather `"
 		+std::string(pm?pm->getClassName():"")+"`.\n\n");};
 	return barrier->height;
 };

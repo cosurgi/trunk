@@ -32,49 +32,49 @@ REGISTER_SERIALIZABLE(QMParametersBarrier);
 
 /*********************************************************************************
 *
-* Q M   S T A T E    B A R R I E R                                  QMStateBarrier
+* Q M   S T A T E    B A R R I E R                            QMStPotentialBarrier
 *
 *********************************************************************************/
 
-/*! @brief QMStateBarrier is an analytical representation for potential barrier.
+/*! @brief QMStPotentialBarrier is an analytical representation for potential barrier.
  *
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStateBarrier to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
+ *  call St1_QMStPotentialBarrier to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
  */
 
-class QMStateBarrier: public QMStatePotential
+class QMStPotentialBarrier: public QMStatePotential
 {
 	public:
-		virtual ~QMStateBarrier();
-		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStateBarrier /* class name*/, QMStatePotential /* base class */
+		virtual ~QMStPotentialBarrier();
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStPotentialBarrier /* class name*/, QMStatePotential /* base class */
 			, "It's an unmovable potential barrier: a source of potential (interaction)" // class description
 			, // attributes, public variables
 			, // constructor
 			  createIndex();
 	);
-	REGISTER_CLASS_INDEX(QMStateBarrier,QMStatePotential);
+	REGISTER_CLASS_INDEX(QMStPotentialBarrier,QMStatePotential);
 };
-REGISTER_SERIALIZABLE(QMStateBarrier);
+REGISTER_SERIALIZABLE(QMStPotentialBarrier);
 
 /*********************************************************************************
 *
-* Q M   S T A T E    B A R R I E R   F U N C T O R                  QMStateBarrier
+* Q M   S T A T E    B A R R I E R   F U N C T O R            QMStPotentialBarrier
 *
 *********************************************************************************/
 
-class St1_QMStateBarrier: public St1_QMStateAnalytic
+class St1_QMStPotentialBarrier: public St1_QMStateAnalytic
 {
 	public:
-		FUNCTOR1D(QMStateBarrier);
-		YADE_CLASS_BASE_DOC(St1_QMStateBarrier/* class name */, St1_QMStateAnalytic /* base class */
-			, "Functor creating :yref:`QMStateBarrier` from :yref:`QMParametersBarrier`." // class description
+		FUNCTOR1D(QMStPotentialBarrier);
+		YADE_CLASS_BASE_DOC(St1_QMStPotentialBarrier/* class name */, St1_QMStateAnalytic /* base class */
+			, "Functor creating :yref:`QMStPotentialBarrier` from :yref:`QMParametersBarrier`." // class description
 		);
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
 /* FIXME: duplicate with Law2_* */		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
 };
-REGISTER_SERIALIZABLE(St1_QMStateBarrier);
+REGISTER_SERIALIZABLE(St1_QMStPotentialBarrier);
 
 /*********************************************************************************
 *
