@@ -69,6 +69,8 @@ void SpatialQuickSortCollider::action()
 			&& rank[j]->max[1] > min[1]
 			&& rank[j]->min[2] < max[2]
 			&& rank[j]->max[2] > min[2])
+			// FIXME: can use http://eigen.tuxfamily.org/dox/group__TutorialReductionsVisitorsBroadcasting.html
+			// to make this much shorter, see pkg/qm/QMPotentialBarrier.cpp Law2_QMIGeom_QMIPhysBarrier::go
 			{
 				if ( (interaction = interactions->find(Body::id_t(id),Body::id_t(id2))) == 0)
 				{
