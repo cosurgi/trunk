@@ -90,6 +90,7 @@ class NDimTable : private std::vector<K
 			#ifdef DEBUG_NDIMTABLE
 			printDebugInfo();
 			#endif
+			dirty=true;
 		}
 		inline void calcDimRankTotal(const std::vector<std::size_t>& d) {
 			dim_n  = d;
@@ -99,6 +100,7 @@ class NDimTable : private std::vector<K
 			#ifdef DEBUG_NDIMTABLE
 			printDebugInfo();
 			#endif
+			dirty=true;
 		}
 		// element access: http://www.fftw.org/fftw3_doc/Row_002dmajor-Format.html#Row_002dmajor-Format
 		// element is located at the position iᵈ⁻¹ + nᵈ⁻¹ *(iᵈ⁻² + nᵈ⁻² *( ... n³*( i² + n²*(i¹ + n¹ * i⁰))))
@@ -128,19 +130,19 @@ class NDimTable : private std::vector<K
 	public:
 		//friend bool unitTesting<typename K>(const NDimTable<K>&);
 		// empty constructor
-		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0) {}; //http://en.cppreference.com/w/cpp/container/vector/vector
+		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0), dirty(true) {}; //http://en.cppreference.com/w/cpp/container/vector/vector
 		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0)) { resize(d     ); };
 		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0)) { resize(d,init); };
 		// copy constructor
 		NDimTable(const NDimTable& other) 
-			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
+			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total), dirty(true)
 		{
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "move failed! rank:" << rank_d << "\n";
 			#endif
 		};
 		template<typename L> NDimTable(const NDimTable<L>& other) 
-			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) 
+			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) , dirty(true)
 		{
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "conversion! rank:" << rank_d << "\n";
@@ -148,7 +150,7 @@ class NDimTable : private std::vector<K
 		};
 		// move constructor
 		NDimTable(NDimTable&& other)
-			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total))
+			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total)), dirty(true)
 		{
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "moved! rank:" << rank_d << "\n";
@@ -158,7 +160,7 @@ class NDimTable : private std::vector<K
 		// tensor product constructor
 		// careful - it's a vector of pointers. It's intended to be initialised with references
 		NDimTable(const std::vector<const NDimTable*>& others)
-			: parent(std::size_t(0))
+			: parent(std::size_t(0)), dirty(true)
 		{
 			calcTensorProduct(others); // fill in the data
 		};
@@ -431,7 +433,11 @@ class NDimTable : private std::vector<K
 		void print(std::string label,int width) const { print(std::cout,label,width);};
 
 		// FFTW3, here or there?
-
+	private:
+		bool                       dirty;
+		//std::vector<int>           dim_int; // FIXME: http://www.fftw.org/doc/New_002darray-Execute-Functions.html
+		//fftw_plan                  p_FFT,p_IFFT; //   http://www.fftw.org/doc/Using-Plans.html
+	public:
 		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
 		{
 			//(*this)=inp; // FIXME - jakoś inaczej
@@ -441,13 +447,12 @@ class NDimTable : private std::vector<K
 			//int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
-			fftw_plan p=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-
-			fftw_execute(p);
+			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+			//dirty=false;
+			fftw_execute(p_FFT);
 // FIXME - do not destroy & create plan all the time. Just make one and keep it!! Unless dimensions changed - by calling resize().
-			fftw_destroy_plan(p);
+			fftw_destroy_plan(p_FFT);
 			#else
 			#error fftw3 library is needed
 			#endif
@@ -463,13 +468,12 @@ class NDimTable : private std::vector<K
 			int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
-			fftw_plan p=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-			fftw_execute(p);
+			fftw_plan p_IFFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+			//dirty=false;
+			fftw_execute(p_IFFT);
 			this->operator/=(N);		
-			fftw_destroy_plan(p);
+			fftw_destroy_plan(p_IFFT);
 			#else
 			#error fftw3 library is needed
 			#endif
