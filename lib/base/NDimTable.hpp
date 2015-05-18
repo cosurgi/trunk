@@ -416,6 +416,20 @@ class NDimTable : private std::vector<K
 			return std::move(ret);
 		};
 
+		typedef std::function<Real(Real i, int d)>  iToK_func;
+/* OK */	void becomeMinusKSquaredTable(const iToK_func& iToK)
+		{
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲, -k² will be w̲r̲o̲n̲g̲.\n       FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1\n";
+			DimN pos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				parent::operator[](total_i) = 0;
+				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
+					parent::operator[](total_i) -= std::pow(iToK((pos_i[_d_]+dim_n[_d_]/2)%dim_n[_d_],_d_) ,2);
+				increment(pos_i);
+			}
+		};
+
 		void print(std::ostream& os,std::string l,int width) const
 		{
 			if(rank_d==0) return;

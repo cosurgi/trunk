@@ -112,28 +112,10 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	static bool hasTable(false);
 	static NDimTable<Real    > kTable(psi_0.dim());
 	if(! hasTable){
-		std::size_t rank = psi_0.rank();
-		if(rank==1){
-		      for(size_t i=0;i<kTable.size0(0);i++)
-			      kTable.at(i  )=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2);
-		} else
-		if(rank==2){
-		      for(size_t i=0;i<kTable.size0(0);i++)
-		      for(size_t j=0;j<kTable.size0(1);j++)
-			      kTable.at(i,j)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
-			                     -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2);
-		} else //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
-		if(rank==3){
-		      for(size_t i=0;i<kTable.size0(0);i++)
-		      for(size_t j=0;j<kTable.size0(1);j++)
-		      for(size_t k=0;k<kTable.size0(2);k++)
-			      kTable.at(i,j,k)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
-			                       -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2)
-					       -std::pow(psi->iToK((k+kTable.size0(2)/2)%kTable.size0(2),2),2);
-		} else {std::cerr << "SchrodingerKosloffPropagator dim>3 !"; exit(1);}
 		hasTable=true;
-	//kTable.print();
+		kTable.becomeMinusKSquaredTable( [&psi](Real i,int d)->Real{ return psi->iToK(i,d);});
 	}
+	// FIXME,FIXME ↑ -- this should be somewhere else. Still need to find a good place.
 	
 	// prepare the potential  ψᵥ
 	NDimTable<Complexr> Vpsi(psi_0.dim(),0);

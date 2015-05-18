@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size_1d   = 100
+size_1d   = 20
 halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
 size      = [x * 2 for x in halfSize]
 
@@ -50,7 +50,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],step=[0.03,0.1,0.1])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-harmonicPacketArg      = {'energyLevel':[harmonicOrder,0,0],'size':size,'gridSize':[2**13]}
+harmonicPacketArg      = {'energyLevel':[harmonicOrder,0,0],'size':size,'gridSize':[2**10]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
