@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# PICK NUMBER OF DIMENSIONS (1,2 or 3):
 dimensions= 3
-size_1d   = 15
-halfSize  = [size_1d,size_1d,size_1d]
+size_1d   = 10
+halfSize  = [size_1d,size_1d*1.5,size_1d]
 size      = [x * 2 for x in halfSize]
 
 ## This is a simple test:
@@ -15,44 +14,34 @@ size      = [x * 2 for x in halfSize]
 O.engines=[
 	StateDispatcher([
 		St1_QMPacketGaussianWave(),
-		St1_QMStateDiscrete()
 	]),
 	SpatialQuickSortCollider([
-	#InsertionSortCollider([
-	#	Bo1_QMGeometry_Aabb(),
 		Bo1_Box_Aabb(),
 	]),
-# No particle interactions yet, only a free propagating particle. First step will be to introduce
-# potentials, then interactions between moving particles.
-	#InteractionLoop(
-		#[Ig2_Sphere_Sphere_ScGeom(),Ig2_Box_Sphere_ScGeom()],
-		#[Ip2_FrictMat_FrictMat_FrictPhys()],
-		#[Law2_ScGeom_FrictPhys_CundallStrack()]
-	#),
-#	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(),
 	SchrodingerAnalyticPropagator()
 ]
 
 
-## Two particles are created - the analytical one, and the numerical one. They
-## do not interact, they are two separate calculations in fact.
 stepRenderFrame   =["default frame","hidden","frame","stripes","mesh"]
 displayOptions    = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                      ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                      ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                     ,'step':[0.4,0.4,0.4]
                      ,'renderMaxTime':0.5
                      ,'threshold3D':0.00001}
+## Two particles are created - the analytical one, and the numerical one. They
+## do not interact, they are two separate calculations in fact.
 
 ## The analytical one:
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],stepRender=stepRenderFrame,**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=stepRenderFrame,**displayOptions)
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[1.5,0,0],'a0':[1.5,1.5,1.5],'size':size} #,gridSize=[16]*dimensions)
+#gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[2.5,0,0],'a0':[0.5,0.5,0.5],'size':size,'gridSize':[128]*dimensions}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'size':size,'gridSize':[32,64,32]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
@@ -61,26 +50,20 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=stepRenderFrame,**displayOptions)
 numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMPacketGaussianWave(gridSize=[16]*dimensions,**gaussPacketArg)
-#nid=O.bodies.append(numericalBody)
-#O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+nid=O.bodies.append(numericalBody)
+O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
-O.dt=.5
-
-print "==========================================="
-print "=======                             ======="
-print "=======       SINGLE step ONLY      ======="
-print "=======                             ======="
-print "==========================================="
+O.dt=.02
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
-O.save('/tmp/a.xml.bz2');
+#O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
 try:

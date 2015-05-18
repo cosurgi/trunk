@@ -438,17 +438,15 @@ class NDimTable : private std::vector<K
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
-			fftw_plan p;
 			//int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			if(rank_d == 1) { // FIXME - move to separate function
-				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-			} else
-			if(rank_d == 2) {
-				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-			} else { std::cerr << "fft error";exit(1);};
+
+			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
+			fftw_plan p=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+
 			fftw_execute(p);
+// FIXME - do not destroy & create plan all the time. Just make one and keep it!! Unless dimensions changed - by calling resize().
 			fftw_destroy_plan(p);
 			#else
 			#error fftw3 library is needed
@@ -462,16 +460,13 @@ class NDimTable : private std::vector<K
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
-			fftw_plan p;
 			int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			if(rank_d == 1) {
-				p = fftw_plan_dft_1d(inp.size0(0), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-			} else
-			if(rank_d == 2) {
-				p = fftw_plan_dft_2d(inp.size0(0),inp.size0(1), in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-			} else { std::cerr << "fft error";exit(1);};
+
+			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
+			fftw_plan p=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+
 			fftw_execute(p);
 			this->operator/=(N);		
 			fftw_destroy_plan(p);

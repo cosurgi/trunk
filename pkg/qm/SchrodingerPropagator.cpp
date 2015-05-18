@@ -122,7 +122,15 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 		      for(size_t j=0;j<kTable.size0(1);j++)
 			      kTable.at(i,j)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
 			                     -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2);
-		} //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
+		} else //FIXME - should work for ALL, any number of !!!!!!!!!!!!!!!!!!!!! dimensions!!!!!!!!!!!!
+		if(rank==3){
+		      for(size_t i=0;i<kTable.size0(0);i++)
+		      for(size_t j=0;j<kTable.size0(1);j++)
+		      for(size_t k=0;k<kTable.size0(2);k++)
+			      kTable.at(i,j,k)=-std::pow(psi->iToK((i+kTable.size0(0)/2)%kTable.size0(0),0),2)
+			                       -std::pow(psi->iToK((j+kTable.size0(1)/2)%kTable.size0(1),1),2)
+					       -std::pow(psi->iToK((k+kTable.size0(2)/2)%kTable.size0(2),2),2);
+		} else {std::cerr << "SchrodingerKosloffPropagator dim>3 !"; exit(1);}
 		hasTable=true;
 	//kTable.print();
 	}

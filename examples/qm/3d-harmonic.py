@@ -1,21 +1,23 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-dimensions= 2
-size_1d   = 10
-halfSize  = [size_1d*2,size_1d*1.2,0.1]
+dimensions= 3
+size_1d   = 5 
+halfSize  = [size_1d,size_1d*1.2,size_1d]
 size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
-k0_x         = 3
-k0_y         = 2
-gaussWidth_x = 1.0
-gaussWidth_y = 2.0
-potentialCoefficient= [0.2,0.5,0.5]
+k0_x         = 1
+k0_y         = 0
+k0_z         = 0
+gaussWidth_x = 0.7
+gaussWidth_y = 0.7
+gaussWidth_z = 0.7
+potentialCoefficient= [2,2,2]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = halfSize # size ??
+potentialHalfSize = halfSize # FIXME: size ??
 potentialValue    = 0.0
 
 O.engines=[
@@ -34,23 +36,31 @@ O.engines=[
 	SchrodingerKosloffPropagator(),
 ]
 
-displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
+		    ,'partsSquared':1
+		    ,'threshold3D':0.01}
+
+displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]}
+		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
+		    ,'threshold3D':10}
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,2,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'size':size,'gridSize':[2**7,2**6]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'size':size,'gridSize':[32,32,32]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions)
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(numericalBody)
@@ -58,7 +68,7 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],**displayOptionsPot)
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStateHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
@@ -75,7 +85,7 @@ try:
 	from yade import qt
 	qt.Controller()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.controller.setWindowTitle("Gaussian packet in 2D harmonic potential")
+	qt.controller.setWindowTitle("Gaussian packet in 3D harmonic potential")
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5

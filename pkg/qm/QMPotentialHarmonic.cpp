@@ -204,6 +204,27 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 				             +std::pow(psi->iToX(j,1) /* -qmigeom->relPos21[1] */ ,2)*harmonic->coefficient[1];
 		}
 	}
+	if(psi->gridSize.size()==3) {
+		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
+		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
+		size_t startJ=psi->xToI(qmigeom->relPos21[1]-qmigeom->extents2[1],1);
+		size_t endJ  =psi->xToI(qmigeom->relPos21[1]+qmigeom->extents2[1],1);
+		size_t startK=psi->xToI(qmigeom->relPos21[2]-qmigeom->extents2[2],2);
+		size_t endK  =psi->xToI(qmigeom->relPos21[2]+qmigeom->extents2[2],2);
+
+		for(size_t i=startI ; i<=endI ; i++)
+		for(size_t j=startJ ; j<=endJ ; j++)
+		for(size_t k=startK ; k<=endK ; k++)
+		{
+			if(i>=0 and i<val.size0(0))
+			if(j>=0 and j<val.size0(1))
+			if(k>=0 and k<val.size0(2))
+				val.at(i,j,k)=  std::pow(psi->iToX(i,0) /* -qmigeom->relPos21[0] */ ,2)*harmonic->coefficient[0]
+				               +std::pow(psi->iToX(j,1) /* -qmigeom->relPos21[1] */ ,2)*harmonic->coefficient[1]
+					       +std::pow(psi->iToX(k,2) /* -qmigeom->relPos21[2] */ ,2)*harmonic->coefficient[2];
+		}
+	}
+	if(psi->gridSize.size() > 3) { std::cerr << "Law2_QMIGeom_QMIPhysHarmonic::go, dim>3"; exit(1); };
 	return true;
 };
 

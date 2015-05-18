@@ -135,6 +135,7 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p,
 				val.at(i,j)=barrier->height;
 		}
 	}
+	if(psi->gridSize.size() > 2) { std::cerr << "Law2_QMIGeom_QMIPhysBarrier::go, dim>2"; exit(1); };
 	return true;
 };
 

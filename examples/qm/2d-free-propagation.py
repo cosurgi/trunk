@@ -35,7 +35,8 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],partsSc
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'size':size,'gridSize':[128,64]}
+#gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'size':size,'gridSize':[128,64]}    # ← previously used arguments, were nice too!
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,0],'size':size,'gridSize':[64,128]} # ← arguments I tried when introducing 3D
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
