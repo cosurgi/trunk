@@ -41,7 +41,8 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRen
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 #gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[2.5,0,0],'a0':[0.5,0.5,0.5],'size':size,'gridSize':[128]*dimensions}
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'size':size,'gridSize':[32,64,32]}
+# FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'size':size,'gridSize':[24,42,24]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
@@ -60,7 +61,7 @@ nid=O.bodies.append(numericalBody)
 O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
-O.dt=.02
+O.dt=.07
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 #O.save('/tmp/a.xml.bz2');

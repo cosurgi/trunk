@@ -22,6 +22,8 @@ class QMParametersHarmonic: public QMParameters
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMParametersHarmonic /* class name*/, QMParameters /* base class */
 			, "It's a potential barrier with given height" // class description
 			, // attributes, public variables
+			//((Real     QMParameters::hbar
+			//((size_t   QMParameters::dim 
 			  ((Vector3r,coefficient,Vector3r(0.5,0.5,0.5),,"Harmonic potential: V(r)=coefficient*r^2"))
 			, // constructor
 			  createIndex();
@@ -96,6 +98,7 @@ class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic
 		YADE_CLASS_BASE_DOC(St1_QMStPotentialHarmonic/* class name */, St1_QMStateAnalytic /* base class */
 			, "Functor creating :yref:`QMStPotentialHarmonic` from :yref:`QMParametersHarmonic`." // class description
 		);
+	friend class Law2_QMIGeom_QMIPhysHarmonic;
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
