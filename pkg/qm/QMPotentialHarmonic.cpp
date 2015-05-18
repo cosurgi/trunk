@@ -184,6 +184,7 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 	//FIXME
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 	NDimTable<Complexr>& val(qmigeom->potentialValues);
+
 	val.resize(psi->tableValuesPosition,0);                   // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie się się idealnie nakrywają.
 	if(timeLimitH.messageAllowed(2) and qmigeom->relPos21!=Vector3r(0,0,0)) std::cerr << "Law2_QMIGeom_QMIPhysHarmonic::go  potencjał się nie nakrywa z funkcją falową!\n";
 	if(psi->gridSize.size()==1) {

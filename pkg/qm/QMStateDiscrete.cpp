@@ -62,26 +62,13 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, 
 {// initialize from this   //////////////////////////////////////////// MERGE
 	if(not qms->firstRun) return;
 	qms->firstRun=false;
-	if(par->dim == 1) {
-		if (qms->gridSize.size() != 1) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 1\n\n");
-		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
-			qms->tableValuesPosition.at(i) = this->getValPos(Vector3r(qms->iToX(i,0),0,0),par,qms);
-	} else if(par->dim == 2) {
-		if (qms->gridSize.size() != 2) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 2\n\n");
-		qms->tableValuesPosition.resize(qms->gridSize,5);  // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
-		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
-			qms->tableValuesPosition.at    ( i,j ) = this->getValPos(Vector3r(qms->iToX(i,0),qms->iToX(j,1),0),par,qms);
-		//OK - that was just to be safe
-		//	tableValuesPosition.atSafe({i,j}) = this->getValPos(Vector3r(iToX(i,0),iToX(j,1),0),par);
-	} else if(par->dim == 3) {
-		if (qms->gridSize.size() != 3) throw std::out_of_range("\n\nQMStateDiscrete: should be dimension 3\n\n");
-		qms->tableValuesPosition.resize(qms->gridSize,5); // initialize with obviously wrong value, eg. 5, so that mistakes are easy to spot
-		for(size_t i=0 ; i<qms->gridSize[0] ; i++)
-		for(size_t j=0 ; j<qms->gridSize[1] ; j++)
-		for(size_t k=0 ; k<qms->gridSize[2] ; k++)
-			qms->tableValuesPosition.at    ( i,j,k ) = this->getValPos(Vector3r(qms->iToX(i,0),qms->iToX(j,1),qms->iToX(k,2)),par,qms);
+	if(par->dim <= 3) {
+		if (qms->gridSize.size() != par->dim) throw std::out_of_range("\n\nSt1_QMStateDiscrete: wrong dimension\n\n");
+		qms->tableValuesPosition.resize(qms->gridSize);
+		qms->tableValuesPosition.fill1WithFunction( par->dim
+			, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                 // xyz position function
+			, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par,qms);}   // function value at xyz
+			);
 	} else {
 		throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
 	}
