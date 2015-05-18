@@ -92,7 +92,14 @@ or directly by filling in the discrete values in the table. It is used for numer
                                                          // maybe change the start() and end() values in QMStateDiscrete ???
 
 
+		size_t dim() {return gridSize.size();};
+
 		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+
+		// when wavefunction gets entangled it gets a link (shared pointer) to the global wavefunction that involves all particles in question.
+		boost::shared_ptr<QMStateDiscrete> psiGlobal;
+		// dim*whichPartOfpsiGlobal, dim*whichPartOfpsiGlobal+1, etc...  are the idx in size and gridSize
+		size_t                             whichPartOfpsiGlobal;
 
 	private:
 		TimeLimit timeLimit;
