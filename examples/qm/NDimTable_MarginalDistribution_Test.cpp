@@ -55,6 +55,57 @@ int main(void){
 
 	std::vector<const NDimTable<double>*> parts({&A,&B,&C,&D});
 	NDimTable<double> T(parts);
+// accociativity test
+// (A,B,C),D
+	std::vector<const NDimTable<double>*> parts1({&A,&B,&C});
+	NDimTable<double> TABC(parts1);
+	std::vector<const NDimTable<double>*> parts2({&TABC,&D});
+	NDimTable<double> TABCD_1(parts2);
+// (A,B),(C,D)
+	std::vector<const NDimTable<double>*> parts3({&A,&B});
+	NDimTable<double> TAB(parts3);
+	std::vector<const NDimTable<double>*> parts4({&C,&D});
+	NDimTable<double> TCD(parts4);
+	std::vector<const NDimTable<double>*> parts5({&TAB,&TCD});
+	NDimTable<double> TABCD_2(parts5);
+// A,(B,C,D)
+	std::vector<const NDimTable<double>*> parts6({&B,&C,&D});
+	NDimTable<double> TBCD(parts6);
+	std::vector<const NDimTable<double>*> parts7({&A,&TBCD});
+	NDimTable<double> TABCD_3(parts7);
+// A,(B,C),D
+	std::vector<const NDimTable<double>*> parts8({&B,&C});
+	NDimTable<double> TBC(parts8);
+	std::vector<const NDimTable<double>*> parts9({&A,&TBC,&D});
+	NDimTable<double> TABCD_4(parts9);
+
+	assert( T.compareEpsilon(TABCD_1,std::numeric_limits<double>::epsilon()      ) );
+	assert( T.compareEpsilon(TABCD_2,std::numeric_limits<double>::epsilon()*40000) );
+	assert( T.compareEpsilon(TABCD_3,std::numeric_limits<double>::epsilon()*80000) );
+	assert( T.compareEpsilon(TABCD_4,std::numeric_limits<double>::epsilon()*50000) );
+
+//std::cout << "---------------------------------------------------------";
+//std::cout << "dim_T sizes = " << T.dim() << " \n";
+//T.print();
+//std::cout << "---------------------------------------------------------";
+//std::cout << "dim_TABCD_1 sizes = " << TABCD_1.dim() << " \n";
+//TABCD_1.print();
+//std::cout << "---------------------------------------------------------";
+//std::cout << "dim_TABCD_2 sizes = " << TABCD_2.dim() << " \n";
+//TABCD_2.print();
+//std::cout << "---------------------------------------------------------";
+//std::cout << "dim_TABCD_3 sizes = " << TABCD_3.dim() << " \n";
+//TABCD_3.print();
+//std::cout << "---------------------------------------------------------";
+//std::cout << "dim_TABCD_4 sizes = " << TABCD_4.dim() << " \n";
+//TABCD_4.print();
+///////////////////////  this fails, because of numerical errors multiplication is not associative
+//	assert( T == TABCD_1 );
+//	assert( T == TABCD_2 );
+//	assert( T == TABCD_3 );
+//	assert( T == TABCD_4 );
+////
+	
 	std::cout << "dim_T sizes = " << T.dim() << " \n";
 	std::cout << "\nassert T ... ";
 	//T.print("Tᵦᵧᵥᵨᵩᵪᵢᵣ",12);
