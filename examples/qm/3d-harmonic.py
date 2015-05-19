@@ -37,7 +37,7 @@ O.engines=[
 ]
 
 displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
 		    ,'partsSquared':1

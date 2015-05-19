@@ -39,7 +39,7 @@ O.engines=[
 # 3. potential barrier - as a box with given potential
 
 displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
 		    ,'partsSquared':1
@@ -54,7 +54,7 @@ displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'poin
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions)
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, harmonicOrder_z],'size':size,'gridSize':[16,16,16]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)

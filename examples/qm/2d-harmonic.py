@@ -35,9 +35,18 @@ O.engines=[
 ]
 
 displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂'    ## FIXME - make it work,
+		                                                                      ## but not in partImaginary, make such 4 choices along each
+                                                                                      ## QMStateDiscrete::gridSize dimension
+                    ### FIXME 2 - inicjalizacja - tylko tą wybraną wartością, nie ruszać reszty całego Menu, niech ono się samo jakoś
+                    ###           przywraca jeśli zostało 'skasowane'
+                    ###                  partReal="default hidden" ##  i koniec, bez wymieniania reszty
+                    ###
+		                     ,'draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂' , 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂'
+				     ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂', 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂']
                     ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]}
+		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+		    ,'wire':True}
 
 ## 1: Analytical packet
 analyticBody = QMBody()

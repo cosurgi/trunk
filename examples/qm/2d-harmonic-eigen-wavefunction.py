@@ -37,9 +37,14 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-displayOptions         = { 'partsScale':10
+displayOptions1        = { 'partsScale':10
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'renderMaxTime':0.5}
+displayOptions2        = { 'partsScale':10
+                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'renderMaxTime':0.5}
 displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -50,7 +55,7 @@ displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points'
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],**displayOptions1)
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'size':size,'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -59,7 +64,7 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions2)
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -71,7 +76,7 @@ potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
-O.bodies.append(potentialBody)
+id_H=O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
@@ -89,6 +94,8 @@ try:
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
+	Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
+	O.bodies[id_H].shape.step=[2.0,2.0,2.0]
 except ImportError:
 	pass
 
