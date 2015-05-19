@@ -171,7 +171,7 @@ CREATE_LOGGER(Law2_QMIGeom_QMIPhysHarmonic);
 
 bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p, Interaction* I)
 {
-	if(timeLimitH.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonic::go  START!\n";
+	if(timeLimitH.messageAllowed(8)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonic::go  START!  r̳e̳c̳a̳l̳c̳u̳l̳a̳t̳i̳n̳g̳ ̳w̳h̳o̳l̳e̳ ̳p̳o̳t̳e̳n̳t̳i̳a̳l̳!̳!̳!̳\n";
 
 	QMIGeom*         qmigeom  = static_cast<QMIGeom*        >(g.get());
 	QMIPhysHarmonic* harmonic = static_cast<QMIPhysHarmonic*>(p.get());
@@ -210,45 +210,32 @@ bool Law2_QMIGeom_QMIPhysHarmonicParticles::go(shared_ptr<IGeom>& g, shared_ptr<
 	return false;
 
 
-/*
-	if(timeLimitH.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonicParticles::go  START!\n";
+	if(timeLimitH.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonicParticles::go  r̳e̳c̳a̳l̳c̳u̳l̳a̳t̳i̳n̳g̳ ̳w̳h̳o̳l̳e̳ ̳̲P̲A̲R̲T̲I̲C̲L̲E̲ ̲I̲N̲T̲E̲R̲A̲C̲T̲I̲O̲N̲ ̲p̳o̳t̳e̳n̳t̳i̳a̳l̳\n";
 
 	QMIGeom*                  qmigeom  = static_cast<QMIGeom*                 >(g.get());
 	QMIPhysHarmonicParticles* harmonic = static_cast<QMIPhysHarmonicParticles*>(p.get());
 
-	//FIXME
+	// FIXME, but how?? I need this equation somehow.
+	QMParametersHarmonic FIXME_param;
+	FIXME_param.dim=harmonic->dim; FIXME_param.hbar = harmonic->hbar; FIXME_param.coefficient = harmonic->coefficient1.cwiseProduct(harmonic->coefficient2);
+	St1_QMStPotentialHarmonic FIXME_equation;
+
+	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi1=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 	QMStateDiscrete* psi2=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id2]->state.get());
 	NDimTable<Complexr>& val(qmigeom->potentialValues);
-	val.resize(psi->tableValuesPosition,0);                   // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie się się idealnie nakrywają.
-	if(timeLimitH.messageAllowed(2) and qmigeom->relPos21!=Vector3r(0,0,0)) std::cerr << "Law2_QMIGeom_QMIPhysHarmonicParticles::go  potencjał się nie nakrywa z funkcją falową!\n";
-	if(psi->gridSize.size()==1) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		for(size_t i=startI ; i<=endI ; i++) {
-			if(i>=0 and i<val.size0(0))               // ↓ FIXME? (2↑) teraz SchrodingerKosloffPropagator po prostu dodaje NDimTable, nie patrzy na ich względne położenia. Czyli nie mogę ich tak po prostu dodawać.
-				val.at(i)=std::pow(psi->iToX(i,0) // -qmigeom->relPos21[0] 
-				,2) *harmonic->coefficient[0];
-		}
-	}
-	if(psi->gridSize.size()==2) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		size_t startJ=psi->xToI(qmigeom->relPos21[1]-qmigeom->extents2[1],1);
-		size_t endJ  =psi->xToI(qmigeom->relPos21[1]+qmigeom->extents2[1],1);
-
-		for(size_t i=startI ; i<=endI ; i++)
-		for(size_t j=startJ ; j<=endJ ; j++)
-		{
-			if(i>=0 and i<val.size0(0))
-			if(j>=0 and j<val.size0(1))
-				val.at(i,j)=  std::pow(psi->iToX(i,0) // -qmigeom->relPos21[0]
-				 ,2)*harmonic->coefficient[0]
-				             +std::pow(psi->iToX(j,1) // -qmigeom->relPos21[1]
-				 ,2)*harmonic->coefficient[1];
-		}
-	}
+/*
+	if(psi1->gridSize.size() == psi2->gridSize.size() and psi1->gridSize.size()<= 3) {
+// FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
+//            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
+		val.resize(psi->tableValuesPosition); /// FIXME: product !!
+		val.fillNWithFunction( psi->gridSize.size()              // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ sprawdzić to jeszcze!!!!!
+			, [&](Real i1, Real i2, int d)->Real    { return psi1->iToX(i,d) - psi2->iToX(i,d) - qmigeom->relPos21[d];} // xyz position function
+			, [&](Vector3r& xyz)->Complexr{ return FIXME_equation.getValPos(xyz,&FIXME_param,NULL);} // function value at xyz
+			);
+	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysHarmonic::go, dim>3 or psi1->gridSize.size() != psi2->gridSize.size()\n"; exit(1); };
 	return true;
 */
+	return false;
 };
 

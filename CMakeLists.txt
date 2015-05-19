@@ -90,7 +90,7 @@ ELSE()
   ENDIF()
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -Ofast --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
+SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -O1 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
 
 IF (DEBUG)
   SET(CMAKE_VERBOSE_MAKEFILE 1)
