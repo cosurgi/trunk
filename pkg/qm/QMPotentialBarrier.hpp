@@ -70,6 +70,7 @@ class St1_QMStPotentialBarrier: public St1_QMStateAnalytic
 			, "Functor creating :yref:`QMStPotentialBarrier` from :yref:`QMParametersBarrier`." // class description
 		);
 	private:
+	friend class Law2_QMIGeom_QMIPhysBarrier;
 		//! return complex quantum aplitude at given positional representation coordinates
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
 /* FIXME: duplicate with Law2_* */		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);

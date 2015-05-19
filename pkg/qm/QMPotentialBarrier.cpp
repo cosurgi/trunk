@@ -100,6 +100,9 @@ void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::goReverse(
 *
 *********************************************************************************/
 
+#include <Eigen/Dense>
+#include <Eigen/src/Core/Functors.h>
+
 CREATE_LOGGER(Law2_QMIGeom_QMIPhysBarrier);
 
 bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p, Interaction* I)
@@ -108,34 +111,33 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p,
 	
 	QMIGeom*        qmigeom = static_cast<QMIGeom*       >(g.get());
 	QMIPhysBarrier* barrier = static_cast<QMIPhysBarrier*>(p.get());
-	
-	//FIXME
+
+	// FIXME, but how?? I need this equation somehow.
+	QMParametersBarrier FIXME_param;
+	FIXME_param.dim=barrier->dim; FIXME_param.hbar = barrier->hbar; FIXME_param.height = barrier->height;
+	St1_QMStPotentialBarrier FIXME_equation;
+
+	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 	NDimTable<Complexr>& val(qmigeom->potentialValues);
-	val.resize(psi->tableValuesPosition,0);
-	if(psi->gridSize.size()==1) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		for(size_t i=startI ; i<=endI ; i++) {
-			if(i>=0 and i<val.size0(0))
-				val.at(i)=barrier->height;
-		}
-	}
-	if(psi->gridSize.size()==2) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		size_t startJ=psi->xToI(qmigeom->relPos21[1]-qmigeom->extents2[1],1);
-		size_t endJ  =psi->xToI(qmigeom->relPos21[1]+qmigeom->extents2[1],1);
 
-		for(size_t i=startI ; i<=endI ; i++)
-		for(size_t j=startJ ; j<=endJ ; j++)
-		{
-			if(i>=0 and i<val.size0(0))
-			if(j>=0 and j<val.size0(1))
-				val.at(i,j)=barrier->height;
-		}
-	}
-	if(psi->gridSize.size() > 2) { std::cerr << "Law2_QMIGeom_QMIPhysBarrier::go, dim>2"; exit(1); };
+	if(psi->gridSize.size() <= 3) {
+// FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
+//            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
+		val.resize(psi->tableValuesPosition);
+		val.fill1WithFunction( psi->gridSize.size()
+			, [&](Real i, int d)->Real    { return psi->iToX(i,d) - qmigeom->relPos21[d];}           // xyz position function
+			, [&](Vector3r& xyz)->Complexr{
+				//Vector3r tmp = xyz.cwiseAbs() - qmigeom->extents2;
+				//Vector3r zero(0,0,0);
+				//if( tmp[0] <= 0 and tmp[1] <=0 and tmp[1] <= 0)
+				// http://eigen.tuxfamily.org/dox/group__TutorialReductionsVisitorsBroadcasting.html
+				if(  ((xyz.cwiseAbs() - qmigeom->extents2).array() <= Vector3r::Zero().array()).count() == 3  )
+					return FIXME_equation.getValPos(xyz,&FIXME_param,NULL);                  // function value at xyz
+				return 0;
+			  }
+			);
+	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysBarrier::go, dim>3\n"; exit(1); };
 	return true;
 };
 

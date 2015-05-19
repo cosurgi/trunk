@@ -176,85 +176,24 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 	QMIGeom*         qmigeom  = static_cast<QMIGeom*        >(g.get());
 	QMIPhysHarmonic* harmonic = static_cast<QMIPhysHarmonic*>(p.get());
 
-	// FIXME, but how??
+	// FIXME, but how?? I need this equation somehow.
 	QMParametersHarmonic FIXME_param;
 	FIXME_param.dim=harmonic->dim; FIXME_param.hbar = harmonic->hbar; FIXME_param.coefficient = harmonic->coefficient;
 	St1_QMStPotentialHarmonic FIXME_equation;
 
-	//FIXME
+	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 	NDimTable<Complexr>& val(qmigeom->potentialValues);
 
-	val.resize(psi->tableValuesPosition,0);                   // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie się się idealnie nakrywają.
-	if(timeLimitH.messageAllowed(2) and qmigeom->relPos21!=Vector3r(0,0,0)) std::cerr << "Law2_QMIGeom_QMIPhysHarmonic::go  potencjał się nie nakrywa z funkcją falową!\n";
-	if(psi->gridSize.size()==1) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		for(size_t i=startI ; i<=endI ; i++) {
-			if(i>=0 and i<val.size0(0)) {              // ↓ FIXME? (2↑) teraz SchrodingerKosloffPropagator po prostu dodaje NDimTable, nie patrzy na ich względne położenia. Czyli nie mogę ich tak po prostu dodawać.
-				Real x = psi->iToX(i,0);// -qmigeom->relPos21[0] ;
-				val.at(i)= FIXME_equation.getValPos(Vector3r(x,0,0),&FIXME_param,NULL);
-				//              std::pow(psi->iToX(i,0) 
-				//              // -qmigeom->relPos21[0] 
-				//              ,2) *harmonic->coefficient[0];
-			}
-		}
-	}
-	if(psi->gridSize.size()==2) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		size_t startJ=psi->xToI(qmigeom->relPos21[1]-qmigeom->extents2[1],1);
-		size_t endJ  =psi->xToI(qmigeom->relPos21[1]+qmigeom->extents2[1],1);
-
-		for(size_t i=startI ; i<=endI ; i++)
-		for(size_t j=startJ ; j<=endJ ; j++)
-		{
-			if(i>=0 and i<val.size0(0))
-			if(j>=0 and j<val.size0(1)) {
-				Real x = psi->iToX(i,0); // -qmigeom->relPos21[0] ;
-				Real y = psi->iToX(j,1); // -qmigeom->relPos21[1] ;
-				val.at(i,j)= FIXME_equation.getValPos(Vector3r(x,y,0),&FIXME_param,NULL);
-				//              std::pow(psi->iToX(i,0)
-				//              // -qmigeom->relPos21[0] 
-				//              ,2)*harmonic->coefficient[0]
-				//             +std::pow(psi->iToX(j,1)
-				//              // -qmigeom->relPos21[1] 
-				//              ,2)*harmonic->coefficient[1];
-			}
-		}
-	}
-	if(psi->gridSize.size()==3) {
-		size_t startI=psi->xToI(qmigeom->relPos21[0]-qmigeom->extents2[0],0);
-		size_t endI  =psi->xToI(qmigeom->relPos21[0]+qmigeom->extents2[0],0);
-		size_t startJ=psi->xToI(qmigeom->relPos21[1]-qmigeom->extents2[1],1);
-		size_t endJ  =psi->xToI(qmigeom->relPos21[1]+qmigeom->extents2[1],1);
-		size_t startK=psi->xToI(qmigeom->relPos21[2]-qmigeom->extents2[2],2);
-		size_t endK  =psi->xToI(qmigeom->relPos21[2]+qmigeom->extents2[2],2);
-
-		for(size_t i=startI ; i<=endI ; i++)
-		for(size_t j=startJ ; j<=endJ ; j++)
-		for(size_t k=startK ; k<=endK ; k++)
-		{
-			if(i>=0 and i<val.size0(0))
-			if(j>=0 and j<val.size0(1))
-			if(k>=0 and k<val.size0(2)) {
-				Real x = psi->iToX(i,0); //* -qmigeom->relPos21[0] *;
-				Real y = psi->iToX(j,1); //* -qmigeom->relPos21[1] *;
-				Real z = psi->iToX(k,2); //* -qmigeom->relPos21[2] *;
-				val.at(i,j,k)= FIXME_equation.getValPos(Vector3r(x,y,z),&FIXME_param,NULL);
-				//              std::pow(psi->iToX(i,0) 
-				//              // -qmigeom->relPos21[0]
-				//              ,2)*harmonic->coefficient[0]
-				//             +std::pow(psi->iToX(j,1) 
-				//              // -qmigeom->relPos21[1]
-				//              ,2)*harmonic->coefficient[1]
-				//             +std::pow(psi->iToX(k,2) 
-				//              // -qmigeom->relPos21[2]
-				//              ,2)*harmonic->coefficient[2];
-			}
-		}
-	}
-	if(psi->gridSize.size() > 3) { std::cerr << "Law2_QMIGeom_QMIPhysHarmonic::go, dim>3"; exit(1); };
+	if(psi->gridSize.size() <= 3) {
+// FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
+//            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
+		val.resize(psi->tableValuesPosition);
+		val.fill1WithFunction( psi->gridSize.size()
+			, [&](Real i, int d)->Real    { return psi->iToX(i,d) - qmigeom->relPos21[d];}           // xyz position function
+			, [&](Vector3r& xyz)->Complexr{ return FIXME_equation.getValPos(xyz,&FIXME_param,NULL);} // function value at xyz
+			);
+	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysHarmonic::go, dim>3\n"; exit(1); };
 	return true;
 };
 

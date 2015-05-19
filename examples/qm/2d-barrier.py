@@ -3,7 +3,7 @@
 
 dimensions= 2
 size_1d   = 12
-halfSize  = [size_1d,size_1d,0.1]           # FIXME: halfSize  = [size_1d,size_1d]
+halfSize  = [size_1d,size_1d,0.1]           # FIXME: halfSize  = [size_1d,size_1d]  ← że nie ma trzeciej składowej, ale Box::extents robi problemy
 size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
@@ -19,7 +19,7 @@ potentialHalfSize = [1.0,10.0,1.0]
 
 potentialCenter1a = [0  , 9,0  ]
 potentialCenter2a = [0  ,-9,0  ]
-potentialHalfSizeA= [ 7.8,1.0,1.0]
+potentialHalfSizeA= [ 7.99,1.0,1.0]        # FIXME: nie może być [8,1,1] bo coś nie działa, tylko co???
 potentialValue    = 100
 
 O.engines=[
@@ -65,25 +65,25 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody1 = QMBody()
-potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,**displayOptionsPot)
+potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
-potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,**displayOptionsPot)
+potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
 
 potentialBody3 = QMBody()
-potentialBody3.shape     = QMGeometry(extents=potentialHalfSizeA,partsScale=-potentialValue,**displayOptionsPot)
+potentialBody3.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
 potentialBody3.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody3.state     = QMStPotentialBarrier(se3=[potentialCenter1a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody3)
 
 potentialBody4 = QMBody()
-potentialBody4.shape     = QMGeometry(extents=potentialHalfSizeA,partsScale=-potentialValue,**displayOptionsPot)
+potentialBody4.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
 potentialBody4.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody4.state     = QMStPotentialBarrier(se3=[potentialCenter2a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody4)
