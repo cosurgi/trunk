@@ -41,17 +41,17 @@ displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'point
                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
 		    ,'partsSquared':1
-		    ,'threshold3D':0.01}
+		    ,'threshold3D':0.001}
 
 displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
-		    ,'threshold3D':10}
+		    ,'threshold3D':40}
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
 gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'size':size,'gridSize':[24,24,24]}

@@ -147,13 +147,10 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p,
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysBarrier::go, dim>3\n"; exit(1); };
 
 // FIXME - this should go to Ip2_::go (parent, toplevel)
-/*FIXME*/	if(barrier->potentialInteractionGlobal) {
-/*FIXME*/		// FIXME ! - tensorProduct !!
-/*FIXME*/		barrier->potentialInteractionGlobal->psiGlobalTable = val;
-/*FIXME*/	} else {
+/*FIXME*/	if(not barrier->potentialInteractionGlobal)
 /*FIXME*/		barrier->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
-/*FIXME*/		barrier->potentialInteractionGlobal->psiGlobalTable = val;
-/*FIXME*/	};
+/*FIXME*/		// FIXME ! - tensorProduct !!
+/*FIXME*/	barrier->potentialInteractionGlobal->psiGlobalTable = val;
 
 	return true;
 };

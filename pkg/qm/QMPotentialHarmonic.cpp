@@ -203,13 +203,10 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysHarmonic::go, dim>3\n"; exit(1); };
 
 // FIXME - this should go to Ip2_::go (parent, toplevel)
-/*FIXME*/	if(harmonic->potentialInteractionGlobal) {
-/*FIXME*/		// FIXME ! - tensorProduct !!
-/*FIXME*/		harmonic->potentialInteractionGlobal->psiGlobalTable = val;
-/*FIXME*/	} else {
+/*FIXME*/	if(not harmonic->potentialInteractionGlobal)
 /*FIXME*/		harmonic->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
-/*FIXME*/		harmonic->potentialInteractionGlobal->psiGlobalTable = val;
-/*FIXME*/	};
+/*FIXME*/		// FIXME ! - tensorProduct !!
+/*FIXME*/	harmonic->potentialInteractionGlobal->psiGlobalTable = val;
 
 	return true;
 };

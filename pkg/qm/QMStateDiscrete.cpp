@@ -1,6 +1,7 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMStateDiscrete.hpp"
+#include "QMStateDiscreteGlobal.hpp"
 #include "QMStateAnalytic.hpp"
 #include "QMParameters.hpp"
 #include "QMGeometry.hpp"
@@ -60,17 +61,31 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 
 void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete* qms)
 {// initialize from this   //////////////////////////////////////////// MERGE
-	if(not qms->firstRun) return;
-	qms->firstRun=false;
-	if(par->dim <= 3) {
-		if (qms->gridSize.size() != par->dim) throw std::out_of_range("\n\nSt1_QMStateDiscrete: wrong dimension\n\n");
-		qms->psiMarginalDistribution.resize(qms->gridSize);
-		qms->psiMarginalDistribution.fill1WithFunction( par->dim
-			, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                 // xyz position function
-			, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par,qms);}   // function value at xyz
-			);
+	if(qms->firstRun) {
+		qms->firstRun=false;
+		if(par->dim <= 3) {
+			if (qms->gridSize.size() != par->dim) throw std::out_of_range("\n\nSt1_QMStateDiscrete: wrong dimension\n\n");
+			qms->psiMarginalDistribution.resize(qms->gridSize);
+			qms->psiMarginalDistribution.fill1WithFunction( par->dim
+				, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                 // xyz position function
+				, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par,qms);}   // function value at xyz
+				);
+		} else {
+			throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
+		}
+/*FIXME - using QMGeometryDisplayConfig */
+/*FIXME*/	if(not qms->psiGlobal)
+/*FIXME*/		qms->psiGlobal= boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
+/*FIXME*/	qms->psiGlobal->psiGlobalTable = qms->psiMarginalDistribution;
+/*FIXME*/	qms->psiGlobal->firstRun = false;
+/*FIXME*/	qms->psiGlobal->gridSize = qms->gridSize;
+/*FIXME*/	qms->psiGlobal->size     = qms->size;
 	} else {
-		throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
-	}
+		if(qms->psiGlobal->gridSize == qms->gridSize) // that must be the same wavefunction! It's not entangled
+/*FIXME*/		qms->psiMarginalDistribution = qms->psiGlobal->psiGlobalTable;
+		else {
+		// calcMarginalDistribution
+		}
+	};
 };
 

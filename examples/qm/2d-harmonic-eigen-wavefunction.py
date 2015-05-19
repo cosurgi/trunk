@@ -55,7 +55,7 @@ displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points'
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],**displayOptions1)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions1)
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'size':size,'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)

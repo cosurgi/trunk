@@ -75,6 +75,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		Real calcKosloffR(Real dt) { return dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG(Real dt) { return dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
+		// FIXME: same with get_full_potentialInteractionGlobal_psiGlobalTable() - it can precalculate, and recalculate only upon dirty is set.
 		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
 		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
 		virtual ~SchrodingerKosloffPropagator();
@@ -90,11 +91,7 @@ operator  Û=exp(-iℍ̂t/ħ), and is following: ψ=Ûψ. The wavefunction ψ 
 here in SchrodingerKosloffPropagator it is calculated using Tal-Ezer and Kosloff approach \
 found in [TalEzer1984]_"
 			, // attributes, public variables
-			// FIXME - it should get moved to QMParameters (maybe?)
 			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
-	//FIXING		((Real    ,potential,0          ,,"Some potential barrier")) // FIXME
-	//FIXING		((Real    ,potentialStart,25    ,,"Some potential barrier")) // FIXME
-	//FIXING		((Real    ,potentialEnd  ,30    ,,"Some potential barrier")) // FIXME
 			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
 			, // constructor
 			, // python bindings
@@ -109,7 +106,10 @@ found in [TalEzer1984]_"
 	DECLARE_LOGGER;
 	private:
 		TimeLimit timeLimit;
-		NDimTable<Complexr> get_full_potentialInteractionGlobal_psiGlobalTable();
+		
+		// FIXME są różne typy, to jest podejrzane. Może w QMIPhys wystarczy trzymać NDimTable, a nie całe QMStateDiscreteGlobal ?
+		NDimTable<Complexr>                      get_full_potentialInteractionGlobal_psiGlobalTable();
+		boost::shared_ptr<QMStateDiscreteGlobal> get_full_psiGlobal__________________psiGlobalTable();
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 
