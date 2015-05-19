@@ -39,7 +39,7 @@ REGISTER_SERIALIZABLE(QMParametersBarrier);
 /*! @brief QMStPotentialBarrier is an analytical representation for potential barrier.
  *
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStPotentialBarrier to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
+ *  call St1_QMStPotentialBarrier to fill (FIXME) QMStateDiscrete::psiMarginalDistribution with its representation
  */
 
 class QMStPotentialBarrier: public QMStatePotential

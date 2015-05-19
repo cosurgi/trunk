@@ -10,6 +10,7 @@
 #include "QMGeometry.hpp"
 #include "QMParameters.hpp"
 #include "QMStateAnalytic.hpp"
+#include "QMStateDiscreteGlobal.hpp"
 
 /*********************************************************************************
 *
@@ -112,7 +113,20 @@ class QMIGeom: public IGeom
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, wywalić to, a potem zrobić generację tego w Law2 używając
-		NDimTable<Complexr> potentialValues;     // Discrete values of potential
+
+
+// FIXME - solution !!!!!
+//         just like in QMStateDiscrete, this one is just the geometric representation. So this is the QMGeometry of interaction. 
+//         Not physics, really. It will be projected using options in QMGeometryDisplayConfig, and options from DropDownMenu like
+//         "default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
+//
+//         It's only 1,2,3 dimensional. Always projected from the real interaction entangled wavefuncion, which is stored in QMIPhys
+
+                // oj, chyba będą też tutaj potrzebne iToX, i reszta? A może się pomyliłem, bo to miało być w QMGeometry i tak??
+		NDimTable<Complexr> potentialMarginalDistribution;     // representation of potential only for purposes of drawing on the screen
+		// std::vector<std::pair<NDimTable<Complexr>, QMGeometryDisplayConfig > > // ← każdy to jest inny rozkład brzegowy, rysowany osobno
+		                                                                          // i obliczany przez Gl1_QMIGeom
+
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME
 // FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME
@@ -157,6 +171,8 @@ class QMIPhys: public IPhys
 		);
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(QMIPhys,IPhys);
+// FIXME !! - this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
+		boost::shared_ptr<QMStateDiscreteGlobal> potentialInteractionGlobal; // potential alone, not multiplied by psi
 };
 REGISTER_SERIALIZABLE(QMIPhys);
 

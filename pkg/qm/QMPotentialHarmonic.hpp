@@ -68,7 +68,7 @@ REGISTER_SERIALIZABLE(QMParticleHarmonic);
 /*! @brief QMStPotentialHarmonic is an analytical representation for harmonic potential.
  * 
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStPotentialHarmonic to fill (FIXME) QMStateDiscrete::tableValuesPosition with its representation
+ *  call St1_QMStPotentialHarmonic to fill (FIXME) QMStateDiscrete::psiMarginalDistribution with its representation
  */
 
 class QMStPotentialHarmonic: public QMStatePotential

@@ -83,6 +83,13 @@ void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::go(
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
 //        but then - the potential itself shall be drawn just like before: as a Box ??
 	pot->height = qm2->height;
+
+// FIXME: create here QMIPhys::potentialInteractionGlobal
+//        then call 
+//		Ip2_2xQMParameters_QMIPhys::go(m1,m2,I);
+//        to assign (or calcMarginalDistribution??? ← no, better leave that for Gl1_drawer), so I don't actually need to assign!
+//		barrier->potentialInteractionGlobal->psiGlobalTable = val;
+
 }
 
 void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::goReverse(
@@ -119,12 +126,12 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p,
 
 	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
-	NDimTable<Complexr>& val(qmigeom->potentialValues);
+	NDimTable<Complexr>& val(qmigeom->potentialMarginalDistribution);
 
 	if(psi->gridSize.size() <= 3) {
 // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
 //            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
-		val.resize(psi->tableValuesPosition);
+		val.resize(psi->psiMarginalDistribution);
 		val.fill1WithFunction( psi->gridSize.size()
 			, [&](Real i, int d)->Real    { return psi->iToX(i,d) - qmigeom->relPos21[d];}           // xyz position function
 			, [&](Vector3r& xyz)->Complexr{
@@ -138,6 +145,16 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p,
 			  }
 			);
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysBarrier::go, dim>3\n"; exit(1); };
+
+// FIXME - this should go to Ip2_::go (parent, toplevel)
+/*FIXME*/	if(barrier->potentialInteractionGlobal) {
+/*FIXME*/		// FIXME ! - tensorProduct !!
+/*FIXME*/		barrier->potentialInteractionGlobal->psiGlobalTable = val;
+/*FIXME*/	} else {
+/*FIXME*/		barrier->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
+/*FIXME*/		barrier->potentialInteractionGlobal->psiGlobalTable = val;
+/*FIXME*/	};
+
 	return true;
 };
 
