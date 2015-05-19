@@ -23,7 +23,7 @@ class Gl1_QMGeometry: public GlShapeFunctor
 		void drawSurface(const std::vector<std::vector<Real> >& waveVals,Vector3r col);
 		void calcNormalVectors(const std::vector<std::vector<Real> >& waveVals,std::vector<std::vector<Vector3r> >& wavNormV);
 		void prepareGlSurfaceMaterial();
-		void glDrawMarchingCube(MarchingCube& mc,Vector3r col);
+		void glDrawMarchingCube(MarchingCube& mc,Vector3r col,std::string drawStyle,bool wire);
 		void glDrawSurface(const std::vector<std::vector<Real> >& waveVals,const std::vector<std::vector<Vector3r> >& wavNormV,Vector3r col);
 		void glDrawSurfaceInterpolated(const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,const std::vector<std::vector<Real> >&,const std::vector<std::vector<Vector3r> >&,Vector3r col);
 		void interpolateExtraWaveValues(const std::vector<std::vector<Real> >& waveVals,std::vector<std::vector<Real> >& extraWaveVals);

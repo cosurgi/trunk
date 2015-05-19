@@ -42,7 +42,12 @@ class QMGeometry: public Box
 			If the wavefunctions were really infinite, then it would work nicely, but due to computer limitations this \
 			halfSize also covers the range of interactions between particles. Later it should work in 4D space-time.")) */
 			((Menu,partAbsolute     ,Menu({"default wire"   ,"hidden","nodes","big nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
-			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show imaginary component"))
+			((Menu,partImaginary    ,Menu({
+				"default surface","hidden","nodes","big nodes","points","wire","surface"
+				//"default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
+		                //    ,"draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂" , "draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂"
+				//    ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂", "draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂"			
+				}),,"Show imaginary component"))
 			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
 			((int ,partsScale       ,1.0,,"Scaling of the wavefunction or potential. Positive number multiplies, negative divides by absolute value."))
 			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))

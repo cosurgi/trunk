@@ -153,7 +153,7 @@ void Gl1_QMGeometry::go(
 						if(drawStyle[draw]()=="nodes") glBegin(GL_POINTS); else glBegin(GL_LINE_STRIP);
 						glColor3v( colorToDraw[draw](col) );
 						for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++ , _.x+=g->step.x() ) {
-							glVertex3d(_.x,0,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i))) *scalingFactor);
+							glVertex3d(_.x,0,valueToDraw[draw] ((pd->psiMarginalDistribution.at(_.i))) *scalingFactor);
 						}
 						glEnd();
 					} // else "points"
@@ -169,7 +169,7 @@ void Gl1_QMGeometry::go(
 						for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
 							glBegin(GL_LINE_STRIP);
 							for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
-								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
+								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->psiMarginalDistribution.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(g->renderMaxTime)) break;
@@ -177,7 +177,7 @@ void Gl1_QMGeometry::go(
 						for(struct{size_t j;Real y;}__={0,start.y()} ; __.j<pd->gridSize[1] ; __.j++, __.y+=g->step.y() ) {
 							glBegin(GL_LINE_STRIP);
 							for(struct{size_t i;Real x;}_={0,start.x()} ; _.i<pd->gridSize[0] ; _.i++, _.x+=g->step.x() ) {
-								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->tableValuesPosition.at(_.i,__.j))) *scalingFactor);
+								glVertex3d(_.x,__.y,valueToDraw[draw] ((pd->psiMarginalDistribution.at(_.i,__.j))) *scalingFactor);
 							}
 							glEnd();
 							if(timeLimit.tooLong(g->renderMaxTime)) break;
@@ -189,7 +189,7 @@ void Gl1_QMGeometry::go(
 						FOREACH(std::vector<Real>& xx, waveValues2D) {xx.resize(pd->gridSize[1]);};
 						for(size_t i=0 ; i<pd->gridSize[0] ; i++ ) {
 							for(size_t j=0 ; j<pd->gridSize[1] ; j++ ) {
-								waveValues2D[i][j]=valueToDraw[draw] ((pd->tableValuesPosition.at(i,j))) *scalingFactor;
+								waveValues2D[i][j]=valueToDraw[draw] ((pd->psiMarginalDistribution.at(i,j))) *scalingFactor;
 							}
 							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
@@ -202,6 +202,8 @@ void Gl1_QMGeometry::go(
 					// if(points == true) ... else ...
 					// 3D lines
 					// 3D surface
+		// FIXME - draw transparent MarchingCube for each layer?
+		//	http://www.videotutorialsrock.com/opengl_tutorial/reference.php
 					if(true /* points == false */) {
 						// FIXME!! ↓ is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
 						Vector3r minMC(start.x()+g->step.x()*0.5,start.y()+g->step.y()*0.5,start.z()+g->step.z()*0.5);
@@ -215,14 +217,14 @@ void Gl1_QMGeometry::go(
 //// FIXME(1) - is it possible to skip this copying of data to calculate valueToDraw[draw](...) ?
 //// (potrzebne mi też będą kontrakcje na życzenie - tylko gdy rysuję)
 //// FIXME - here's crash sometimes when step is changed "live" in inspect window
-									waveValues3D[i][j][k]=valueToDraw[draw] (pd->tableValuesPosition.at(i,j,k));
+									waveValues3D[i][j][k]=valueToDraw[draw] (pd->psiMarginalDistribution.at(i,j,k));
 								}
 							}
 							if(timeLimit.tooLong(g->renderMaxTime)) break;
 						}
 						mc.computeTriangulation(waveValues3D,g->threshold3D);
 						// FIXME(2) - drawSurface or drawWires
-						glDrawMarchingCube(mc,colorToDraw[draw](col));
+						glDrawMarchingCube(mc,colorToDraw[draw](col),drawStyle[draw](),wire);
 					}
 				break;
 				default:
@@ -309,27 +311,39 @@ void Gl1_QMGeometry::go(
 	//		std::cerr << "Gl1_QMGeometry: Drawing of grid steps is not ready yet.\n";
 };
 		
-void Gl1_QMGeometry::glDrawMarchingCube(MarchingCube& mc,Vector3r col)
+void Gl1_QMGeometry::glDrawMarchingCube(MarchingCube& mc,Vector3r col,std::string drawStyle,bool wire)
 {
 	prepareGlSurfaceMaterial();
 	glColor3v(col);
+
+	bool WIRE(wire == true or drawStyle == "wire");
 
 	const vector<Vector3r>& triangles 	= mc.getTriangles();
 	int nbTriangles				= mc.getNbTriangles();
 	const vector<Vector3r>& normals 	= mc.getNormals();	
 	if(g->renderSmoothing){ glShadeModel(GL_SMOOTH);};
 	glEnable(GL_NORMALIZE);
-	glBegin(GL_TRIANGLES);
+	if(WIRE) {
+		glDisable(GL_LIGHTING);
+	} else {
+		glBegin(GL_TRIANGLES);
+	}
 	for(int i=0;i<3*nbTriangles;++i)
 	{
+		if(WIRE) glBegin(GL_LINE_STRIP);
 		glNormal3v(normals[  i]);
 		glVertex3v(triangles[i]);
 		glNormal3v(normals[++i]);
 		glVertex3v(triangles[i]);
 		glNormal3v(normals[++i]);
 		glVertex3v(triangles[i]);
+		if(WIRE) glEnd();
 	}
-	glEnd();
+	if(WIRE) {
+		glEnable(GL_LIGHTING);
+	} else {
+		glEnd();
+	}
 
 // FIXME(2) - maybe draw using this approach instead?  http://webhome.csc.uvic.ca/~pouryash/depot/HPC_Course/OpenGLDrawingMethods.pdf
 //glColorPointer(3, GL_FLOAT,0,mesh.vColor);
