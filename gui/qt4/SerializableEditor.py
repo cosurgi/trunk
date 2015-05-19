@@ -400,7 +400,7 @@ class AttrEditor_QComboBox(AttrEditor,QComboBox):
 		AttrEditor.__init__(self,getter,setter)
 		QComboBox.__init__(self,parent)
 		self.activated.connect(self.update)
-		self.addItems(self.getter()[1:])
+		for item in (self.getter()[1:]): self.addItem(item.decode('utf-8'))
 		try:
 			self.setCurrentIndex(self.getter().index((self.getter()[0][8:]))-1);
 		except:
