@@ -28,9 +28,10 @@
  *    vector<size_t>  gridSize  → grid size in all dimensions
  *    vector<Real>    size      → spatial size in all dimensions  // FIXME - synchronize with body->shape->extents
  *
- *    NDimTable<Complexr> tableValuesPosition   → the wavefunction, in discrete positional representation
+ *    NDimTable<Complexr> psiMarginalDistribution   → the wavefunction, in discrete positional representation
  *
  */
+class QMStateDiscreteGlobal;  // FIXME !!!!!!!! FIXME !!!!!!!!!! - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
 class QMStateDiscrete: public QMState
 {
 	public:
@@ -94,10 +95,12 @@ or directly by filling in the discrete values in the table. It is used for numer
 
 		size_t dim() {return gridSize.size();};
 
-		NDimTable<Complexr> tableValuesPosition; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+// FIXME !! - this goes to QMGeometry
+		NDimTable<Complexr> psiMarginalDistribution; //,,,,"The FFT lattice grid: wavefunction values in position representation"
 
+// FIXME !! - this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
 		// when wavefunction gets entangled it gets a link (shared pointer) to the global wavefunction that involves all particles in question.
-		boost::shared_ptr<QMStateDiscrete> psiGlobal;
+		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal; // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
 		// dim*whichPartOfpsiGlobal, dim*whichPartOfpsiGlobal+1, etc...  are the idx in size and gridSize
 		size_t                             whichPartOfpsiGlobal;
 

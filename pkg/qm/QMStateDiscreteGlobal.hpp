@@ -19,7 +19,7 @@
  * Member variables:
  *
  *   NDimTable    allKTable        ← is a table with k wavenumbers for each particle for each degree of freedom
- *   NDimTable    allPotentials    ← is a sum of all potentials acting on psiGlobal stored in ``tableValuesPosition``
+ *   NDimTable    allPotentials    ← is a sum of all potentials acting on psiGlobal stored in ``psiMarginalDistribution``
  *
  */
 class QMStateDiscreteGlobal: public QMStateDiscrete
@@ -47,8 +47,9 @@ product and become entangled."
 		REGISTER_CLASS_INDEX(QMStateDiscreteGlobal,QMStateDiscrete);
 
 		// FIXME - Real or Complexr  ?
-		NDimTable<Complexr> allKTable;// FIXME - Real is only good for calculating 2ⁿᵈ derivative with FFT, so it won't work with Dirac's equation
-		NDimTable<Complexr> allPotentials;
+		//NDimTable<Complexr> allKTable;// FIXME - Real is only good for calculating 2ⁿᵈ derivative with FFT, so it won't work with Dirac's equation
+		//NDimTable<Complexr> allPotentials;
+		NDimTable<Complexr> psiGlobalTable;
 };
 REGISTER_SERIALIZABLE(QMStateDiscreteGlobal);
 

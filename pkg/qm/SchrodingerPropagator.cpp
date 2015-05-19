@@ -1,7 +1,7 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMStateAnalytic.hpp"
-#include "QMStateDiscrete.hpp"
+#include "QMStateDiscreteGlobal.hpp"
 #include "SchrodingerPropagator.hpp"
 #include "QMPotential.hpp"
 #include <core/Scene.hpp>
@@ -53,19 +53,59 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 // !! at least one virtual function in the .cpp file
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
-Real SchrodingerKosloffPropagator::eMin()
+NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable()
 {
+	// previous loop was:   // FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
+	// previous loop was:   // prepare the potential  ψᵥ
+	// previous loop was:   NDimTable<Complexr> Vpsi={};
+	// previous loop was:   FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
+	// previous loop was:   	QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
+	// previous loop was:   	if(igeom) {
+	// previous loop was:   		if(Vpsi.rank()==0) Vpsi =igeom->potentialMarginalDistribution;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
+	// previous loop was:   		else               Vpsi+=igeom->potentialMarginalDistribution;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
+	// previous loop was:   	}
+	// previous loop was:   };
+
+
 	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!! FIXME FIXME FIXME FIXME,,,, FIXME, FIXME, FIXME, FIXME,
 	// prepare the potential  ψᵥ
-	NDimTable<Complexr> Vpsi={};
-	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
-		if(igeom) {
-			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
-			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
+	std::set<boost::shared_ptr<QMStateDiscreteGlobal> > allPotentials={};
+	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential, but take care of entanglement
+		QMIPhys* iphys=dynamic_cast<QMIPhys*>(i->phys.get());
+		if(iphys) {
+			allPotentials.insert(iphys->potentialInteractionGlobal);
+		} else {
+			std::cerr << "\n\nW̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::eMin can't find QMIPhys inside Interaction.\n\n";
 		}
 	};
+
+	if(allPotentials.size() > 1) {
+		if(timeLimit.messageAllowed(10)) std::cerr << "\n\nWARNING: SchrodingerKosloffPropagator::eMin may not work now with \
+more than one globally entangled wavefunction (eg. two hydrogen atoms, four particles). This must be fixed later. But it works with \
+several potential barriers affecting THE SAME particle.\n\n";
+	}
+
+	NDimTable<Complexr> Vpsi={};
+	for(auto& pot : allPotentials) {
+	// FIXME - this is actually a little wrong. Sometimes I can't add together different potentials !!!
+	//         I should perform whole separate SchrodingerKosloffPropagator integration for each of them!
+	//                  → this is the case of two separate systems entangled together
+	//           But sometimes I have just several different potential sources, which I should sum together
+	//                  → e.g. several barriers
+	//
+		if(Vpsi.rank()==0) Vpsi =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+		else               Vpsi+=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+	}
 	// FIXME end
+
+	//if(allPotentials.size() == 0)	return 0;
+	//NDimTable<Complexr>& Vpsi=(*(allPotentials.begin()))->psiGlobalTable;
+	return std::move(Vpsi);
+};
+
+Real SchrodingerKosloffPropagator::eMin()
+{
+	NDimTable<Complexr> Vpsi( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	return ((Vpsi.rank()!=0) ? (Vpsi.minReal()) : (0));
 };
 
@@ -75,7 +115,7 @@ Real SchrodingerKosloffPropagator::eMax()
 	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		if(psi) {
-			int rank = psi->tableValuesPosition.rank();
+			int rank = psi->psiMarginalDistribution.rank();
 			Real Ekin(0);
 			for(int dim=0 ; dim<rank ; dim++)
 				Ekin += std::pow(psi->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
@@ -83,18 +123,8 @@ Real SchrodingerKosloffPropagator::eMax()
 		}
 	};
 
-	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
-	// prepare the potential  ψᵥ
-	NDimTable<Complexr> Vpsi={};
-	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
-		if(igeom) {
-			if(Vpsi.rank()==0) Vpsi =igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
-			else               Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
-		}
-	};
+	NDimTable<Complexr> Vpsi( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	ret += ((Vpsi.rank()!=0) ? (Vpsi.maxReal()) : (0));
-	// FIXME end
 
 	return ret;
 }
@@ -122,7 +152,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
 		QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
 		if(igeom) {
-			Vpsi+=igeom->potentialValues;  // ψᵥ: V = ∑Vᵢ
+			Vpsi+=igeom->potentialMarginalDistribution;  // ψᵥ: V = ∑Vᵢ
 		}
 	};
 	Vpsi    .multMult(psi_0,dt/(hbar*R));// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
@@ -150,7 +180,7 @@ void SchrodingerKosloffPropagator::action()
 		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 //		const Body::id_t& id=b->getId();
 		if(psi and /* FIXME - should propagate miscParams ?? */ b->isDynamic() ) {// FIXME: this is   ↓ only because with & it draws the middle of calculations
-			NDimTable<Complexr>/*&*/ psi_dt(psi->tableValuesPosition); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+			NDimTable<Complexr>/*&*/ psi_dt(psi->psiMarginalDistribution); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			calc_Hnorm_psi(psi_0,psi_1,psi);                // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
@@ -170,7 +200,7 @@ void SchrodingerKosloffPropagator::action()
 				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
-			psi->tableValuesPosition=psi_dt;
+			psi->psiMarginalDistribution=psi_dt;
 			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";

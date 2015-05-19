@@ -109,6 +109,7 @@ found in [TalEzer1984]_"
 	DECLARE_LOGGER;
 	private:
 		TimeLimit timeLimit;
+		NDimTable<Complexr> get_full_potentialInteractionGlobal_psiGlobalTable();
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 

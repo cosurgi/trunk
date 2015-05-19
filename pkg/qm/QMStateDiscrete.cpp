@@ -64,8 +64,8 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, 
 	qms->firstRun=false;
 	if(par->dim <= 3) {
 		if (qms->gridSize.size() != par->dim) throw std::out_of_range("\n\nSt1_QMStateDiscrete: wrong dimension\n\n");
-		qms->tableValuesPosition.resize(qms->gridSize);
-		qms->tableValuesPosition.fill1WithFunction( par->dim
+		qms->psiMarginalDistribution.resize(qms->gridSize);
+		qms->psiMarginalDistribution.fill1WithFunction( par->dim
 			, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                 // xyz position function
 			, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par,qms);}   // function value at xyz
 			);
