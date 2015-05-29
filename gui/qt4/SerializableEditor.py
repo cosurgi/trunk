@@ -499,7 +499,7 @@ class SerializableEditor(QFrame):
 			'bool':bool,'int':int,'long':int,'Body::id_t':long,'size_t':size_t_FakeType,
 			'Real':float,'float':float,'double':float,'complex':complex,'std::complex<Real>':complex,
 			'Vector6r':Vector6,'Vector6i':Vector6i,'Vector3i':Vector3i,'Vector2r':Vector2,'Vector2i':Vector2i,
-			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,'DropDownMenu':DropDownMenuFakeType,
+			'Vector3r':Vector3,'Matrix3r':Matrix3,'Se3r':Se3FakeType,'Menu':DropDownMenuFakeType,
 			'string':str,
 			#'BodyCallback':BodyCallback,
 			'IntrCallback':IntrCallback,'StateFunctor':StateFunctor,'BoundFunctor':BoundFunctor,'IGeomFunctor':IGeomFunctor,'IPhysFunctor':IPhysFunctor,'LawFunctor':LawFunctor,'KinematicEngine':KinematicEngine,
