@@ -1,7 +1,7 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 
 #pragma once
-
+// #if 0 +#endif
 #include "QMStateDiscrete.hpp"
 
 /*********************************************************************************
