@@ -397,6 +397,14 @@ class NDimTable : private std::vector<K
 			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
 			K ret(0); for(K v : (*this)){ret += v*cell_volume;}; return ret;
 		};
+/* OK */	not_complex integrateAllNormSquared(std::vector<not_complex> spatial_sizes) const
+		{
+			assert(spatial_sizes.size()==rank_d);
+			not_complex cell_volume(1);
+			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+			not_complex ret(0);
+			for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;}; return ret;
+		};
 /* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes)
 		{
 			assert(remain.size()==rank_d);
@@ -418,7 +426,20 @@ class NDimTable : private std::vector<K
 			return std::move(ret);
 		};
 
-		typedef std::function<Real(Real i, int d)>  IToK_func;
+/* OK ? */	void shiftByHalf()
+		{
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲, can't shift by half.\n";
+			DimN pos_i(rank_d,0),newPos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total/2; total_i++) {
+				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
+					newPos_i[_d_] = (pos_i[_d_]+dim_n[_d_]/2)%dim_n[_d_];
+				std::swap( parent::operator[](total_i) , at(newPos_i) );
+				increment(pos_i);
+			}
+		};
+
+		typedef std::function<not_complex(not_complex i, int d)>  IToK_func;
 /* OK */	void becomeMinusKSquaredTable(const IToK_func& iToK)
 		{
 			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲, -k² will be w̲r̲o̲n̲g̲.\n       FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1\n";
