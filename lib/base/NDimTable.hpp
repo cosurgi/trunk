@@ -405,24 +405,30 @@ class NDimTable : private std::vector<K
 			not_complex ret(0);
 			for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;}; return ret;
 		};
-/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes)
+/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes,bool normalize=true)
 		{
 			assert(remain.size()==rank_d);
 			assert(spatial_sizes.size()==rank_d);
+/* */			std::vector<not_complex> new_spatial_sizes={};
 			DimN dim_new={};
 			not_complex cell_volume(1);
 			for(size_t i=0 ; i<rank_d ; i++) {
 				assert(remain[i]==0 or remain[i]==1);
 				if(remain[i]==1) dim_new.push_back(dim_n[i]);
 				else cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+/* */				if(remain[i]==1) new_spatial_sizes.push_back(spatial_sizes[i]);
 			};
 			NDimTable<K> ret(dim_new,0);
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
 				ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*cell_volume;
+/* */	//			ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::abs(parent::operator[](total_i))*cell_volume;
+/* */		//		ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::conj(parent::operator[](total_i))*cell_volume;
+/* ?? ok or FIXME?  */	//		ret.at(marginalDistributionIndexContraction(pos_i,remain)) += std::pow(std::abs(parent::operator[](total_i)),2)*cell_volume;
 				increment(pos_i);
 			}
+/* */			if(normalize) ret /= std::sqrt(ret.integrateAllNormSquared(new_spatial_sizes));
 			return std::move(ret);
 		};
 
