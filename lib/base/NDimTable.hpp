@@ -516,8 +516,9 @@ class NDimTable : private std::vector<K
 	public:
 		void doFFT(const NDimTable& inp,bool forward)
 		{
+		{
 			static boost::mutex mxFFT_FIXME;
-		{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME); // FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
+			boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);// FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
