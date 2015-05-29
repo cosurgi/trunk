@@ -24,15 +24,16 @@
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 
+#include <boost/thread/mutex.hpp>
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
 #ifdef YADE_FFTW3
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
 
-std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
+static boost::mutex mxFFT_FIXME;
 
-class FFT {};
+std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 
 template <typename K> // FIXME: do something so that only float, double, long double, float128 are allowed.
 class NDimTable : private std::vector<K
@@ -470,7 +471,7 @@ class NDimTable : private std::vector<K
 		//fftw_plan                  p_FFT,p_IFFT; //   http://www.fftw.org/doc/Using-Plans.html
 	public:
 		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
-		{
+		{{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME); // FIXME ←----- !! tylko dlatego, że ciągle robię nowe fftw_plan_dft(...)
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
@@ -479,6 +480,7 @@ class NDimTable : private std::vector<K
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
+// FIXME - fftw_plan_dft is not re-entrant. Must have mutex here. But (FIXME!!!!) better not create & destroy all the time!!
 			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 			//dirty=false;
 			fftw_execute(p_FFT);
@@ -487,11 +489,11 @@ class NDimTable : private std::vector<K
 			#else
 			#error fftw3 library is needed
 			#endif
-		};
+		}};
 		
 		void IFFT() { this->becomesIFFT(*this); };
 		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
-		{
+		{{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
@@ -508,7 +510,7 @@ class NDimTable : private std::vector<K
 			#else
 			#error fftw3 library is needed
 			#endif
-		}
+		}};
 
 };
 
