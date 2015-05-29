@@ -79,7 +79,7 @@ bool Ig2_2xQMGeometry_QMIGeom::go(
 	qmigeom->size1     = qs1->size;           // type: vector<Real>
 	qmigeom->size2     = qs2->size;           // type: vector<Real>
 	qmigeom->gridSize1 = qs1->gridSize;       // type: vector<size_t>
-	qmigeom->gridSize1 = qs2->gridSize;       // type: vector<size_t>
+	qmigeom->gridSize2 = qs2->gridSize;       // type: vector<size_t>
 
 	return true; // interaction always happens - FIXME - I could later check for spatial overlap... or sth. like that
 }

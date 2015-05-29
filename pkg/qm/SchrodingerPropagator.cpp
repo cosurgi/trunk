@@ -124,7 +124,7 @@ boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_
 			allPsiGlobals.insert(psiLocal->psiGlobal);
 	};
 	if(allPsiGlobals.size() != 1) {
-		std::cerr << "\n\nERROR: SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable() !\n\n";
+		std::cerr << "\n\nERROR: SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable() two separate global wavefunctions!\n\n";
 	//         I should perform whole separate SchrodingerKosloffPropagator integration for each of them!
 		exit(1);
 	}

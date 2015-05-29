@@ -42,15 +42,17 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 		sizeNew    [i]=(         qmg->extents[i]*2.0              );
 		gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
 	}
-	if( not b->isDynamic() ) { // anlytical
+	if( not b->isDynamic() ) { // analytical
 	// not dynamic means it's either pure analytical solution or a potential
 		QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
 		if(!stAn) { std::cerr << "ERROR: St1_QMStateDiscrete::go : QMStateAnalytic not found."; exit(1);};
 		if((stAn->lastOptimisationIter == scene->iter) and (gridSizeNew==qmstate->gridSize) and (sizeNew==qmstate->size))
 			return;
+if(timeLimitSD.messageAllowed(1)) std::cerr << " analytic ......regenerate, even when QTView is closed. Stupid!!\n";
 		qmstate->firstRun = true; // so it is always generated from the analytical formula
 		qmstate->gridSize = gridSizeNew;
 		stAn->lastOptimisationIter = scene->iter;
+//		std::cerr << "   QMStateDiscrete (analytic)       "<< qmg->step <<"\n";
 	}
 	// dynamic means that it takes part in calculations
 	if(qmstate->firstRun) {

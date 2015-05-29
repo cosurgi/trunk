@@ -119,3 +119,7 @@ Complexr St1_QMPacketHarmonicEigenFunc::getValPos(Vector3r pos, const QMParamete
 	throw std::runtime_error("\n\nSt1_QMPacketHarmonicEigenFunc::getValPos() works only in 1, 2 or 3 dimensions.\n\n");
 };
 
+// FIXME, FIXME: use http://lists.boost.org/Archives/boost/2011/11/188494.php
+// From: Matthias Schabel <boost@schabel-family.org>
+// Date: Wed, 30 Nov 2011 09:18:30 -0800
+

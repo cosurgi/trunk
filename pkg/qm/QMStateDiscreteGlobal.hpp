@@ -18,8 +18,9 @@
  *
  * Member variables:
  *
- *   NDimTable    allKTable        ← is a table with k wavenumbers for each particle for each degree of freedom
- *   NDimTable    allPotentials    ← is a sum of all potentials acting on psiGlobal stored in ``psiMarginalDistribution``
+ *   std::vector<Body::id_t>   members    ← List of wavefunctions that got entangled here, their respective degrees of freedom are in
+ *                                          the order of being entangled
+ *   NDimTable    psiGlobalTable          ← is a sum of all potentials acting on member particles
  *
  */
 class QMStateDiscreteGlobal: public QMStateDiscrete

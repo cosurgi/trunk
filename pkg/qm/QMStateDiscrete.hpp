@@ -29,6 +29,7 @@
  *    vector<Real>    size      → spatial size in all dimensions  // FIXME - synchronize with body->shape->extents
  *
  *    NDimTable<Complexr> psiMarginalDistribution   → the wavefunction, in discrete positional representation
+ *    size_t              whichPartOfpsiGlobal      → For entangled wavefunctions it says where this wavefunction starts in the entangled tensor
  *
  */
 class QMStateDiscreteGlobal;  // FIXME !!!!!!!! FIXME !!!!!!!!!! - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
