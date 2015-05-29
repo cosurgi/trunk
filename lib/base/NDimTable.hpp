@@ -470,7 +470,7 @@ class NDimTable : private std::vector<K
 				Eigen::Matrix<not_complex,3,1> xyz(0,0,0);
 				//FIXME: czy iToX() daje dobry wynik, gdy środek State::pos jest przesunięty?? Chyba raczej nie?
 				//       a może musze to przesunięcie załatwiac osobno? Przy każdym wywołaniu tej methody, indywidaulnie?
-				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++) xyz[_d_]=iToX(pos_i[_d_],_d_);
+				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz[_d_]=iToX(pos_i[_d_],_d_);
 				parent::operator[](total_i) = f(xyz);
 				increment(pos_i);
 			}
