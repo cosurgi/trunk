@@ -38,7 +38,7 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions   = { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]

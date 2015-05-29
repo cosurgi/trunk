@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size_1d   = 10
+size_1d   = 7
 halfSize1 = [size_1d,size_1d,0.1]
 halfSize2 = halfSize1
 size1     = [x * 2 for x in halfSize1]
 size2     = [x * 2 for x in halfSize2]
 
 # wavepacket parameters
-k0_x         = 3
-k0_y         = 2
-gaussWidth_x = 1.0
-gaussWidth_y = 2.0
+k0_x         = 0
+k0_y         = 0
+gaussWidth_x = 1.5
+gaussWidth_y = 1.5
 potentialCoefficient= [0.5,0.5,0.5]
 
 
@@ -31,17 +31,28 @@ O.engines=[
 	SchrodingerKosloffPropagator(),
 ]
 
+displayOptions1        = { 'partsScale':30,'partsSquared':1
+                          ,'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'renderMaxTime':0.5}
+displayOptions2        = { 'partsScale':30,'partsSquared':1
+                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'renderMaxTime':0.5}
+
 body0           = QMBody()
-body0.shape     = QMGeometry(extents=halfSize1,color=[1,1,1],partsScale=10)
+body0.shape     = QMGeometry(extents=halfSize1,color=[1,1,1],**displayOptions1)
 body0.material  = QMParticleHarmonic(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
-body0.state     = QMPacketGaussianWave(x0=[0,2,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],size=size1,gridSize=[2**6,2**6]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body0.state     = QMPacketGaussianWave(x0=[-1,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],size=size1,gridSize=[16,16]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
 O.bodies[nid].state.blockedDOFs=''
 
 body1           = QMBody()
-body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.8,0.6],partsScale=10)
+body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.0],**displayOptions2)
 body1.material  = QMParticleHarmonic(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
-body1.state     = QMPacketGaussianWave(x0=[2,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],size=size2,gridSize=[2**6,2**6]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body1.state     = QMPacketGaussianWave(x0=[1,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],size=size2,gridSize=[16,16]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body1)
 O.bodies[nid].state.blockedDOFs=''
 
