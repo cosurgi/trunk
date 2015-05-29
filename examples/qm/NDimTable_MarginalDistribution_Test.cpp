@@ -295,5 +295,14 @@ int main(void){
 	std::cout << "sumBiS2= " << sumBiS2<< "\n";
 	std::cout << "sumCiS2= " << sumCiS2<< "\n";
 	std::cout << "sumDiS2= " << sumDiS2<< "\n";
+	
+	std::cout << "dim_A sizes = " << dim_A << " \n";
+	std::cout << "dim_B sizes = " << dim_B << " \n";
+	std::cout << "dim_C sizes = " << dim_C << " \n";
+	std::cout << "dim_D sizes = " << dim_D << " \n";
+//	std::cout << "dim_A+dim_B sizes = " << dim_A+dim_B << " \n";
+//	std::cout << "dim_A+dim_C sizes = " << dim_A+dim_C << " \n";
+//	std::cout << "dim_A+dim_C+dim_D sizes = " << dim_A+dim_C+dim_D << " \n";
+//	std::cout << "dim_A+dim_B+dim_C+dim_D sizes = " << dim_A+dim_B+dim_C+dim_D << " \n";
 };
 
