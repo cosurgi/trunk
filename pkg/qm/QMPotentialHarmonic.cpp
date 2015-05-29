@@ -176,12 +176,12 @@ void Ip2_QMParticleHarmonic_QMParticleHarmonic_QMIPhysHarmonicParticles::goRever
 
 CREATE_LOGGER(Law2_QMIGeom_QMIPhysHarmonic);
 
-bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p, Interaction* I)
+bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& ip, Interaction* I)
 {
 	if(timeLimitH.messageAllowed(8)) std::cerr << "####### Law2_QMIGeom_QMIPhysHarmonic::go  START!  r̳e̳c̳a̳l̳c̳u̳l̳a̳t̳i̳n̳g̳ ̳w̳h̳o̳l̳e̳ ̳p̳o̳t̳e̳n̳t̳i̳a̳l̳!̳!̳!̳\n";
 
-	QMIGeom*         qmigeom  = static_cast<QMIGeom*        >(g.get());
-	QMIPhysHarmonic* harmonic = static_cast<QMIPhysHarmonic*>(p.get());
+	QMIGeom*         qmigeom  = static_cast<QMIGeom*        >(ig.get());
+	QMIPhysHarmonic* harmonic = static_cast<QMIPhysHarmonic*>(ip.get());
 
 	// FIXME, but how?? I need this equation somehow.
 	QMParametersHarmonic FIXME_param;

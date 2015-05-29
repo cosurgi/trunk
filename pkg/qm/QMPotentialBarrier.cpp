@@ -112,12 +112,12 @@ void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::goReverse(
 
 CREATE_LOGGER(Law2_QMIGeom_QMIPhysBarrier);
 
-bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& g, shared_ptr<IPhys>& p, Interaction* I)
+bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& ip, Interaction* I)
 {
 	if(timeLimitB.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysBarrier::go  START!\n";
 	
-	QMIGeom*        qmigeom = static_cast<QMIGeom*       >(g.get());
-	QMIPhysBarrier* barrier = static_cast<QMIPhysBarrier*>(p.get());
+	QMIGeom*        qmigeom = static_cast<QMIGeom*       >(ig.get());
+	QMIPhysBarrier* barrier = static_cast<QMIPhysBarrier*>(ip.get());
 
 	// FIXME, but how?? I need this equation somehow.
 	QMParametersBarrier FIXME_param;
