@@ -32,8 +32,6 @@
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
 
-static boost::mutex mxFFT_FIXME;
-
 std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 
 template <typename K> // FIXME: do something so that only float, double, long double, float128 are allowed.
@@ -516,48 +514,32 @@ class NDimTable : private std::vector<K
 		//std::vector<int>           dim_int; // FIXME: http://www.fftw.org/doc/New_002darray-Execute-Functions.html
 		//fftw_plan                  p_FFT,p_IFFT; //   http://www.fftw.org/doc/Using-Plans.html
 	public:
-		void becomesFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
-		{{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME); // FIXME ←----- !! tylko dlatego, że ciągle robię nowe fftw_plan_dft(...)
+		void doFFT(NDimTable inp,bool forward) // FIXME - powinno brać (const NDimTable& inp)
+		{
+			static boost::mutex mxFFT_FIXME;
+		{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME); // FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
 			fftw_complex *in, *out;
-			//int N(inp.total);
 			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
 // FIXME - fftw_plan_dft is not re-entrant. Must have mutex here. But (FIXME!!!!) better not create & destroy all the time!!
-			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
 			//dirty=false;
 			fftw_execute(p_FFT);
 // FIXME - do not destroy & create plan all the time. Just make one and keep it!! Unless dimensions changed - by calling resize().
+			if(not forward) this->operator/=((int)(inp.total));
 			fftw_destroy_plan(p_FFT);
 			#else
 			#error fftw3 library is needed
 			#endif
 		}};
-		
+		void FFT()  { this->becomesFFT(*this);  };
+		void becomesFFT(NDimTable inp) { doFFT(inp,true); }; // FIXME - powinno brać (const NDimTable& inp)
 		void IFFT() { this->becomesIFFT(*this); };
-		void becomesIFFT(NDimTable inp) // FIXME - powinno brać (const NDimTable& inp)
-		{{ boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);
-			//(*this)=inp; // FIXME - jakoś inaczej
-			this->resize(inp.dim()); // FIXME - jakoś inaczej
-			#ifdef YADE_FFTW3
-			fftw_complex *in, *out; // FIXME - uwaga - tu muszą być specjalizacje float.double/long double i complex
-			int N(inp.total);
-			in  = reinterpret_cast<fftw_complex*>(&( inp. operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			out = reinterpret_cast<fftw_complex*>(&(this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
-			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
-			fftw_plan p_IFFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-			//dirty=false;
-			fftw_execute(p_IFFT);
-			this->operator/=(N);		
-			fftw_destroy_plan(p_IFFT);
-			#else
-			#error fftw3 library is needed
-			#endif
-		}};
-
+		void becomesIFFT(NDimTable inp) { doFFT(inp,false); }; // FIXME - powinno brać (const NDimTable& inp)
 };
 
 template<typename K> NDimTable<K>  FFT(const NDimTable<K>& inp){ NDimTable<K> ret={}; ret.becomesFFT (inp); return std::move(ret); };
