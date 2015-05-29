@@ -432,9 +432,9 @@ class NDimTable : private std::vector<K
 			return std::move(ret);
 		};
 
-/* OK ? */	void shiftByHalf()
+/* OK */	void shiftByHalf()
 		{
-			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲, can't shift by half.\n";
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";
 			DimN pos_i(rank_d,0),newPos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total/2; total_i++) {
@@ -448,7 +448,7 @@ class NDimTable : private std::vector<K
 		typedef std::function<not_complex(not_complex i, int d)>  IToK_func;
 /* OK */	void becomeMinusKSquaredTable(const IToK_func& iToK)
 		{
-			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲, -k² will be w̲r̲o̲n̲g̲.\n       FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1\n";
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, -k² will be w̲r̲o̲n̲g̲.\n       FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1\n";
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
@@ -475,20 +475,38 @@ class NDimTable : private std::vector<K
 				increment(pos_i);
 			}
 		};
+		typedef std::function<not_complex(not_complex i, not_complex j, int d)>     IToX_func2;
+/* OK */	void fill2WithFunction(  unsigned short int dim_
+		                       , unsigned short int start_1_d, unsigned short int start_2_d
+				       , const IToX_func2& iToX2,const FunctionVals f)
+		{
+			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fillNWithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
+			DimN pos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				Eigen::Matrix<not_complex,3,1> xyz(0,0,0);
+				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz[_d_]=iToX2(pos_i[_d_+start_1_d],pos_i[_d_+start_2_d],_d_);
+				parent::operator[](total_i) = f(xyz);
+				increment(pos_i);
+			}
+		};
 
-		void print(std::ostream& os,std::string l,int width) const
+
+		void print(std::ostream& os,std::string l,int width,bool skip_brackets=false) const
 		{
 			if(rank_d==0) return;
 			std::vector<std::size_t> pos_i(rank_d,0);
 			for(std::size_t total_i=0;total_i < total; total_i++)
 			{
-				os << l << "[" << pos_i << "]=" << std::setw(width) << parent::operator[](total_i) << "\t";
+				if(skip_brackets) os << l <<                         std::setw(width) << parent::operator[](total_i) << "\t";
+				else              os << l << "[" << pos_i << "]=" << std::setw(width) << parent::operator[](total_i) << "\t";
 				int n(increment(pos_i));
 				for(int i=0;i<n;i++)
 					os << "\n";
 			}
 		}
 		void print() const { print(std::cout,"",0);};
+		void print(bool skip_brackets) const { print(std::cout,"",0,skip_brackets);};
 		void print(std::ostream& os) const { print(os,"",0);};
 		void print(std::string label,int width) const { print(std::cout,label,width);};
 
