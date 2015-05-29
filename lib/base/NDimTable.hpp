@@ -23,6 +23,7 @@
 #include <iostream>
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
+#include <Eigen/Core>
 
 #include <boost/thread/mutex.hpp>
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
@@ -431,15 +432,15 @@ class NDimTable : private std::vector<K
 			}
 		};
 
-		typedef std::function<Real(Real i, int d)>     IToX_func;
-		typedef std::function<Complexr(Vector3r& xyz)> FunctionVals;
+		typedef std::function<not_complex(not_complex i, int d)>     IToX_func;
+		typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz)> FunctionVals;
 /* OK */	void fill1WithFunction(unsigned short int dim_, const IToX_func& iToX,const FunctionVals f)
 		{
 			if(dim_ != rank_d) throw std::out_of_range("\n\nERROR: NDimTable::fill1WithFunction works only for non-entangled wavefunctions.\n\n");
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
-				Vector3r xyz(0,0,0);
+				Eigen::Matrix<not_complex,3,1> xyz(0,0,0);
 				//FIXME: czy iToX() daje dobry wynik, gdy środek State::pos jest przesunięty?? Chyba raczej nie?
 				//       a może musze to przesunięcie załatwiac osobno? Przy każdym wywołaniu tej methody, indywidaulnie?
 				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++) xyz[_d_]=iToX(pos_i[_d_],_d_);
