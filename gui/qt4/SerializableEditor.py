@@ -545,8 +545,9 @@ class SerializableEditor(QFrame):
 			else: t=val.__class__
 			match=re.search(':yattrflags:`\s*([0-9]+)\s*`',doc) # non-empty attribute
 			flags=int(match.group(1)) if match else 0
+			if hasattr(self.ser,"qtReadonly") and (attr in getattr(self.ser,"qtReadonly").split()): flags+=AttrFlags.readonly
 			#logging.debug('Attr %s is of type %s'%(attr,((t[0].__name__,) if isinstance(t,tuple) else t.__name__)))
-			self.entries.append(self.EntryData(name=attr,T=t))
+			self.entries.append(self.EntryData(name=attr,T=t,flags=flags))
 			#print("name: "+str(attr)+"\tflag: "+str(flags))
 	def getDocstring(self,attr=None):
 		"If attr is *None*, return docstring of the Serializable itself"
