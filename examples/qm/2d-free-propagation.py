@@ -4,7 +4,6 @@
 dimensions= 2
 size_1d   = 10
 halfSize  = [size_1d,size_1d*1.5,0.1]           # FIXME: halfSize  = [size_1d,size_1d*1.5]
-size      = [x * 2 for x in halfSize]
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
@@ -35,8 +34,8 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],display
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-#gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'size':size,'gridSize':[128,64]}    # ← previously used arguments, were nice too!
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,0],'size':size,'gridSize':[64,128]} # ← arguments I tried when introducing 3D
+#gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'gridSize':[128,64]}    # ← previously used arguments, were nice too!
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,0],'gridSize':[64,128]} # ← arguments I tried when introducing 3D
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved

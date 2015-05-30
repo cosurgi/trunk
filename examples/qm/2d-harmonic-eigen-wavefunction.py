@@ -4,7 +4,6 @@
 dimensions= 2
 size_1d   = 10
 halfSize  = [size_1d,size_1d*1.5,0.1]           # FIXME: halfSize  = [size_1d,size_1d*1.5]
-size      = [x * 2 for x in halfSize]
 
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]
@@ -63,7 +62,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'size':size,'gridSize':[2**6,2**7]}
+harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved

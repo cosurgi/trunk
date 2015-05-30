@@ -16,11 +16,16 @@
  * creates interactions between particles is responsible for doing this. It is the LawFunctor, because the interaction is what is responsible
  * for requirement that wavefunctions become a tensor product and become entangled.
  *
+ *  Member functions:
+ *    vector<Real>    getSpatialSizeGlobal() ← spatial size in all dimensions, it is synchronized with body->shape->extents by St1_QMStateDiscrete
+ *    void            setSpatialSizeGlobal() ← set spatial size in all dimensions
+ *    void            addSpatialSizeGlobal() ← add spatial size of another particle
+ *
  * Member variables:
  *
- *   std::vector<Body::id_t>   members    ← List of wavefunctions that got entangled here, their respective degrees of freedom are in
- *                                          the order of being entangled
- *   NDimTable    psiGlobalTable          ← is a sum of all potentials acting on member particles
+ *   std::vector<Body::id_t>   members       ← List of wavefunctions that got entangled here, their respective degrees of freedom are in
+ *                                             the order of being entangled
+ *   NDimTable    psiGlobalTable             ← is a sum of all potentials acting on member particles
  *
  */
 class QMStateDiscreteGlobal: public QMStateDiscrete
@@ -51,6 +56,10 @@ product and become entangled."
 		//NDimTable<Complexr> allKTable;// FIXME - Real is only good for calculating 2ⁿᵈ derivative with FFT, so it won't work with Dirac's equation
 		//NDimTable<Complexr> allPotentials;
 		NDimTable<Complexr> psiGlobalTable;
+
+		const vector<Real>& getSpatialSizeGlobal()  const              { return spatialSize;    };
+		void                setSpatialSizeGlobal(const vector<Real> s) { spatialSize=s;         };
+		void                addSpatialSizeGlobal(const vector<Real> s) { spatialSize.insert(spatialSize.end(),s.begin(),s.end()); };
 };
 REGISTER_SERIALIZABLE(QMStateDiscreteGlobal);
 

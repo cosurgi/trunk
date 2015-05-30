@@ -73,13 +73,13 @@ bool Ig2_2xQMGeometry_QMIGeom::go(
 
 	if(!qs1 or !qs2) { throw std::runtime_error("\n\nERROR: Ig2_2xQMGeometry_QMIGeom::go has no QMStateDiscrete.\n\n");};
 
-	qmigeom->extents1  = qg1->extents;        // type: Vector3r
-	qmigeom->extents2  = qg2->extents;        // type: Vector3r
-	qmigeom->relPos21  = qs2->pos - qs1->pos; // type: Vector3r
-	qmigeom->size1     = qs1->size;           // type: vector<Real>
-	qmigeom->size2     = qs2->size;           // type: vector<Real>
-	qmigeom->gridSize1 = qs1->gridSize;       // type: vector<size_t>
-	qmigeom->gridSize2 = qs2->gridSize;       // type: vector<size_t>
+	qmigeom->extents1  = qg1->extents;          // type: Vector3r
+	qmigeom->extents2  = qg2->extents;          // type: Vector3r
+	qmigeom->relPos21  = qs2->pos - qs1->pos;   // type: Vector3r
+	qmigeom->size1     = qs1->getSpatialSize(); // type: vector<Real> // FIXME - dubluje się z gq1->extents ?
+	qmigeom->size2     = qs2->getSpatialSize(); // type: vector<Real> // FIXME - dubluje się z gq2->extents ?
+	qmigeom->gridSize1 = qs1->gridSize;         // type: vector<size_t>
+	qmigeom->gridSize2 = qs2->gridSize;         // type: vector<size_t>
 
 	return true; // interaction always happens - FIXME - I could later check for spatial overlap... or sth. like that
 }

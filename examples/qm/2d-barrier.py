@@ -4,7 +4,6 @@
 dimensions= 2
 size_1d   = 12
 halfSize  = [size_1d,size_1d,0.1]           # FIXME: halfSize  = [size_1d,size_1d]  ← że nie ma trzeciej składowej, ale Box::extents robi problemy
-size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
 k0_x       = 2
@@ -47,7 +46,7 @@ displayOptionsPot= { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'size':size,'gridSize':[2**6,2**7]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved

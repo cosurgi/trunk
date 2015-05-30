@@ -4,7 +4,6 @@
 dimensions= 1
 size_1d   = 100 if dimensions==1 else 10
 halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
-size      = [x * 2 for x in halfSize]
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
@@ -36,7 +35,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],display
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[5,0,0],'a0':[0.5,0,0],'size':size,'gridSize':[2**12]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[5,0,0],'a0':[0.5,0,0],'gridSize':[2**12]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved

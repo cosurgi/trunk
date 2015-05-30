@@ -4,7 +4,6 @@
 dimensions= 3
 size_1d   = 5 
 halfSize  = [size_1d,size_1d*1.2,size_1d]
-size      = [x * 2 for x in halfSize]
 
 # wavepacket parameters
 k0_x         = 1
@@ -54,7 +53,7 @@ analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'size':size,'gridSize':[24,24,24]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'gridSize':[24,24,24]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
