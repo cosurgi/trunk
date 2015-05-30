@@ -54,7 +54,7 @@ displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'poin
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, harmonicOrder_z],'size':size,'gridSize':[16,16,16]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -63,7 +63,7 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions)])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -72,7 +72,7 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],**displayOptionsPot)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(**displayOptionsPot)])
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)

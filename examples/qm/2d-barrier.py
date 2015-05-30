@@ -54,10 +54,7 @@ analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10)
-					# partAbsolute=['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-					# partImaginary=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-					# partReal=['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(partsScale=10,renderWireLight=True)])
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(se3=[[0,0,0],Quaternion((1,0,0),0)],**gaussPacketArg)
 nid=O.bodies.append(numericalBody)
@@ -65,25 +62,25 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody1 = QMBody()
-potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
+potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
-potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
+potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,color=[0.3,0.5,0.3],displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
 
 potentialBody3 = QMBody()
-potentialBody3.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
+potentialBody3.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody3.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody3.state     = QMStPotentialBarrier(se3=[potentialCenter1a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody3)
 
 potentialBody4 = QMBody()
-potentialBody4.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],partsScale=-potentialValue,**displayOptionsPot)
+potentialBody4.shape     = QMGeometry(extents=potentialHalfSizeA,color=[0.3,0.5,0.3],displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody4.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody4.state     = QMStPotentialBarrier(se3=[potentialCenter2a,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody4)

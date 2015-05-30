@@ -41,21 +41,27 @@ displayOptions1        = { 'partsScale':10
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'renderMaxTime':0.5}
+                          ,'renderMaxTime':0.5
+                          ,'renderWireLight':True
+                          }
 displayOptions2        = { 'partsScale':10
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'renderMaxTime':0.5}
-displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]}
+                          ,'renderMaxTime':0.5
+                          ,'renderWireLight':True
+                          }
+displayOptionsPot      = { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+                          ,'renderWireLight':True
+                          }
 
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],**displayOptions1)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'size':size,'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -64,7 +70,7 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],**displayOptions2)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions2)])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
@@ -73,7 +79,7 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(partsScale=-10,**displayOptionsPot)])
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 id_H=O.bodies.append(potentialBody)

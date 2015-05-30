@@ -36,7 +36,7 @@ displayOptions    = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'poin
 analyticBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=stepRenderFrame,**displayOptions)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(stepRender=stepRenderFrame,**displayOptions)])
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
@@ -51,7 +51,7 @@ O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution 
 numericalBody = QMBody()
 # make sure it will not interact with the other particle (although interaction is not possible/implemented anyway)
 numericalBody.groupMask = 1
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=stepRenderFrame,**displayOptions)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(stepRender=stepRenderFrame,**displayOptions)])
 numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
 # The wavefunction shape can be anything - as long as it is normalized, in this case the Gauss shape is used.

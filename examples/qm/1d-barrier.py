@@ -41,7 +41,7 @@ stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],stepRender=stepRenderHide)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(stepRender=stepRenderHide)])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'size':size,'gridSize':[2**11]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
@@ -50,7 +50,7 @@ analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],stepRender=stepRenderHide)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(stepRender=stepRenderHide)])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
@@ -59,13 +59,13 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody1 = QMBody()
-potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,stepRender=stepRenderStripes)
+potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,stepRender=stepRenderStripes)])
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
-potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,partsScale=-potentialValue,stepRender=stepRenderStripes)
+potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,stepRender=stepRenderStripes)])
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)

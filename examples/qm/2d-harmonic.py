@@ -36,21 +36,24 @@ O.engines=[
 
 displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂'    ## FIXME - make it work,
-		                                                                      ## but not in partImaginary, make such 4 choices along each
+                                                                                      ## but not in partImaginary, make such 4 choices along each
                                                                                       ## QMStateDiscrete::gridSize dimension
                     ### FIXME 2 - inicjalizacja - tylko tą wybraną wartością, nie ruszać reszty całego Menu, niech ono się samo jakoś
                     ###           przywraca jeśli zostało 'skasowane'
                     ###                  partReal="default hidden" ##  i koniec, bez wymieniania reszty
                     ###
-		                     ,'draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂' , 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂'
-				     ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂', 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂']
+                    ##"default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
+                    ##    ,"draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂" , "draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂"
+                    ##    ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂", "draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂"
+                                     ,'draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂' , 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂'
+                                     ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂', 'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂']
                     ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-		    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
-		    ,'wire':True}
+                    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+                    }
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],partsScale=10)
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,2,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'size':size,'gridSize':[2**7,2**6]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
@@ -59,7 +62,7 @@ analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],partsScale=10)
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(partsScale=10,renderWireLight=True)])
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(numericalBody)
@@ -67,7 +70,7 @@ O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],partsScale=-10,**displayOptionsPot)
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],wire=True,displayOptions=[QMDisplayOptions(partsScale=-10,**displayOptionsPot)])
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
