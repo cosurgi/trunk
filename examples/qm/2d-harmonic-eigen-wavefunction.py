@@ -100,7 +100,7 @@ try:
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 	Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
-	O.bodies[id_H].shape.step=[2.0,2.0,2.0]
+	O.bodies[id_H].shape.displayOptions[0].step=[2.0,2.0,2.0]
 except ImportError:
 	pass
 
