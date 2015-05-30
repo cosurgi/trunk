@@ -36,6 +36,21 @@ class QMDisplayOptions: public Serializable
 			((bool,renderWireLight  ,false,,"Use glEnable(GL_LIGHTING) when drawing wire"))
 			((bool,renderFFT        ,false,,"Render FFT"))
 			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
+/*FIXME support*/			((Vector3i,renderRotate ,Vector3i(0,1,2),,"Rotate coordinates during rendering (integer values 0,1,2 only)."))
+/*FIXME support*/			((Vector3r,renderPlace  ,Vector3r(0,0,0),,"Shift placement during rendering."))
+/*FIXME support*/			((vector<bool>,marginalDistribution,,,"Select which dimensions to integrate over."))
+//                    ### inicjalizacja - tylko tą wybraną wartością, nie ruszać reszty całego Menu, niech ono się samo jakoś
+//                    ### przywraca jeśli zostało 'skasowane'
+//                      "default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
+//                             ,"draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂" 
+//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂"
+//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
+//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂"
+//                             ,'draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂' 
+//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂'
+//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂'
+//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂']
+
 			((Menu,stepRender       ,Menu({"default hidden","hidden","frame","stripes","mesh"}),,"Show the steps on the grid."))
 			((Real,renderMaxTime    ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
