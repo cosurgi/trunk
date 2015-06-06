@@ -31,8 +31,12 @@ O.engines=[
 	SchrodingerKosloffPropagator(),
 ]
 
+displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default stripes","hidden","frame","stripes","mesh"]}
+
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
-stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 ## Create:
 # 1. analytical gauss packet - only use it to initialise the discrete packet
 # 2. discrete packet
@@ -45,26 +49,29 @@ analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**11]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
-#O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+#O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(stepRender=stepRenderHide)])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
+     QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False)
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,4), Quaternion((1,0,0),0)))
+])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()          # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody1 = QMBody()
-potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,stepRender=stepRenderStripes)])
+potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody1.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody1.state     = QMStPotentialBarrier(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
 potentialBody2 = QMBody()
-potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,stepRender=stepRenderStripes)])
+potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-potentialValue,**displayOptionsPot)])
 potentialBody2.material  = QMParametersBarrier(dim=dimensions,hbar=1,height=potentialValue)
 potentialBody2.state     = QMStPotentialBarrier(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
@@ -81,7 +88,8 @@ try:
 	from yade import qt
 	qt.Controller()
 	qt.Renderer().blinkHighlight=False
-	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
+	#Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
+	#Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
 	qt.View()
 	qt.controller.setWindowTitle("Packet inside a 1D well")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))

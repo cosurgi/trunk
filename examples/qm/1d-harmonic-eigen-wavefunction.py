@@ -47,25 +47,41 @@ displayOptionsPot= { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],displayOptions=[QMDisplayOptions(step=[0.03,0.1,0.1])])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],displayOptions=[
+     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
+                      ,renderFFTScale=(4,1,1)
+                      ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
+])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder,0,0],'gridSize':[2**10]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(analyticBody)
-O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+O.bodies[nid].state.setAnalytic()     # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions()])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
+     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
+                      ,renderFFTScale=(4,1,1)
+                      ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
+])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()      # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptionsPot)])
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,step=[0.2,0.1,0.1],displayOptions=[
+     QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptionsPot)
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
+                      ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi))
+                      ,renderFFTScale=(4,1,0.02)
+                      ,**displayOptionsPot)
+])
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
@@ -80,6 +96,7 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
+	Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
 	qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("1D eigenwavefunction in harmonic potential")

@@ -49,20 +49,26 @@ analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
-#O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+#O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions()])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
+     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
+])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()      # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)])
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
+     QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
+])
 potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)

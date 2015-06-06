@@ -403,7 +403,7 @@ class NDimTable : private std::vector<K
 			not_complex ret(0);
 			for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;}; return ret;
 		};
-/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes,bool normalize=true)
+/* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes,bool normalize=true,bool densityOnly=false)
 		{
 			assert(remain.size()==rank_d);
 			assert(spatial_sizes.size()==rank_d);
@@ -420,9 +420,11 @@ class NDimTable : private std::vector<K
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
-				ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*cell_volume;
-/* */	//			ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::abs(parent::operator[](total_i))*cell_volume;
-/* */		//		ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::conj(parent::operator[](total_i))*cell_volume;
+				if(not densityOnly) ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*cell_volume;
+				else    ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::conj(parent::operator[](total_i))*cell_volume;
+
+/* */	//			        ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::abs (parent::operator[](total_i))*cell_volume;
+/* */		//		        ret.at(marginalDistributionIndexContraction(pos_i,remain)) += parent::operator[](total_i)*std::conj(parent::operator[](total_i))*cell_volume;
 /* ?? ok or FIXME?  */	//		ret.at(marginalDistributionIndexContraction(pos_i,remain)) += std::pow(std::abs(parent::operator[](total_i)),2)*cell_volume;
 				increment(pos_i);
 			}
@@ -538,8 +540,20 @@ class NDimTable : private std::vector<K
 			#endif
 		}};
 		void FFT()                             { this->becomesFFT(*this);  };
+		void niceFFT() {
+			this->shiftByHalf();
+			this->becomesFFT(*this);
+			this->operator/=( std::sqrt(1.0*total) );
+			this->shiftByHalf();
+		};
 		void becomesFFT(const NDimTable& inp)  { doFFT(inp,true); };
 		void IFFT()                            { this->becomesIFFT(*this); };
+		void niceIFFT() {
+			this->shiftByHalf();
+			this->becomesIFFT(*this);
+			this->operator*=( std::sqrt(1.0*total) );
+			this->shiftByHalf();
+		};
 		void becomesIFFT(const NDimTable& inp) { doFFT(inp,false); };
 };
 

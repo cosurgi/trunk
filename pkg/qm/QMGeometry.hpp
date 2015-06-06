@@ -22,6 +22,7 @@ class QMDisplayOptions: public Serializable
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(QMDisplayOptions /* class name*/, Serializable /* base class */
 			, "Display configuration for single graphical representation" // class description
 			, // attributes, public variables
+			((string,qtReadonly,"",Attr::readonly,"Space separated list of runtime-settable read-only variables in qt4 interface."))
 			((Menu,partAbsolute     ,Menu({"default wire"   ,"hidden","nodes","big nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
 			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show imaginary component"))
 			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
@@ -33,36 +34,37 @@ class QMDisplayOptions: public Serializable
 			((int ,renderShininess  ,50,Attr::hidden,"Amount of shininess of the surface"))
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
-			((bool,renderWireLight  ,false,,"Use glEnable(GL_LIGHTING) when drawing wire"))
+			((bool,renderWireLight  ,true,,"Use glEnable(GL_LIGHTING) when drawing wire. Wires are BRIGHTer when off."))
 			((bool,renderFFT        ,false,,"Render FFT"))
-			((Vector3r,step         ,Vector3r(0.1,0.1,0.1),,"Rendering step, careful - too small will make rendering extremely slow"))
-/*FIXME support*/			((Vector3i,renderRotate ,Vector3i(0,1,2),,"Rotate coordinates during rendering (integer values 0,1,2 only)."))
-/*FIXME support*/			((Vector3r,renderPlace  ,Vector3r(0,0,0),,"Shift placement during rendering."))
-/*FIXME support*/			((vector<bool>,marginalDistribution,,,"Select which dimensions to integrate over."))
-//                    ### inicjalizacja - tylko tą wybraną wartością, nie ruszać reszty całego Menu, niech ono się samo jakoś
-//                    ### przywraca jeśli zostało 'skasowane'
-//                      "default draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
-//                             ,"draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂" 
-//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂"
-//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂"
-//                             ,"draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂"
-//                             ,'draw: ∫ψ(x₁,y₁,x₂,y₂)dy₂' 
-//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂'
-//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ end_x₂'
-//                             ,'draw: ∬ψ(x₁,y₁,x₂,y₂)dx₂dy₂ start_x₂,end_x₂']
-
+			((Vector3r,renderFFTScale   ,Vector3r(1,1,1),,"When rendering FFT do some scaling of drawn stuff"))
+			((Se3r,renderSe3,Se3r(Vector3r::Zero(),Quaternionr::Identity()),,"Change placement & orientation during rendering."))
+			((vector<Vector3i>,doMarginalDistribution,,,"Select which dimensions to integrate over: [NO(0) or YES(1) or EVERYTHING(2) or UNDEFINED(-1), integration_start_node, integration_end_node]"))
+			((bool,marginalNormalize,false,,"Whether to normalize the marginal distribution."))
+			((bool,marginalDensityOnly,true,,"Whether to integrate over density the marginal distribution."))
+			((string,marginalDistribEquation,"∫ψ(x₁,y₁)dy₁",/*Attr::readonly*/,"It's the integration equation used, READONLY actually, but without Attr::readonly so that it's easier to read."))
 			((Menu,stepRender       ,Menu({"default hidden","hidden","frame","stripes","mesh"}),,"Show the steps on the grid."))
 			((Real,renderMaxTime    ,0.2,,"Maximum rendering time in seconds. Abort if takes too long."))
 			((Real,threshold3D      ,0.0000001,,"Isosurface value for 3D drawing, using marching cubes algorithm."))
 			, // constructor
 			lastMarginalDistributionCalculatedIter=-1;
 			lastRenderFFT=false;
-			start=end=Vector3r(0,0,0);
+			start=end=step=Vector3r(0,0,0);
+			lastMarginalNormalize=lastMarginalDensityOnly=true;
+			lastDoMarginalDistribution={};
+			renderSize=Vector3r(0,0,0);
+			renderAxis_i=renderGlobal_i=Vector3i(-1,-1,-1);
 			, // python
 		);
-		long lastMarginalDistributionCalculatedIter;
-		bool lastRenderFFT;
-		Vector3r start,end;
+		Vector3r start,end,step;
+		NDimTable<Complexr> marginalDistribution;
+		// These `last*` are needed to detect if some setting has just changed, and redraw properly
+		long     lastMarginalDistributionCalculatedIter;
+		bool     lastRenderFFT;
+		bool     lastMarginalNormalize;
+		bool     lastMarginalDensityOnly;
+		vector<Vector3i> lastDoMarginalDistribution;
+		Vector3r renderSize;
+		Vector3i renderGlobal_i,renderAxis_i;
 };
 REGISTER_SERIALIZABLE(QMDisplayOptions);
 
@@ -100,12 +102,15 @@ class QMGeometry: public Box
 			, // class description
 			"Geomterical information about the wavefunction of a particle. Mostly display configuration, like color or renderShininess, but also size and display precision step."
 			, // attributes, public variables
+			((Vector3r,step         ,Vector3r(-1,-1,-1),,"Rendering step, careful - too small will make rendering extremely slow. Negative means undefined."))
 			((std::vector<shared_ptr<Serializable>>,displayOptions,,,"..?"))
+			((string,qtReadonly,""  ,Attr::readonly,"Space separated list of runtime-settable read-only variables in qt4 interface."))
 			, // constructor
 			createIndex();
+			lastStep=Vector3r(0,0,0);
 		);
 		REGISTER_CLASS_INDEX(QMGeometry,Box);
-/* FIXME: std::vector ...   */		NDimTable<Complexr> psiMarginalDistribution;
+		Vector3r lastStep;
 };
 REGISTER_SERIALIZABLE(QMGeometry);
 
