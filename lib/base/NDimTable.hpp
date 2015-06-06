@@ -521,6 +521,10 @@ class NDimTable : private std::vector<K
 		{
 			static boost::mutex mxFFT_FIXME;
 			boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);// FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
+static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
+if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
+fftw_plan_with_nthreads(8/*omp_get_max_threads()*/);
+
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
@@ -529,6 +533,7 @@ class NDimTable : private std::vector<K
 			out = reinterpret_cast<fftw_complex*>(&(                       this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
 // FIXME - fftw_plan_dft is not re-entrant. Must have mutex here. But (FIXME!!!!) better not create & destroy fftw_plan all the time!!
+// w SchrodingerKosloffPropagator zrobię jakieś FFT.makePlan() a potem pilnuję żeby pętla była ciągle na tych samych NDimTable....
 			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
 			//dirty=false;
 			fftw_execute(p_FFT);

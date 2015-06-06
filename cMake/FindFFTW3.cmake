@@ -40,7 +40,7 @@
 
 # Use double precision by default.
 if(FFTW3_FIND_COMPONENTS MATCHES "^$")
-set(_components double)
+set(_components double threads)
 else()
 set(_components ${FFTW3_FIND_COMPONENTS})
 endif()
@@ -66,8 +66,11 @@ endforeach(_comp ${_components})
 if(_use_threads)
 set(_thread_libs)
 foreach(_lib ${_libraries})
+####### FIXME - tylko jedna ze zmian w tym pliku chyba powinna była wystarczyć, żeby działało
+list(APPEND _thread_libs ${_lib}_omp)
 list(APPEND _thread_libs ${_lib}_threads)
 endforeach(_lib ${_libraries})
+list(APPEND _thread_libs m)
 set(_libraries ${_thread_libs} ${_libraries})
 endif(_use_threads)
 
