@@ -26,6 +26,9 @@
 
 /*! @brief QMState contains quantum state information
  *
+ *  Member variables:
+ *
+ *    bool wasGenerated                             ← marks whether the discrete grid was generated from analytical formula
  */
 class QMState: public State
 {
@@ -49,6 +52,10 @@ class QMState: public State
 //		virtual Complexr calcScalarProduct(shared_ptr<QMState>& other); // calculate <φ|ψ>
 
 		virtual ~QMState();
+		bool isAnalytic () const { return not numericalState; };
+		bool isNumeric  () const { return numericalState; };
+		void setAnalytic()       { numericalState = false; blockedDOFs=State::DOF_ALL ; };
+		void setNumeric ()       { numericalState = true;  blockedDOFs=State::DOF_NONE; };
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			QMState
@@ -57,6 +64,8 @@ class QMState: public State
 			, // class description
 			"Quantum mechanical state."
 			, // attributes, public variables
+			((bool,wasGenerated  ,false,Attr::readonly,"It is used to remember if it was already generated."))
+			((bool,numericalState,true ,Attr::readonly,"Tells whether this QMState is an analytical solution and does not need to be 'solved' for and 'propagated'."))
 			((string,qtHide,"angMom angVel densityScaling inertia isDamped mass qtHide refOri refPos vel inertia",Attr::readonly,
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
@@ -64,6 +73,10 @@ class QMState: public State
 			, // constructor
 			createIndex();
 			, // python bindings
+			.def("isAnalytic" ,&QMState::isAnalytic ,"Tells if this QMState is analytically propagated - only by increasing its time parameter")
+			.def("isNumeric"  ,&QMState::isNumeric  ,"Tells if this QMState is numerically propagated")
+			.def("setAnalytic",&QMState::setAnalytic,"Sets that this QMState is analytically propagated")
+			.def("setNumeric" ,&QMState::setNumeric ,"Sets that this QMState is numerically propagated")
 		);
 		REGISTER_CLASS_INDEX(QMState,State);
 };

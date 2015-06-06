@@ -46,7 +46,7 @@ analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,2,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'gridSize':[2**7,2**6]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
-#O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+#O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
@@ -54,7 +54,7 @@ numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptio
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()          # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()

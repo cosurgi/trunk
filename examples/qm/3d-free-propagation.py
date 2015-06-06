@@ -44,7 +44,7 @@ analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'gridSize':[24,42,24]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
-O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
 
 ## The numerical one:
 numericalBody = QMBody()
@@ -57,7 +57,7 @@ numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()    # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
 O.dt=.07

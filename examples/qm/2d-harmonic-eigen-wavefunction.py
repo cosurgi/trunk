@@ -65,7 +65,7 @@ analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
 harmonicPacketArg      = {'energyLevel':[harmonicOrder_x, harmonicOrder_y, 0],'gridSize':[2**6,2**7]}
 analyticBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(analyticBody)
-O.bodies[nid].state.blockedDOFs='xyzXYZ' # is propagated as analytical solution - no calculations involved
+O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
@@ -74,7 +74,7 @@ numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
 nid=O.bodies.append(numericalBody)
-O.bodies[nid].state.blockedDOFs=''      # is being propagated by SchrodingerKosloffPropagator
+O.bodies[nid].state.setNumeric()        # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody = QMBody()
