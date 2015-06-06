@@ -36,8 +36,10 @@ void SchrodingerAnalyticPropagator::action()
 //		std::cerr << "SchrodingerAnalyticPropagator, " << b->state->getClassName() << "\n";
 		QMStateAnalytic* analytic=dynamic_cast<QMStateAnalytic*>(b->state.get());
 //		const Body::id_t& id=b->getId();
-		if(analytic and /* FIXME? not sure... will it try to propagate potentials?? */ (not b->isDynamic()) ) {
+		if(analytic and /* FIXME? not sure... will it try to propagate potentials?? */ (analytic->isAnalytic()) )
+		{
 			analytic->t += dt;
+			analytic->wasGenerated = false;
 //std::cerr << "SchrodingerAnalyticPropagator t+=dt " << b->getId() << "\n";
 
 		}
@@ -120,8 +122,8 @@ boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_
 	std::set<boost::shared_ptr<QMStateDiscreteGlobal> > allPsiGlobals={};
 	FOREACH(const shared_ptr<Body>& b , *scene->bodies){
 		QMStateDiscrete* psiLocal=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		if(    psiLocal and b->isDynamic() and psiLocal->psiGlobal )
-			allPsiGlobals.insert(psiLocal->psiGlobal);
+		if(    psiLocal and psiLocal->isNumeric() and psiLocal->getPsiGlobalExists() )
+			allPsiGlobals.insert(psiLocal->getPsiGlobalExisting());
 	};
 	if(allPsiGlobals.size() != 1) {
 		std::cerr << "\n\nERROR: SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable() two separate global wavefunctions!\n\n";

@@ -42,14 +42,9 @@ Derived classes will be specific analytic solutions to various cases."
 			((Real,t,0,,"Current local time in this analytic packet. The theory must be predictive, so there must be always dependence on time."))
 			, // constructor
 			createIndex();
-			lastOptimisationIter=-1;
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMStateAnalytic,QMStateDiscrete);
-
-/* FIXME: make it	private: */
-		long lastOptimisationIter;
-
 };
 REGISTER_SERIALIZABLE(QMStateAnalytic);
 

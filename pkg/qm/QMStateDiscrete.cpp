@@ -1,5 +1,6 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
+#include "QMBody.hpp"
 #include "QMStateDiscrete.hpp"
 #include "QMStateDiscreteGlobal.hpp"
 #include "QMStateAnalytic.hpp"
@@ -20,74 +21,67 @@ YADE_PLUGIN(
 CREATE_LOGGER(QMStateDiscrete);
 // !! at least one virtual function in the .cpp file
 QMStateDiscrete::~QMStateDiscrete(){};
+boost::shared_ptr<QMStateDiscreteGlobal>& QMStateDiscrete::getPsiGlobalNew()
+{
+	if(not psiGlobal)
+		psiGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
+	return psiGlobal;
+};
 
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
 {
-	QMStateDiscrete* qmstate = static_cast <QMStateDiscrete*>(state.get());
-	QMParameters*    par     = dynamic_cast<QMParameters*   >(mat.get());
-	QMGeometry*      qmg     = dynamic_cast<QMGeometry*     >(b->shape.get());
-	if(!qmstate or !par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No state, no material. Cannot proceed."; exit(1);};
-	size_t dim = par->dim;
-	if(dim > 3) { throw std::runtime_error("\n\nERROR: St1_QMStateDiscrete::go does not work with dim > 3.\n\n");};
-	std::vector<size_t> gridSizeNew(dim);
-	std::vector<Real>   sizeNew(dim);
-	for(size_t i=0 ; i<dim ; i++) {
-
-	// FIXME - bardzo dziwne miejsce do resetowanie step() w Gl1_QMGeometry, przecież tym się zajmuje St1_QMStateDiscrete::go !!!
-	//if(pd->gridSize.size() > 0) { g->step.x()=pd->stepInPositionalRepresentation(0); start.x() = pd->start(0); end.x() = pd->end(0)- g->step.x(); } else { return; }
-	//if(pd->gridSize.size() > 1) { g->step.y()=pd->stepInPositionalRepresentation(1); start.y() = pd->start(1); end.y() = pd->end(1)- g->step.y(); }
-	//if(pd->gridSize.size() > 2) { g->step.z()=pd->stepInPositionalRepresentation(2); start.z() = pd->start(2); end.z() = pd->end(2)- g->step.z(); }
-
-		if(qmg->step[i]==0) { throw std::runtime_error("\n\nERROR: St1_QMStateDiscrete::go: step is ZERO!\n\n");};
-		sizeNew    [i]=(         qmg->extents[i]*2.0              );
-		gridSizeNew[i]=((size_t)(qmg->extents[i]*2.0/qmg->step[i]));
+	QMStateDiscrete*         qms = static_cast <QMStateDiscrete*>(state.get());
+	shared_ptr<QMParameters> par = YADE_PTR_DYN_CAST<QMParameters>(mat);
+	QMGeometry*              qmg = dynamic_cast<QMGeometry*     >(b->shape.get());
+	if(!par or !qmg) { std::cerr << "ERROR: St1_QMStateDiscrete::go : No material, no geometry. Cannot proceed."; exit(1);};
+	size_t dim = par->dim; if(dim > 3) { throw std::runtime_error("\n\nERROR: St1_QMStateDiscrete::go does not work with dim > 3.\n\n");};
+	if(not qms->wasGenerated) {
+		std::vector<Real>   sizeNew(dim);
+		for(size_t i=0 ; i<dim ; i++) sizeNew[i]=(qmg->extents[i]*2.0);
+		qms->setSpatialSize(sizeNew);
+		if(qms->isAnalytic() and qms->gridSize.size() == 0) {
+			qms->gridSize.resize(par->dim,7); // fist run on analytic may need to pick arbitrarily some gridSize, if it wasn't defined by user
+			// use '7' as default to make it apparent        ↓ if it was defined, then use it
+			for(size_t i=0 ; i < qms->gridSize.size() ; i++) if(qmg->step[i]>0) qms->gridSize[i]=size_t(qms->getSpatialSize()[i]/qmg->step[i]);
+			// need to recalculate step, because of rounding errors for gridSize
+			for(size_t i=0 ; i < qms->gridSize.size() ; i++) qmg->step[i]=qms->getSpatialSize()[i]/((Real)(qms->gridSize[i]));
+		}
+		this->calculateTableValuesPosition(par,dynamic_cast<QMState*>(qms));
+		qms->setMaterialAndGenerator(par,shared_from_this());
+	} else if(qms->isAnalytic()) {
+		qms->wasGenerated = false;// keep on calculating, since it is analytic
+		this->calculateTableValuesPosition(par,qms);
 	}
-	if( not b->isDynamic() ) { // analytical
-	// not dynamic means it's either pure analytical solution or a potential
-		QMStateAnalytic*   stAn = dynamic_cast<QMStateAnalytic*>(state.get());
-		if(!stAn) { std::cerr << "ERROR: St1_QMStateDiscrete::go : QMStateAnalytic not found."; exit(1);};
-		if((stAn->lastOptimisationIter == scene->iter) and (gridSizeNew==qmstate->gridSize) and (sizeNew==qmstate->size))
-			return;
-if(timeLimitSD.messageAllowed(1)) std::cerr << " analytic ......regenerate, even when QTView is closed. Stupid!!\n";
-		qmstate->firstRun = true; // so it is always generated from the analytical formula
-		qmstate->gridSize = gridSizeNew;
-		stAn->lastOptimisationIter = scene->iter;
-//		std::cerr << "   QMStateDiscrete (analytic)       "<< qmg->step <<"\n";
-	}
-	// dynamic means that it takes part in calculations
-	if(qmstate->firstRun) {
-		qmstate->size     = sizeNew;
-	}
-	this->calculateTableValuesPosition(par,qmstate);
 }
 
-void St1_QMStateDiscrete::calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete* qms)
-{// initialize from this   //////////////////////////////////////////// MERGE
-	if(qms->firstRun) {
-		qms->firstRun=false;
+void St1_QMStateDiscrete::calculateTableValuesPosition(const shared_ptr<QMParameters>& par, QMState* qm)
+{
+	// ↓ patrz też uwagi w QMState.hpp
+	// FIXME - aha, chyba wywalenie psiGlobal będzie polegało na tym, że to co było QMStateDiscrete teraz będzie QMState, ale bez eKin(), eMax() itp
+	// z kolei QMState będzie zawierało QMStateDiscreteGlobal z tymi wszystkimi eKin(), NDimTable itp.
+	// A póki co muszę zrobić taki cast:
+	QMStateDiscrete* qms = dynamic_cast<QMStateDiscrete*>(qm);
+	if(not qms) {std::cerr<< "\nERROR:no QMStateDiscrete\n\n"; exit(1);};
+	if(not qms->wasGenerated) {
+		qms->wasGenerated=true;
 		if(par->dim <= 3) {
-			if (qms->gridSize.size() != par->dim) throw std::out_of_range("\n\nSt1_QMStateDiscrete: wrong dimension\n\n");
-			qms->psiMarginalDistribution.resize(qms->gridSize);
-			qms->psiMarginalDistribution.fill1WithFunction( par->dim
-				, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                 // xyz position function
-				, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par,qms);}   // function value at xyz
+			if (qms->gridSize.size() != par->dim) {
+				std::cerr<< "\nERROR: St1_QMStateDiscrete::calculateTableValuesPosition doesn't have gridSize\n";
+				exit(1);
+			}
+			qms->getPsiGlobalNew()     ->psiGlobalTable.resize(qms->gridSize);
+			qms->getPsiGlobalExisting()->psiGlobalTable.fill1WithFunction( par->dim
+				, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                       // xyz position function
+				, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par.get(),qms);}   // function value at xyz
 				);
 		} else {
 			throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
 		}
-/*FIXME - using QMGeometryDisplayConfig */
-/*FIXME*/	if(not qms->psiGlobal)
-/*FIXME*/		qms->psiGlobal= boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
-/*FIXME*/	qms->psiGlobal->psiGlobalTable = qms->psiMarginalDistribution;
-/*FIXME*/	qms->psiGlobal->firstRun = false;
-/*FIXME*/	qms->psiGlobal->gridSize = qms->gridSize;
-/*FIXME*/	qms->psiGlobal->size     = qms->size;
-	} else {
-		if(qms->psiGlobal->gridSize == qms->gridSize) // that must be the same wavefunction! It's not entangled
-/*FIXME*/		qms->psiMarginalDistribution = qms->psiGlobal->psiGlobalTable;
-		else {
-		// calcMarginalDistribution
-		}
-	};
+//FIXME - jak skończę (ale co? wywalać psiGlobal?) to będą wszystkie poniższe niepotrzebne!
+/*FIXING?*/	qms->getPsiGlobalExisting()->wasGenerated = true;
+/*FIXING?*/	qms->getPsiGlobalExisting()->gridSize = qms->gridSize;
+/*FIXING?*/	qms->getPsiGlobalExisting()->setSpatialSizeGlobal(qms->getSpatialSize());
+	}
+///    else {//                    LICZENIE marginalDistribution POSZŁO DO Gl1_NDimTable
 };
 

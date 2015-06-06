@@ -8,14 +8,39 @@
 #include <stdexcept>
 #include "QMParameters.hpp"
 
+/*********************************************************************************
+*
+* Q U A N T U M   M E C H A N I C A L   S T A T E   F U N C T O R
+*
+*********************************************************************************/
+#include <boost/enable_shared_from_this.hpp>
+class QMState;
+class St1_QMState: public StateFunctor, public boost::enable_shared_from_this<St1_QMState>
+{
+	public:
+		virtual void go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*);
+		FUNCTOR1D(QMState);
+		YADE_CLASS_BASE_DOC(St1_QMState/* class name */, StateFunctor /* base class */
+			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
+		);
+	private:
+		friend class QMState;
+		virtual void calculateTableValuesPosition(const shared_ptr<QMParameters>& par, QMState*) {throw;};
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
+		{ throw std::runtime_error("\n\nSt1_QMState::getValPos was called directly.\n\n");};
+};
+REGISTER_SERIALIZABLE(St1_QMState);
+
+// FIXME: grep: ↓ patrz też uwagi w QMState.hpp
 //
-//                                    QMState
-//                                       ↑
-//                                QMStateDiscrete
-//                                       ↑
-//                                QMStateAnalytic
-//                                   ↑        ↑
-//                  QMPacketGaussianWave  QMPacketHarmonicEigenFunc
+//                   QMState                                              QMState, owns QMStateDiscreteGlobal (rename na psiNDimTable ?)
+//                      ↑                                                    ↑     class psiNDimTable: public NDimTable, i już nie mam duplikowania gridSize!!!
+//               QMStateDiscrete, owns QMStateDiscreteGlobal                 ↑         tylko wtedy co z 3D `gridSize.size()==3` oryginalnych pakietów?
+//                      ↑                         ----------→ FIXME:         ↑         chyba OK, tylko będę musiał przerobić Gl1_QMGeometry::go linijka if(dimSpatial == 0 or dimSpatial>3 ) żeby uwzględnić od początku wyznaczanie kroków przestrzennych prawidłowo względem tego co jest całkowane a co nie, żeby to prawidłowo rysować.
+//               QMStateAnalytic                                      QMStateAnalytic
+//                  ↑        ↑                                           ↑        ↑
+// QMPacketGaussianWave  QMPacketHarmonicEigenFunc       QMPacketGaussianWave  QMPacketHarmonicEigenFunc
 //
 
 /*********************************************************************************
@@ -56,6 +81,9 @@ class QMState: public State
 		bool isNumeric  () const { return numericalState; };
 		void setAnalytic()       { numericalState = false; blockedDOFs=State::DOF_ALL ; };
 		void setNumeric ()       { numericalState = true;  blockedDOFs=State::DOF_NONE; };
+		// this is needed by Gl1_QMGeometry
+		void update     ()       { wasGenerated=false; st1_QMStateGen->calculateTableValuesPosition(qmParameters,this); };
+		void setMaterialAndGenerator(shared_ptr<QMParameters>& par,shared_ptr<St1_QMState> generator) {qmParameters=par;st1_QMStateGen=generator;};
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			QMState
@@ -70,6 +98,9 @@ class QMState: public State
 			"Space separated list of variables to hide in qt4 interface. \
 			To fix the inheritance tree we should remove those attributes from the base class.\
 			Yes, even mass must be removed, although it is back in few of derived classes."))
+// FIXME: with this description it actually becomes credible: qtHide →   "Space separated list of runtime-settable hidden    variables in qt4 interface."
+// FIXME: same goes with this one: ((string,qtReadonly,"",Attr::readonly,"Space separated list of runtime-settable read-only variables in qt4 interface."))
+// FIXME: it actually makes sense to put qtHide & qtReadonly inside Serializable class !!!!!
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -79,27 +110,9 @@ class QMState: public State
 			.def("setNumeric" ,&QMState::setNumeric ,"Sets that this QMState is numerically propagated")
 		);
 		REGISTER_CLASS_INDEX(QMState,State);
+	private:
+		shared_ptr<QMParameters> qmParameters;
+		shared_ptr<St1_QMState>  st1_QMStateGen;
 };
 REGISTER_SERIALIZABLE(QMState);
-
-/*********************************************************************************
-*
-* Q U A N T U M   M E C H A N I C A L   S T A T E   F U N C T O R
-*
-*********************************************************************************/
-
-class St1_QMState: public StateFunctor
-{
-	public:
-		virtual void go(const shared_ptr<State>&, const shared_ptr<Material>&, const Body*);
-		FUNCTOR1D(QMState);
-		YADE_CLASS_BASE_DOC(St1_QMState/* class name */, StateFunctor /* base class */
-			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
-		);
-	private:
-		//! return complex quantum aplitude at given positional representation coordinates
-		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
-		{ throw std::runtime_error("\n\nSt1_QMState::getValPos was called directly.\n\n");};
-};
-REGISTER_SERIALIZABLE(St1_QMState);
 

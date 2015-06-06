@@ -28,10 +28,10 @@
  *
  *  Member variables:
  *
- *    bool firstRun                                 ← marks whether the discrete grid was already initialised
  *    vector<size_t>  gridSize                      ← grid size in all dimensions
  *
- *    NDimTable<Complexr> psiMarginalDistribution   ← the wavefunction, in discrete positional representation
+ *                       // FIXME  ↓  I think I can move it up from QMStateDiscreteGlobal to QMStateDiscrete
+ *    NDimTable<Complexr> psiGlobal->psiGlobalTable ← the wavefunction, in discrete positional representation
  *    size_t              whichPartOfpsiGlobal      ← For entangled wavefunctions it says where this wavefunction starts in the entangled tensor
  *
  */
@@ -49,11 +49,12 @@ class QMStateDiscrete: public QMState
 "Quantum mechanical state in a discrete representation. It can be initialized from anylytical representations \
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
-			((bool          ,firstRun , true              ,Attr::readonly,"It is used to mark that postLoad() already generated the wavefunction from its creator analytic function."))
-			((vector<size_t>,gridSize,vector<size_t>({}),,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+/* FIXME - dubluje się z NDimTable::dim_n */			((vector<size_t>,gridSize , vector<size_t>({}), Attr::readonly ,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 			, // constructor
 			createIndex();
+			whichPartOfpsiGlobal=-1;
 			spatialSize={};
+			//nDimTable_PSI=boost::shared_ptr<NDimTable>(new NDimTable);
 			, // python bindings
 			.def("deltaX"   ,&QMStateDiscrete::deltaX   ,"Get $\\Delta x$ - the position representation distance between two grid nodes. Same as stepInPositionalRepresentation().")
 			.def("stepInPositionalRepresentation"   ,&QMStateDiscrete::stepInPositionalRepresentation   ,"Get $\\Delta x$ - the position representation distance between two grid nodes. Same as deltaX().")
@@ -64,6 +65,8 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("iToK"     ,&QMStateDiscrete::iToK     ,"Get $k$ coordinate for i-th node, invoke example: iToK(0)")
 			.def("xToI"     ,&QMStateDiscrete::xToI     ,"Get node number for $x$ coordinate, invoke example: xToI(0)")
 			.def("kToI"     ,&QMStateDiscrete::kToI     ,"Get node number for $k$ coordinate, invoke example: kToI(0)")
+			.def("isEntangled",&QMStateDiscrete::isEntangled,"Tell if it's entangled")
+			.def("partOfpsiGlobal",&QMStateDiscrete::partOfpsiGlobal,"If it's entangled, tell where it starts.")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
@@ -101,14 +104,24 @@ or directly by filling in the discrete values in the table. It is used for numer
 		const vector<Real>& getSpatialSize()  const              { return spatialSize;    };
 		void                setSpatialSize(const vector<Real> s) { spatialSize=s;         };
 
-// FIXME !! - this goes to QMGeometry
-		NDimTable<Complexr> psiMarginalDistribution; //,,,,"The FFT lattice grid: wavefunction values in position representation"
+		void   setEntangled(size_t i) { whichPartOfpsiGlobal=i; };
+		bool   isEntangled()          { return whichPartOfpsiGlobal >= 0; };
+		size_t partOfpsiGlobal()      { if(whichPartOfpsiGlobal<0) throw std::runtime_error("\n\nQMStateDiscrete::partOfpsiGlobal() ERROR\n\n"); return size_t(whichPartOfpsiGlobal); };
+		size_t partOfpsiGlobalZero()  { if(whichPartOfpsiGlobal<0) return 0; return size_t(whichPartOfpsiGlobal); };
 
-// FIXME !! - this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
-		// when wavefunction gets entangled it gets a link (shared pointer) to the global wavefunction that involves all particles in question.
+// this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
+		bool                                      getPsiGlobalExists  () { return (bool)(psiGlobal);};
+		boost::shared_ptr<QMStateDiscreteGlobal>& setPsiGlobal        (boost::shared_ptr<QMStateDiscreteGlobal>& s) { psiGlobal = s; return psiGlobal;};
+		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalNew     ();
+		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalExisting() { if(not psiGlobal) throw std::runtime_error("\n\nERROR: QMStateDiscrete::psiGlobal wanted, but doesn't exist\n\n"); return psiGlobal; };
+	private:
 		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal; // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
+		//boost::shared_ptr<NDimTable<Complexr>> nDimTable_PSI; // FIXING.... - to zamiast psiGlobal ??
+
+
+		// when wavefunction gets entangled it gets a link (shared pointer) to the global wavefunction that involves all particles in question.
+//,,,,"The FFT lattice grid: wavefunction values in position representation"
 		// dim*whichPartOfpsiGlobal, dim*whichPartOfpsiGlobal+1, etc...  are the idx in size and gridSize
-		size_t                             whichPartOfpsiGlobal;
 
 	protected:
 		// Wavepacket size in position representation space, for each DOF.
@@ -116,7 +129,8 @@ or directly by filling in the discrete values in the table. It is used for numer
 		// in QMStateDiscrete max size is 3D
 		vector<Real>  spatialSize;          // cannot be public, because it's public in Box←QMGeometry::extents, it is synchronized by St1_QMStateDiscrete
 	private:
-		TimeLimit timeLimit;
+		int           whichPartOfpsiGlobal; // For entangled wavefunctions it says where this wavefunction starts in the entangled tensor
+		TimeLimit     timeLimit;
 		
 };
 REGISTER_SERIALIZABLE(QMStateDiscrete);
@@ -130,11 +144,10 @@ class St1_QMStateDiscrete: public St1_QMState
 			, "Functor creating :yref:`QMStateDiscrete` from :yref:`QMParametersDiscrete`." // class description
 		);
 	private:
+		virtual void calculateTableValuesPosition(const shared_ptr<QMParameters>& par, QMState*);
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 		{ throw std::logic_error("\n\nSt1_QMStateDiscrete was called directly.\n\n");};
-
-		void calculateTableValuesPosition(const QMParameters* par, QMStateDiscrete*);
 };
 REGISTER_SERIALIZABLE(St1_QMStateDiscrete);
 
