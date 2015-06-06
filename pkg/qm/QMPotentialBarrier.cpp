@@ -131,7 +131,7 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& i
 	if(psi->gridSize.size() <= 3) {
 // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
 //            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
-		val.resize(psi->psiMarginalDistribution);
+		val.resize(psi->getPsiGlobalExisting()->psiGlobalTable);
 		val.fill1WithFunction( psi->gridSize.size()
 			, [&](Real i, int d)->Real    { return psi->iToX(i,d) - qmigeom->relPos21[d];}           // xyz position function
 			, [&](Vector3r& xyz)->Complexr{

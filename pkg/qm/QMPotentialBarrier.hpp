@@ -39,7 +39,7 @@ REGISTER_SERIALIZABLE(QMParametersBarrier);
 /*! @brief QMStPotentialBarrier is an analytical representation for potential barrier.
  *
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStPotentialBarrier to fill (FIXME) QMStateDiscrete::psiMarginalDistribution with its representation
+ *  call St1_QMStPotentialBarrier to fill (FIXME) QMStateDiscreteGlobal::psiGlobalTable with its representation
  */
 
 class QMStPotentialBarrier: public QMStatePotential
@@ -70,7 +70,7 @@ class St1_QMStPotentialBarrier: public St1_QMStateAnalytic
 			, "Functor creating :yref:`QMStPotentialBarrier` from :yref:`QMParametersBarrier`." // class description
 		);
 	private:
-	friend class Law2_QMIGeom_QMIPhysBarrier;
+		friend class Law2_QMIGeom_QMIPhysBarrier;
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
 };

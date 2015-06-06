@@ -68,7 +68,7 @@ REGISTER_SERIALIZABLE(QMParticleHarmonic);
 /*! @brief QMStPotentialHarmonic is an analytical representation for harmonic potential.
  * 
  *  This class is empty in fact, and is present only for StateDispatcher to dispach properly and
- *  call St1_QMStPotentialHarmonic to fill (FIXME) QMStateDiscrete::psiMarginalDistribution with its representation
+ *  call St1_QMStPotentialHarmonic to fill (FIXME) QMStateDiscreteGlobal::psiGlobalTable(Potential) with its representation
  */
 
 class QMStPotentialHarmonic: public QMStatePotential
@@ -98,7 +98,8 @@ class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic
 		YADE_CLASS_BASE_DOC(St1_QMStPotentialHarmonic/* class name */, St1_QMStateAnalytic /* base class */
 			, "Functor creating :yref:`QMStPotentialHarmonic` from :yref:`QMParametersHarmonic`." // class description
 		);
-	friend class Law2_QMIGeom_QMIPhysHarmonic;
+		friend class Law2_QMIGeom_QMIPhysHarmonic;
+		friend class Law2_QMIGeom_QMIPhysHarmonicParticles;
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);

@@ -26,11 +26,11 @@ class QMStatePotential: public QMStateAnalytic
 	public:
 		virtual ~QMStatePotential();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStatePotential /* class name*/, QMStateAnalytic /* base class */
-			, "It's an unmovable potential: a source of potential (interaction)" // class description
+			, "It's the potential: a source of potential (interaction)" // class description
 			, // attributes, public variables
 			, // constructor
 			  createIndex();
-			  blockedDOFs=State::DOF_ALL; // unmovable, has DOFs blocked
+			  numericalState=false; // the potentitial is described by analytic formula
 	);
 	REGISTER_CLASS_INDEX(QMStatePotential,QMStateAnalytic);
 };
