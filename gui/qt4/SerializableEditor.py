@@ -110,8 +110,8 @@ class AttrEditor_Str(AttrEditor,QLineEdit):
 		self.selectionChanged.connect(self.isHot)
 		self.editingFinished.connect(self.update)
 	def refresh(self):
-		if (not self.hasFocus()): self.setText(self.getter())
-	def update(self):  self.trySetter(str(self.text()))
+		if (not self.hasFocus()): self.setText(self.getter().decode('utf-8'))
+	def update(self):  self.trySetter(unicode(self.text()).encode('utf-8'))
 
 class AttrEditor_Float(AttrEditor,QLineEdit):
 	def __init__(self,parent,getter,setter):
@@ -535,6 +535,7 @@ class SerializableEditor(QFrame):
 # However it is great to note that only this little 'cosmetic' hack is needed
 # to make Quantum Mechanics possible in yade
 # See also: class QuantumMechanicalState, class QuantumMechanicalBody, gui/qt4/SerializableEditor.py
+			if(attr=="qtHide" or attr=="qtReadonly"): continue
 			if hasattr(self.ser,"qtHide") and (attr in getattr(self.ser,"qtHide").split()): continue
 			if isinstance(val,list):
 				t=self.getListTypeFromDocstring(attr)
