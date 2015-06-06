@@ -167,12 +167,13 @@ class QMIPhys: public IPhys
 			((size_t,dim   ,                ,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
 			, // constructor
 			createIndex();
+			//nDimTable_POT=boost::shared_ptr<NDimTable>(new NDimTable);
 			, // python bindings
 		);
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(QMIPhys,IPhys);
-// FIXME !! - this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
 		boost::shared_ptr<QMStateDiscreteGlobal> potentialInteractionGlobal; // potential alone, not multiplied by psi
+//		boost::shared_ptr<NDimTable> nDimTable_POT; // potential alone, not multiplied by psi
 };
 REGISTER_SERIALIZABLE(QMIPhys);
 
