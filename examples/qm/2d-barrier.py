@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size_1d   = 12
-halfSize  = [size_1d,size_1d,0.1]           # FIXME: halfSize  = [size_1d,size_1d]  ← że nie ma trzeciej składowej, ale Box::extents robi problemy
+size1d   = 12
+halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d]  ← że nie ma trzeciej składowej, ale Box::extents robi problemy
 
 # wavepacket parameters
 k0_x       = 2

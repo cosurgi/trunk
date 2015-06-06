@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size_1d   = 15
-halfSize  = [size_1d,0.1,0.1]          # FIXME: halfSize  = [size_1d]
+size1d   = 15
+halfSize  = [size1d,0.1,0.1]          # FIXME: halfSize  = [size1d]
 
 # wavepacket parameters
 k0_x       = 10

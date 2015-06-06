@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size_1d   = 20
-halfSize1 = [size_1d,0.2,0.1]
+size1d   = 20
+halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 
 # wavepacket parameters
@@ -37,16 +37,16 @@ displayEnt= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'w
 
 body0           = QMBody()
 body0.shape     = QMGeometry(extents=halfSize1,color=[0.8,0.8,0.8],displayOptions=[
-     QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2,       0,0), Quaternion((1,0,0),0)) ) 
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2, size_1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2,-size_1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=True,renderWireLight=True   ,renderSe3=(Vector3(-size_1d*1.2,       0,0), Quaternion((1,0,0),0)) 
+     QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2,       0,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2, size1d,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2,-size1d,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=True,renderWireLight=True   ,renderSe3=(Vector3(-size1d*1.2,       0,0), Quaternion((1,0,0),0))
         ,doMarginalDistribution=[(0,0,0),(0,0,0)],**displayEnt)
-    
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size_1d*1.2,       0,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size_1d*1.2, size_1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size_1d*1.2,-size_1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=True,renderWireLight=True ,renderFFT=True  ,renderSe3=(Vector3(size_1d*1.2,       0,0), Quaternion((1,0,0),0))
+
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,       0,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2, size1d,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,-size1d,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=True,renderWireLight=True ,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,       0,0), Quaternion((1,0,0),0))
         , doMarginalDistribution=[(0,0,0),(0,0,0)],**displayEnt)
     #                  ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0))
     #                  ,renderFFTScale=(4,1,1)
@@ -59,13 +59,13 @@ O.bodies[nid].state.setNumeric()
 
 body1           = QMBody()
 body1.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2        ,0,0), Quaternion((0,0,1),0   )) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2+size_1d,0,0), Quaternion((0,0,1),pi/2)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size_1d*1.2-size_1d,0,0), Quaternion((0,0,1),pi/2)) )
+     QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2        ,0,0), Quaternion((0,0,1),0   )) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
 
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size_1d*1.2        ,0,0), Quaternion((1,0,0),0   )) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size_1d*1.2+size_1d,0,0), Quaternion((0,0,1),pi/2)) )
-    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size_1d*1.2-size_1d,0,0), Quaternion((0,0,1),pi/2)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2        ,0,0), Quaternion((1,0,0),0   )) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
+    ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
 ])
 body1.material  = QMParticleHarmonic(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
 body1.state     = QMPacketGaussianWave(x0=[1,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[192]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size_1d   = 100 if dimensions==1 else 10
-halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
+size1d   = 100 if dimensions==1 else 10
+halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method

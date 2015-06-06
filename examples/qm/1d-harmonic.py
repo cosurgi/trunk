@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size_1d   = 20
-halfSize  = [size_1d,0.1,0.1]           # FIXME: halfSize  = [size_1d]
+size1d   = 20
+halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
 
 # wavepacket parameters
 k0_x       = 6
@@ -11,7 +11,7 @@ gaussWidth = 0.5
 
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
-potentialHalfSize = Vector3(size_1d,3,3)
+potentialHalfSize = Vector3(size1d,3,3)
 potentialCoefficient= [0.5,0.5,0.5]
 
 O.engines=[

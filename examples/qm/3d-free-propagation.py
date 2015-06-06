@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 3
-size_1d   = 10
-halfSize  = [size_1d,size_1d*1.5,size_1d]
+size1d   = 10
+halfSize  = [size1d,size1d*1.5,size1d]
 
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 3
-size_1d   = 5 
-halfSize  = [size_1d,size_1d*1.2,size_1d]
+size1d   = 5
+halfSize  = [size1d,size1d*1.2,size1d]
 
 # wavepacket parameters
 k0_x         = 1
