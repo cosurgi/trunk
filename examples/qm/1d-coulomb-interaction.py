@@ -24,8 +24,8 @@ O.engines=[
 	]),
 	InteractionLoop(
 		[Ig2_2xQMGeometry_QMIGeom()],
-		[Ip2_QMParticleHarmonic_QMParticleHarmonic_QMIPhysHarmonicParticles()],
-		[Law2_QMIGeom_QMIPhysHarmonicParticles()]
+		[Ip2_QMParticleCoulomb_QMParticleCoulomb_QMIPhysCoulombParticles()],
+		[Law2_QMIGeom_QMIPhysCoulombParticles()]
 	),
 	SchrodingerKosloffPropagator(),
 ]
@@ -52,7 +52,7 @@ body0.shape     = QMGeometry(extents=halfSize1,color=[0.8,0.8,0.8],displayOption
     #                  ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0))
     #                  ,renderFFTScale=(4,1,1)
 ])
-body0.material  = QMParticleHarmonic(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
+body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
 body0.state     = QMPacketGaussianWave(x0=[-1,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[GRIDSIZE]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
@@ -68,7 +68,7 @@ body1.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[
     ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
     ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
 ])
-body1.material  = QMParticleHarmonic(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
+body1.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
 
 ## FIXME - przetestować w mathematica z różnie przesuniętymi względem siebie siatkami i różnym rozstawem siatek.
 ##         głównie chodzi o to, żeby węzły siatek się nie nakrywały.
@@ -86,7 +86,7 @@ O.save('/tmp/a.xml.bz2');
 try:
 	from yade import qt
 	qt.Controller()
-	qt.controller.setWindowTitle("Two Gaussian packets connected via harmonic potential in 1D")
+	qt.controller.setWindowTitle("Two Gaussian packets connected via Coulomb potential in 1D")
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
