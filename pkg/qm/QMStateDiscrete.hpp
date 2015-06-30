@@ -67,6 +67,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("kToI"     ,&QMStateDiscrete::kToI     ,"Get node number for $k$ coordinate, invoke example: kToI(0)")
 			.def("isEntangled",&QMStateDiscrete::isEntangled,"Tell if it's entangled")
 			.def("partOfpsiGlobal",&QMStateDiscrete::partOfpsiGlobal,"If it's entangled, tell where it starts.")
+			.def("atPsiGlobal",&QMStateDiscrete::atPsiGlobalExisting,"Return value at given table (grid) position.")
+// FIXME - chciałem żeby at() odnosiło się do tej klasy, a nie globalExisting, a to po to, żebym mógł brać gridSize
+//			.def("getPsiGlobalExisting",&QMStateDiscrete::getPsiGlobalExisting,"Return QMStateDiscreteGlobal.")
 		);
 		REGISTER_CLASS_INDEX(QMStateDiscrete,QMState);
 
@@ -83,6 +86,11 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real iToK(Real i, int d){return (i*kMax(d )+(gridSize[d]-i)*kMin(d ))/gridSize[d]; };
 		size_t xToI(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    spatialSize[d]    ); };
 		size_t kToI(Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
+// iToX_local,  xToI_local
+// iToX_global, xToI_global
+// start_local, end_local
+// start_global, end_global     ← oczywiście chodzi o globalny układ współrzędnych, nie o globalny pakiet psi
+
 
 		Real start(int d) { return (-spatialSize[d]*0.5 /*    FIXME????? co z tym położeniem?????   +pos[d]  */);};
 		Real end  (int d) { return ( spatialSize[d]*0.5 /*    FIXME????? co z tym położeniem?????   +pos[d]  */);};
@@ -114,6 +122,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		boost::shared_ptr<QMStateDiscreteGlobal>& setPsiGlobal        (boost::shared_ptr<QMStateDiscreteGlobal>& s) { psiGlobal = s; return psiGlobal;};
 		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalNew     ();
 		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalExisting() { if(not psiGlobal) throw std::runtime_error("\n\nERROR: QMStateDiscrete::psiGlobal wanted, but doesn't exist\n\n"); return psiGlobal; };
+		Complexr                                  atPsiGlobalExisting(std::vector<size_t> pos);
 	private:
 		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal; // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
 		//boost::shared_ptr<NDimTable<Complexr>> nDimTable_PSI; // FIXING.... - to zamiast psiGlobal ??

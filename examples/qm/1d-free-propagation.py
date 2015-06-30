@@ -80,3 +80,11 @@ except ImportError:
 
 #O.run(20000)
 
+#### save result for comparison with mathematica
+#
+#ff=open("1d-free-propagation-yade.txt",'w')
+#for i in range(nn.gridSize[0]):
+#    ff.write(str(nn.iToX(i,0))+" "+str((nn.atPsiGlobal([i])).real)+" "+str((nn.atPsiGlobal([i])).imag)+"\n")
+#ff.close()
+
+

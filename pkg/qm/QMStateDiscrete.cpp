@@ -20,12 +20,18 @@ YADE_PLUGIN(
 *********************************************************************************/
 CREATE_LOGGER(QMStateDiscrete);
 // !! at least one virtual function in the .cpp file
+
 QMStateDiscrete::~QMStateDiscrete(){};
 boost::shared_ptr<QMStateDiscreteGlobal>& QMStateDiscrete::getPsiGlobalNew()
 {
 	if(not psiGlobal)
 		psiGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
 	return psiGlobal;
+};
+
+Complexr QMStateDiscrete::atPsiGlobalExisting(std::vector<size_t> pos)
+{
+	return getPsiGlobalExisting()->psiGlobalTable.at(pos);
 };
 
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
