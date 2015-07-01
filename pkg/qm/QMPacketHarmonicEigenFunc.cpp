@@ -58,6 +58,10 @@ Complexr  St1_QMPacketHarmonicEigenFunc::quantumOscillatorWavefunction( // assum
     , Real x          // position
 )
 {
+	if(n>50) {
+		std::cerr << "Too big n= " << n << "\n";
+		return 0;
+	};
 	// FIXME
 	Real mass=1.0;   // mass - mass of particle
 	Real omega=1.0;  // oscillator frequency
@@ -96,6 +100,10 @@ Complexr  St1_QMPacketHarmonicEigenFunc::quantumOscillatorWavefunction( // assum
 
 // FIXME: ↓
 #include <lib/time/TimeLimit.hpp>
+Real St1_QMPacketHarmonicEigenFunc::En(int n)
+{
+	return n+0.5; // FIXME: use hbar, and others.
+};
 
 Complexr St1_QMPacketHarmonicEigenFunc::getValPos(Vector3r pos, const QMParameters* par, const QMState* qms)
 {
@@ -107,12 +115,12 @@ Complexr St1_QMPacketHarmonicEigenFunc::getValPos(Vector3r pos, const QMParamete
 // FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
 
 	switch(par->dim) {
-		case 1 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0));
-		case 2 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0))*
-		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*(p->energyLevel[1]+0.5))*(p->t-p->t0));
-		case 3 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*(p->energyLevel[0]+0.5))*(p->t-p->t0))*
-		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*(p->energyLevel[1]+0.5))*(p->t-p->t0))*
-		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[2],pos[2])*std::exp((-Mathr::I*(p->energyLevel[2]+0.5))*(p->t-p->t0));
+		case 1 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*En(p->energyLevel[0]))*(p->t-p->t0));
+		case 2 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*En(p->energyLevel[0]))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*En(p->energyLevel[1]))*(p->t-p->t0));
+		case 3 : return quantumOscillatorWavefunction((unsigned int)p->energyLevel[0],pos[0])*std::exp((-Mathr::I*En(p->energyLevel[0]))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[1],pos[1])*std::exp((-Mathr::I*En(p->energyLevel[1]))*(p->t-p->t0))*
+		                quantumOscillatorWavefunction((unsigned int)p->energyLevel[2],pos[2])*std::exp((-Mathr::I*En(p->energyLevel[2]))*(p->t-p->t0));
 
 		default: break;
 	}
