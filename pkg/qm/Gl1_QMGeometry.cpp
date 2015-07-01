@@ -723,6 +723,8 @@ void Gl1_NDimTable::drawNDimTable(
 						glColor3v( colorToDraw[draw](col) );
 						for(struct{size_t i;Real x;}_={0,opt->start.x()} ; _.i<data->dim()[0] ; _.i++ , _.x+=opt->step.x() ) {
 							glVertex3d(_.x,0,valueToDraw[draw] ((data->at(_.i))) *scalingFactor);
+							if(drawStyle[draw]()=="bars")
+								glVertex3d(_.x,0, 0);
 						}
 						glEnd();
 					} // else "points"
