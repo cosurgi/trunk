@@ -472,6 +472,7 @@ class NDimTable : private std::vector<K
 				//       a może musze to przesunięcie załatwiac osobno? Przy każdym wywołaniu tej methody, indywidaulnie?
 				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz[_d_]=iToX(pos_i[_d_],_d_);
 				parent::operator[](total_i) = f(xyz);
+//std::cerr << total_i << " " << pos_i[0] << " " << dim_ << " " << xyz[0] << " " << f(xyz) << "\n";
 				increment(pos_i);
 			}
 		};
@@ -521,11 +522,11 @@ class NDimTable : private std::vector<K
 		{
 			static boost::mutex mxFFT_FIXME;
 			boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);// FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
-/*
+
 static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
 if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
-fftw_plan_with_nthreads(16);//omp_get_max_threads());
-*/
+fftw_plan_with_nthreads(2);//omp_get_max_threads());
+
 
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
