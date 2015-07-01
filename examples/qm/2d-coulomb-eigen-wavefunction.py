@@ -41,15 +41,17 @@ O.engines=[
 # 3. potential barrier - as a box with given potential
 
 displayOptions1        = { 'renderWireLight':True,'partsScale':250
-                          ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#		    ,'partsSquared':1
                           ,'renderMaxTime':0.5
                           }
 displayOptions2        = { 'renderWireLight':False,'partsScale':250
                           ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+#		    ,'partsSquared':1
                           ,'renderMaxTime':0.5
                           }
 displayOptionsPot      = { 'renderWireLight':True,'partsScale':250
