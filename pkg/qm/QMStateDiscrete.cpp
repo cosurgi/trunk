@@ -34,6 +34,11 @@ Complexr QMStateDiscrete::atPsiGlobalExisting(std::vector<size_t> pos)
 	return getPsiGlobalExisting()->psiGlobalTable.at(pos);
 };
 
+Real QMStateDiscrete::integratePsiGlobal()
+{
+	return getPsiGlobalExisting()->psiGlobalTable.integrateAllNormSquared(getPsiGlobalExisting()->getSpatialSizeGlobal());
+};
+
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
 {
 	QMStateDiscrete*         qms = static_cast <QMStateDiscrete*>(state.get());

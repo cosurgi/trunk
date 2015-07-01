@@ -68,6 +68,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("isEntangled",&QMStateDiscrete::isEntangled,"Tell if it's entangled")
 			.def("partOfpsiGlobal",&QMStateDiscrete::partOfpsiGlobal,"If it's entangled, tell where it starts.")
 			.def("atPsiGlobal",&QMStateDiscrete::atPsiGlobalExisting,"Return value at given table (grid) position.")
+			.def("integratePsiGlobal",&QMStateDiscrete::integratePsiGlobal,"Return total probability.")
 // FIXME - chciałem żeby at() odnosiło się do tej klasy, a nie globalExisting, a to po to, żebym mógł brać gridSize
 //			.def("getPsiGlobalExisting",&QMStateDiscrete::getPsiGlobalExisting,"Return QMStateDiscreteGlobal.")
 		);
@@ -117,6 +118,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 		size_t partOfpsiGlobal()      { if(whichPartOfpsiGlobal<0) throw std::runtime_error("\n\nQMStateDiscrete::partOfpsiGlobal() ERROR\n\n"); return size_t(whichPartOfpsiGlobal); };
 		size_t partOfpsiGlobalZero()  { if(whichPartOfpsiGlobal<0) return 0; return size_t(whichPartOfpsiGlobal); };
 
+		Real integratePsiGlobal();
 // this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
 		bool                                      getPsiGlobalExists  () { return (bool)(psiGlobal);};
 		boost::shared_ptr<QMStateDiscreteGlobal>& setPsiGlobal        (boost::shared_ptr<QMStateDiscreteGlobal>& s) { psiGlobal = s; return psiGlobal;};
