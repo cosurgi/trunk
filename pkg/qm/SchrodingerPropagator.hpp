@@ -93,6 +93,7 @@ found in [TalEzer1984]_"
 			, // attributes, public variables
 			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
 			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
+			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
@@ -110,6 +111,7 @@ found in [TalEzer1984]_"
 		// FIXME są różne typy, to jest podejrzane. Może w QMIPhys wystarczy trzymać NDimTable, a nie całe QMStateDiscreteGlobal ?
 		NDimTable<Complexr>                      get_full_potentialInteractionGlobal_psiGlobalTable();
 		boost::shared_ptr<QMStateDiscreteGlobal> get_full_psiGlobal__________________psiGlobalTable();
+		void virialTheorem_Grid_check();
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 

@@ -103,6 +103,12 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 
 	//if(allPotentials.size() == 0)	return 0;
 	//NDimTable<Complexr>& Vpsi=(*(allPotentials.begin()))->psiGlobalTable;
+
+//	for(int i=0;i<Vpsi.dim()[0];i++)
+//		std::cerr << i << " " << Vpsi.at(i,Vpsi.dim()[0]/2) << "\n";
+//	for(int i=0;i<Vpsi.dim()[0];i++)
+//		std::cerr << i << " " << Vpsi.at(i) << "\n";
+
 	return std::move(Vpsi);
 };
 
@@ -131,6 +137,20 @@ boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_
 		exit(1);
 	}
 	return *allPsiGlobals.begin();
+};
+
+// Virial theorem: 2*<E_kin> = -<E_pot>
+
+void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
+{
+	if(virialCheck) {
+		Real E_pot = abs(eMin()); // FIXME - tu powinna być liczona średnia! A nie MAX.
+		Real E_kin = abs(eMax()); // FIXME - tu powinna być liczona średnia! A nie MAX.
+		if(2*E_kin > E_pot) {
+			std::cerr << "ERROR: too big potential energy for this gridsize\n";
+			//exit(0);
+		};
+	};
 };
 
 Real SchrodingerKosloffPropagator::eMin()
@@ -214,6 +234,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 
 void SchrodingerKosloffPropagator::action()
 {
+	virialTheorem_Grid_check(); // FIXME - to powinno być chyba zależne od potencjału...
 	timeLimit.readWallClock();
 	Real R   = calcKosloffR(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real G   = calcKosloffG(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
