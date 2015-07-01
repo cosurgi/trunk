@@ -88,9 +88,12 @@ class St1_QMPacketHydrogenEigenFunc: public St1_QMStateAnalytic
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
 
-		vector<boost::rational<signed long> > hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
-		vector<boost::rational<signed long> > hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
-		Complexr  quantumOscillatorWavefunction(unsigned int,Real); // FIXME: assume hbar=1, mass=1, frequency=1
+		Real      En_1D      (int n);
+		Real      En_2D      (int n);
+		Real      En_3D      (int n);
+		Complexr  quantumHydrogenWavefunction_1D(int n, bool even    , Real x);         // FIXME: assume hbar=1, mass=1
+		Complexr  quantumHydrogenWavefunction_2D(int n, int  l       , Real x, Real y); // FIXME: assume hbar=1, mass=1, frequency=1
+		Complexr  quantumHydrogenWavefunction_3D(int n, int  l, int m, Vector3r xyz); // FIXME: assume hbar=1, mass=1, frequency=1
 };
 REGISTER_SERIALIZABLE(St1_QMPacketHydrogenEigenFunc);
 

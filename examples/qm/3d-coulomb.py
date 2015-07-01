@@ -2,22 +2,23 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 3
-size1d   = 5
+size1d    = 20
 halfSize  = [size1d,size1d*1.2,size1d]
+GRIDSIZE  = [3*32,3*32,3*32]
 
 # wavepacket parameters
-k0_x         = 1
+k0_x         = 0
 k0_y         = 0
 k0_z         = 0
 gaussWidth_x = 0.7
 gaussWidth_y = 0.7
 gaussWidth_z = 0.7
-potentialCoefficient= [2,2,2]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
 potentialHalfSize = halfSize # FIXME: size ??
-potentialValue    = 0.0
+potentialCoefficient= [-1,0,0]
+potentialMaximum    = 20;
 
 O.engines=[
 	StateDispatcher([
@@ -53,7 +54,7 @@ analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'gridSize':[24,24,24]}
+gaussPacketArg         = {'x0':[2,0,0],'t0':0,'k0':[k0_x,k0_y,k0_z],'a0':[gaussWidth_x,gaussWidth_y,gaussWidth_z],'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved

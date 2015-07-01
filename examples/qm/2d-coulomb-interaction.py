@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size1d   = 6
+size1d   = 5
 halfSize1 = [size1d,size1d,0.1]
 halfSize2 = halfSize1
+GRIDSIZE  = [16,16]
 
 # wavepacket parameters
 k0_x         = 0
 k0_y         = 0
 gaussWidth_x = 1.5
 gaussWidth_y = 1.5
-potentialCoefficient= [2.0,2.0,0.5]
+potentialCoefficient1= [-2.0,0,0]
+potentialCoefficient2= [ 2.0,0,0]
 
 
 O.engines=[
@@ -29,12 +31,12 @@ O.engines=[
 	SchrodingerKosloffPropagator(),
 ]
 
-displayOptions1        = { 'partsScale':30,'partsSquared':1
+displayOptions1        = { 'partsScale':70,'partsSquared':1
                           ,'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'renderMaxTime':0.5}
-displayOptions2        = { 'partsScale':30,'partsSquared':1
+displayOptions2        = { 'partsScale':70,'partsSquared':1
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -42,16 +44,16 @@ displayOptions2        = { 'partsScale':30,'partsSquared':1
 
 body0           = QMBody()
 body0.shape     = QMGeometry(extents=halfSize1,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions1)])
-body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
+body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient1)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-body0.state     = QMPacketGaussianWave(x0=[-1,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[64,64]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body0.state     = QMPacketGaussianWave(x0=[-1,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
 O.bodies[nid].state.setNumeric()
 
 body1           = QMBody()
 body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.0],displayOptions=[QMDisplayOptions(**displayOptions2)])
-body1.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
-body1.state     = QMPacketGaussianWave(x0=[1,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[64,64]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body1.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient2)
+body1.state     = QMPacketGaussianWave(x0=[1,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body1)
 O.bodies[nid].state.setNumeric()
 

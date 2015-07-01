@@ -2,19 +2,18 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d   = 20
+size1d    = 60
 halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
-
-# wavepacket parameters
-k0_x       = 2
-gaussWidth = 1
+GRIDSIZE  = 2**10
 
 # potential parameters
-potentialCenter   = [ 0.0,0  ,0  ]
-potentialHalfSize = Vector3(size1d,3,3)
-potentialCoefficient= [0.5,0.5,0.5]
+potentialCenter      = [ 0 ,0  ,0  ]
+potentialHalfSize    = Vector3(size1d,3,3)
+potentialCoefficient = [-1,0,0]
+potentialMaximum     = 1000;
 
-coulombOrder     = 15
+hydrogenEigenFunc_n   = 2
+hydrogenEigenFunc_odd = 1
 
 O.engines=[
 	StateDispatcher([
@@ -29,15 +28,15 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(steps=-1 ), # auto
+	SchrodingerAnalyticPropagator(),
 ]
 
 stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
-displayOptionsPot= { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']}
+                    ,'partReal':['default nodes', 'hidden', 'nodes', 'points', 'wire', 'surface']}
 
 ## Create:
 # 1. analytical gauss packet - only use it to initialise the discrete packet
@@ -48,13 +47,13 @@ displayOptionsPot= { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+     QMDisplayOptions(renderWireLight=False,partsScale=10,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
                       ,renderFFTScale=(4,1,1)
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[coulombOrder,0,0],'gridSize':[2**10]}
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'gridSize':[GRIDSIZE]}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()     # is propagated as analytical solution - no calculations involved
@@ -62,7 +61,7 @@ O.bodies[nid].state.setAnalytic()     # is propagated as analytical solution - n
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+     QMDisplayOptions(renderWireLight=False,partsScale=10,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
                       ,renderFFTScale=(4,1,1)
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
@@ -82,13 +81,13 @@ potentialBody.shape     = QMGeometry(extents=potentialHalfSize,step=[0.2,0.1,0.1
                       ,renderFFTScale=(4,1,0.02)
                       ,**displayOptionsPot)
 ])
-potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient,potentialMaximum=potentialMaximum)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.002
+O.dt=.2
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -96,7 +95,8 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
+	Gl1_QMGeometry().analyticUsesStepOfDiscrete=True
+	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
 	qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("1D eigenwavefunction in Coulomb potential")

@@ -2,17 +2,19 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d   = 20
+size1d   = 50
 halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
+GRIDSIZE = 2**11
 
 # wavepacket parameters
-k0_x       = 6
+k0_x       = 0.7
 gaussWidth = 0.5
 
 # potential parameters
-potentialCenter   = [ 0.0,0  ,0  ]
+potentialCenter   = [ 0 ,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)
-potentialCoefficient= [0.5,0.5,0.5]
+potentialCoefficient= [-20,0,0]
+potentialMaximum    = 20;
 
 O.engines=[
 	StateDispatcher([
@@ -32,9 +34,12 @@ O.engines=[
 
 stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
-displayOptions   = { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions   = { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']}
+                    ,'partReal':['default nodes', 'hidden', 'nodes', 'bars', 'points', 'wire', 'surface']}
+displayOptionsFFT= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default bars', 'hidden', 'nodes', 'bars', 'points', 'wire', 'surface']
+                    ,'partReal':['default nodes', 'hidden', 'nodes', 'bars', 'points', 'wire', 'surface']}
 
 
 ## Create:
@@ -46,7 +51,7 @@ displayOptions   = { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10]}
+gaussPacketArg         = {'x0':[-3,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[GRIDSIZE]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
@@ -54,7 +59,7 @@ analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,0), Quaternion((1,0,0),0)))
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 numericalBody.material  = analyticBody.material
@@ -66,10 +71,10 @@ O.bodies[nid].state.setNumeric()      # is being propagated by SchrodingerKoslof
 ## 3: The box with potential
 potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
-     QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)
-    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
+     QMDisplayOptions(stepRender=stepRenderHide,partsScale=1,**displayOptions)
+#    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)),**displayOptionsFFT)
 ])
-potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient,potentialMaximum=potentialMaximum)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
@@ -90,11 +95,12 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("1D gaussian packet in Coulomb potential")
+	qt.View()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 except ImportError:
 	pass
 

@@ -5,10 +5,6 @@ dimensions= 1
 size1d   = 20
 halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
 
-# wavepacket parameters
-k0_x       = 2
-gaussWidth = 1
-
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)

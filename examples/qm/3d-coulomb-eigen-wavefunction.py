@@ -2,17 +2,23 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 3
-size1d   = 5
+
+
+size1d    = 40
+GRIDSIZE  = [3*32,3*32,3*32]
+#GRIDSIZE  = [32,32,32]
+#GRIDSIZE  = [24,24,24]
 halfSize  = [size1d,size1d*1.2,size1d*1.3]           # FIXME: halfSize  = [size1d,size1d*1.5]
 
 # potential parameters
-potentialCenter   = [ 0  ,0  ,0  ]
-potentialHalfSize = halfSize
-potentialCoefficient= [0.5,0.5,0.5]
+potentialCenter      = [ 0  ,0  ,0  ]
+potentialHalfSize    = halfSize
+potentialCoefficient = [-1,0,0] # FIXMEatomowe
+potentialMaximum     = -1000; # negative puts ZERO at center, positive - puts this value.
 
-coulombOrder_x   = 0
-coulombOrder_y   = 1
-coulombOrder_z   = 0
+hydrogenEigenFunc_n   = 2
+hydrogenEigenFunc_l   = 1
+hydrogenEigenFunc_m   = 1
 
 
 O.engines=[
@@ -28,8 +34,8 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerAnalyticPropagator(),
 	SchrodingerKosloffPropagator(),
+	SchrodingerAnalyticPropagator(),
 ]
 
 ## Create:
@@ -37,12 +43,20 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-displayOptions   = { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions1  = { 'renderWireLight':True
+                    ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
 		    ,'partsSquared':1
-		    ,'threshold3D':0.01}
+		    ,'threshold3D':0.001}
+displayOptions2  = { 'renderWireLight':False
+                    ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default frame","hidden","frame","stripes","mesh"]
+		    ,'partsSquared':1
+		    ,'threshold3D':0.001}
 
 displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -53,16 +67,16 @@ displayOptionsPot= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'poin
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.groupMask = 2
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions)])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[coulombOrder_x, coulombOrder_y, coulombOrder_z],'gridSize':[16,16,16]}
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l,hydrogenEigenFunc_m],'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()      # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions)])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions2)])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
@@ -78,7 +92,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.02
+O.dt=.5
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

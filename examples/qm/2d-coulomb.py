@@ -2,20 +2,21 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size1d   = 10
-halfSize  = [size1d*2,size1d*1.2,0.1]
+size1d   = 30
+halfSize  = [size1d,size1d,0.1]
 
 # wavepacket parameters
-k0_x         = 3
-k0_y         = 2
-gaussWidth_x = 1.0
-gaussWidth_y = 2.0
-potentialCoefficient= [0.2,0.5,0.5]
+k0_x         = 0.0
+k0_y         = 0.0
+gaussWidth_x = 0.5
+gaussWidth_y = 0.5
+potentialCoefficient= [-20,0,0]
+potentialMaximum    = 20;
+GRIDSIZE = [2**8 ,2**8 ]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
 potentialHalfSize = halfSize # size ??
-potentialValue    = 0.0
 
 O.engines=[
 	StateDispatcher([
@@ -33,9 +34,14 @@ O.engines=[
 	SchrodingerKosloffPropagator(),
 ]
 
-displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions   = { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+                    }
+displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
                     }
 
@@ -43,14 +49,14 @@ displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points'
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,2,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'gridSize':[2**7,2**6]}
+gaussPacketArg         = {'x0':[-3,5,0],'t0':0,'k0':[k0_x,k0_y,0],'a0':[gaussWidth_x,gaussWidth_y,0],'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
-numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(partsScale=10,renderWireLight=True)])
+numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(partsScale=10,renderWireLight=True,**displayOptions)])
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(numericalBody)
@@ -58,14 +64,14 @@ O.bodies[nid].state.setNumeric()          # is being propagated by SchrodingerKo
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],wire=True,displayOptions=[QMDisplayOptions(partsScale=-10,**displayOptionsPot)])
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],wire=True,displayOptions=[QMDisplayOptions(partsScale=1,**displayOptionsPot)])
 potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.1
+O.dt=.01
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

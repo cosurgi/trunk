@@ -2,17 +2,18 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d   = 60
+size1d   = 30
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
-GRIDSIZE  = 128
+GRIDSIZE  = 256
 
 # wavepacket parameters
 k0_x         = 0
 k0_y         = 0
 gaussWidth_x = 1.0
 gaussWidth_y = 0.0
-potentialCoefficient= [2.0,0.5,0.5]
+potentialCoefficient1= [-2.0,0.5,0.5]
+potentialCoefficient2= [ 2.0,0.5,0.5]
 
 
 O.engines=[
@@ -52,7 +53,7 @@ body0.shape     = QMGeometry(extents=halfSize1,color=[0.8,0.8,0.8],displayOption
     #                  ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0))
     #                  ,renderFFTScale=(4,1,1)
 ])
-body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
+body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient1)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
 body0.state     = QMPacketGaussianWave(x0=[-1,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[GRIDSIZE]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
@@ -68,7 +69,7 @@ body1.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[
     ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
     ,QMDisplayOptions(partsScale=10,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
 ])
-body1.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient)
+body1.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient2)
 
 ## FIXME - przetestować w mathematica z różnie przesuniętymi względem siebie siatkami i różnym rozstawem siatek.
 ##         głównie chodzi o to, żeby węzły siatek się nie nakrywały.
@@ -78,7 +79,7 @@ body1.state     = QMPacketGaussianWave(x0=[1,0,0],t0=0,k0=[-k0_x,-k0_y,0],a0=[ga
 nid=O.bodies.append(body1)
 O.bodies[nid].state.setNumeric()
 
-O.dt=.05
+O.dt=.02
 
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'

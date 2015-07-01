@@ -2,16 +2,20 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size1d   = 10
-halfSize  = [size1d,size1d*1.5,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
+#size1d    =  8000         # bardzo wysokie n
+#GRIDSIZE  = [2**15,2**15] # bardzo wysokie n
+size1d    =  80
+GRIDSIZE  = [2**7,2**7]
+halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
 
 # potential parameters
-potentialCenter   = [ 0  ,0  ,0  ]
-potentialHalfSize = halfSize
-potentialCoefficient= [0.5,0.5,0.5]
+potentialCenter      = [ 0 ,0  ,0  ]
+potentialHalfSize    = halfSize
+potentialCoefficient = [-0.5,0,0] # FIXMEatomowe
+potentialMaximum     = -1000; # negative puts ZERO at center, positive - puts this value.
 
-coulombOrder_x   = 0
-coulombOrder_y   = 1
+hydrogenEigenFunc_n   = 3
+hydrogenEigenFunc_l   = 1
 
 
 O.engines=[
@@ -27,8 +31,8 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
+	SchrodingerKosloffPropagator(steps=-1,virialCheck=False), # auto
 	SchrodingerAnalyticPropagator(),
-	SchrodingerKosloffPropagator(steps=-1 ), # auto
 ]
 
 ## Create:
@@ -36,25 +40,23 @@ O.engines=[
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-displayOptions1        = { 'partsScale':10
-                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'renderMaxTime':0.5
-                          ,'renderWireLight':True
-                          }
-displayOptions2        = { 'partsScale':10
-                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions1        = { 'renderWireLight':True,'partsScale':250
+                          ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'renderMaxTime':0.5
-                          ,'renderWireLight':True
                           }
-displayOptionsPot      = { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayOptions2        = { 'renderWireLight':False,'partsScale':250
+                          ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                          ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'renderMaxTime':0.5
+                          }
+displayOptionsPot      = { 'renderWireLight':True,'partsScale':250
+                          ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
-                          ,'renderWireLight':True
                           }
 
 ## 1: Analytical packet
@@ -62,7 +64,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[coulombOrder_x, coulombOrder_y, 0],'gridSize':[2**6,2**7]}
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l, 0],'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
@@ -78,14 +80,14 @@ O.bodies[nid].state.setNumeric()        # is being propagated by SchrodingerKosl
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(partsScale=-10,**displayOptionsPot)])
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(**displayOptionsPot)])
 potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 id_H=O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.02
+O.dt=0.5
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -99,7 +101,8 @@ try:
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
-	Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
+	Gl1_QMGeometry().analyticUsesStepOfDiscrete=True
+	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
 	O.bodies[id_H].shape.displayOptions[0].step=[2.0,2.0,2.0]
 except ImportError:
 	pass
