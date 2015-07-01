@@ -8,6 +8,11 @@ std::string menuSelection(const Menu& m)
 	if(m.size()==0)
 		return "";
 	else
-		return m[0].substr(8);
+		if(m[0].size()>7) {
+			return m[0].substr(8);
+		} else {
+			std::cerr << "Menu.cpp has problems\n";
+			return "";
+		}
 };
 
