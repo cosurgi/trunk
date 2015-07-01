@@ -50,7 +50,9 @@ QMStPotentialCoulomb::~QMStPotentialCoulomb(){};
 * Q M   S T A T E    H A R M O N I C   F U N C T O R         QMStPotentialCoulomb
 *
 *********************************************************************************/
-
+// FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME - zrobić diff z QMPotentialHarmonic 
+// FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME - zrobić diff z QMPotentialHarmonic 
+// FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME, FIXME - zrobić diff z QMPotentialHarmonic 
 Complexr St1_QMStPotentialCoulomb::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
 {
 	//const QMStPotentialCoulomb*        state = static_cast <const QMStPotentialCoulomb*>(qms);
@@ -58,13 +60,18 @@ Complexr St1_QMStPotentialCoulomb::getValPos(Vector3r pos , const QMParameters* 
 	if(not harmonic) { throw std::runtime_error("\n\nERROR: St1_QMStPotentialCoulomb nas no QMParametersCoulomb, but rather `"
 		+std::string(pm?pm->getClassName():"")+"`.\n\n");};
 	Real x =pos[0]                  ,y =pos[1]                  ,z =pos[2];
-	Real Cx=harmonic->coefficient[0],Cy=harmonic->coefficient[1],Cz=harmonic->coefficient[2];
+	Real Cx=harmonic->coefficient[0];//,Cy=harmonic->coefficient[1],Cz=harmonic->coefficient[2];
+	Real MAXinv=abs(1.0/harmonic->potentialMaximum); // FIXME musiałem tak zrobić, ponieważ gdy próbowałem w 1d-coulomb.py wpisać 
+	                     //       `potentialCenter   = [ 0.01 ,0  ,0  ]` to powodowało to przesunięcie całeś siatki, i owszem - liczyło się, ponieważ
+			     //        węzły siatki potencjału rozmijały się z węzłami cząstki, więc nie było dzielenia przez zero, ale w samej siatce
+			     //        i tak było dzielenie przez zero (chyba?!?!) bo to cała siatka była przesunięta - chwycona za środek i przesunięta
+	Real r  =0;
 	switch(harmonic->dim) {
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysCoulomb
 //        but then - the potential itself shall be drawn just like before: as a Box ??
-		case 1 : return Cx*x*x;
-		case 2 : return Cx*x*x+Cy*y*y;
-		case 3 : return Cx*x*x+Cy*y*y+Cz*z*z;
+		case 1 : r=std::abs(x);            if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
+		case 2 : r=std::sqrt(x*x+y*y);     if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
+		case 3 : r=std::sqrt(x*x+y*y+z*z); if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
 		default: break;
 	};
 	throw std::runtime_error("\n\nSt1_QMStPotentialCoulomb::getValPos - wrong number of dimensions.\n\n");
@@ -113,6 +120,7 @@ void Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb::go(
 	const QMParametersCoulomb* qm2 = static_cast<QMParametersCoulomb*>(m2.get());
 
 	pot->coefficient = qm2->coefficient;
+	pot->potentialMaximum= qm2->potentialMaximum;
 }
 
 void Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb::goReverse(

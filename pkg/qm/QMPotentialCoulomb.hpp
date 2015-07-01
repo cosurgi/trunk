@@ -25,6 +25,7 @@ class QMParametersCoulomb: public QMParameters
 			//((Real     QMParameters::hbar
 			//((size_t   QMParameters::dim 
 			  ((Vector3r,coefficient,Vector3r(0.5,0.5,0.5),,"Coulomb potential: V(r)=coefficient/r"))
+			  ((Real    ,potentialMaximum,100,,"Coulomb potential limit, to prevent division by zero. This value is a value of maximum allowed potential. When it is positive, then this value is used (times coefficient), when it is negative then ZERO is used."))
 			, // constructor
 			  createIndex();
 	);
@@ -123,6 +124,7 @@ class QMIPhysCoulomb: public QMIPhys
 			, "QMIPhysCoulomb is the physical parameters concerning interaction happening between particle and a harmonic potential" // class description
 			, // attributes, public variables
 			  ((Vector3r,coefficient,Vector3r(0.5,0.5,0.5),Attr::readonly,"Coulomb potential: V(r)=coefficient/r, initialised from QMParametersCoulomb"))
+			  ((Real    ,potentialMaximum,100,Attr::readonly,"Coulomb potential limit, to prevent division by zero"))
 			, // constructor
 			createIndex();
 			, // python bindings
