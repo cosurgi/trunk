@@ -61,6 +61,12 @@ using std::ostringstream;
 using std::istringstream;
 using std::swap;
 using std::make_pair;
+using std::sqrt;
+using std::pow;
+using std::abs;
+using std::exp;
+using std::atan2;
+using std::acos;
 
 #include <boost/lexical_cast.hpp>
 #include <boost/python.hpp>
@@ -166,6 +172,7 @@ struct Math{
 	static const Scalar E;
 	static const Scalar HALF_PI;
 	static const Scalar TWO_PI;
+	static const Scalar SQRT_TWO_PI;
 	static const Scalar MAX_REAL;
 	static const Scalar DEG_TO_RAD;
 	static const Scalar RAD_TO_DEG;
