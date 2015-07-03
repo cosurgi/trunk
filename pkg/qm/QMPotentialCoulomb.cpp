@@ -69,9 +69,12 @@ Complexr St1_QMStPotentialCoulomb::getValPos(Vector3r pos , const QMParameters* 
 	switch(harmonic->dim) {
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysCoulomb
 //        but then - the potential itself shall be drawn just like before: as a Box ??
-		case 1 : r=std::abs(x);            if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
-		case 2 : r=std::sqrt(x*x+y*y);     if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
-		case 3 : r=std::sqrt(x*x+y*y+z*z); if(r>MAXinv) return Cx/r; else return (MAXinv>0)?(Cx/MAXinv):0;
+		case 1 : return Cx/std::abs(x);            //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		case 2 : return Cx/std::sqrt(x*x+y*y);     //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		case 3 : return Cx/std::sqrt(x*x+y*y+z*z); //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		//case 1 : r=std::abs(x);            if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		//case 2 : r=std::sqrt(x*x+y*y);     if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		//case 3 : r=std::sqrt(x*x+y*y+z*z); if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
 		default: break;
 	};
 	throw std::runtime_error("\n\nSt1_QMStPotentialCoulomb::getValPos - wrong number of dimensions.\n\n");

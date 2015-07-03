@@ -4,18 +4,19 @@
 dimensions= 2
 #size1d    =  8000         # bardzo wysokie n
 #GRIDSIZE  = [2**15,2**15] # bardzo wysokie n
-size1d    =  80
-GRIDSIZE  = [2**7,2**7]
+SC        = 8
+size1d    =  40*SC
+GRIDSIZE  = [SC*2**8,SC*2**8]
 halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
 
 # potential parameters
 potentialCenter      = [ 0 ,0  ,0  ]
 potentialHalfSize    = halfSize
 potentialCoefficient = [-0.5,0,0] # FIXMEatomowe
-potentialMaximum     = -1000; # negative puts ZERO at center, positive - puts this value.
+potentialMaximum     = -10000; # negative puts ZERO at center, positive - puts this value.
 
-hydrogenEigenFunc_n   = 3
-hydrogenEigenFunc_l   = 1
+hydrogenEigenFunc_n   = 1
+hydrogenEigenFunc_l   = 0
 
 
 O.engines=[
@@ -83,13 +84,13 @@ O.bodies[nid].state.setNumeric()        # is being propagated by SchrodingerKosl
 ## 3: The box with potential
 potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(**displayOptionsPot)])
-potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient,potentialMaximum=potentialMaximum)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 id_H=O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=0.5
+O.dt=10
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

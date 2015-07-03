@@ -105,9 +105,9 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 	//NDimTable<Complexr>& Vpsi=(*(allPotentials.begin()))->psiGlobalTable;
 
 //	for(int i=0;i<Vpsi.dim()[0];i++)
-//		std::cerr << i << " " << Vpsi.at(i,Vpsi.dim()[0]/2) << "\n";
-//	for(int i=0;i<Vpsi.dim()[0];i++)
 //		std::cerr << i << " " << Vpsi.at(i) << "\n";
+//	for(int i=0;i<Vpsi.dim()[0];i++)
+//		std::cerr << i << " " << Vpsi.at(i,Vpsi.dim()[0]/2) << "\n";
 
 	return std::move(Vpsi);
 };

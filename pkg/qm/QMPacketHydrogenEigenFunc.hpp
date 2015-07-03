@@ -61,6 +61,7 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			, // attributes, public variables
 			((Vector3i ,energyLevel,Vector3i::Zero(),,"Energy level 'n' in xyz-directions of quantum harmonic oscillator"))
 			((Real     ,t0  ,0                      ,,"Initial time for generated wave packet"))
+			((Vector3r ,x0  ,Vector3r::Zero()        ,,"Initial wave packet center at $t=0$"))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();

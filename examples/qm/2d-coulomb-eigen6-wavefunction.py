@@ -84,7 +84,7 @@ O.bodies[nid].state.setNumeric()        # is being propagated by SchrodingerKosl
 ## 3: The box with potential
 potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],displayOptions=[QMDisplayOptions(**displayOptionsPot)])
-potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
+potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient,potentialMaximum=potentialMaximum)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 id_H=O.bodies.append(potentialBody)
 

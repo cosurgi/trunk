@@ -7,10 +7,10 @@ halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
 GRIDSIZE  = 2**10
 
 # potential parameters
-potentialCenter      = [ 0 ,0  ,0  ]
+potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialCoefficient = [-1,0,0]
-potentialMaximum     = 1000;
+potentialMaximum     = -1000000;
 
 hydrogenEigenFunc_n   = 2
 hydrogenEigenFunc_odd = 1
@@ -36,7 +36,7 @@ stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
 displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default nodes', 'hidden', 'nodes', 'points', 'wire', 'surface']}
+                    ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']}
 
 ## Create:
 # 1. analytical gauss packet - only use it to initialise the discrete packet
@@ -53,7 +53,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],display
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'gridSize':[GRIDSIZE]}
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'x0':potentialCenter,'gridSize':[GRIDSIZE]}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()     # is propagated as analytical solution - no calculations involved
