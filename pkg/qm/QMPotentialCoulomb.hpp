@@ -266,3 +266,52 @@ class Law2_QMIGeom_QMIPhysCoulombParticles: public Law2_QMIGeom_QMIPhys_GlobalWa
 
 REGISTER_SERIALIZABLE(Law2_QMIGeom_QMIPhysCoulombParticles);
 
+/*********************************************************************************
+*
+* Ip2   QMParticleCoulomb   QMParametersCoulomb  →  QMIPhysCoulombParticles
+*
+*********************************************************************************/
+
+/*! @brief When two QMParticleCoulomb collide, the info about potential coefficients is needed
+ *
+ *  Important note: every Ip2_2xQMParameters_QMIPhys must call its parent's go() method so that
+ *  the higher level stuff gets taken care of.
+ */
+
+class Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles: public Ip2_2xQMParameters_QMIPhys
+{
+	public:
+		virtual void go       (const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&);
+		virtual void goReverse(const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&);
+	YADE_CLASS_BASE_DOC(Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles,Ip2_2xQMParameters_QMIPhys
+	  ,"Create (or update) physical parameters of the interaction between two :yref:`QMParticleCoulomb`, hbar, dimension (parent) + harmonic potentials coefficients.");
+	FUNCTOR2D(QMParticleCoulomb,QMParametersCoulomb);
+	DEFINE_FUNCTOR_ORDER_2D(QMParticleCoulomb,QMParametersCoulomb);
+	DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles);
+
+/*********************************************************************************
+*
+* Law2   QMIGeom + QMIPhysCoulombParticles  :  freeely propagating hydrogen
+*
+*********************************************************************************/
+
+/*! @brief .....
+ *
+ *  FIXME !!!!!!!!.
+ */
+
+class Law2_QMIGeom_QMIPhysCoulombParticlesFree: public Law2_QMIGeom_QMIPhys_GlobalWavefunction
+{
+	public:
+		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
+		FUNCTOR2D(QMIGeom,QMIPhys);
+		YADE_CLASS_BASE_DOC(Law2_QMIGeom_QMIPhysCoulombParticlesFree,Law2_QMIGeom_QMIPhys_GlobalWavefunction,
+		"Handle quantum interaction described by :yref:`QMIGeom` and :yref:`QMIPhysCoulombParticles`.");
+		DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Law2_QMIGeom_QMIPhysCoulombParticlesFree);
+

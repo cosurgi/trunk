@@ -3,6 +3,7 @@
 #pragma once
 
 #include "QMStateAnalytic.hpp"
+#include "QMPacketGaussianWave.hpp"
 
 /*********************************************************************************
 *
@@ -97,4 +98,60 @@ class St1_QMPacketHydrogenEigenFunc: public St1_QMStateAnalytic
 };
 REGISTER_SERIALIZABLE(St1_QMPacketHydrogenEigenFunc);
 
+
+/*********************************************************************************
+*
+* Q U A N T U M   H Y D R O G E N  -  F R E E   P R O P A G A T I N G
+* 
+*********************************************************************************/
+
+class QMPacketHydrogenEigenGaussianWave: public QMStateAnalytic
+{
+	public:
+		virtual ~QMPacketHydrogenEigenGaussianWave();
+		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
+			  // class name
+			QMPacketHydrogenEigenGaussianWave
+			, // base class
+			QMStateAnalytic
+			, // class description
+// FIXME, FIXME, FIXME, FIXME, FIXME - bad description!!!
+"This is a wave function $\\psi$ initialized as a quantum harmonic oscillator at given energy level n using folllowing forumla:\n\n\
+"
+// FIXME, FIXME, FIXME, FIXME, FIXME - bad description!!!
+			, // attributes, public variables
+			((shared_ptr<QMPacketHydrogenEigenFunc> ,hydrogenEigenFunc,,,"Hydrogen eigenfunction that is propagating freely"))
+			((shared_ptr<QMPacketGaussianWave>      ,gaussianWave     ,,,"Freely propagating packet"))
+			, // additional initializers (for references)
+			, // constructor
+			createIndex();
+			, // python bindings
+		);
+		REGISTER_CLASS_INDEX(QMPacketHydrogenEigenGaussianWave,QMStateAnalytic);
+};
+REGISTER_SERIALIZABLE(QMPacketHydrogenEigenGaussianWave);
+
+
+/*********************************************************************************
+*
+* H Y D R O G E N  -  F R E E   P R O P A G A T I N G   F U N C T O R
+*
+*********************************************************************************/
+
+class St1_QMPacketHydrogenEigenGaussianWave: public St1_QMStateAnalytic
+{
+	public:
+		virtual ~St1_QMPacketHydrogenEigenGaussianWave();
+		FUNCTOR1D(QMPacketHydrogenEigenGaussianWave);
+		YADE_CLASS_BASE_DOC(St1_QMPacketHydrogenEigenGaussianWave /* class name */, St1_QMStateAnalytic /* base class */
+			, "Functor creating :yref:`QMPacketHydrogenEigenGaussianWave` from :yref:`QMParameters`." // class description
+		);
+		//! return complex quantum aplitude at given positional representation coordinates
+		virtual Complexr getValPos_2particles(Vector3r xyz1, Vector3r xyz2, const QMParameters* par1, const QMParameters* par2, const QMState* qms);
+	private:
+//		Complexr  quantumFreePropagatingHydrogen_1D(int n, bool even    , Real x);         // FIXME: assume hbar=1, mass=1
+//		Complexr  quantumFreePropagatingHydrogen_2D(int n, int  l       , Real x, Real y); // FIXME: assume hbar=1, mass=1, frequency=1
+//		Complexr  quantumFreePropagatingHydrogen_3D(int n, int  l, int m, Vector3r xyz);   // FIXME: assume hbar=1, mass=1, frequency=1
+};
+REGISTER_SERIALIZABLE(St1_QMPacketHydrogenEigenGaussianWave);
 

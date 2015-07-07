@@ -11,6 +11,7 @@ using boost::math::spherical_harmonic;
 YADE_PLUGIN(
 	(QMPacketHydrogenEigenFunc)
 	(St1_QMPacketHydrogenEigenFunc)
+	(QMPacketHydrogenEigenGaussianWave)
 	);
 
 /*********************************************************************************
@@ -136,4 +137,51 @@ Complexr St1_QMPacketHydrogenEigenFunc::getValPos(Vector3r pos, const QMParamete
 	}
 	throw std::runtime_error("\n\n St1_QMPacketHydrogenEigenFunc::getValPos() works only in 1, 2 or 3 dimensions.\n\n");
 };
+
+/*********************************************************************************
+*
+* Q U A N T U M   H Y D R O G E N  -  F R E E   P R O P A G A T I N G
+* 
+*********************************************************************************/
+
+CREATE_LOGGER(QMPacketHydrogenEigenGaussianWave);
+// !! at least one virtual function in the .cpp file
+QMPacketHydrogenEigenGaussianWave::~QMPacketHydrogenEigenGaussianWave(){};
+
+St1_QMPacketHydrogenEigenGaussianWave::~St1_QMPacketHydrogenEigenGaussianWave(){};
+
+Complexr St1_QMPacketHydrogenEigenGaussianWave::getValPos_2particles(
+	  Vector3r xyz1, Vector3r xyz2
+	, const QMParameters* par1, const QMParameters* par2
+	, const QMState* qms)
+{
+	const QMPacketHydrogenEigenGaussianWave* p = static_cast<const QMPacketHydrogenEigenGaussianWave*>(qms);
+	const QMPacketHydrogenEigenFunc*         hydr = dynamic_cast<const QMPacketHydrogenEigenFunc*>(p->hydrogenEigenFunc.get());
+	const QMPacketGaussianWave*              gaus = dynamic_cast<const QMPacketGaussianWave*>     (p->gaussianWave.get());
+// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
+	static TimeLimit timeLimit; if(timeLimit.messageAllowed(10))
+	std::cerr << "St1_QMPacketHydrogenEigenGaussianWave: Muszę dodać hbar oraz m i 'omega' ?? do listy argumentów. Skąd brać omega, btw? Nowa klasa QMParameters ← QMOscillator w którym byłaby częstotliwość omega??\n";
+// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
+	if(not hydr or not gaus) {
+		if(timeLimit.messageAllowed(10)) std::cerr << "\n\nSt1_QMPacketHydrogenEigenGaussianWave dynamic_cast error\n";
+		return 0;
+	}
+
+	St1_QMPacketHydrogenEigenFunc st1_Hydr;
+	St1_QMPacketGaussianWave      st1_Gauss;
+
+//	switch(par->dim) {
+//		case 1 : return hydr->getValPos()*gaus->getValPos();
+//		case 2 : return hydr->getValPos()*gaus->getValPos();
+//		case 3 : return hydr->getValPos()*gaus->getValPos();
+//
+//		default: break;
+//	}
+
+	return st1_Hydr.getValPos(xyz1-xyz2,par1,hydr)*st1_Gauss.getValPos((xyz1+xyz2)*0.5,par2,gaus);
+
+
+	throw std::runtime_error("\n\n St1_QMPacketHydrogenEigenGaussianWave::getValPos() works only in 1, 2 or 3 dimensions.\n\n");
+};
+
 
