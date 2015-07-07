@@ -127,18 +127,13 @@ Complexr St1_QMPacketHydrogenEigenFunc::getValPos(Vector3r pos, const QMParamete
 	std::cerr << "St1_QMPacketHydrogenEigenFunc: Muszę dodać hbar oraz m i 'omega' ?? do listy argumentów. Skąd brać omega, btw? Nowa klasa QMParameters ← QMOscillator w którym byłaby częstotliwość omega??\n";
 // FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
 
-	switch(par->dim) {                                                                                            // FIXME !
-		                                                                                                      // FIXME !
-		                                                                                                      // FIXME !  → energia
-		                                                                                                      // FIXME !  → w osobnej
-		                                                                                                      // FIXME !  → funkcji
-														      // FIXME ! (i w harmonicznym też)
-		case 1 : return quantumHydrogenWavefunction_1D((int)p->energyLevel[0], p->energyLevel[1]==0                , p->x0[0]-pos[0]                )*std::exp(-Mathr::I*En_1D(p->energyLevel[0]                      )*(p->t-p->t0));
-		case 2 : return quantumHydrogenWavefunction_2D((int)p->energyLevel[0], p->energyLevel[1]                   , p->x0[0]-pos[0],p->x0[1]-pos[1])*std::exp(-Mathr::I*En_2D(p->energyLevel[0]/*,p->energyLevel[1]*/)*(p->t-p->t0));
-		case 3 : return quantumHydrogenWavefunction_3D((int)p->energyLevel[0], p->energyLevel[1], p->energyLevel[2], p->x0-pos                      )*std::exp(-Mathr::I*En_3D(p->energyLevel[0]/*,p->energyLevel[1]*/)*(p->t-p->t0));
+	switch(par->dim) {
+		case 1 : return quantumHydrogenWavefunction_1D((int)p->energyLevel[0], p->energyLevel[1]==0                , p->x0[0]-pos[0]                )*std::exp(-Mathr::I*En_1D(p->energyLevel[0])*(p->t-p->t0));
+		case 2 : return quantumHydrogenWavefunction_2D((int)p->energyLevel[0], p->energyLevel[1]                   , p->x0[0]-pos[0],p->x0[1]-pos[1])*std::exp(-Mathr::I*En_2D(p->energyLevel[0])*(p->t-p->t0));
+		case 3 : return quantumHydrogenWavefunction_3D((int)p->energyLevel[0], p->energyLevel[1], p->energyLevel[2], p->x0-pos                      )*std::exp(-Mathr::I*En_3D(p->energyLevel[0])*(p->t-p->t0));
 
 		default: break;
 	}
-	throw std::runtime_error("\n\nSt1_QMPacketHydrogenEigenFunc::getValPos() works only in 1, 2 or 3 dimensions.\n\n");
+	throw std::runtime_error("\n\n St1_QMPacketHydrogenEigenFunc::getValPos() works only in 1, 2 or 3 dimensions.\n\n");
 };
 
