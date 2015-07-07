@@ -5,7 +5,7 @@ dimensions= 1
 size1d   = 80
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
-GRIDSIZE  = 2**8
+GRIDSIZE  = 2**9
 
 # hydrogen parameters
 #potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
@@ -16,7 +16,7 @@ hydrogenEigenFunc_n   = 2
 hydrogenEigenFunc_odd = 1
 
 # wavepacket parameters
-k0_x         = 0
+k0_x         = 2
 k0_y         = 0
 gaussWidth_x = 1.0
 gaussWidth_y = 0.0
@@ -41,12 +41,14 @@ O.engines=[
 ]
 
 scaleAll=50
+separate_r_R=True
 drawFFT=False
 fftPOS = size1d if drawFFT else 0.0
 displayEnt= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+             , 'renderRotated45':separate_r_R
             }
 displayWire= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -57,6 +59,7 @@ displaySurface= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points',
              ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
+             , 'renderRotated45':separate_r_R
             }
 
 body0           = QMBody()
@@ -84,7 +87,7 @@ body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potent
 #body0.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=1
 #                                      ,coefficient=potentialCoefficient1,potentialMaximum=potentialMaximum)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-body0.state     = QMPacketGaussianWave(x0=[0,0,0],t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[GRIDSIZE]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[GRIDSIZE]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
 O.bodies[nid].state.setNumeric()
 

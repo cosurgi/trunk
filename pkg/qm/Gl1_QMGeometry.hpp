@@ -40,6 +40,11 @@ class Gl1_QMGeometry: public GlShapeFunctor
 		//! last step of a discrete wavefunction
 		static Vector3r lastDiscreteStep;
 		static Real lastDiscreteScale;
+
+		// FIXME: where to put this?
+		// temporary table used for renderRotated45
+		NDimTable<Complexr> transformed;
+		NDimTable<Complexr>& maybeTransform(QMStateDiscrete* qms,size_t dimSpatial, shared_ptr<QMDisplayOptions>& opt, NDimTable<Complexr>& arg);
 };
 REGISTER_SERIALIZABLE(Gl1_QMGeometry);
 
@@ -122,7 +127,6 @@ class Gl1_NDimTable: public Serializable
 		std::vector<std::vector<Real> >                              waveValues2D;
 		std::vector<std::vector<std::vector<Real> > >                waveValues3D;
 		// FIXME(2) - jakoś inaczej przechowywać w tablicy, bo takie pętle są bez sensu i zajmują kupę czasu.
-
 };
 REGISTER_SERIALIZABLE(Gl1_NDimTable);
 

@@ -36,6 +36,7 @@ class QMDisplayOptions: public Serializable
 			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
 			((bool,renderWireLight  ,true,,"Use glEnable(GL_LIGHTING) when drawing wire. Wires are BRIGHTer when off."))
 			((bool,renderFFT        ,false,,"Render FFT"))
+/* FIXME? */		((bool,renderRotated45  ,false,,"Before drawing the wavefunction do a (sort of) 45degree (N-dim) rotation of it: FIXME - need to find a better way to do this. It is used to draw Hydrogen in another representation: ψ(r,φ)Ψ(R)=ψ(x₁,y₁,x₂,y₂)"))
 			((Vector3r,renderFFTScale   ,Vector3r(1,1,1),,"When rendering FFT do some scaling of drawn stuff"))
 			((Se3r,renderSe3,Se3r(Vector3r::Zero(),Quaternionr::Identity()),,"Change placement & orientation during rendering."))
 			((vector<Vector3i>,doMarginalDistribution,,,"Select which dimensions to integrate over: [NO(0) or YES(1) or EVERYTHING(2) or UNDEFINED(-1), integration_start_node, integration_end_node]"))

@@ -195,12 +195,38 @@ class NDimTable : private std::vector<K
 
 		// at works for up to 3 dimensions, otherwise at(std::vector<std::size_t> >) must be used
 		// last index always changes fastest
-		reference atSafe(const std::vector<size_t>& pos)                           { return parent::operator[](calcPositionSafe(pos));     };
+		value_type atSafeInterpolated(const std::vector<not_complex>& pos)
+		{
+			DimN pos_floor(rank_d,0);
+			DimN pos_ceil (rank_d,0);
+			std::vector<not_complex> pos_dist(rank_d,0);
+			for(size_t i=0 ; i<pos.size() ; i++)
+			{
+				pos_floor[i] = std::floor(pos[i]);
+				pos_ceil [i] = std::ceil (pos[i]);
+				pos_dist [i] = pos[i] - pos_floor[i];
+			}
+			value_type ret=0;
+			for(size_t binary = 0 ; binary < std::pow(2,rank_d) ; binary++ ) // each bit says if it's floor or ceiling for given coord
+			{
+				DimN pos_corner(rank_d,0);
+				double weight = 1.0;
+				for(size_t i=0 ; i<pos.size() ; i++)
+				{
+					bool ith_ceil  = (((binary >> i) & 1)==1);
+					pos_corner[i]  = ith_ceil ? pos_ceil [i] : pos_floor[i];
+					weight        *= ith_ceil ? pos_dist [i] : (1.0 - pos_dist[i]);
+				}
+				ret += (parent::operator[](calcPositionSafe(pos_corner)))*weight;
+			}
+			return ret;
+		};
+/* OK*/		reference atSafe(const std::vector<size_t>& pos)                           { return parent::operator[](calcPositionSafe(pos));     };
 /* OK */	reference at(const std::vector<size_t>& pos, std::size_t start=0)          { return parent::operator[](calcPosition(pos,start));   };
 /* OK */	reference at(std::size_t i)                             { assert(rank_d==1); return parent::operator[](            i            ); };
 /* OK */	reference at(std::size_t i,std::size_t j)               { assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
 /* OK */	reference at(std::size_t i,std::size_t j,std::size_t k) { assert(rank_d==3); return parent::operator[](k+dim_n[2]*(j+i*dim_n[1])); };
-		const reference atSafe(const std::vector<size_t>& pos)                 const{return parent::operator[](calcPositionSafe(pos));     };
+/* OK */	const reference atSafe(const std::vector<size_t>& pos)                 const{return parent::operator[](calcPositionSafe(pos));     };
 /* OK */	const reference at(const std::vector<size_t>& pos, std::size_t start=0)const{return parent::operator[](calcPosition(pos,start));   };
 /* OK */	const reference at(std::size_t i)                            const{ assert(rank_d==1); return parent::operator[](            i            ); };
 /* OK */	const reference at(std::size_t i,std::size_t j)              const{ assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
@@ -479,9 +505,9 @@ class NDimTable : private std::vector<K
 		typedef std::function<not_complex(not_complex i, not_complex j, int d)>     IToX_func2;
 /* OK */	void fill2WithFunction(  unsigned short int dim_
 		                       , unsigned short int start_1_d, unsigned short int start_2_d
-				       , const IToX_func2& iToX2,const FunctionVals f)
+		                       , const IToX_func2& iToX2,const FunctionVals f)
 		{
-			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fillNWithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
+			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fill2WithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
@@ -494,10 +520,11 @@ class NDimTable : private std::vector<K
 
 /* ?? */	typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz1,Eigen::Matrix<not_complex,3,1>& xyz2)> FunctionVals2;
 /* ?? */	void fill2part_WithFunction(  unsigned short int dim_
+/* będzie OK gdy z analitycznym porównam */
 		                       , unsigned short int start_1_d, unsigned short int start_2_d
-				       , const IToX_func& iToX1, const IToX_func& iToX2, const FunctionVals2 f)
+		                       , const IToX_func& iToX1, const IToX_func& iToX2, const FunctionVals2 f)
 		{
-			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fillNWithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
+			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fill2part_WithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
@@ -505,6 +532,76 @@ class NDimTable : private std::vector<K
 				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz1[_d_]=iToX1(pos_i[_d_+start_1_d],_d_);
 				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz2[_d_]=iToX2(pos_i[_d_+start_2_d],_d_);
 				parent::operator[](total_i) = f(xyz1,xyz2);
+				increment(pos_i);
+			}
+		};
+
+/* ?? */	typedef std::function<not_complex (not_complex i, int d)>     XToI_func;
+		// the transformationMap takes all coordinates in the `this` NDimTable and spits out a single coordinate for `other` NDimTable
+/* ?? */	typedef std::function<not_complex (std::vector<Eigen::Matrix<not_complex,3,1> >& xyzTab, unsigned int coordIdx)> transformationMap;
+
+		// the makeTransformedFromOther takes `other` NDimTable and uses the transformationRules to generate `this` NDimTable
+		// other.rank() == this->rank();
+		// The dim_n might be actually different (because NaN is not supported - if it was then it would remember which values are undefined)
+/* ?? */	void calcTransformedFromOther(
+			/* FIXME: const */  NDimTable& other
+			// dimSpatial are spatial dimensions, rank() may differ, because NDimTable may be a result of tensor product
+			, unsigned short int dimSpatial
+			, std::vector<transformationMap> transformationRules // a vector of functions
+			, const IToX_func& iToX_this
+			, const XToI_func& xToI_other)
+		{
+			if(rank_d != other.rank()) throw std::out_of_range("\n\nERROR: NDimTable::makeTransformedFromOther different rank() \n\n");
+			if(rank_d %  dimSpatial !=  0  ) throw std::out_of_range("\n\nERROR: NDimTable::makeTransformedFromOther detected wrong tensor dimensions: rank_d \% dim_ != 0 \n\n");
+			unsigned int number_of_particles = rank_d/dimSpatial;
+			if(number_of_particles != 2) {
+				std::cerr << "unsupported for now number_of_particles = " << number_of_particles << "\n";
+				return;
+			}
+			// coordinates for each particle are in this table
+			std::vector<Eigen::Matrix<not_complex,3,1> > xyzTabOther(number_of_particles,Eigen::Matrix<not_complex,3,1>(0,0,0));
+			std::vector<Eigen::Matrix<not_complex,3,1> > xyzTabThis (number_of_particles,Eigen::Matrix<not_complex,3,1>(0,0,0));
+			DimN pos_i    (rank_d,0);
+			std::vector<not_complex> pos_other_for_interpolation(rank_d,0);
+			if( (number_of_particles-1)*(number_of_particles-1) + (dimSpatial - 1) != (rank() -1) )
+			{
+				std::cerr << "\n\n sanity error! \n\n";
+				std::cerr << " number_of_particles = "  << number_of_particles  << "\n";
+				std::cerr << " dimSpatial          = "  << dimSpatial           << "\n";
+				std::cerr << " rank()              = "  << rank()               << "\n";
+			};
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++) // go through each particle, to find its coordinates
+				{
+					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++) // go through spatial dimensions, like x, y, z
+					{
+						xyzTabThis [_p_][_d_]=iToX_this(pos_i[_d_ + _p_*(number_of_particles-1)],_d_ + _p_*(number_of_particles-1));
+					}
+					//std::cerr << " pos_i[ 0 + _p_*(number_of_particles-1)] = " << pos_i[0 + _p_*(number_of_particles-1)] << "\n";
+					//std::cerr << " xyzTabThis ["<<_p_<<"] = " << xyzTabThis [_p_] << "\n";
+				}
+				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
+					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
+					{
+						xyzTabOther[_p_][_d_]=transformationRules[_p_](xyzTabThis ,_d_);
+					}
+				//std::cerr << " xyzTabOther[0] = " << xyzTabOther[0] << "  ";
+				//std::cerr << " xyzTabOther[1] = " << xyzTabOther[1] << "  ";
+				//std::cerr << " xyzTabThis [0] = " << xyzTabThis [0] << "  ";
+				//std::cerr << " xyzTabThis [1] = " << xyzTabThis [1] << "\n";
+				for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
+					for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
+					{
+						// FIXME - interpolation should be somewhere here. Righ now it just finds nearest coordinate
+						pos_other_for_interpolation[_d_ + _p_*(number_of_particles-1)] = xToI_other(xyzTabOther[_p_][_d_], _d_ + _p_*(number_of_particles-1));
+					}
+				
+				try {
+					parent::operator[](total_i) = other.atSafeInterpolated(pos_other_for_interpolation);
+				} catch(const std::out_of_range& e) {
+					parent::operator[](total_i) = 0;
+				};
 				increment(pos_i);
 			}
 		};
@@ -542,7 +639,7 @@ class NDimTable : private std::vector<K
 
 static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
 if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
-fftw_plan_with_nthreads(2);//omp_get_max_threads());
+fftw_plan_with_nthreads(8/*16*/);//omp_get_max_threads());
 
 
 			//(*this)=inp; // FIXME - jakoś inaczej

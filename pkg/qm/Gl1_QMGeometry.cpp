@@ -188,7 +188,9 @@ void Gl1_QMGeometry::go(
 				curOpt->start[i] = qms->start(i);             // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
 				curOpt->end[i]   = qms->end(i)- qmg->step[i]; // maybe change the start() and end() values in QMStateDiscrete??   ¹ 1 ² 2 ³ 3 ⁴ 4 ⁵ 5
 			}
-		} else { // finding step for discrete is different: we must deal with possible marginalDistribution, currently I don't support marginalDistribution of analytical solutions
+		} else {
+		// finding step for discrete is different: we must deal with possible marginalDistribution,
+		// currently I don't support marginalDistribution of analytical solutions
 			qmg->qtReadonly="step";qmg->step=Vector3r(0,0,0);
 			for(size_t i=0 ; i < dimSpatial ; i++) qmg->lastStep[i] = (qmg->step[i] = qms->stepInPositionalRepresentation(i));
 			lastDiscreteStep  = qmg->step;
@@ -223,7 +225,7 @@ void Gl1_QMGeometry::go(
 			curOpt->lastDoMarginalDistribution = curOpt->doMarginalDistribution;
 			curOpt->lastRenderFFT              = curOpt->renderFFT;
 			if(intNum==0) { // nothing to integrate
-				curOpt->marginalDistribution = qms->getPsiGlobalExisting()->psiGlobalTable;
+				curOpt->marginalDistribution = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable);
 				if(curOpt->renderFFT) curOpt->marginalDistribution.niceFFT();
 			} else if(intNum == rank) { // Integrate everything!
 				if(timeLimit.messageAllowed(5)) {
@@ -241,10 +243,10 @@ void Gl1_QMGeometry::go(
 				std::vector<short int> remainDims(rank, 0);
 				for(std::size_t i = 0 ; i < rank ;  i++) if(curOpt->doMarginalDistribution[i][0]==0) remainDims[i]=1;
 				if(curOpt->renderFFT) {
-					NDimTable<Complexr>      tmp = qms->getPsiGlobalExisting()->psiGlobalTable;
+					NDimTable<Complexr>      tmp = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable);
 					tmp.niceFFT();
-					curOpt->marginalDistribution = tmp                                        .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);
-				} else  curOpt->marginalDistribution = qms->getPsiGlobalExisting()->psiGlobalTable.calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal(),curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+					curOpt->marginalDistribution = tmp                                                               .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space, and maybe wrong after maybeTransform (which now uses the same size for this reason) */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+				} else  curOpt->marginalDistribution = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable).calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal(),curOpt->marginalNormalize,curOpt->marginalDensityOnly);
 			}
 		}
 		if(intNum == rank) continue; // nothing to draw!
@@ -260,6 +262,48 @@ void Gl1_QMGeometry::go(
 		glPopMatrix();
 	}
 };
+
+NDimTable<Complexr>& Gl1_QMGeometry::maybeTransform(QMStateDiscrete* qms,size_t dimSpatial, shared_ptr<QMDisplayOptions>& opt, NDimTable<Complexr>& arg)
+{
+	if(not opt->renderRotated45)
+	{
+		return arg;
+	}
+	else {
+		transformed = arg;
+		transformed.calcTransformedFromOther(
+			  arg
+			, dimSpatial
+			, {// vector of functions
+			 // r coordinate:   r = r1-r2;
+			 [&](std::vector<Vector3r>& xyzTab, unsigned int coordIdx)->Real
+			 {
+				assert(xyzTab.size() ==2);
+				Vector3r r1 = xyzTab[0];
+				Vector3r r2 = xyzTab[1];
+
+				Vector3r r  = (r1-r2)*0.5; // FIXME - raczej bez tego 0.5
+				return r   [coordIdx]; // is calculated separately for each coordinate x,y,z
+			 }
+			,// R coordinate:   R = (m1*r1+m2*r2)/(m1+m2)
+			 [&](std::vector<Vector3r>& xyzTab, unsigned int coordIdx)->Real
+			 {
+				assert(xyzTab.size() ==2);
+				Vector3r r1 = xyzTab[0];
+				Vector3r r2 = xyzTab[1];
+
+				Real m1 = 1; // FIXME - wyprowadzić parametr `masa` na zewnątrz tej funkcji, do skryptu pythonowego
+				Real m2 = 1; // FIXME - wyprowadzić parametr `masa` na zewnątrz tej funkcji, do skryptu pythonowego
+				Vector3r R  = (m1*r1+m2*r2)/(m1+m2);
+				return R   [coordIdx]; // is calculated separately for each coordinate x,y,z
+			 }
+			}
+			, [&](Real i, int d)->Real    { return /* this == transformed */          qms->getPsiGlobalExisting()->iToX     (i,d);} // FIXME - zakładam że mają takie same rozmiary i rozdzielczość
+			, [&](Real x, int d)->Real    { return /* other== (arg) original == qms */qms->getPsiGlobalExisting()->xToI_Real(x,d);}
+		);
+		return transformed;
+	}
+}
 
 /*********************************************************************************
 *

@@ -83,10 +83,11 @@ or directly by filling in the discrete values in the table. It is used for numer
 		Real kMin     (int d){return -kMax(d);};
 
 		// Those functions convert index 'i' to respective position or momentum on the FFT grid
-		Real iToX(Real i, int d){return (i*(      end(d)      )    +(gridSize[d]-i)* (       start(d)    )  )/gridSize[d]; };
-		Real iToK(Real i, int d){return (i*kMax(d )+(gridSize[d]-i)*kMin(d ))/gridSize[d]; };
-		size_t xToI(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    spatialSize[d]    ); };
-		size_t kToI(Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
+		Real   iToX     (Real i, int d){return (i*(      end(d)      )    +(gridSize[d]-i)* (       start(d)    )  )/gridSize[d]; };
+		Real   iToK     (Real i, int d){return (i*kMax(d )+(gridSize[d]-i)*kMin(d ))/gridSize[d]; };
+		size_t xToI     (Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    spatialSize[d]    ); };
+		Real   xToI_Real(Real x, int d){return (gridSize[d]*(x-(     start(d)      )  ))/(    spatialSize[d]    ); };
+		size_t kToI     (Real k, int d){return (gridSize[d]*(k-kMin(d )))/(kMax(d)-kMin(d)); };
 // iToX_local,  xToI_local
 // iToX_global, xToI_global
 // start_local, end_local
