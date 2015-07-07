@@ -5,7 +5,7 @@ dimensions= 1
 size1d   = 80
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
-GRIDSIZE  = 2**9
+GRIDSIZE  = 2**8
 
 # hydrogen parameters
 #potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
@@ -40,40 +40,46 @@ O.engines=[
 	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2),
 ]
 
-displayEnt= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-             ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
-             ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+scaleAll=50
+drawFFT=False
+fftPOS = size1d if drawFFT else 0.0
+displayEnt= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+             ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+             ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
             }
-displayEnt1= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displayWire= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
             }
-displayEnt2= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+displaySurface= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
              ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
             }
 
 body0           = QMBody()
-body0.shape     = QMGeometry(extents=halfSize1,color=[0.8,0.8,0.8],displayOptions=[
-     QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2,       0,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2, size1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2,-size1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=True   ,renderSe3=(Vector3(-size1d*1.2,       0,0), Quaternion((1,0,0),0))
-        ,doMarginalDistribution=[(0,0,0),(0,0,0)],**displayEnt1)
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=True   ,renderSe3=(Vector3(-size1d*1.2,       0,0), Quaternion((1,0,0),0))
-        ,doMarginalDistribution=[(0,0,0),(0,0,0)],**displayEnt2)
 
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,       0,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2, size1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,-size1d,0), Quaternion((1,0,0),0)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=True ,renderFFT=True  ,renderSe3=(Vector3(size1d*1.2,       0,0), Quaternion((1,0,0),0))
+FFTdrawing0 = [
+     QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(fftPOS*1.2,       0,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(fftPOS*1.2, fftPOS,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True  ,renderSe3=(Vector3(fftPOS*1.2,-fftPOS,0), Quaternion((1,0,0),0)) )
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=True ,renderFFT=True  ,renderSe3=(Vector3(fftPOS*1.2,       0,0), Quaternion((1,0,0),0))
         , doMarginalDistribution=[(0,0,0),(0,0,0)],**displayEnt)
     #                  ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0))
     #                  ,renderFFTScale=(4,1,1)
-])
+]
+body0.shape     = QMGeometry(extents=halfSize1,color=[0.8,0.8,0.8],displayOptions=[
+     QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2,       0,0), Quaternion((1,0,0),0)) ,**displayEnt)
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2, size1d,0), Quaternion((1,0,0),0)) ,**displayEnt)
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2,-size1d,0), Quaternion((1,0,0),0)) ,**displayEnt)
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=True   ,renderSe3=(Vector3(-fftPOS*1.2,       0,0), Quaternion((1,0,0),0))
+        ,doMarginalDistribution=[(0,0,0),(0,0,0)],**displaySurface)
+#    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=True   ,renderSe3=(Vector3(-fftPOS*1.2,       0,0), Quaternion((1,0,0),0))
+#        ,doMarginalDistribution=[(0,0,0),(0,0,0)],**displayWire)
+]+(FFTdrawing0 if drawFFT else []))
+
 body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient1)
 #body0.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=1
 #                                      ,coefficient=potentialCoefficient1,potentialMaximum=potentialMaximum)
@@ -83,15 +89,16 @@ nid=O.bodies.append(body0)
 O.bodies[nid].state.setNumeric()
 
 body1           = QMBody()
+FFTdrawing1     =[
+     QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(fftPOS*1.2        ,0,0), Quaternion((1,0,0),0   )) )
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(fftPOS*1.2+fftPOS,0,0), Quaternion((0,0,1),pi/2)) )
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(fftPOS*1.2-fftPOS,0,0), Quaternion((0,0,1),pi/2)) )
+]
 body1.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2        ,0,0), Quaternion((0,0,1),0   )) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
-
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2        ,0,0), Quaternion((1,0,0),0   )) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) )
-    ,QMDisplayOptions(partsScale=50,partsSquared=False,renderWireLight=False,renderFFT=True    ,renderSe3=(Vector3(size1d*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) )
-])
+     QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2        ,0,0), Quaternion((0,0,1),0   )) ,**displayEnt)
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2+size1d,0,0), Quaternion((0,0,1),pi/2)) ,**displayEnt)
+    ,QMDisplayOptions(partsScale=scaleAll,partsSquared=False,renderWireLight=False  ,renderSe3=(Vector3(-fftPOS*1.2-size1d,0,0), Quaternion((0,0,1),pi/2)) ,**displayEnt)
+]+(FFTdrawing1 if drawFFT else []))
 body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=1
                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
 
