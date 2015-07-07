@@ -492,6 +492,23 @@ class NDimTable : private std::vector<K
 			}
 		};
 
+/* ?? */	typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz1,Eigen::Matrix<not_complex,3,1>& xyz2)> FunctionVals2;
+/* ?? */	void fill2part_WithFunction(  unsigned short int dim_
+		                       , unsigned short int start_1_d, unsigned short int start_2_d
+				       , const IToX_func& iToX1, const IToX_func& iToX2, const FunctionVals2 f)
+		{
+			if(rank_d % dim_ != 0) throw std::out_of_range("\n\nERROR: NDimTable::fillNWithFunction detected wrong tensor dimensions: rank_d \% dim_ != 0.\n\n");
+			DimN pos_i(rank_d,0);
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				Eigen::Matrix<not_complex,3,1> xyz1(0,0,0),xyz2(0,0,0);
+				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz1[_d_]=iToX1(pos_i[_d_+start_1_d],_d_);
+				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz2[_d_]=iToX2(pos_i[_d_+start_2_d],_d_);
+				parent::operator[](total_i) = f(xyz1,xyz2);
+				increment(pos_i);
+			}
+		};
+
 
 		void print(std::ostream& os,std::string l,int width,bool skip_brackets=false) const
 		{
