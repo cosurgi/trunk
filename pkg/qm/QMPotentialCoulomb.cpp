@@ -66,15 +66,17 @@ Complexr St1_QMStPotentialCoulomb::getValPos(Vector3r pos , const QMParameters* 
 			     //        węzły siatki potencjału rozmijały się z węzłami cząstki, więc nie było dzielenia przez zero, ale w samej siatce
 			     //        i tak było dzielenie przez zero (chyba?!?!) bo to cała siatka była przesunięta - chwycona za środek i przesunięta
 	Real r  =0;
+	//if(timeLimitC.messageAllowed(12)) std::cerr << "Brak ochrony przed dzieleniem przez zero! potencjały powinny być przesunięte względem siatki.\n";
+	if(timeLimitC.messageAllowed(7)) std::cerr << "Ochrona przed dzieleniem przez zero! "<< harmonic->potentialMaximum <<"\n";
 	switch(harmonic->dim) {
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysCoulomb
 //        but then - the potential itself shall be drawn just like before: as a Box ??
-		case 1 : return Cx/std::abs(x);            //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
-		case 2 : return Cx/std::sqrt(x*x+y*y);     //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
-		case 3 : return Cx/std::sqrt(x*x+y*y+z*z); //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
-		//case 1 : r=std::abs(x);            if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
-		//case 2 : r=std::sqrt(x*x+y*y);     if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
-		//case 3 : r=std::sqrt(x*x+y*y+z*z); if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+	//	case 1 : return Cx/std::abs(x);            //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+	//	case 2 : return Cx/std::sqrt(x*x+y*y);     //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+	//	case 3 : return Cx/std::sqrt(x*x+y*y+z*z); //if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		case 1 : r=std::abs(x);            if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		case 2 : r=std::sqrt(x*x+y*y);     if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
+		case 3 : r=std::sqrt(x*x+y*y+z*z); if(r>MAXinv) return Cx/r; else return (harmonic->potentialMaximum>0)?(Cx/MAXinv):0;
 		default: break;
 	};
 	throw std::runtime_error("\n\nSt1_QMStPotentialCoulomb::getValPos - wrong number of dimensions.\n\n");
@@ -302,7 +304,8 @@ bool Law2_QMIGeom_QMIPhysCoulombParticles::go(shared_ptr<IGeom>& ig, shared_ptr<
 		newGlobal->members.push_back(I->id2);
 //                                                                        FIXME    ↓ - nie powienienem używać geometrii tylko faktyczną funkcję
 		std::vector<const NDimTable<Complexr>*> partsNormalized({&(psi1->getPsiGlobalExisting()->psiGlobalTable),&(psi2->getPsiGlobalExisting()->psiGlobalTable)});
-		newGlobal->psiGlobalTable = NDimTable<Complexr>(partsNormalized);
+		newGlobal->psiGlobalTable = NDimTable<Complexr>(partsNormalized); // calcTensorProduct (duplikat w *Harmonic* i *Barrier*)
+
 		newGlobal->wasGenerated = true;
 	
 		// FIXME - bez sensu, gridSize się dubluje z NDimTable::dim_n i ja tego wcześniej nie zauważyłem?

@@ -6,7 +6,7 @@
 
 /*********************************************************************************
 *
-* Q U A N T U M   H A R M O N I C   O S C I L L A T O R   W A V E F U N C T I O N
+* Q U A N T U M   H Y D R O G E N   W A V E F U N C T I O N
 * 
 *********************************************************************************/
 
@@ -74,7 +74,7 @@ REGISTER_SERIALIZABLE(QMPacketHydrogenEigenFunc);
 
 /*********************************************************************************
 *
-* H A R M O N I C   O S C I L L A T O R   W A V E F U N C T I O N   F U N C T O R
+* H Y D R O G E N   W A V E F U N C T I O N   F U N C T O R
 *
 *********************************************************************************/
 
