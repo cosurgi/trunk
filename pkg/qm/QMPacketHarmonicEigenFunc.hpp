@@ -84,10 +84,9 @@ class St1_QMPacketHarmonicEigenFunc: public St1_QMStateAnalytic
 		YADE_CLASS_BASE_DOC(St1_QMPacketHarmonicEigenFunc /* class name */, St1_QMStateAnalytic /* base class */
 			, "Functor creating :yref:`QMPacketHarmonicEigenFunc` from :yref:`QMParameters`." // class description
 		);
-	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
-
+	private:
 		Real      En(int n);
 		vector<boost::rational<signed long> > hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
 		vector<boost::rational<signed long> > hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha);

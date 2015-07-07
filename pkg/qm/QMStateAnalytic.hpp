@@ -64,9 +64,9 @@ class St1_QMStateAnalytic: public St1_QMStateDiscrete
 		YADE_CLASS_BASE_DOC(St1_QMStateAnalytic/* class name */, St1_QMStateDiscrete /* base class */
 			, "Functor creating :yref:`QMState` from :yref:`QMParameters`." // class description
 		);
-	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
+	private:
 };
 REGISTER_SERIALIZABLE(St1_QMStateAnalytic);
 

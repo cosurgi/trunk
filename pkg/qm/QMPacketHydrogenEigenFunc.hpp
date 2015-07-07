@@ -85,10 +85,9 @@ class St1_QMPacketHydrogenEigenFunc: public St1_QMStateAnalytic
 		YADE_CLASS_BASE_DOC(St1_QMPacketHydrogenEigenFunc /* class name */, St1_QMStateAnalytic /* base class */
 			, "Functor creating :yref:`QMPacketHydrogenEigenFunc` from :yref:`QMParameters`." // class description
 		);
-	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
-
+	private:
 		Real      En_1D      (int n);
 		Real      En_2D      (int n);
 		Real      En_3D      (int n);
