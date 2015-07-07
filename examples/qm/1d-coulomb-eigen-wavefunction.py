@@ -4,15 +4,15 @@
 dimensions= 1
 size1d    = 60
 halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
-GRIDSIZE  = 2**10
+GRIDSIZE  = 2**11
 
 # potential parameters
 potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialCoefficient = [-1,0,0]
-potentialMaximum     = -1000000;
+potentialMaximum     = -100;
 
-hydrogenEigenFunc_n   = 2
+hydrogenEigenFunc_n   = 1
 hydrogenEigenFunc_odd = 1
 
 O.engines=[
@@ -86,7 +86,7 @@ potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
-#O.dt=.000001
+#O.dt=.001
 O.dt=.2
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
@@ -95,13 +95,15 @@ O.save('/tmp/a.xml.bz2');
 
 try:
 	from yade import qt
-	Gl1_QMGeometry().analyticUsesStepOfDiscrete=True
-	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
+	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.Controller()
 	qt.controller.setWindowTitle("1D eigenwavefunction in Coulomb potential")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.Renderer().blinkHighlight=False
+	qt.views()[0].center(False,10) # median=False, suggestedRadius = 5
+	Gl1_QMGeometry().analyticUsesStepOfDiscrete=True
+	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
+
 except ImportError:
 	pass
 

@@ -4,19 +4,21 @@
 dimensions= 2
 #size1d    =  8000         # bardzo wysokie n
 #GRIDSIZE  = [2**15,2**15] # bardzo wysokie n
-SC        = 8
-size1d    =  40*SC
+SC        = 1
+size1d    = 120*SC
 GRIDSIZE  = [SC*2**8,SC*2**8]
 halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
 
 # potential parameters
-potentialCenter      = [ 0 ,0  ,0  ]
+SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
+SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])
+potentialCenter      = [ SH0,SH1 ,0  ]
 potentialHalfSize    = halfSize
 potentialCoefficient = [-0.5,0,0] # FIXMEatomowe
 potentialMaximum     = -10000; # negative puts ZERO at center, positive - puts this value.
 
-hydrogenEigenFunc_n   = 1
-hydrogenEigenFunc_l   = 0
+hydrogenEigenFunc_n   = 3
+hydrogenEigenFunc_l   = 1
 
 
 O.engines=[
@@ -42,7 +44,7 @@ O.engines=[
 # 3. potential barrier - as a box with given potential
 
 displayOptions1        = { 'renderWireLight':True,'partsScale':250
-                          ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                          ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
 #		    ,'partsSquared':1
@@ -67,7 +69,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l, 0],'gridSize':GRIDSIZE}
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l, 0],'x0':potentialCenter,'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
@@ -90,7 +92,8 @@ id_H=O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=10
+#O.dt=10
+O.dt=2
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
