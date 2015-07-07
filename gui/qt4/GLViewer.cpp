@@ -385,7 +385,7 @@ void GLViewer::centerScene(Real suggestedRadius){
 	LOG_DEBUG("Got scene box min="<<min<<" and max="<<max);
 	Vector3r center = (max+min)*0.5;
 	Vector3r halfSize = (max-min)*0.5;
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=(suggestedRadius>0)?suggestedRadius:1;
+	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=suggestedRadius) radius=(suggestedRadius>0)?suggestedRadius:1;
 	LOG_DEBUG("Scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	setSceneRadius(radius*3.0);
