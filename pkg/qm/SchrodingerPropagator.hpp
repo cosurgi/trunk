@@ -72,8 +72,8 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		virtual void action();
 		Real eMin();
 		Real eMax();
-		Real calcKosloffR(Real dt) { return dt*(eMax() - eMin())/(2*hbar);}; // calculate R parameter in Kosloff method
-		Real calcKosloffG(Real dt) { return dt*eMin()/(2*hbar);};            // calculate G parameter in Kosloff method
+		Real calcKosloffR(Real dt) { return dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);}; // calculate R parameter in Kosloff method
+		Real calcKosloffG(Real dt) { return dt*eMin()/(2*FIXMEatomowe_hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
 		// FIXME: same with get_full_potentialInteractionGlobal_psiGlobalTable() - it can precalculate, and recalculate only upon dirty is set.
 		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
@@ -91,7 +91,8 @@ operator  Û=exp(-iℍ̂t/ħ), and is following: ψ=Ûψ. The wavefunction ψ 
 here in SchrodingerKosloffPropagator it is calculated using Tal-Ezer and Kosloff approach \
 found in [TalEzer1984]_"
 			, // attributes, public variables
-			((Real    ,hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
+			((Real    ,FIXMEatomowe_hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
+			((Real    ,FIXMEatomowe_MASS,1               ,,"FIXME - should use mass of the particle"))
 			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
 			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
 			, // constructor

@@ -168,7 +168,7 @@ Real SchrodingerKosloffPropagator::eMax()
 		int rank = psiGlobal->psiGlobalTable.rank();
 		Real Ekin(0);
 		for(int dim=0 ; dim<rank ; dim++)
-			Ekin += std::pow(psiGlobal->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 /*FIXME: must be mass here psi->m */);
+			Ekin += std::pow(psiGlobal->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 *FIXMEatomowe_MASS/*FIXME: must be mass here psi->m */);
 		ret=std::max(ret, Ekin );
 	}
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
@@ -180,7 +180,7 @@ Real SchrodingerKosloffPropagator::eMax()
 void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
-	Real mass(1); // FIXME - this shouldn't be here
+	Real mass(FIXMEatomowe_MASS); // FIXME - this shouldn't be here
 	Real dt=scene->dt;
 
 	Real R   = calcKosloffR(dt); // FIXME -  that's duplicate here, depends on dt !!
@@ -212,7 +212,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	// previous loop was:   };
 
 	if(Vpsi.rank() != 0)
-		Vpsi    .multMult(psi_0,dt/(hbar*R));// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
+		Vpsi    .multMult(psi_0,dt/(FIXMEatomowe_hbar*R));// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
 
 //? NDimTable<Complexr> psi_0c(psi_0);
 //? psi_0c.shiftByHalf();
@@ -223,7 +223,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 //? psi_1.shiftByHalf();
 	psi_1   .IFFT();                     // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
 //? psi_1.shiftByHalf();
-	psi_1 *= dt*hbar/(R*2*mass);         // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	psi_1 *= dt*FIXMEatomowe_hbar/(R*2*mass);         // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
 	psi_1   .mult2Add(psi_0,(1+G/R));    // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
 
 	if(Vpsi.rank() != 0)
