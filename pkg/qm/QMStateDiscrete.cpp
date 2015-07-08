@@ -60,6 +60,7 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 		this->calculateTableValuesPosition(par,dynamic_cast<QMState*>(qms));
 		qms->setMaterialAndGenerator(par,shared_from_this());
 	} else if(qms->isAnalytic()) {
+//std::cerr << " 4    racalculating psiGlobalTable\n";
 		qms->wasGenerated = false;// keep on calculating, since it is analytic
 		this->calculateTableValuesPosition(par,qms);
 	}
@@ -71,6 +72,7 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const shared_ptr<QMParame
 	// FIXME - aha, chyba wywalenie psiGlobal będzie polegało na tym, że to co było QMStateDiscrete teraz będzie QMState, ale bez eKin(), eMax() itp
 	// z kolei QMState będzie zawierało QMStateDiscreteGlobal z tymi wszystkimi eKin(), NDimTable itp.
 	// A póki co muszę zrobić taki cast:
+bool really_needs_recalculation=false;
 	QMStateDiscrete* qms = dynamic_cast<QMStateDiscrete*>(qm);
 	if(not qms) {std::cerr<< "\nERROR:no QMStateDiscrete\n\n"; exit(1);};
 	if(not qms->wasGenerated) {
@@ -80,19 +82,24 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const shared_ptr<QMParame
 				std::cerr<< "\nERROR: St1_QMStateDiscrete::calculateTableValuesPosition doesn't have gridSize\n";
 				exit(1);
 			}
+if((not qms->getPsiGlobalExists()) or qms->getPsiGlobalExisting()->psiGlobalTable.rank() == par->dim ) {
+really_needs_recalculation = true;
 			qms->getPsiGlobalNew()     ->psiGlobalTable.resize(qms->gridSize);
 			qms->getPsiGlobalExisting()->psiGlobalTable.fill1WithFunction( par->dim
 				, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                       // xyz position function
 				, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par.get(),qms);}   // function value at xyz
 				);
+}
 		} else {
 			throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
 		}
 //FIXME - jak skończę (ale co? wywalać psiGlobal?) to będą wszystkie poniższe niepotrzebne!
 // FIXME --- muszę regenerować bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& ip, Interaction* I)
+if(really_needs_recalculation) {
 /*FIXING?*/	qms->getPsiGlobalExisting()->wasGenerated = true;
 /*FIXING?*/	qms->getPsiGlobalExisting()->gridSize = qms->gridSize;
 /*FIXING?*/	qms->getPsiGlobalExisting()->setSpatialSizeGlobal(qms->getSpatialSize());
+}
 	}
 ///    else {//                    LICZENIE marginalDistribution POSZŁO DO Gl1_NDimTable
 };

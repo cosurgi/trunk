@@ -15,6 +15,7 @@
 *********************************************************************************/
 #include <boost/enable_shared_from_this.hpp>
 class QMState;
+class Law2_QMIGeom_QMIPhys_GlobalWavefunction;
 class St1_QMState: public StateFunctor, public boost::enable_shared_from_this<St1_QMState>
 {
 	public:
@@ -82,8 +83,15 @@ class QMState: public State
 		void setAnalytic()       { numericalState = false; blockedDOFs=State::DOF_ALL ; };
 		void setNumeric ()       { numericalState = true;  blockedDOFs=State::DOF_NONE; };
 		// this is needed by Gl1_QMGeometry
-		void update     ()       { wasGenerated=false; st1_QMStateGen->calculateTableValuesPosition(qmParameters,this); };
+		void update     ();
 		void setMaterialAndGenerator(shared_ptr<QMParameters>& par,shared_ptr<St1_QMState> generator) {qmParameters=par;st1_QMStateGen=generator;};
+		void setLaw2Generator(shared_ptr<IGeom>& ig,shared_ptr<IPhys>& ip, shared_ptr<Interaction> I, shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> generator);
+
+// Fx3		void set_FIXME_EXTRA_Generator(std::function<void()> extr)
+// Fx3		{
+// Fx3			FIXME_extra_generator_used = true;
+// Fx3			FIXME_extra_generator      = extr;
+// Fx3		};
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
 			QMState
@@ -103,6 +111,7 @@ class QMState: public State
 // FIXME: it actually makes sense to put qtHide & qtReadonly inside Serializable class !!!!!
 			, // constructor
 			createIndex();
+// Fx3			FIXME_extra_generator_used = false;
 			, // python bindings
 			.def("isAnalytic" ,&QMState::isAnalytic ,"Tells if this QMState is analytically propagated - only by increasing its time parameter")
 			.def("isNumeric"  ,&QMState::isNumeric  ,"Tells if this QMState is numerically propagated")
@@ -113,6 +122,12 @@ class QMState: public State
 	private:
 		shared_ptr<QMParameters> qmParameters;
 		shared_ptr<St1_QMState>  st1_QMStateGen;
+		shared_ptr<IGeom>        qmIG;
+		shared_ptr<IPhys>        qmIP;
+		shared_ptr<Interaction>  qmI;
+		shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction>   law2_generator;
+// Fx3		std::function<void()>    FIXME_extra_generator;
+// Fx3		bool                     FIXME_extra_generator_used;
 };
 REGISTER_SERIALIZABLE(QMState);
 

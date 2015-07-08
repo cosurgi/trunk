@@ -190,16 +190,24 @@ void Gl1_QMGeometry::go(
 				for(size_t i=0 ; i < dimSpatial ; i++) qms->gridSize[i]=size_t(qms->getSpatialSize()[i]/qmg->step[i]);
 				// need to recalculate step, because of rounding errors for gridSize.
 				for(size_t i=0 ; i < dimSpatial ; i++) qmg->step[i]=qms->getSpatialSize()[i]/((Real)(qms->gridSize[i]));
+
 				// But there's only one psiGlobalTable for each particle, so steps in ALL displayOptions must be the same.
-				qms->update(); //update Yourself Pretty Please I Know You Shouldn't Do That Because You Are Just Some Data();
-				curOpt->lastMarginalDistributionCalculatedIter = -1;
+// FIXME: przeliczał jeśli zmienił się `step`:
+std::cerr << "  → Updejtuję TERAZ: " << qmg->getClassName() << "  " << qms->getClassName() << "\n";
+std::cerr << " qmg->step = " << qmg->step << "  qmg->lastStep = " << qmg->lastStep << "  qms->wasGenerated = " << qms->wasGenerated << "\n";
+	/* Fx3 */			qms->update(); //update Yourself Pretty Please I Know You Shouldn't Do That Because You Are Just Some Data();
+// FIXME: 
+	/* Fx3 */			curOpt->lastMarginalDistributionCalculatedIter = -1;
 			}
 			curOpt->step=qmg->step;
 			for(size_t i=0 ; i < dimSpatial ; i++) {
 				curOpt->start[i] = qms->start(i);             // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
 				curOpt->end[i]   = qms->end(i)- qmg->step[i]; // maybe change the start() and end() values in QMStateDiscrete??   ¹ 1 ² 2 ³ 3 ⁴ 4 ⁵ 5
 			}
-		} else {
+		}
+/*FIXME: tutaj było `else`, ale dla marginalDistribution póki co je wywalam, żeby step poniżej się jakoś wyznaczał */ 
+	/* Fx3 */	// else
+		{
 		// finding step for discrete is different: we must deal with possible marginalDistribution,
 		// currently I don't support marginalDistribution of analytical solutions
 			qmg->qtReadonly="step";qmg->step=Vector3r(0,0,0);

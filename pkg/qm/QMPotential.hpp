@@ -11,6 +11,7 @@
 #include "QMParameters.hpp"
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscreteGlobal.hpp"
+#include <boost/enable_shared_from_this.hpp>
 
 /*********************************************************************************
 *
@@ -246,7 +247,7 @@ REGISTER_SERIALIZABLE(Ip2_2xQMParameters_QMIPhys);
  *  the higher level stuff gets taken care of.        FIXME !!!!!!!!
  */
 
-class Law2_QMIGeom_QMIPhys_GlobalWavefunction: public LawFunctor
+class Law2_QMIGeom_QMIPhys_GlobalWavefunction: public LawFunctor, public boost::enable_shared_from_this<Law2_QMIGeom_QMIPhys_GlobalWavefunction>
 {
 	public:
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);

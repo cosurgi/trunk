@@ -5,13 +5,15 @@
 #include<core/IPhys.hpp>
 #include<core/Body.hpp>
 
+#include <boost/enable_shared_from_this.hpp>
 
 class IGeomFunctor;
 class IPhysFunctor;
 class LawFunctor;
 class Scene;
 
-class Interaction: public Serializable{
+class Interaction: public Serializable, public boost::enable_shared_from_this<Interaction>
+{
 	private:
 		friend class IPhysDispatcher;
 		friend class InteractionLoop;

@@ -452,7 +452,7 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 // FIXME(3) !!!!!!!! on nie może tutaj robić QMIGeom !!!!!!! musi robić QMIPhys !!!!! (i do tego musi to robić w Ip2_*)
 //	NDimTable<Complexr>& val_I_GeomMarginal(qmigeom->potentialMarginalDistribution);
 
-	if(psi1->getPsiGlobalExisting()->members.size() == 0) {
+	if(psi1->getPsiGlobalExisting()->members.size() == 0 or (psi1->isAnalytic() and psi2->isAnalytic()) ) {
 
 /*FIXME*/	if(not harmonic->potentialInteractionGlobal)
 /*FIXME*/		harmonic->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
@@ -460,6 +460,7 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 /*FIXME*/	NDimTable<Complexr>& val(harmonic->potentialInteractionGlobal->psiGlobalTable);
 
 
+if(psi1->getPsiGlobalExisting()->members.size() == 0){
 	if(psi1->dim() == psi2->dim() and psi1->dim()<= 3) {
 // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
 //            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
@@ -475,7 +476,7 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 			, [&](Vector3r& xyz)->Complexr{ return FIXME_equation.getValPos(xyz,&FIXME_param,NULL);} // function value at xyz
 			);
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysCoulomb::go, dim>3 or psi1->dim() != psi2->dim()\n"; exit(1); };
-
+}
 // FIXME - calcMarginalDistribution somewhere else !! in Gl1_QMIGeom
 
 //	if(not psi1->psiGlobal)	psi1->psiGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
@@ -484,12 +485,19 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 
 /////	if(psi1->psiGlobal->members.size() == 0) {
 		boost::shared_ptr<QMStateDiscreteGlobal> newGlobal(new QMStateDiscreteGlobal);
+if( psi1->getPsiGlobalExisting()->psiGlobalTable.dim().size() + psi2->getPsiGlobalExisting()->psiGlobalTable.dim().size() 
+	== psi1->dim()*2
+){
 		newGlobal->members.push_back(I->id1);
 		newGlobal->members.push_back(I->id2);
 //                                                                        FIXME    ↓ - nie powienienem używać geometrii tylko faktyczną funkcję
 		std::vector<const NDimTable<Complexr>*> partsNormalized({&(psi1->getPsiGlobalExisting()->psiGlobalTable),&(psi2->getPsiGlobalExisting()->psiGlobalTable)});
+//std::cerr << " 1  psi1->getPsiGlobalExisting()->psiGlobalTable.dim() = " << psi1->getPsiGlobalExisting()->psiGlobalTable.dim() << "\n";
+//std::cerr << " 1  psi2->getPsiGlobalExisting()->psiGlobalTable.dim() = " << psi2->getPsiGlobalExisting()->psiGlobalTable.dim() << "\n";
+//std::cerr << " 1  newGlobal->psiGlobalTable                   .dim() = " << newGlobal->psiGlobalTable                   .dim() << "\n";
 		newGlobal->psiGlobalTable = NDimTable<Complexr>(partsNormalized); // calcTensorProduct (duplikat w *Harmonic* i *Barrier*)
-	
+//std::cerr << " 2  newGlobal->psiGlobalTable                   .dim() = " << newGlobal->psiGlobalTable                   .dim() << "\n";
+} else 	newGlobal = psi1->getPsiGlobalExisting();
 //// FIXME MEGA_FIXME !!!!!!!!!!!!! jak to uporządkować??
 		St1_QMPacketHydrogenEigenGaussianWave FIXME_2particle;
 		QMPacketHydrogenEigenGaussianWave     FIXME_qmstate;
@@ -521,6 +529,9 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 			, [&](Real i_2,int d)->Real{return psi2->iToX(i_2,d) + psi2->pos[d];}// - qmigeom->relPos21[d];} // xyz position function
 			, [&](Vector3r& xyz1,Vector3r& xyz2)->Complexr{ return FIXME_2particle.getValPos_2particles(xyz1,xyz2,par1,par2,&FIXME_qmstate);} // function value at xyz
 			);
+		boost::shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> me = boost::dynamic_pointer_cast<Law2_QMIGeom_QMIPhys_GlobalWavefunction>(shared_from_this());
+		psi1->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
+		psi2->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
 // Fx3	};
 // Fx3	generate_Global_Table();
 // Fx3	psi1->set_FIXME_EXTRA_Generator(generate_Global_Table);
@@ -543,6 +554,7 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 		// FIXME - bez sensu, gridSize się dubluje z NDimTable::dim_n i ja tego wcześniej nie zauważyłem?
 		std::vector<std::size_t> newGridSize = psi1->gridSize;
 		newGridSize.insert(newGridSize.end(),psi2->gridSize.begin(),psi2->gridSize.end());
+//std::cerr << " 3 newGridSize = " << newGridSize << "   newGlobal->psiGlobalTable.dim() = " << newGlobal->psiGlobalTable.dim() << "\n";
 		assert( newGridSize == newGlobal->psiGlobalTable.dim());
 		newGlobal->gridSize = newGlobal->psiGlobalTable.dim(); //psi1->gridSize + psi2->gridSize;
 		newGlobal->setSpatialSizeGlobal(psi1->getSpatialSize());
@@ -553,7 +565,9 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 		psi1->setEntangled(0); // FIXME - allow more entangle particles, so not always ZERO!
 		psi2->setEntangled(psi1->dim());
 //std::cerr << ".......... " << psi1->whichPartOfpsiGlobal << " ......... " << psi2->whichPartOfpsiGlobal << " ......  " ;
+if(timeLimitC.messageAllowed(13)) {
 std::cerr << "...QMPotentialCoulomb....... "; for(Real s :newGlobal->getSpatialSizeGlobal()){ std::cerr <<s << ",";} std::cerr <<"\n";
+}
 		psi1->setPsiGlobal( psi2->setPsiGlobal( newGlobal ) );
 
 	} else { 

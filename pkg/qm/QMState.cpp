@@ -1,6 +1,7 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 #include "QMState.hpp"
+#include "QMPotential.hpp"
 #include <core/Scene.hpp>
 
 YADE_PLUGIN(
@@ -16,6 +17,30 @@ YADE_PLUGIN(
 CREATE_LOGGER(QMState);
 // !! at least one virtual function in the .cpp file
 QMState::~QMState(){};
+
+void QMState::setLaw2Generator(
+	  shared_ptr<IGeom>& ig
+	, shared_ptr<IPhys>& ip
+	, shared_ptr<Interaction> I
+	, shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> generator)
+{
+	qmIG = ig;
+	qmIP = ip;
+	qmI  = I;
+	law2_generator = generator;
+};
+		
+void QMState::update(){
+	assert(isAnalytic());
+	wasGenerated=false;
+	if(not law2_generator) {
+		st1_QMStateGen->calculateTableValuesPosition(qmParameters,this);
+	} else {
+		law2_generator->go(qmIG,qmIP,qmI.get());
+	};
+// Fx3			if(FIXME_extra_generator_used)
+// Fx3				FIXME_extra_generator();
+};
 
 /*********************************************************************************
 *
