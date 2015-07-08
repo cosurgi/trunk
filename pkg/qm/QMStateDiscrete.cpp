@@ -89,6 +89,7 @@ void St1_QMStateDiscrete::calculateTableValuesPosition(const shared_ptr<QMParame
 			throw std::runtime_error("\n\nQMStateDiscrete() supports only 1,2 or 3 dimensions, so far.\n\n");
 		}
 //FIXME - jak skończę (ale co? wywalać psiGlobal?) to będą wszystkie poniższe niepotrzebne!
+// FIXME --- muszę regenerować bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& ip, Interaction* I)
 /*FIXING?*/	qms->getPsiGlobalExisting()->wasGenerated = true;
 /*FIXING?*/	qms->getPsiGlobalExisting()->gridSize = qms->gridSize;
 /*FIXING?*/	qms->getPsiGlobalExisting()->setSpatialSizeGlobal(qms->getSpatialSize());
