@@ -75,8 +75,11 @@ NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionG
 	FOREACH(const shared_ptr<Interaction>& I, *scene->interactions){ // collect all potentials into one potential, but take care of entanglement
 		QMIPhys* iphys=dynamic_cast<QMIPhys*>(I->phys.get());
 		if(iphys
-		  and dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get())->isNumeric()
-		  and dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id2]->state.get())->isNumeric() )
+		  and ( // FIXME - perhaps should be checking groupMask here??????
+			   dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get())->isNumeric() // -> groupMask1  == ...->groupMask2
+			or dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id2]->state.get())->isNumeric()
+		      )
+		  )
 		{
 			allPotentials.insert(iphys->potentialInteractionGlobal);
 		} else {
@@ -86,12 +89,12 @@ NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionG
 	};
 
 	if(allPotentials.size() > 1) {
-		//if(timeLimit.messageAllowed(10))
-		std::cerr << "\n\nWARNING: SchrodingerKosloffPropagator::eMin may not work now with \
+		if(timeLimit.messageAllowed(10))
+			std::cerr << "\n\nWARNING: SchrodingerKosloffPropagator::eMin may not work now with \
 more than one globally entangled wavefunction (eg. two hydrogen atoms, four particles). This must be fixed later. But it works with \
 several potential barriers affecting THE SAME particle.\nB̲T̲W̲ ̲-̲ ̲t̲h̲i̲s̲ ̲f̲u̲n̲c̲t̲i̲o̲n̲ ̲i̲s̲ ̲e̲x̲t̲r̲e̲m̲e̲l̲y̲ ̲i̲n̲e̲f̲f̲i̲c̲i̲e̲n̲t̲!̲ ̲C̲o̲n̲s̲t̲r̲u̲c̲t̲s̲ ̲t̲h̲e̲ ̲s̲a̲m̲e̲ ̲n̲e̲w̲ ̲N̲D̲i̲m̲T̲a̲b̲l̲e̲ ̲\
 o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d̲i̲r̲t̲y̲ ̲f̲l̲a̲g̲.̲\n";
-		exit(1);
+//		exit(1);
 	}
 
 	NDimTable<Complexr> Vpsi={};
