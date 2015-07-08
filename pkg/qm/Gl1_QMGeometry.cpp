@@ -67,6 +67,14 @@ void Gl1_QMGeometry::go(
 	QMGeometry*        qmg = static_cast<QMGeometry*>(shape.get());
 	QMStateDiscrete*   qms  = static_cast<QMStateDiscrete*>(state.get());
 
+/* 3 */// static int printed=false;
+/* 3 */// if(true /*not printed*/) {
+/* 3 */// 	std::cout << "\n-3------------------------------\n";
+/* 3 */// 	qms->getPsiGlobalExisting()->psiGlobalTable.print();
+/* 3 */// 	std::cout << "\n-3------------------------------\n";
+/* 3 */// 	printed=true;
+/* 3 */// }
+
 	// ↓ patrz też uwagi w QMState.hpp
 	size_t dimSpatial = qms->gridSize.size(); // originally generated particle can be max 3D
 	if(dimSpatial == 0 or dimSpatial>3 ) { std::cerr << "\n\nERROR: Gl1_QMGeometry::go cannot draw when gridSize.size() == 0 or gridSize.size() > 3\n\n";return; };
@@ -149,6 +157,8 @@ void Gl1_QMGeometry::go(
 		// 1.3end.
 			}
 		}
+//std::cerr << " mySizePos      = " << mySizePos      << "\n";
+//std::cerr << " drawSpatialDim = " << drawSpatialDim << "\n";
 		assert(mySizePos == drawSpatialDim);
 		representation+=std::string(",t)")+normSq2+intVolume;
 		curOpt->marginalDistribEquation = representation+intBounds;
@@ -246,7 +256,21 @@ void Gl1_QMGeometry::go(
 					NDimTable<Complexr>      tmp = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable);
 					tmp.niceFFT();
 					curOpt->marginalDistribution = tmp                                                               .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space, and maybe wrong after maybeTransform (which now uses the same size for this reason) */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);
-				} else  curOpt->marginalDistribution = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable).calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal(),curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+				} else {
+/* 1 */// static bool printed=false;
+/* 1 */// if(true /*not printed*/) {
+/* 1 */// 	std::cout << "\n-1=============================-\n";
+/* 1 */// 	qms->getPsiGlobalExisting()->psiGlobalTable.print();
+/* 1 */// 	std::cout << "\n-1=============================-\n";
+/* 1 */// 	printed=true;
+/* 1 */// }
+/* 1 */// std::cerr << "\n\n CRASH ???? \n\n";
+/* 1 */// std::cerr << " intNum     = " << intNum     << "\n";
+/* 1 */// std::cerr << " dimSpatial = " << dimSpatial << "\n";
+/* 1 */// std::cerr << " rank()     = " << qms->getPsiGlobalExisting()->psiGlobalTable.rank() << "\n";
+
+					curOpt->marginalDistribution = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable).calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal(),curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+				}
 			}
 		}
 		if(intNum == rank) continue; // nothing to draw!

@@ -435,6 +435,8 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 
 
 	if(timeLimitC.messageAllowed(12)) std::cerr << "####### Law2_QMIGeom_QMIPhysCoulombParticlesFree::go  r̳e̳c̳a̳l̳c̳u̳l̳a̳t̳i̳n̳g̳ ̳w̳h̳o̳l̳e̳ ̳̲P̲A̲R̲T̲I̲C̲L̲E̲ ̲I̲N̲T̲E̲R̲A̲C̲T̲I̲O̲N̲ ̲p̳o̳t̳e̳n̳t̳i̳a̳l̳\n";
+//std::cerr << " id1 = " << I->id1 << "\n";
+//std::cerr << " id2 = " << I->id2 << "\n";
 
 	QMIGeom*                  qmigeom  = static_cast<QMIGeom*                 >(ig.get());
 	QMIPhysCoulombParticles* harmonic = static_cast<QMIPhysCoulombParticles*>(ip.get());
@@ -513,15 +515,31 @@ bool Law2_QMIGeom_QMIPhysCoulombParticlesFree::go(shared_ptr<IGeom>& ig, shared_
 			exit(1);
 		}
 
+// Fx3	std::function<void()> generate_Global_Table = [&]()->void{
 		newGlobal->psiGlobalTable.fill2part_WithFunction( psi1->dim() , 0 , psi1->dim()   // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ sprawdzić to jeszcze!!!!!
 			, [&](Real i_1,int d)->Real{return psi1->iToX(i_1,d) + psi1->pos[d];}// - qmigeom->relPos21[d];} // xyz position function
 			, [&](Real i_2,int d)->Real{return psi2->iToX(i_2,d) + psi2->pos[d];}// - qmigeom->relPos21[d];} // xyz position function
 			, [&](Vector3r& xyz1,Vector3r& xyz2)->Complexr{ return FIXME_2particle.getValPos_2particles(xyz1,xyz2,par1,par2,&FIXME_qmstate);} // function value at xyz
 			);
+// Fx3	};
+// Fx3	generate_Global_Table();
+// Fx3	psi1->set_FIXME_EXTRA_Generator(generate_Global_Table);
+// Fx3	psi2->set_FIXME_EXTRA_Generator(generate_Global_Table);
+
 //// FIXME MEGA_FIXME - end !!!!!!!
+/* 2 */// static bool printed=false;
+/* 2 */// if(not printed) {
+/* 2 */// 	std::cout << "\n--------------------------------\n";
+/* 2 */// 	newGlobal->psiGlobalTable.print();
+/* 2 */// 	std::cout << "\n--------------------------------\n";
+/* 2 */// 	printed=true;
+/* 2 */// }
 
 		newGlobal->wasGenerated = true;
-	
+//if(timeLimitC.messageAllowed(14)) 
+//std::cerr << "# →→→→→ Law2_QMIGeom_QMIPhysCoulombParticlesFree::go  GENERATED !\n";
+//std::cerr << " id1 = " << I->id1 << "\n";
+//std::cerr << " id2 = " << I->id2 << "\n";
 		// FIXME - bez sensu, gridSize się dubluje z NDimTable::dim_n i ja tego wcześniej nie zauważyłem?
 		std::vector<std::size_t> newGridSize = psi1->gridSize;
 		newGridSize.insert(newGridSize.end(),psi2->gridSize.begin(),psi2->gridSize.end());
