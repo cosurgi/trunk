@@ -193,8 +193,8 @@ void Gl1_QMGeometry::go(
 
 				// But there's only one psiGlobalTable for each particle, so steps in ALL displayOptions must be the same.
 // FIXME: przeliczał jeśli zmienił się `step`:
-std::cerr << "  → Updejtuję TERAZ: " << qmg->getClassName() << "  " << qms->getClassName() << "\n";
-std::cerr << " qmg->step = " << qmg->step << "  qmg->lastStep = " << qmg->lastStep << "  qms->wasGenerated = " << qms->wasGenerated << "\n";
+//std::cerr << "  → Updejtuję TERAZ: " << qmg->getClassName() << "  " << qms->getClassName() << "\n";
+//std::cerr << " qmg->step = " << qmg->step << "  qmg->lastStep = " << qmg->lastStep << "  qms->wasGenerated = " << qms->wasGenerated << "\n";
 	/* Fx3 */			qms->update(); //update Yourself Pretty Please I Know You Shouldn't Do That Because You Are Just Some Data();
 // FIXME: 
 	/* Fx3 */			curOpt->lastMarginalDistributionCalculatedIter = -1;
