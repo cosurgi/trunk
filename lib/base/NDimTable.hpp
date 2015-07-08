@@ -195,7 +195,7 @@ class NDimTable : private std::vector<K
 
 		// at works for up to 3 dimensions, otherwise at(std::vector<std::size_t> >) must be used
 		// last index always changes fastest
-		value_type atSafeInterpolated(const std::vector<not_complex>& pos)
+/* OK */	value_type atSafeInterpolated(const std::vector<not_complex>& pos)
 		{
 			DimN pos_floor(rank_d,0);
 			DimN pos_ceil (rank_d,0);
@@ -536,14 +536,14 @@ class NDimTable : private std::vector<K
 			}
 		};
 
-/* ?? */	typedef std::function<not_complex (not_complex i, int d)>     XToI_func;
+/* OK */	typedef std::function<not_complex (not_complex i, int d)>     XToI_func;
 		// the transformationMap takes all coordinates in the `this` NDimTable and spits out a single coordinate for `other` NDimTable
-/* ?? */	typedef std::function<not_complex (std::vector<Eigen::Matrix<not_complex,3,1> >& xyzTab, unsigned int coordIdx)> transformationMap;
+/* OK */	typedef std::function<not_complex (std::vector<Eigen::Matrix<not_complex,3,1> >& xyzTab, unsigned int coordIdx)> transformationMap;
 
 		// the makeTransformedFromOther takes `other` NDimTable and uses the transformationRules to generate `this` NDimTable
 		// other.rank() == this->rank();
 		// The dim_n might be actually different (because NaN is not supported - if it was then it would remember which values are undefined)
-/* ?? */	void calcTransformedFromOther(
+/* OK ?? */	void calcTransformedFromOther(
 			/* FIXME: const */  NDimTable& other
 			// dimSpatial are spatial dimensions, rank() may differ, because NDimTable may be a result of tensor product
 			, unsigned short int dimSpatial
@@ -566,38 +566,20 @@ class NDimTable : private std::vector<K
 			if( (number_of_particles-1)*(number_of_particles-1) + (dimSpatial - 1) != (rank() -1) )
 			{
 				std::cerr << "\n\n sanity error! \n\n";
-				std::cerr << " number_of_particles = "  << number_of_particles  << "\n";
-				std::cerr << " dimSpatial          = "  << dimSpatial           << "\n";
-				std::cerr << " rank()              = "  << rank()               << "\n";
+				return;
 			};
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
 				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++) // go through each particle, to find its coordinates
-				{
 					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++) // go through spatial dimensions, like x, y, z
-					{
 						xyzTabThis [_p_][_d_]=iToX_this(pos_i[_d_ + _p_*(number_of_particles-1)],_d_ + _p_*(number_of_particles-1));
-					}
-					//std::cerr << " pos_i[ 0 + _p_*(number_of_particles-1)] = " << pos_i[0 + _p_*(number_of_particles-1)] << "\n";
-					//std::cerr << " xyzTabThis ["<<_p_<<"] = " << xyzTabThis [_p_] << "\n";
-				}
 				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
 					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
-					{
 						xyzTabOther[_p_][_d_]=transformationRules[_p_](xyzTabThis ,_d_);
-					}
-				//std::cerr << " xyzTabOther[0] = " << xyzTabOther[0] << "  ";
-				//std::cerr << " xyzTabOther[1] = " << xyzTabOther[1] << "  ";
-				//std::cerr << " xyzTabThis [0] = " << xyzTabThis [0] << "  ";
-				//std::cerr << " xyzTabThis [1] = " << xyzTabThis [1] << "\n";
 				for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
 					for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
-					{
-						// FIXME - interpolation should be somewhere here. Righ now it just finds nearest coordinate
 						pos_other_for_interpolation[_d_ + _p_*(number_of_particles-1)] = xToI_other(xyzTabOther[_p_][_d_], _d_ + _p_*(number_of_particles-1));
-					}
-				
-				try {
+				try { // FIXME: try-catch is very slow
 					parent::operator[](total_i) = other.atSafeInterpolated(pos_other_for_interpolation);
 				} catch(const std::out_of_range& e) {
 					parent::operator[](total_i) = 0;
@@ -605,7 +587,6 @@ class NDimTable : private std::vector<K
 				increment(pos_i);
 			}
 		};
-
 
 		void print(std::ostream& os,std::string l,int width,bool skip_brackets=false) const
 		{
