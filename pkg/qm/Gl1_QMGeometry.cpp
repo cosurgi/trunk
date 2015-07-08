@@ -103,7 +103,8 @@ void Gl1_QMGeometry::go(
 				marginalDistributionDefined=false;
 		}
 		if(not marginalDistributionDefined) {
-			if(timeLimit.messageAllowed(5)) std::cerr << "Resetting QMDisplayOptions::doMarginalDistribution to valid state\n";
+			//if(timeLimit.messageAllowed(5))
+				std::cerr << "Resetting QMDisplayOptions::doMarginalDistribution to valid state\n";
 			for(size_t i=0 ; i < rank ; i++ ) {
 				Vector3i& d = curOpt->doMarginalDistribution[i];
 				if(d[0]<0 or wasTooSmall)   d[0]=2;   // by default integrate everything
@@ -131,7 +132,7 @@ void Gl1_QMGeometry::go(
 		std::string representation="";
 		std::string intVolume="";
 		std::string intBounds="",normSq1="|",normSq2="|²";
-		size_t intNum(0);
+		size_t intNum(0); // how much to integrate
 		for(auto& d : curOpt->doMarginalDistribution) if(d[0]!=0) intNum++;
 		if(intNum != rank and curOpt->marginalDensityOnly == false) { normSq1=""; normSq2=""; };
 		size_t drawSpatialDim = rank - intNum;
