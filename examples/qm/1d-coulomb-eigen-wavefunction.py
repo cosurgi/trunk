@@ -12,7 +12,7 @@ potentialHalfSize    = Vector3(size1d,3,3)
 potentialCoefficient = [-1,0,0]
 potentialMaximum     = -100;
 
-hydrogenEigenFunc_n   = 1
+hydrogenEigenFunc_n   = 2
 hydrogenEigenFunc_odd = 1
 
 O.engines=[
