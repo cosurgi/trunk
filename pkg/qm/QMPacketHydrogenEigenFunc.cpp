@@ -161,7 +161,7 @@ Complexr St1_QMPacketHydrogenEigenGaussianWave::getValPos_2particles(
 	const QMPacketHydrogenEigenFunc*         hydr = dynamic_cast<const QMPacketHydrogenEigenFunc*>(p->hydrogenEigenFunc.get());
 	const QMPacketGaussianWave*              gaus = dynamic_cast<const QMPacketGaussianWave*>     (p->gaussianWave.get());
 // FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
-	static TimeLimit timeLimit; if(timeLimit.messageAllowed(10))
+	static TimeLimit timeLimit; if(timeLimit.messageAllowed(30))
 	std::cerr << "St1_QMPacketHydrogenEigenGaussianWave: Muszę dodać hbar oraz m i 'omega' ?? do listy argumentów. Skąd brać omega, btw? Nowa klasa QMParameters ← QMOscillator w którym byłaby częstotliwość omega??\n";
 // FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
 	if(not hydr or not gaus) {

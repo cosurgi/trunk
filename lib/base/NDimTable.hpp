@@ -563,22 +563,26 @@ class NDimTable : private std::vector<K
 			std::vector<Eigen::Matrix<not_complex,3,1> > xyzTabThis (number_of_particles,Eigen::Matrix<not_complex,3,1>(0,0,0));
 			DimN pos_i    (rank_d,0);
 			std::vector<not_complex> pos_other_for_interpolation(rank_d,0);
-			if( (number_of_particles-1)*(number_of_particles-1) + (dimSpatial - 1) != (rank() -1) )
+			if( number_of_particles*dimSpatial != rank() )
 			{
 				std::cerr << "\n\n sanity error! \n\n";
 				return;
+			};
+			// helper function returning the coordinate idx of a given particle in the NDimTable
+			auto part_pos = [=](unsigned int particle_no, unsigned int spatial_coord)->unsigned int{
+				return particle_no*dimSpatial + spatial_coord;
 			};
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
 				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++) // go through each particle, to find its coordinates
 					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++) // go through spatial dimensions, like x, y, z
-						xyzTabThis [_p_][_d_]=iToX_this(pos_i[_d_ + _p_*(number_of_particles-1)],_d_ + _p_*(number_of_particles-1));
+						xyzTabThis [_p_][_d_]=iToX_this(pos_i[part_pos(_p_,_d_)],part_pos(_p_,_d_));
 				for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
 					for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
 						xyzTabOther[_p_][_d_]=transformationRules[_p_](xyzTabThis ,_d_);
 				for(unsigned int _d_=0 ; _d_< dimSpatial ; _d_++)
 					for(unsigned int _p_=0 ; _p_< number_of_particles ; _p_++)
-						pos_other_for_interpolation[_d_ + _p_*(number_of_particles-1)] = xToI_other(xyzTabOther[_p_][_d_], _d_ + _p_*(number_of_particles-1));
+						pos_other_for_interpolation[part_pos(_p_,_d_)] = xToI_other(xyzTabOther[_p_][_d_], part_pos(_p_,_d_));
 				try { // FIXME: try-catch is very slow
 					parent::operator[](total_i) = other.atSafeInterpolated(pos_other_for_interpolation);
 				} catch(const std::out_of_range& e) {

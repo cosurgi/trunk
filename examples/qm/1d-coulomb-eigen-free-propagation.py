@@ -3,18 +3,18 @@
 
 dimensions= 1
 #size1d   = 20
-size1d   = 80
+size1d   = 40 ###→ 80
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
-GRIDSIZE  = 2**9
+GRIDSIZE  = 128 ###→ 2**9
 
 # hydrogen parameters
 #potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
 potentialCenter      = [ 0 ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialMaximum     = 10000;
-hydrogenEigenFunc_n   = 3
+hydrogenEigenFunc_n   = 1 ###→ 3
 hydrogenEigenFunc_odd = 1
 
 # wavepacket parameters
@@ -162,7 +162,7 @@ O.save('/tmp/a.xml.bz2');
 try:
 	from yade import qt
 	qt.Controller()
-	qt.controller.setWindowTitle("Two Gaussian packets connected via Coulomb potential in 1D")
+	qt.controller.setWindowTitle("Electron-positron pair in 1D")
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))

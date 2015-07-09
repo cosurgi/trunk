@@ -264,7 +264,7 @@ void Gl1_QMGeometry::go(
 				if(curOpt->renderFFT) {
 					NDimTable<Complexr>      tmp = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable);
 					tmp.niceFFT();
-					curOpt->marginalDistribution = tmp                                                               .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space, and maybe wrong after maybeTransform (which now uses the same size for this reason) */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+					curOpt->marginalDistribution = tmp                                                                              .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space, and maybe wrong after maybeTransform (which now uses the same size for this reason) */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);
 				} else {
 /* 1 */// static bool printed=false;
 /* 1 */// if(true /*not printed*/) {
@@ -279,6 +279,9 @@ void Gl1_QMGeometry::go(
 /* 1 */// std::cerr << " rank()     = " << qms->getPsiGlobalExisting()->psiGlobalTable.rank() << "\n";
 
 					curOpt->marginalDistribution = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable).calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal(),curOpt->marginalNormalize,curOpt->marginalDensityOnly);
+					if(timeLimit.messageAllowed(2) and curOpt->marginalDensityOnly and curOpt->partsSquared) {
+						std::cerr << "Warning: both marginalDensityOnly & partsSquared are enabled which results in squaring twice!";
+					}
 				}
 			}
 		}
