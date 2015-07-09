@@ -624,7 +624,7 @@ class NDimTable : private std::vector<K
 
 static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
 if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
-fftw_plan_with_nthreads(8/*16*/);//omp_get_max_threads());
+fftw_plan_with_nthreads(2/*16*/);//omp_get_max_threads());
 
 
 			//(*this)=inp; // FIXME - jakoś inaczej

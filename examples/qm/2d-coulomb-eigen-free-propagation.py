@@ -4,12 +4,12 @@
 dimensions= 2
 #size1d   = 20
 #size1d   = 20 #80
-size1d   = 40
+size1d   = 70
 halfSize1 = [size1d,size1d,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
 #GRIDSIZE  = [32,32] #3*64 #2**7
-GRIDSIZE  = [128,128] #3*64 #2**7
+GRIDSIZE  = [70,70] #3*64 #2**7
 
 # hydrogen parameters
 #SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
@@ -43,11 +43,11 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2),
-#	SchrodingerAnalyticPropagator(),
+#	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2),
+	SchrodingerAnalyticPropagator(),
 ]
 
-scaleAll=270
+scaleAll=300
 separate_r_R=True
 drawFFT=False
 fftPOS = size1d if drawFFT else 0.0
@@ -79,43 +79,43 @@ displayOptions2_an     = append_dict(displayOptions,{'renderSe3':(Vector3(0,size
 ##         głównie chodzi o to, żeby węzły siatek się nie nakrywały.
 
 ########## Analytic solutions
-# body0           = QMBody()
-# body0.groupMask = 2
-# body0.shape     = QMGeometry(extents=halfSize1,color=[0.5,0.5,0.5],displayOptions=[QMDisplayOptions(**displayOptions1_an)])
-# body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
-# body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
-# nid=O.bodies.append(body0)
-# O.bodies[nid].state.setAnalytic()
-# 
-# body1           = QMBody()
-# body1.groupMask = 2
-# body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(**displayOptions2_an)])
-# body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
-#                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
-# coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
-# body1.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
-# nid=O.bodies.append(body1)
-# O.bodies[nid].state.setAnalytic()
+body0           = QMBody()
+body0.groupMask = 2
+body0.shape     = QMGeometry(extents=halfSize1,color=[0.5,0.5,0.5],displayOptions=[QMDisplayOptions(**displayOptions1_an)])
+body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
+body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+nid=O.bodies.append(body0)
+O.bodies[nid].state.setAnalytic()
+
+body1           = QMBody()
+body1.groupMask = 2
+body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(**displayOptions2_an)])
+body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
+                                      ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
+body1.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
+nid=O.bodies.append(body1)
+O.bodies[nid].state.setAnalytic()
 
 
 ########## Numeric solutions
-body2           = QMBody()
-body2.groupMask = 1
-body2.shape     = QMGeometry(extents=halfSize1,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1_num)])
-body2.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
-body2.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
-nid=O.bodies.append(body2)
-O.bodies[nid].state.setNumeric()
-
-body3           = QMBody()
-body3.groupMask = 1
-body3.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions2_num)])
-body3.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # m=2 FIXMEatomowe
-                                      ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
-body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
-nid=O.bodies.append(body3)
-O.bodies[nid].state.setNumeric()
+# body2           = QMBody()
+# body2.groupMask = 1
+# body2.shape     = QMGeometry(extents=halfSize1,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1_num)])
+# body2.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
+# body2.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+# nid=O.bodies.append(body2)
+# O.bodies[nid].state.setNumeric()
+# 
+# body3           = QMBody()
+# body3.groupMask = 1
+# body3.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions2_num)])
+# body3.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # m=2 FIXMEatomowe
+#                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
+# coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
+# body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
+# nid=O.bodies.append(body3)
+# O.bodies[nid].state.setNumeric()
 
 O.dt=.25
 
