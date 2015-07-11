@@ -33,7 +33,7 @@ class QMDisplayOptions: public Serializable
 			((bool,renderInterpolate,false,,"Interpolate extra points in center of each square using sinc256(x) or spline36(x) interpolation as in [Kozicki2007g]_"))
 			((int ,renderShininess  ,50,Attr::hidden,"Amount of shininess of the surface"))
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
-			((int ,renderSpecular   ,10,Attr::hidden,"Amount of specular light reflected by surface"))
+			((int ,renderSpecular   ,0,/*Attr::hidden*/,"Amount of specular light reflected by surface"))
 			((bool,renderWireLight  ,true,,"Use glEnable(GL_LIGHTING) when drawing wire. Wires are BRIGHTer when off."))
 			((bool,renderFFT        ,false,,"Render FFT"))
 /* FIXME? */		((bool,renderRotated45  ,false,,"Before drawing the wavefunction do a (sort of) 45degree (N-dim) rotation of it: FIXME - need to find a better way to do this. It is used to draw Hydrogen in another representation: ψ(r,φ)Ψ(R)=ψ(x₁,y₁,x₂,y₂)"))
