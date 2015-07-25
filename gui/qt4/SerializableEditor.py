@@ -529,6 +529,9 @@ class SerializableEditor(QFrame):
 			# some attributes are not shown
 			if '|yhidden|' in doc: continue
 			if attr in self.ignoredAttrs: continue
+# OK, I know what should be done here: simply add general qtHide and qtReadonly attributes, for everyone to use for any purpose.
+# they are useful and quite general.
+
 # FIXME: (Janek) Implementing Quantum Mechanics makes some DEM assumptions
 # invalid.  I think that we should rethink what base class State contains, so                ### >>>>>>> Add qtHide: a hack to hide incompatibility DEM vs. QM
 # that in QM we would not need to use this hack to hide some variables.

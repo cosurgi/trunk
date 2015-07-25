@@ -16,7 +16,7 @@ gaussWidth_z = 0.7
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = halfSize # FIXME: size ??
+potentialHalfSize = halfSize
 potentialCoefficient= [-1,0,0]
 potentialMaximum    = 20;
 

@@ -3,7 +3,7 @@
 
 dimensions= 1
 size1d   = 15
-halfSize  = [size1d,0.1,0.1]          # FIXME: halfSize  = [size1d]
+halfSize  = [size1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # wavepacket parameters
 k0_x       = 10

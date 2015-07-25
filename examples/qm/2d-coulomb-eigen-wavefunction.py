@@ -7,7 +7,7 @@ dimensions= 2
 SC        = 1
 size1d    = 120*SC
 GRIDSIZE  = [SC*2**8,SC*2**8]
-halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
+halfSize  = [size1d,size1d,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
 SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
@@ -34,7 +34,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(steps=-1,virialCheck=False), # auto
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False), # auto
 	SchrodingerAnalyticPropagator(),
 ]
 

@@ -7,7 +7,7 @@ dimensions= 2
 SC=4
 size1d    =  480*SC
 GRIDSIZE  = [SC*2**10,SC*2**10]
-halfSize  = [size1d,size1d,0.1]           # FIXME: halfSize  = [size1d,size1d*1.5]
+halfSize  = [size1d,size1d,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
 potentialCenter      = [ 0 ,0  ,0  ]

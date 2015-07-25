@@ -136,7 +136,6 @@ int main(void){
 	);
 	Fill2_d1_12x_x_x12.print(true);
 	
-// FIXME BTW: is that correct behaviour? What do I need?
 	std::cout << "\nassert Fill2_d1_12x_x_x12 ... ";
 	for(size_t A_   =0 ; A_   < dim_Fill2_d1_12x_x_x12[0] ; A_   ++)
 	for(size_t A__  =0 ; A__  < dim_Fill2_d1_12x_x_x12[1] ; A__  ++)

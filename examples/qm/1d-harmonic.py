@@ -3,7 +3,7 @@
 
 dimensions= 1
 size1d   = 20
-halfSize  = [size1d,0.1,0.1]           # FIXME: halfSize  = [size1d]
+halfSize  = [size1d,0.1,0.1] # must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # wavepacket parameters
 k0_x       = 6
@@ -74,15 +74,7 @@ potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion(
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
-#O.dt=.000001
-#O.dt=.001
-#O.dt=.003
-##O.dt=.005 # FIXME - noise explosion, why? (because steps=50)
-O.dt=.01 # works with steps=100
-#O.dt=.01 # works a few cycles with steps=150
-#O.dt=.012 #is not working, even for steps=150
-#O.dt=.02 # is not working, even for steps=300
-#O.dt=.1
+O.dt=.01
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

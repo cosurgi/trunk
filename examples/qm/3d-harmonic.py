@@ -16,7 +16,7 @@ potentialCoefficient= [2,2,2]
 
 # potential parameters
 potentialCenter   = [ 0, 0 ,0  ]
-potentialHalfSize = halfSize # FIXME: size ??
+potentialHalfSize = halfSize
 potentialValue    = 0.0
 
 O.engines=[
