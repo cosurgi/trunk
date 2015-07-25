@@ -130,10 +130,12 @@ template <>
 struct FFTW3_Allocator<double>::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<")   ← double\n";
 		return fftw_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       )   ← double\n";
 		fftw_free(p);
 	}
 };
@@ -143,10 +145,12 @@ template <>
 struct FFTW3_Allocator<std::complex<double> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<")   ← complex<double>\n";
 		return fftw_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       )   ← complex<double>\n";
 		fftw_free(p);
 	}
 };

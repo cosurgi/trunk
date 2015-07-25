@@ -1,6 +1,7 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 
 // FIXME (think what it really is, check definitions): An N dimensional linear (vector) space over scalar K.
+//       ADDED LATER:   probably it's really just a tensor. But mostly in cartesian space. (very little there is to convert spaces, right now)
 // This class allows storage of arbitrary dimensional arrays, or tables. It's primary purpose is for wavefunctions in quantum mechanics.
 // It is dedicated to use with libfftw3 library, but will work (slower) without it.
 // Underlying storage is a 1D std::vector<K,A> with custom fftw3 allocator A, information about dimensions is stored in another std::vector<int>
@@ -31,6 +32,15 @@
 #ifdef YADE_FFTW3
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
+
+#include <boost/multiprecision/cpp_int.hpp>
+using namespace boost::multiprecision;
+template<typename zzz>
+struct Zcc{
+static cpp_int NDimTable_SIZE_TOTAL;
+static cpp_int NDimTable_Instances;
+};
+using ZZ = Zcc<int>;
 
 std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 
@@ -130,13 +140,25 @@ class NDimTable : private std::vector<K
 	public:
 		//friend bool unitTesting<typename K>(const NDimTable<K>&);
 		// empty constructor
-		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0), dirty(true) {}; //http://en.cppreference.com/w/cpp/container/vector/vector
-		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0)) { resize(d     ); };
-		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0)) { resize(d,init); };
+		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0), dirty(true)
+		{
+			std::cerr << "EMPTY constructor NDimTable()                       : " << ++ZZ::NDimTable_Instances << "\n";
+		}; //http://en.cppreference.com/w/cpp/container/vector/vector
+		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0))
+		{
+			std::cerr << "SIZE constructor NDimTable(DimN)                    : " << ++ZZ::NDimTable_Instances << "\n";
+			resize(d     );
+		};
+		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0))
+		{
+			std::cerr << "INIT constructor NDimTable(DimN, init)              : " << ++ZZ::NDimTable_Instances << "\n";
+			resize(d,init);
+		};
 		// copy constructor
 		NDimTable(const NDimTable& other) 
 			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total), dirty(true)
 		{
+			std::cerr << "COPY constructor NDimTable(const NDimTable& other)   : " << ++ZZ::NDimTable_Instances << "\n";
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "move failed! rank:" << rank_d << "\n";
 			#endif
@@ -144,6 +166,7 @@ class NDimTable : private std::vector<K
 		template<typename L> NDimTable(const NDimTable<L>& other) 
 			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) , dirty(true)
 		{
+			std::cerr << "CoPy constructor NDimTable(const NDimTable<L>& other) : " << ++ZZ::NDimTable_Instances << "\n";
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "conversion! rank:" << rank_d << "\n";
 			#endif
@@ -152,38 +175,74 @@ class NDimTable : private std::vector<K
 		NDimTable(NDimTable&& other)
 			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total)), dirty(true)
 		{
+			std::cerr << "MOVE constructor NDimTable()                        : " << ++ZZ::NDimTable_Instances << "\n";
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "moved! rank:" << rank_d << "\n";
 			#endif
 			other={};
+			//add_size();
 		};
 		// tensor product constructor
 		// careful - it's a vector of pointers. It's intended to be initialised with references
 		NDimTable(const std::vector<const NDimTable*>& others)
 			: parent(std::size_t(0)), dirty(true)
 		{
+			std::cerr << "constructor calcTensorProduct(others);           :" << ++ZZ::NDimTable_Instances << "\n";
 			calcTensorProduct(others); // fill in the data
 		};
+
+/* ?? */	void subtract_size()
+		{
+			std::cerr << "subtract_size:" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+			ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
+			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+		}
+/* ?? */	void add_size()
+		{
+			std::cerr << "add_size     :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+			ZZ::NDimTable_SIZE_TOTAL += this->capacity()*sizeof(value_type); // + sizeof(&this);
+			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+		}
+/* ?? */	~NDimTable()
+		{
+			std::cerr << "destructor   :" << --ZZ::NDimTable_Instances << "\n";
+			std::cerr << "destructor   :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+			ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
+			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+		};
+
+/* ?? */	void parent_resize (size_t n)
+		{
+			subtract_size();
+			parent::resize(n);
+			add_size();
+		}
+/* ?? */	void parent_resize (size_t n, const value_type& val)
+		{
+			subtract_size();
+			parent::resize(n,val);
+			add_size();
+		}
 
 		// allocation
 /* OK */	void resize(const std::vector<std::size_t>& d ) {
 			if(dim_n==d) return;
 			calcDimRankTotal(d);
-			parent::resize(total);
+			parent_resize(total);
 		};
 /* OK */	void resize(const std::vector<std::size_t>& d, value_type init) {
 			calcDimRankTotal(d);
-			parent::resize(total,init);
+			parent_resize(total,init);
 		};
 /* OK */	void resize(const NDimTable& other) {
 			if(dim_n==other.dim_n) return;
 			calcDimRankTotal(other.dim_n);
-			parent::resize(total);
+			parent_resize(total);
 		};
 /* OK */	void resize(const NDimTable& other, value_type init) {
 			if(dim_n==other.dim_n) return;
 			calcDimRankTotal(other.dim_n);
-			parent::resize(total,init);
+			parent_resize(total,init);
 		};
 
 		// capacity
@@ -361,7 +420,7 @@ class NDimTable : private std::vector<K
 		{
 			assert(others.size()>=2);
 			calcTensorProductDimRankTotal(others);
-			parent::resize(total);      // now it's ready to calculate data
+			parent_resize(total);      // now it's ready to calculate data
 			// now I need an N-dimensional loop, to multiply everything by everything by everything by ...
 			std::vector<std::size_t> pos_i(rank_d,0);
 			// last index varies fastest
@@ -624,7 +683,7 @@ class NDimTable : private std::vector<K
 
 static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
 if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
-fftw_plan_with_nthreads(2/*16*/);//omp_get_max_threads());
+fftw_plan_with_nthreads(16);//omp_get_max_threads());
 
 
 			//(*this)=inp; // FIXME - jakoś inaczej
