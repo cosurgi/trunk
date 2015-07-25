@@ -105,8 +105,8 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 	//           But sometimes I have just several different potential sources, which I should sum together
 	//                  → e.g. several barriers
 	//
-		if(Vpsi.rank()==0) Vpsi =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
-		else               Vpsi+=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+		if(Vpsi.rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ ) Vpsi =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+		else              /* else dodaj kolejny potencjał */                             Vpsi+=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
 	}
 	// FIXME end
 
@@ -118,6 +118,8 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 //	for(int i=0;i<Vpsi.dim()[0];i++)
 //		std::cerr << i << " " << Vpsi.at(i,Vpsi.dim()[0]/2) << "\n";
 
+
+// FIXME - ale jesli potencjał jest tylko jeden to powinienem używać referencje.........
 	return std::move(Vpsi);
 };
 
@@ -241,9 +243,36 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	// FIXME: return std::move(psi_1);
 }
 
+Real SchrodingerKosloffPropagator::calcKosloffR(Real dt)
+{ // calculate R parameter in Kosloff method
+
+	static Real last_dt(dt);
+	static Real ret_R( dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar) );
+
+	if(dt != last_dt)
+	{
+		last_dt=dt;
+		ret_R  = dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);
+	}
+
+	return ret_R; // dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);
+};
+Real SchrodingerKosloffPropagator::calcKosloffG(Real dt)
+{ // calculate G parameter in Kosloff method
+	static Real last_dt(dt);
+	static Real ret_G( dt*eMin()/(2*FIXMEatomowe_hbar) );
+	
+	if(dt != last_dt)
+	{
+		last_dt=dt;
+		ret_G  = dt*eMin()/(2*FIXMEatomowe_hbar);
+	}
+
+	return ret_G; // dt*eMin()/(2*FIXMEatomowe_hbar);
+};
 void SchrodingerKosloffPropagator::action()
 {
-	virialTheorem_Grid_check(); // FIXME - to powinno być chyba zależne od potencjału...
+	//virialTheorem_Grid_check(); // FIXME - to powinno być chyba zależne od potencjału...
 	timeLimit.readWallClock();
 	Real R   = calcKosloffR(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real G   = calcKosloffG(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
@@ -256,8 +285,8 @@ void SchrodingerKosloffPropagator::action()
 		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable() );
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		if(psiGlobal) {
-			// FIXME: this is    ↓ only because with & it draws the middle of calculations
-			NDimTable<Complexr>/*&*/ psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
+			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
@@ -279,7 +308,7 @@ void SchrodingerKosloffPropagator::action()
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
 			// FIXME: this is    ↓ only because with & it draws the middle of calculations
-			psiGlobal->psiGlobalTable = psi_dt;
+	////	↑↑↑	psiGlobal->psiGlobalTable = psi_dt;
 			// FIXME: but it actually wastes twice more memory
 
 			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";

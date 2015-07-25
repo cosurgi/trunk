@@ -3,7 +3,7 @@
 #include "QMPotentialCoulomb.hpp"
 
 #include <lib/time/TimeLimit.hpp>
-TimeLimit timeLimitC; // FIXME - remove when finshed fixing
+TimeLimit timeLimitC; // FIXME - remove all timeLimit when finshed fixing
 
 YADE_PLUGIN(
 	(QMParametersCoulomb)
