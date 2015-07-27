@@ -33,15 +33,6 @@
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
 
-#include <boost/multiprecision/cpp_int.hpp>
-using namespace boost::multiprecision;
-template<typename zzz>
-struct Zcc{
-static cpp_int NDimTable_SIZE_TOTAL;
-static cpp_int NDimTable_Instances;
-};
-using ZZ = Zcc<int>;
-
 std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 
 template <typename K> // FIXME: do something so that only float, double, long double, float128 are allowed.
@@ -142,23 +133,31 @@ class NDimTable : private std::vector<K
 		// empty constructor
 		NDimTable() : parent(std::size_t(0)) , rank_d(0), dim_n({}), total(0), dirty(true)
 		{
-			std::cerr << "EMPTY constructor NDimTable()                       : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "EMPTY constr. NDimTable()           : " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 		}; //http://en.cppreference.com/w/cpp/container/vector/vector
 		NDimTable(const std::vector<std::size_t>& d)                  : parent(std::size_t(0))
 		{
-			std::cerr << "SIZE constructor NDimTable(DimN)                    : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "SIZE constr. NDimTable(DimN)        : " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			resize(d     );
 		};
 		NDimTable(const std::vector<std::size_t>& d, value_type init) : parent(std::size_t(0))
 		{
-			std::cerr << "INIT constructor NDimTable(DimN, init)              : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "INIT constr. NDimTable(DimN, init)  : " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			resize(d,init);
 		};
 		// copy constructor
 		NDimTable(const NDimTable& other) 
 			: parent(static_cast<const parent&>(other)), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total), dirty(true)
 		{
-			std::cerr << "COPY constructor NDimTable(const NDimTable& other)   : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "COPY constr.(const NDimTable& other): " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "move failed! rank:" << rank_d << "\n";
 			#endif
@@ -166,7 +165,9 @@ class NDimTable : private std::vector<K
 		template<typename L> NDimTable(const NDimTable<L>& other) 
 			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) , dirty(true)
 		{
-			std::cerr << "CoPy constructor NDimTable(const NDimTable<L>& other) : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "CoPy(!) constr.(const NDimTable<L>&): " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "conversion! rank:" << rank_d << "\n";
 			#endif
@@ -175,7 +176,9 @@ class NDimTable : private std::vector<K
 		NDimTable(NDimTable&& other)
 			: parent(static_cast<parent&&>(other)), rank_d(std::move(other.rank_d)), dim_n(std::move(other.dim_n)), total(std::move(other.total)), dirty(true)
 		{
-			std::cerr << "MOVE constructor NDimTable()                        : " << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "MOVE constructor NDimTable()        : " << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			#ifdef DEBUG_NDIMTABLE
 			std::cerr << "moved! rank:" << rank_d << "\n";
 			#endif
@@ -187,28 +190,36 @@ class NDimTable : private std::vector<K
 		NDimTable(const std::vector<const NDimTable*>& others)
 			: parent(std::size_t(0)), dirty(true)
 		{
-			std::cerr << "constructor calcTensorProduct(others);           :" << ++ZZ::NDimTable_Instances << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "constructor calcTensorProduct(othrs):" << ++ZZ::NDimTable_Instances << "\n";
+#endif
 			calcTensorProduct(others); // fill in the data
 		};
 
 /* ?? */	void subtract_size()
 		{
-			std::cerr << "subtract_size:" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
-			ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
-			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+#ifdef DEBUG_NDIM_RAM
+		//	std::cerr << "subtract_size:" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+		//	ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
+		//	std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+#endif
 		}
 /* ?? */	void add_size()
 		{
-			std::cerr << "add_size     :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
-			ZZ::NDimTable_SIZE_TOTAL += this->capacity()*sizeof(value_type); // + sizeof(&this);
-			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+#ifdef DEBUG_NDIM_RAM
+		//	std::cerr << "add_size     :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+		//	ZZ::NDimTable_SIZE_TOTAL += this->capacity()*sizeof(value_type); // + sizeof(&this);
+		//	std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+#endif
 		}
 /* ?? */	~NDimTable()
 		{
-			std::cerr << "destructor   :" << --ZZ::NDimTable_Instances << "\n";
-			std::cerr << "destructor   :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
-			ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
-			std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
+#ifdef DEBUG_NDIM_RAM
+std::cerr << "destructor                          : " << --ZZ::NDimTable_Instances << "\n";
+#endif
+		//	std::cerr << "destructor                          :" << ZZ::NDimTable_SIZE_TOTAL << "  →  ";
+		//	ZZ::NDimTable_SIZE_TOTAL -= this->capacity()*sizeof(value_type); // + sizeof(&this);
+		//	std::cerr                << ZZ::NDimTable_SIZE_TOTAL << "\n";
 		};
 
 /* ?? */	void parent_resize (size_t n)

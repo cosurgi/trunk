@@ -262,6 +262,7 @@ void Gl1_QMGeometry::go(
 				std::vector<short int> remainDims(rank, 0);
 				for(std::size_t i = 0 ; i < rank ;  i++) if(curOpt->doMarginalDistribution[i][0]==0) remainDims[i]=1;
 				if(curOpt->renderFFT) {
+HERE;
 					NDimTable<Complexr>      tmp = maybeTransform(qms,dimSpatial,curOpt,qms->getPsiGlobalExisting()->psiGlobalTable);
 					tmp.niceFFT();
 					curOpt->marginalDistribution = tmp                                                                              .calcMarginalDistribution     (remainDims,qms->getPsiGlobalExisting()->getSpatialSizeGlobal()/* FIXME - spatialSize is incorrect in momentum (inverse) space, and maybe wrong after maybeTransform (which now uses the same size for this reason) */,curOpt->marginalNormalize,curOpt->marginalDensityOnly);

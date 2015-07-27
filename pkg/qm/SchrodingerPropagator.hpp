@@ -95,6 +95,7 @@ found in [TalEzer1984]_"
 			((Real    ,FIXMEatomowe_MASS,1               ,,"FIXME - should use mass of the particle"))
 			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
 			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
+			((bool    ,printIter  ,false ,,"Print Kosloff interation."))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")

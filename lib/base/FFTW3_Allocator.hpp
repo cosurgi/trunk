@@ -13,6 +13,23 @@
 
 #ifdef YADE_FFTW3
 
+#ifdef DEBUG_NDIM_RAM
+	#include <boost/multiprecision/cpp_int.hpp>
+	using namespace boost::multiprecision;
+	#include <map>
+	//struct cmpr {
+	//  bool operator()(void* a, void* b) { return (intptr_t)a < (intptr_t)b; };
+	//}
+	template<typename zzz>
+	struct Zcc{
+	//static cpp_int NDimTable_SIZE_TOTAL;
+	static cpp_int NDimTable_Instances;
+	static cpp_int NDimTable_Alloc;
+	static std::map<void*,cpp_int /*,cmpr*/> NDimTable_Allocated;
+	};
+	using ZZ = Zcc<int>;
+#endif
+
 #include <memory>
 #include <fftw3.h>
 #include <limits>
@@ -92,6 +109,7 @@ template <>
 struct FFTW3_Allocator<float>::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
+		std::cout << "----- fftwd_malloc("<<n<<") <-- float    ?????????????????????????????\n";
 		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_malloc("<<n<<")\n";
 		#endif
@@ -99,6 +117,7 @@ struct FFTW3_Allocator<float>::FFTW3_Memory
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- float    ?????????????????????????????\n";
 		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_FREE\n";
 		#endif
@@ -111,6 +130,7 @@ template <>
 struct FFTW3_Allocator<std::complex<float> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) { 
+		std::cout << "----- fftwd_malloc("<<n<<") <-- complex<float>    ?????????????????????????????\n";
 		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_malloc("<<n<<")\n";
 		#endif
@@ -118,6 +138,7 @@ struct FFTW3_Allocator<std::complex<float> >::FFTW3_Memory
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- complex<float>    ?????????????????????????????\n";
 		#ifdef DEBUG_NDIMTABLE
 		std::cout << "----- fftwf_FREE\n";
 		#endif
@@ -130,12 +151,17 @@ template <>
 struct FFTW3_Allocator<double>::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
-		std::cout << "----- fftwd_malloc("<<n<<")   ← double\n";
+#ifdef DEBUG_NDIM_RAM
+		std::cout << "----- fftwd_malloc("<<n<<") <-- double    ?????????????????????????????\n";
+								// "??" ponieważ powinno być używane tylko complex<double>
+#endif
 		return fftw_malloc(n);
 	}
 
 	static void free(void *p) {
-		std::cout << "----- fftwd_free  (       )   ← double\n";
+#ifdef DEBUG_NDIM_RAM
+		std::cout << "----- fftwd_free  (       ) <-- double    ?????????????????????????????\n";
+#endif
 		fftw_free(p);
 	}
 };
@@ -145,12 +171,28 @@ template <>
 struct FFTW3_Allocator<std::complex<double> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
-		std::cout << "----- fftwd_malloc("<<n<<")   ← complex<double>\n";
+#ifdef DEBUG_NDIM_RAM
+std::cout << "----- fftwd_malloc("<<n<<") <-- complex<double>  :" << ZZ::NDimTable_Alloc/(1024*1024)<< " MB --> ";
+ZZ::NDimTable_Alloc += n; // + sizeof(&this);
+		void* ret = fftw_malloc(n);
+ZZ::NDimTable_Allocated[ret]=n;
+std::cerr<<ZZ::NDimTable_Alloc <<" bytes == "<< ZZ::NDimTable_Alloc/(1024*1024)<<" MB  (this one: "<< ZZ::NDimTable_Allocated[ret]/(1024*1024) << " MB)\n";
+		return ret;
+#else
 		return fftw_malloc(n);
+#endif
 	}
 
 	static void free(void *p) {
-		std::cout << "----- fftwd_free  (       )   ← complex<double>\n";
+#ifdef DEBUG_NDIM_RAM
+std::cout << "----- fftwd_free  (       ) <-- complex<double>  :" << ZZ::NDimTable_Alloc/(1024*1024)<< " MB --> ";
+cpp_int ile_zwalniam = ZZ::NDimTable_Allocated[p];
+cpp_int ile_bylo     = ZZ::NDimTable_Alloc;
+ZZ::NDimTable_Alloc -= ile_zwalniam; // + sizeof(&this);
+std::cerr<<ZZ::NDimTable_Alloc <<" bytes == "<< ZZ::NDimTable_Alloc/(1024*1024)<<" MB (still used: "
+  << (ile_bylo - ZZ::NDimTable_Allocated[p])/(1024*1024) << " MB)\n";
+ZZ::NDimTable_Allocated.erase(p);
+#endif
 		fftw_free(p);
 	}
 };
@@ -160,10 +202,12 @@ template <>
 struct FFTW3_Allocator<long double>::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<") <-- long double    ?????????????????????????????\n";
 		return fftwl_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- long double    ?????????????????????????????\n";
 		fftwl_free(p);
 	}
 };
@@ -173,10 +217,12 @@ template <>
 struct FFTW3_Allocator<std::complex<long double> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<") <-- complex<long double>    ?????????????????????????????\n";
 		return fftwl_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- complex<long double>    ?????????????????????????????\n";
 		fftwl_free(p);
 	}
 };
@@ -188,10 +234,12 @@ template <>
 struct FFTW3_Allocator<float128>::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<") <-- float128    ?????????????????????????????\n";
 		return fftwq_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- float128    ?????????????????????????????\n";
 		fftwq_free(p);
 	}
 };
@@ -200,10 +248,12 @@ template <>
 struct FFTW3_Allocator<std::complex<float128> >::FFTW3_Memory
 {
 	static void* malloc(size_t n) {
+		std::cout << "----- fftwd_malloc("<<n<<") <-- complex<float128>    ?????????????????????????????\n";
 		return fftwq_malloc(n);
 	}
 
 	static void free(void *p) {
+		std::cout << "----- fftwd_free  (       ) <-- complex<float128>    ?????????????????????????????\n";
 		fftwq_free(p);
 	}
 };

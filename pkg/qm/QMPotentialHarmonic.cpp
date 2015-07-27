@@ -191,12 +191,14 @@ bool Law2_QMIGeom_QMIPhysHarmonic::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& 
 	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 // FIXME(3) !!!!!!!! on nie może tutaj robić QMIGeom !!!!!!! musi robić QMIPhys !!!!! (i do tego musi to robić w Ip2_*)
+HERE;
 	NDimTable<Complexr>& val_I_GeomMarginal(qmigeom->potentialMarginalDistribution);
 
 
 /*FIXME*/	if(not harmonic->potentialInteractionGlobal)
 /*FIXME*/		harmonic->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
 /*FIXME*/		// FIXME ! - tensorProduct !!
+HERE;
 /*FIXME*/	NDimTable<Complexr>& val(harmonic->potentialInteractionGlobal->psiGlobalTable);
 
 
@@ -260,6 +262,7 @@ bool Law2_QMIGeom_QMIPhysHarmonicParticles::go(shared_ptr<IGeom>& ig, shared_ptr
 /*FIXME*/	if(not harmonic->potentialInteractionGlobal)
 /*FIXME*/		harmonic->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
 /*FIXME*/		// FIXME ! - tensorProduct !!
+HERE;
 /*FIXME*/	NDimTable<Complexr>& val(harmonic->potentialInteractionGlobal->psiGlobalTable);
 
 
@@ -267,6 +270,7 @@ bool Law2_QMIGeom_QMIPhysHarmonicParticles::go(shared_ptr<IGeom>& ig, shared_ptr
 // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
 //            hmm... ale nawet gdy mam iloczyn tensorowy to one muszą się idealnie nakrywać !
 
+HERE;
 		NDimTable<Complexr>::DimN newDim=psi1->getPsiGlobalExisting()->psiGlobalTable.dim();
 		newDim.insert(newDim.end(),psi2->getPsiGlobalExisting()->psiGlobalTable.dim().begin(),psi2->getPsiGlobalExisting()->psiGlobalTable.dim().end());
 // generate multi dimensional potential here
@@ -290,7 +294,9 @@ bool Law2_QMIGeom_QMIPhysHarmonicParticles::go(shared_ptr<IGeom>& ig, shared_ptr
 		newGlobal->members.push_back(I->id1);
 		newGlobal->members.push_back(I->id2);
 //                                                                        FIXME    ↓ - nie powienienem używać geometrii tylko faktyczną funkcję
+HERE;
 		std::vector<const NDimTable<Complexr>*> partsNormalized({&(psi1->getPsiGlobalExisting()->psiGlobalTable),&(psi2->getPsiGlobalExisting()->psiGlobalTable)});
+HERE;
 		newGlobal->psiGlobalTable = NDimTable<Complexr>(partsNormalized);
 		newGlobal->wasGenerated = true;
 	

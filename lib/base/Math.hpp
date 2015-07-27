@@ -2,6 +2,14 @@
 // © 2015 Janek Kozicki <cosurgi@gmail.com>
 #pragma once
 
+#include <iostream>
+//#define DEBUG_NDIM_RAM
+#ifdef DEBUG_NDIM_RAM
+#define HERE std::cout << ":::::::------ At " __FILE__ ":" << __LINE__ << std::endl
+#else
+#define HERE
+#endif
+
 #ifdef FLOAT128_PRECISION
 	#if BOOST_VERSION<105400
 		#error BOOST_1_54_or_higher_is_required

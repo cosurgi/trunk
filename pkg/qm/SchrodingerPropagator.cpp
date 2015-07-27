@@ -97,6 +97,7 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 //		exit(1);
 	}
 
+HERE;
 	NDimTable<Complexr> Vpsi={};
 	for(auto& pot : allPotentials) {
 	// FIXME - this is actually a little wrong. Sometimes I can't add together different potentials !!!
@@ -166,6 +167,7 @@ void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 
 Real SchrodingerKosloffPropagator::eMin()
 {
+HERE;
 	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	return ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
 };
@@ -183,6 +185,7 @@ Real SchrodingerKosloffPropagator::eMax()
 		ret=std::max(ret, Ekin );
 	}
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
+HERE;
 	NDimTable<Complexr>                        VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	ret += ((VGlobal.rank()!=0) ? (VGlobal.maxReal()) : (0));
 	return ret;
@@ -199,6 +202,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 
 	// FIXME,FIXME ↓ -- this should be somewhere else. Still need to find a good place.
 	static bool hasTable(false);
+HERE;
 	static NDimTable<Real    > kTable(psi_0.dim());
 	if(! hasTable){
 		hasTable=true;
@@ -212,6 +216,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	// FIXME,FIXME ↑ -- this should be somewhere else. Still need to find a good place.
 	
 	// prepare the potential  ψᵥ
+HERE;
 	NDimTable<Complexr> Vpsi( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	
 	// previous loop was:   NDimTable<Complexr> Vpsi(psi_0.dim(),0);
@@ -277,7 +282,7 @@ void SchrodingerKosloffPropagator::action()
 	Real R   = calcKosloffR(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real G   = calcKosloffG(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real R13 = 1.3*R;
-	Real min = 100.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
+	Real min = 10000.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 // FIXME - for multiple entangled wavefunctions
 //	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
@@ -286,8 +291,10 @@ void SchrodingerKosloffPropagator::action()
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 		if(psiGlobal) {
 	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
+HERE;
 			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
+HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 			Complexr ak0=calcAK(0,R);                       // a₀
@@ -298,6 +305,8 @@ void SchrodingerKosloffPropagator::action()
 			// never stop when i < R*1.3, unless steps is positive. Auto stop expanding series based on std::numeric_limits<Real>::min()
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
+				if(printIter) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << "\n";
+HERE;
 				NDimTable<Complexr> psi_2;              // ψ₂     :
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀

@@ -126,6 +126,7 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& i
 
 	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
+HERE;
 	NDimTable<Complexr>& val(qmigeom->potentialMarginalDistribution);
 
 	if(psi->gridSize.size() <= 3) {
