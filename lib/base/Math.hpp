@@ -9,6 +9,7 @@
 #else
 #define HERE
 #endif
+#define HERE2 std::cout << ":::::::------ At " __FILE__ ":" << __LINE__ << std::endl
 
 #ifdef FLOAT128_PRECISION
 	#if BOOST_VERSION<105400

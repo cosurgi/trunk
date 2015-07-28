@@ -19,7 +19,9 @@ void InteractionLoop::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::pyt
 	t=boost::python::tuple(); // empty the args; not sure if this is OK, as there is some refcounting in raw_constructor code
 }
 
-void InteractionLoop::action(){
+// first appeared in commit 590964e  >>>>>>> Fix serialization problems in core/ (can be done better, see Scene.hpp)
+void InteractionLoop::updateScenePtrInteractionLoop()
+{
 	// update Scene* of the dispatchers
 	lawDispatcher->scene=scene;
 	physDispatcher->scene=scene;
@@ -29,6 +31,15 @@ void InteractionLoop::action(){
 	geomDispatcher->updateScenePtr();
 	physDispatcher->updateScenePtr();
 	lawDispatcher->updateScenePtr();
+};
+
+void InteractionLoop::action(){
+	updateScenePtrInteractionLoop();
+
+	// call Ig2Functor::preStep
+	FOREACH(const shared_ptr<IGeomFunctor>& ig2, geomDispatcher->functors) ig2->preStep();
+	// call LawFunctor::preStep
+	FOREACH(const shared_ptr<LawFunctor>& law2, lawDispatcher->functors) law2->preStep();
 
 	/*
 		initialize callbacks; they return pointer (used only in this timestep) to the function to be called

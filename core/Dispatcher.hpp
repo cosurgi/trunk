@@ -22,6 +22,7 @@ class Dispatcher: public Engine{
 	virtual string getFunctorType() { throw; };
 	virtual int getDimension() { throw; };
 	virtual string getBaseClassType(unsigned int ) { throw; };
+	virtual void updateScenePtr() {throw;};
 	//
 	virtual ~Dispatcher() {};
 	YADE_CLASS_BASE_DOC(Dispatcher,Engine,"Engine dispatching control to its associated functors, based on types of argument it receives. This abstract base class provides no functionality in itself.")
@@ -37,8 +38,8 @@ Because we need literal functor and class names for registration in python, we p
 
 #define _YADE_DIM_DISPATCHER_FUNCTOR_DOC_ATTRS_CTOR_PY(Dim,DispatcherT,FunctorT,doc,attrs,ctor,py) \
 	typedef FunctorT FunctorType; \
-	void updateScenePtr(){ FOREACH(shared_ptr<FunctorT> f, functors){ f->scene=scene; }} \
-	void postLoad(DispatcherT&){ clearMatrix(); FOREACH(shared_ptr<FunctorT> f, functors) add(YADE_PTR_CAST<FunctorT>(f)); } \
+	virtual void updateScenePtr(){ FOREACH(shared_ptr<FunctorT> f, functors){ f->scene=scene; }} \
+	void postLoad(DispatcherT&){ clearMatrix(); {FOREACH(shared_ptr<FunctorT> f, functors) add(YADE_PTR_CAST<FunctorT>(f));}; updateScenePtr(); } \
 	virtual void add(FunctorT* f){ add(shared_ptr<FunctorT>(f)); } \
 	virtual void add(shared_ptr<FunctorT> f){ bool dupe=false; string fn=f->getClassName(); FOREACH(const shared_ptr<FunctorT>& f, functors) { if(fn==f->getClassName()) dupe=true; } if(!dupe) functors.push_back(f); addFunctor(f); } \
 	BOOST_PP_CAT(_YADE_DISPATCHER,BOOST_PP_CAT(Dim,D_FUNCTOR_ADD))(FunctorT,f) \

@@ -66,6 +66,15 @@ void Scene::postLoad(Scene&){
 		if(!b || !b->material || b->material->id<0) continue; // not a shared material
 		if(b->material!=materials[b->material->id]) throw std::logic_error("Scene::postLoad: Internal inconsistency, shared materials not preserved when loaded; please report bug.");
 	}
+
+	// update scene in all engines. FIXME - see in to_fix.txt in pkg/qm (use enable_shared_from_this everywhere)
+	FOREACH(const shared_ptr<Engine>& e, engines){
+		e->scene=this; // FIXME - should call e->updateScenePtrWith(scene), and then do other stuff, like this one below done by hand
+		shared_ptr<Dispatcher> disp = boost::dynamic_pointer_cast<Dispatcher>(e);
+		if(disp) disp->updateScenePtr();
+		shared_ptr<InteractionLoop> iloop = boost::dynamic_pointer_cast<InteractionLoop>(e);
+		if(iloop) iloop->updateScenePtrInteractionLoop();
+	}
 }
 
 void Scene::moveToNextTimeStep(){
