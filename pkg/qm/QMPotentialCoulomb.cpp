@@ -539,9 +539,19 @@ HERE;
 			, [&](Real i_2,int d)->Real{return psi2->iToX(i_2,d) + psi2->pos[d];}// - qmigeom->relPos21[d];} // xyz position function
 			, [&](Vector3r& xyz1,Vector3r& xyz2)->Complexr{ return FIXME_2particle.getValPos_2particles(xyz1,xyz2,par1,par2,&FIXME_qmstate);} // function value at xyz
 			);
-		boost::shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> me = boost::dynamic_pointer_cast<Law2_QMIGeom_QMIPhys_GlobalWavefunction>(shared_from_this());
-		psi1->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
-		psi2->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
+
+
+		try {
+			boost::shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> me = boost::dynamic_pointer_cast<Law2_QMIGeom_QMIPhys_GlobalWavefunction>(shared_from_this());
+			psi1->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
+			psi2->setLaw2Generator(/*shared_ptr<IGeom>&*/ ig, /*shared_ptr<IPhys>&*/ ip, /*Interaction* */ I->shared_from_this(), me );
+		} catch(const boost::bad_weak_ptr& e) {
+			// FIXME - serialization of StateDispatcher gone wrong?
+			std::cerr << "Law2_QMIGeom_QMIPhysCoulombParticlesFree::go() exception boost::bad_weak_ptr, there's no shared_ptr to this="<<this<<" class. Serialization gone wrong?\n";
+		}
+
+
+
 // Fx3	};
 // Fx3	generate_Global_Table();
 // Fx3	psi1->set_FIXME_EXTRA_Generator(generate_Global_Table);

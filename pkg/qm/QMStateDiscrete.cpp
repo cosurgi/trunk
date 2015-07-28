@@ -58,7 +58,12 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 			for(size_t i=0 ; i < qms->gridSize.size() ; i++) qmg->step[i]=qms->getSpatialSize()[i]/((Real)(qms->gridSize[i]));
 		}
 		this->calculateTableValuesPosition(par,dynamic_cast<QMState*>(qms));
-		qms->setMaterialAndGenerator(par,shared_from_this());
+		try {
+			qms->setMaterialAndGenerator(par,shared_from_this());
+		} catch(const boost::bad_weak_ptr& e) {
+			// FIXME - serialization of StateDispatcher gone wrong?
+			std::cerr << "St1_QMStateDiscrete::go() exception boost::bad_weak_ptr, there's no shared_ptr to this="<<this<<" class. FIXME:I see it in StateDispatcher, why??. Serialization gone wrong?\n";
+		}
 	} else if(qms->isAnalytic()) {
 //std::cerr << " 4    racalculating psiGlobalTable\n";
 		qms->wasGenerated = false;// keep on calculating, since it is analytic

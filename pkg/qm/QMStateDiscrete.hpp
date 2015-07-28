@@ -50,6 +50,10 @@ class QMStateDiscrete: public QMState
 or directly by filling in the discrete values in the table. It is used for numerical computations."
 			, // attributes, public variables
 /* FIXME - dubluje się z NDimTable::dim_n */			((vector<size_t>,gridSize , vector<size_t>({}), Attr::readonly ,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
+////////////////////////////// serializacja.......................
+		((boost::shared_ptr<QMStateDiscreteGlobal>,psiGlobal           ,,Attr::hidden," // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać.... "))
+		((vector<Real>                            ,spatialSize         ,,Attr::hidden," // cannot be public, because it's public in Box←QMGeometry::extents, it is synchronized by St1_QMStateDiscrete "))
+		((int                                     ,whichPartOfpsiGlobal,,Attr::hidden," // For entangled wavefunctions it says where this wavefunction starts in the entangled tensor "))
 			, // constructor
 			createIndex();
 			whichPartOfpsiGlobal=-1;
@@ -126,8 +130,10 @@ or directly by filling in the discrete values in the table. It is used for numer
 		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalNew     ();
 		boost::shared_ptr<QMStateDiscreteGlobal>& getPsiGlobalExisting() { if(not psiGlobal) throw std::runtime_error("\n\nERROR: QMStateDiscrete::psiGlobal wanted, but doesn't exist\n\n"); return psiGlobal; };
 		Complexr                                  atPsiGlobalExisting(std::vector<size_t> pos);
+
+//ser// ← oznacza, że przenisłem te zmienne to serializacji powyżej w REGISTER_....
 	private:
-		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal; // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
+//ser//		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal; // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać....
 		//boost::shared_ptr<NDimTable<Complexr>> nDimTable_PSI; // FIXING.... - to zamiast psiGlobal ??
 
 
@@ -139,9 +145,9 @@ or directly by filling in the discrete values in the table. It is used for numer
 		// Wavepacket size in position representation space, for each DOF.
 		// In QMStateDiscreteGlobal can be higher than 4D due to tensor products between wavefunctions.
 		// in QMStateDiscrete max size is 3D
-		vector<Real>  spatialSize;          // cannot be public, because it's public in Box←QMGeometry::extents, it is synchronized by St1_QMStateDiscrete
+//ser//		vector<Real>  spatialSize;          // cannot be public, because it's public in Box←QMGeometry::extents, it is synchronized by St1_QMStateDiscrete
 	private:
-		int           whichPartOfpsiGlobal; // For entangled wavefunctions it says where this wavefunction starts in the entangled tensor
+//ser//		int           whichPartOfpsiGlobal; // For entangled wavefunctions it says where this wavefunction starts in the entangled tensor
 		TimeLimit     timeLimit;
 		
 };

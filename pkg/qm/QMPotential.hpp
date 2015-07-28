@@ -84,7 +84,7 @@ class QMIGeom: public IGeom
 			  ((vector<Real>,size2,vector<Real>({}),,"1st wavepacket size in position representation space"))
 			  ((vector<size_t>,gridSize1,vector<size_t>({}),,"Lattice grid size used to describe the 1st wavefunction."))
 			  ((vector<size_t>,gridSize2,vector<size_t>({}),,"Lattice grid size used to describe the 2nd wavefunction."))
-
+			  ((NDimTable<Complexr>,potentialMarginalDistribution,,Attr::hidden,"representation of potential only for purposes of drawing on the screen"))
 // Compare in history, very long time ago:  InteractingBox2InteractingBox4ClosestFeatures.cpp (git lof, git lol -p)
 //			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
 //			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))
@@ -124,7 +124,11 @@ class QMIGeom: public IGeom
 //         It's only 1,2,3 dimensional. Always projected from the real interaction entangled wavefuncion, which is stored in QMIPhys
 
                 // oj, chyba będą też tutaj potrzebne iToX, i reszta? A może się pomyliłem, bo to miało być w QMGeometry i tak??
-		NDimTable<Complexr> potentialMarginalDistribution;     // representation of potential only for purposes of drawing on the screen
+
+///////// wrzucam do serializacji
+//ser//		NDimTable<Complexr> potentialMarginalDistribution;     // representation of potential only for purposes of drawing on the screen
+/////////////////////////////////
+
 		// std::vector<std::pair<NDimTable<Complexr>, QMGeometryDisplayConfig > > // ← każdy to jest inny rozkład brzegowy, rysowany osobno
 		                                                                          // i obliczany przez Gl1_QMIGeom
 
@@ -166,6 +170,7 @@ class QMIPhys: public IPhys
 			, // attributes, public variables
 			((Real  ,hbar  ,1               ,Attr::readonly,"Planck's constant $h$ divided by $2\\pi$: ħ=h/(2π)"))
 			((size_t,dim   ,                ,Attr::readonly,"Describes in how many dimensions this quantum particle resides. First Vector3r[0] is used, then [1], then [2]."))
+			((boost::shared_ptr<QMStateDiscreteGlobal>,potentialInteractionGlobal,,Attr::hidden,"potential alone, not multiplied by psi"))
 			, // constructor
 			createIndex();
 			//nDimTable_POT=boost::shared_ptr<NDimTable>(new NDimTable);
@@ -173,7 +178,7 @@ class QMIPhys: public IPhys
 		);
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(QMIPhys,IPhys);
-		boost::shared_ptr<QMStateDiscreteGlobal> potentialInteractionGlobal; // potential alone, not multiplied by psi
+//		boost::shared_ptr<QMStateDiscreteGlobal> potentialInteractionGlobal; // potential alone, not multiplied by psi
 //		boost::shared_ptr<NDimTable> nDimTable_POT; // potential alone, not multiplied by psi
 };
 REGISTER_SERIALIZABLE(QMIPhys);

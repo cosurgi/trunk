@@ -84,7 +84,7 @@ NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionG
 			allPotentials.insert(iphys->potentialInteractionGlobal);
 		} else {
 			if(timeLimit.messageAllowed(10))
-				std::cerr << "\n\nW̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::eMin can't find QMIPhys inside Interaction.\n\n";
+				std::cerr << "\n\nW̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable can't find QMIPhys inside Interaction.\n\n";
 		}
 	};
 

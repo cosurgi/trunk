@@ -109,6 +109,12 @@ class QMState: public State
 // FIXME: with this description it actually becomes credible: qtHide →   "Space separated list of runtime-settable hidden    variables in qt4 interface."
 // FIXME: same goes with this one: ((string,qtReadonly,"",Attr::readonly,"Space separated list of runtime-settable read-only variables in qt4 interface."))
 // FIXME: it actually makes sense to put qtHide & qtReadonly inside Serializable class !!!!!
+			((shared_ptr<QMParameters>                            ,qmParameters     ,,Attr::hidden," ... "))
+			((shared_ptr<St1_QMState>                             ,st1_QMStateGen   ,,Attr::hidden," ... "))
+			((shared_ptr<IGeom>                                   ,qmIG             ,,Attr::hidden," ... "))
+			((shared_ptr<IPhys>                                   ,qmIP             ,,Attr::hidden," ... "))
+			((shared_ptr<Interaction>                             ,qmI              ,,Attr::hidden," ... "))
+			((shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction> ,law2_generator   ,,Attr::hidden," ... "))
 			, // constructor
 			createIndex();
 // Fx3			FIXME_extra_generator_used = false;
@@ -120,12 +126,14 @@ class QMState: public State
 		);
 		REGISTER_CLASS_INDEX(QMState,State);
 	private:
-		shared_ptr<QMParameters> qmParameters;
-		shared_ptr<St1_QMState>  st1_QMStateGen;
-		shared_ptr<IGeom>        qmIG;
-		shared_ptr<IPhys>        qmIP;
-		shared_ptr<Interaction>  qmI;
-		shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction>   law2_generator;
+//		shared_ptr<QMParameters> qmParameters;
+//		shared_ptr<St1_QMState>  st1_QMStateGen;
+//		shared_ptr<IGeom>        qmIG;
+//		shared_ptr<IPhys>        qmIP;
+//		shared_ptr<Interaction>  qmI;
+//		shared_ptr<Law2_QMIGeom_QMIPhys_GlobalWavefunction>   law2_generator;
+
+
 // Fx3		std::function<void()>    FIXME_extra_generator;
 // Fx3		bool                     FIXME_extra_generator_used;
 };

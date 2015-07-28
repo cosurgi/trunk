@@ -44,6 +44,7 @@ responsible for doing this. It is the LawFunctor, because the interaction is wha
 product and become entangled."
 			, // attributes, public variables
 			  ((std::vector<Body::id_t>,members,std::vector<Body::id_t>({}),Attr::readonly,"List of wavefunctions that got entangled here, their respective degrees of freedom are in the order of being entangled."))
+			  ((NDimTable<Complexr>,psiGlobalTable,,Attr::hidden,"psiGlobalTable"))
 //  vector<size_t>,QMStateDiscrete::gridSize    ← gridSize for members
 //  vector<Real>,size                           ← positional representation sizes for members
 			, // constructor
@@ -55,7 +56,7 @@ product and become entangled."
 		// FIXME - Real or Complexr  ?
 		//NDimTable<Complexr> allKTable;// FIXME - Real is only good for calculating 2ⁿᵈ derivative with FFT, so it won't work with Dirac's equation
 		//NDimTable<Complexr> allPotentials;
-		NDimTable<Complexr> psiGlobalTable;
+//		NDimTable<Complexr> psiGlobalTable;
 
 		const vector<Real>& getSpatialSizeGlobal()  const              { return spatialSize;    };
 		void                setSpatialSizeGlobal(const vector<Real> s) { spatialSize=s;         };

@@ -65,6 +65,13 @@ class NDimTable : private std::vector<K
 	public:
 		typedef std::vector<std::size_t>  DimN;
 		typedef std::vector<value_type>   DimReal;
+	friend class boost::serialization::access;
+	private: template<class ArchiveT> void serialize(ArchiveT & ar, unsigned int version){
+		ar & BOOST_SERIALIZATION_NVP(rank_d);
+		ar & BOOST_SERIALIZATION_NVP(dim_n);
+		ar & BOOST_SERIALIZATION_NVP(total);
+		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(parent);
+	}
 	private:
 	// Attributes
 		std::size_t                rank_d;      // rank, ᵈ
