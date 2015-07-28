@@ -3,7 +3,7 @@
 
 dimensions= 3
 size1d   = 5
-halfSize  = [size1d,size1d*1.2,size1d*1.3]           # FIXME: halfSize  = [size1d,size1d*1.5]
+halfSize  = [size1d,size1d*1.2,size1d*1.3]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
 potentialCenter   = [ 0  ,0  ,0  ]

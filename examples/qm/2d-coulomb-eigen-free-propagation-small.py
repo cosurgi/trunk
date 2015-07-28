@@ -4,14 +4,12 @@
 dimensions= 2
 #size1d   = 20
 #size1d   = 20 #80
-##?? szybsze ??## size1d   = 70
-size1d   = 60
+size1d   = 70
 halfSize1 = [size1d,size1d,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
 #GRIDSIZE  = [32,32] #3*64 #2**7
-##?? szybsze ??##GRIDSIZE  = [70,70] #3*64 #2**7
-GRIDSIZE  = [144,144] #3*64 #2**7
+GRIDSIZE  = [70,70] #3*64 #2**7
 
 # hydrogen parameters
 #SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
@@ -26,8 +24,8 @@ hydrogenEigenFunc_l  = 1
 # wavepacket parameters
 k0_x         = 0
 k0_y         = 0
-gaussWidth_x = 6.0
-gaussWidth_y = 6.0
+gaussWidth_x = 5.0
+gaussWidth_y = 7.0
 potentialCoefficient1= [-1.0,0,0]
 potentialCoefficient2= [ 1.0,0,0]
 
@@ -45,8 +43,8 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1),
-#	SchrodingerAnalyticPropagator(),
+	SchrodingerKosloffPropagator(printIter=True),#FIXMEatomowe_MASS=1),
+	SchrodingerAnalyticPropagator(),
 ]
 
 scaleAll=300
@@ -81,23 +79,23 @@ displayOptions2_an     = append_dict(displayOptions,{'renderSe3':(Vector3(0,size
 ##         głównie chodzi o to, żeby węzły siatek się nie nakrywały.
 
 ########## Analytic solutions
-#body0           = QMBody()
-#body0.groupMask = 2
-#body0.shape     = QMGeometry(extents=halfSize1,color=[0.5,0.5,0.5],displayOptions=[QMDisplayOptions(**displayOptions1_an)])
-#body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
-#body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
-#nid=O.bodies.append(body0)
-#O.bodies[nid].state.setAnalytic()
-#
-#body1           = QMBody()
-#body1.groupMask = 2
-#body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(**displayOptions2_an)])
-#body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
-#                                      ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
-#coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
-#body1.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
-#nid=O.bodies.append(body1)
-#O.bodies[nid].state.setAnalytic()
+body0           = QMBody()
+body0.groupMask = 2
+body0.shape     = QMGeometry(extents=halfSize1,color=[0.5,0.5,0.5],displayOptions=[QMDisplayOptions(**displayOptions1_an)])
+body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
+body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+nid=O.bodies.append(body0)
+O.bodies[nid].state.setAnalytic()
+
+body1           = QMBody()
+body1.groupMask = 2
+body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(**displayOptions2_an)])
+body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
+                                      ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
+coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_l,0],'x0':potentialCenter,'gridSize':GRIDSIZE}
+body1.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
+nid=O.bodies.append(body1)
+O.bodies[nid].state.setAnalytic()
 
 
 ########## Numeric solutions
@@ -124,17 +122,16 @@ O.dt=.25
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
-try:
-	from yade import qt
-	qt.Controller()
-	qt.controller.setWindowTitle("Electron-positron pair in 2D")
-	qt.Renderer().blinkHighlight=False
-	qt.View()
-	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.views()[0].center(False,60) # median=False, suggestedRadius = 5
-
-except ImportError:
-	pass
+#try:
+#	from yade import qt
+#	qt.Controller()
+#	qt.controller.setWindowTitle("Electron-positron pair in 2D")
+#	qt.Renderer().blinkHighlight=False
+#	qt.View()
+#	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+#	qt.views()[0].center(False,60) # median=False, suggestedRadius = 5
+#except ImportError:
+#	pass
 #O.run(20000)
 
 

@@ -3,18 +3,18 @@
 
 dimensions= 1
 #size1d   = 20
-size1d   = 40 ###→ 80
+size1d   = 180###→ 80
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
-GRIDSIZE  = 128 ###→ 2**9
+GRIDSIZE  =1024 ###→ 2**9
 
 # hydrogen parameters
 #potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
 potentialCenter      = [ 0 ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialMaximum     = 10000;
-hydrogenEigenFunc_n   = 1 ###→ 3
+hydrogenEigenFunc_n   = 3 ###→ 3
 hydrogenEigenFunc_odd = 1
 
 # wavepacket parameters
@@ -39,12 +39,12 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=False),
 	SchrodingerAnalyticPropagator(),
 ]
 
 scaleAll=50
-separate_r_R=True
+separate_r_R=False
 drawFFT=False
 fftPOS = size1d if drawFFT else 0.0
 displayEnt= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']

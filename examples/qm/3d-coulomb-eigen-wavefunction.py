@@ -5,10 +5,10 @@ dimensions= 3
 
 
 size1d    = 40
-GRIDSIZE  = [3*32,3*32,3*32]
+GRIDSIZE  = [56,56,56]
 #GRIDSIZE  = [32,32,32]
 #GRIDSIZE  = [24,24,24]
-halfSize  = [size1d,size1d*1.2,size1d*1.3]           # FIXME: halfSize  = [size1d,size1d*1.5]
+halfSize  = [size1d,size1d*1.2,size1d*1.3]
 
 # potential parameters
 potentialCenter      = [ 0  ,0  ,0  ]
