@@ -11,7 +11,7 @@ halfSize2 = halfSize1
 #GRIDSIZE  = 16
 #GRIDSIZE  = [32,32] #3*64 #2**7
 ##?? szybsze ??##GRIDSIZE  = [70,70] #3*64 #2**7
-GRIDSIZE  = [144,144] #3*64 #2**7
+GRIDSIZE  = [128,128] #3*64 #2**7
 
 # hydrogen parameters
 #SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
