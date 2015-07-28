@@ -51,10 +51,11 @@ Complexr  St1_QMPacketHydrogenEigenFunc::quantumHydrogenWavefunction_1D(int n_, 
 	else     return sqrt(2/n)*R_odd (n,z);
 };
 
-Real St1_QMPacketHydrogenEigenFunc::En_2D(int n)
+Real St1_QMPacketHydrogenEigenFunc::En_2D(int n, Real hbar, Real mi, Real a0)
 {
-	return -0.5/(4.0*pow(n - 0.5,2)); // FIXMEatomowe !!!!!!!!
-	return -1.0/(4.0*pow(n - 0.5,2));
+//	return -0.5/(4.0*pow(n - 0.5,2)); // FIXMEatomowe !!!!!!!!
+//	return -1.0/(4.0*pow(n - 0.5,2));
+	return -pow(hbar,2)/(2*mi*pow(a0,2)*pow(n-0.5,2));
 };
 
 Complexr  St1_QMPacketHydrogenEigenFunc::quantumHydrogenWavefunction_2D(int n_, int l_ ,Real x,Real y)
@@ -72,13 +73,14 @@ Complexr  St1_QMPacketHydrogenEigenFunc::quantumHydrogenWavefunction_2D(int n_, 
 		 *pow((beta*r),abs(l))
 		 *laguerre(-abs(l)+n-1,2*abs(l),beta*r);
 	};
-	auto Psi_nl=[&R_nl](Real n, Real l, Real r, Real phi, Real beta)->Complexr{
+	auto Psi_nl=[&R_nl](Real n, Real l, Real r, Real phi, Real a0)->Complexr{
 		return
-		  R_nl(n, l, r, beta)
+		  R_nl(n, l, r, 2.0/((n-0.5)*a0))
 		 *exp(Mathr::I*l*phi)/Mathr::SQRT_TWO_PI;
 	};
 	Real r=sqrt(x*x+y*y),phi=atan2(y,x);
-	return Psi_nl(n,l,r,phi,1/(n-0.5));
+	Real a0 = FIXMEatomowe().get<2>();
+	return Psi_nl(n,l,r,phi,a0);
 };
 
 Real St1_QMPacketHydrogenEigenFunc::En_3D(int n)
@@ -128,10 +130,16 @@ Complexr St1_QMPacketHydrogenEigenFunc::getValPos(Vector3r pos, const QMParamete
 	std::cerr << "St1_QMPacketHydrogenEigenFunc: Muszę dodać hbar oraz m i 'omega' ?? do listy argumentów. Skąd brać omega, btw? Nowa klasa QMParameters ← QMOscillator w którym byłaby częstotliwość omega??\n";
 // FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME// FIXME,,,,,,,,
 
+	// FIXMEatomowe
+	auto FIXMEatomowe_vars = FIXMEatomowe();
+	Real hbar = FIXMEatomowe_vars.get<0>();
+	Real mi   = FIXMEatomowe_vars.get<1>();
+	Real a0   = FIXMEatomowe_vars.get<2>();
+
 //std::cerr << "renderuję dla t = " << (p->t-p->t0) << "\n";
 	switch(par->dim) {
 		case 1 : return quantumHydrogenWavefunction_1D((int)p->energyLevel[0], p->energyLevel[1]==0                , p->x0[0]-pos[0]                )*std::exp(-Mathr::I*En_1D(p->energyLevel[0])*(p->t-p->t0));
-		case 2 : return quantumHydrogenWavefunction_2D((int)p->energyLevel[0], p->energyLevel[1]                   , p->x0[0]-pos[0],p->x0[1]-pos[1])*std::exp(-Mathr::I*En_2D(p->energyLevel[0])*(p->t-p->t0));
+		case 2 : return quantumHydrogenWavefunction_2D((int)p->energyLevel[0], p->energyLevel[1]                   , p->x0[0]-pos[0],p->x0[1]-pos[1])*std::exp(-Mathr::I*En_2D(p->energyLevel[0],hbar,mi,a0)*(p->t-p->t0));
 		case 3 : return quantumHydrogenWavefunction_3D((int)p->energyLevel[0], p->energyLevel[1], p->energyLevel[2], p->x0-pos                      )*std::exp(-Mathr::I*En_3D(p->energyLevel[0])*(p->t-p->t0));
 
 		default: break;

@@ -20,6 +20,9 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
+
+#include <boost/tuple/tuple.hpp>  //FIXMEatomowe
+
 class QMPacketHydrogenEigenFunc: public QMStateAnalytic
 {
 	public:
@@ -89,9 +92,20 @@ class St1_QMPacketHydrogenEigenFunc: public St1_QMStateAnalytic
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
 	private:
-		Real      En_1D      (int n);
-		Real      En_2D      (int n);
-		Real      En_3D      (int n);
+		boost::tuple<Real,Real,Real> FIXMEatomowe() {
+			Real hbar = 1;
+			Real m1   = 1;
+			Real m2   = 1;
+			Real mi   = m1*m2/(m1+m2);  // dla dwóch cząstek
+			//     mi   = 0.25;                 // dla jednej cząstki w nieruchomym potencjale
+			Real e    = 1;
+			Real a0   = pow(hbar,2)/(mi*pow(e,2));
+			return boost::make_tuple(hbar, mi, a0);
+		};
+
+		Real      En_1D(int n);
+		Real      En_2D(int n, Real hbar, Real mi, Real a0); // FIXMEatomowe - here it's fixed. This fix must propagate upwards through the code
+		Real      En_3D(int n);
 		Complexr  quantumHydrogenWavefunction_1D(int n, bool even    , Real x);         // FIXME: assume hbar=1, mass=1
 		Complexr  quantumHydrogenWavefunction_2D(int n, int  l       , Real x, Real y); // FIXME: assume hbar=1, mass=1, frequency=1
 		Complexr  quantumHydrogenWavefunction_3D(int n, int  l, int m, Vector3r xyz); // FIXME: assume hbar=1, mass=1, frequency=1
