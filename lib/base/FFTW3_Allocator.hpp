@@ -34,6 +34,7 @@
 #include <fftw3.h>
 #include <limits>
 #include <iostream>
+#include <complex>
 
 template <typename T>
 class FFTW3_Allocator

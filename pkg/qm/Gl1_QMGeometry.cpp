@@ -7,6 +7,7 @@
 *********************************************************************************/
 
 #ifdef YADE_OPENGL
+#include "QMPotential.hpp"
 #include "Gl1_QMGeometry.hpp"
 #include <core/Scene.hpp>
 

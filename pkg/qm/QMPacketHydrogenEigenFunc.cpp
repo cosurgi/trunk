@@ -1,5 +1,6 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 
+#include "QMPotential.hpp"
 #include "QMPacketHydrogenEigenFunc.hpp"
 #include <boost/math/special_functions/laguerre.hpp>
 #include <boost/math/special_functions/factorials.hpp>

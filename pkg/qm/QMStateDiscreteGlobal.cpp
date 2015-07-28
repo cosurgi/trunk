@@ -1,5 +1,6 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
+#include "QMPotential.hpp"
 #include "QMStateDiscreteGlobal.hpp"
 
 YADE_PLUGIN(

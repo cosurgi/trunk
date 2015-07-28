@@ -27,6 +27,7 @@
 #include <Eigen/Core>
 
 #include <boost/thread/mutex.hpp>
+#include <boost/serialization/nvp.hpp>
 ///  #include "lib/base/Math.hpp"   // allow basic testing first
 
 #ifdef YADE_FFTW3

@@ -1,5 +1,6 @@
 // 2014 © Janek Kozicki <cosurgi@gmail.com>
 
+#include "QMPotential.hpp"
 #include "QMStateAnalytic.hpp"
 #include "QMStateDiscrete.hpp"
 #include "QMGeometry.hpp"

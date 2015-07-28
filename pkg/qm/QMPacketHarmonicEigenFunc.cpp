@@ -1,5 +1,6 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 
+#include "QMPotential.hpp"
 #include "QMPacketHarmonicEigenFunc.hpp"
 
 YADE_PLUGIN(
