@@ -289,10 +289,10 @@ void SchrodingerKosloffPropagator::action()
 
 		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable() );
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
-		if(psiGlobal) {
+		if(psiGlobal and doCopyTable) {
 	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
 HERE;
-			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+			NDimTable<Complexr>/*&*/ psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
@@ -317,12 +317,36 @@ HERE;
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
 			// FIXME: this is    ↓ only because with & it draws the middle of calculations
-	////	↑↑↑	psiGlobal->psiGlobalTable = psi_dt;
+	/*//	↑↑↑*/	psiGlobal->psiGlobalTable = psi_dt;
 			// FIXME: but it actually wastes twice more memory
 
-			if(timeLimit.messageAllowed(4)) std::cerr << "final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(4)) std::cerr << "(not &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
+	// FIXME - full duplicate of the block above, except for the reference
+		} else if(psiGlobal and not doCopyTable) {
+			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
+			NDimTable<Complexr>  psi_1 = {};                // ψ₁
+			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+			Complexr ak0=calcAK(0,R);                       // a₀
+			Complexr ak1=calcAK(1,R);                       // a₁
+			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
+			int i(0);
+			Complexr ak(1);
+			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
+			{
+				if(printIter) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << "\n";
+				NDimTable<Complexr> psi_2;              // ψ₂     :
+				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
+				psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
+				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+			}
+			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
+			if(timeLimit.messageAllowed(4)) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 		}
 // FIXME - for multiple entangled wavefunctions
 //	} YADE_PARALLEL_FOREACH_BODY_END();
