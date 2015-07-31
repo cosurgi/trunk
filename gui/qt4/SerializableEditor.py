@@ -597,9 +597,11 @@ class SerializableEditor(QFrame):
 			T=entry.T[0]
 			if (issubclass(T,Serializable) or T==Serializable):
 				widget=SeqSerializable(self,getter,setter,T,path=(self.path+'.'+entry.name if self.path else None),shrink=True)
+				if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 				return widget
 			if (T in _fundamentalEditorMap):
 				widget=SeqFundamentalEditor(self,getter,setter,T)
+				if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 				return widget
 			return None
 		# a serializable
@@ -610,6 +612,7 @@ class SerializableEditor(QFrame):
 			else: path=None
 			widget=SerializableEditor(getattr(self.ser,entry.name),parent=self,showType=self.showType,path=(self.path+'.'+entry.name if self.path else None))
 			widget.setFrameShape(QFrame.Box); widget.setFrameShadow(QFrame.Raised); widget.setLineWidth(1)
+			if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 			return widget
 		return None
 	def mkWidgets(self):
