@@ -10,13 +10,6 @@
 	template<> std::map<void*,cpp_int/*,cmpr*/> Zcc<int>::NDimTable_Allocated={};
 #endif
 
-std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim)
-{
-	for(size_t i=0 ; i<dim.size() ; i++ )
-	{
-		os << dim[i] ;
-		if(i!=dim.size()-1) os << ",";
-	}
-	return os;
-};
+template<> std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
+template<> std::ostream & operator<<(std::ostream &os, const std::vector<double>& dim);
 

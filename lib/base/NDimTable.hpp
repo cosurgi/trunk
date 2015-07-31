@@ -34,7 +34,15 @@
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
 
-std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
+template <typename C> std::ostream & operator<<(std::ostream & os, const std::vector<C>& dim)
+{
+	for(size_t i=0 ; i<dim.size() ; i++ )
+	{
+		os << dim[i] ;
+		if(i!=dim.size()-1) os << ",";
+	}
+	return os;
+};
 
 template <typename K> // FIXME: do something so that only float, double, long double, float128 are allowed.
 class NDimTable : private std::vector<K
