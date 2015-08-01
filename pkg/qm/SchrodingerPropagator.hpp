@@ -71,6 +71,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 	public:
 		virtual void action();
 		Real eMin();
+		Real eKin();
 		Real eMax();
 		Real calcKosloffR(Real dt);// { return dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG(Real dt);// { return dt*eMin()/(2*FIXMEatomowe_hbar);};            // calculate G parameter in Kosloff method
@@ -100,6 +101,7 @@ found in [TalEzer1984]_"
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
+			.def("eKin"  ,&SchrodingerKosloffPropagator::eKin  ,"Get maximum allowed by the grid kinetic energy.")
 			.def("eMax"  ,&SchrodingerKosloffPropagator::eMax  ,"Get maximum energy.")
 			.def("R"     ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("calcR" ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")

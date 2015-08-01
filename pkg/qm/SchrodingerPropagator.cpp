@@ -172,7 +172,7 @@ HERE;
 	return ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
 };
 
-Real SchrodingerKosloffPropagator::eMax()
+Real SchrodingerKosloffPropagator::eKin()
 {
 	Real ret(0); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
@@ -184,6 +184,12 @@ Real SchrodingerKosloffPropagator::eMax()
 			Ekin += std::pow(psiGlobal->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 *FIXMEatomowe_MASS/*FIXME: must be mass here psi->m */);
 		ret=std::max(ret, Ekin );
 	}
+	return ret;
+}
+
+Real SchrodingerKosloffPropagator::eMax()
+{
+	Real ret(eKin()); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
 HERE;
 	NDimTable<Complexr>                        VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
