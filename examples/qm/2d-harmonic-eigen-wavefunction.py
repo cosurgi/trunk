@@ -72,7 +72,7 @@ numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[QMDisplayOptions(**displayOptions2)])
 numericalBody.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-numericalBody.state     = QMPacketHarmonicEigenFunc(**harmonicPacketArg)
+numericalBody.state     = QMPacketHarmonicEigenFunc(se3=(Vector3(-2,-1,0), Quaternion((1,0,0),0)),**harmonicPacketArg)
 nid=O.bodies.append(numericalBody)
 O.bodies[nid].state.setNumeric()        # is being propagated by SchrodingerKosloffPropagator
 

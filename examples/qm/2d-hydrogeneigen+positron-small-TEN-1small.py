@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 dimensions = 2
-SMALLER    = 1
-size1d     = 560/SMALLER
-GRIDSIZE   = [224/SMALLER,180/SMALLER] # GRIDSIZE   = [320,256]
+SMALLER    = 2
+size1d     = 800/SMALLER
+GRIDSIZE   = [320/SMALLER,256/SMALLER] # GRIDSIZE   = [320,256]
 halfSize   = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
@@ -23,7 +23,7 @@ potentialMaximum     = -100000000; # negative puts ZERO at center, positive - pu
 potentialCoefficient_positron = [ 1.0 ,0.0,0.0]
 k0_positron                   = [-0.12,0.0,0.0]
 gaussWidth_positron           = [ 60  ,60 ,0  ]
-t0_positron                   = 3100/SMALLER
+t0_positron                   = 4500/SMALLER
 x0_positron                   = [0,-140+Pot_y,0]
 
 # wavepacket_2 parameters, electron on stationary orbit
@@ -46,7 +46,7 @@ O.engines=[
                  ,Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential()],
 		[Law2_QMIGeom_QMIPhysCoulombParticles(),Law2_QMIGeom_QMIPhysCoulombParticleInPotential()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=20,doCopyTable=False,threadNum=32),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=20,doCopyTable=False,threadNum=16),
 	SchrodingerAnalyticPropagator(),
 ]
 
@@ -145,38 +145,32 @@ analyticBody.state     = QMPacketHydrogenEigenFunc(t0=-270,**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
 
-O.dt=100
+#O.dt=200
+O.dt=0.0000001
 
 #O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
-## try:
-## 	from yade import qt
-## 	qt.Controller()
-## 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-## 	qt.controller.setWindowTitle(sys.argv[0])
-## 	qt.Renderer().blinkHighlight=False
-## 	qt.Renderer().light1Pos=Vector3( 1175,1130,500)
-## 	qt.Renderer().light2Pos=Vector3(-1130, 575,230)
-## 	qt.View()
-## 	#qt.Renderer().light2Pos=Vector3(Pot_x,Pot_y,30)
-## 	qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
-## 
-## except ImportError:
-## 	pass
-## 
+try:
+	from yade import qt
+	qt.Controller()
+	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+	qt.controller.setWindowTitle(sys.argv[0])
+	qt.Renderer().blinkHighlight=False
+	qt.Renderer().light1Pos=Vector3( 1175,1130,500)
+	qt.Renderer().light2Pos=Vector3(-1130, 575,230)
+	qt.View()
+	#qt.Renderer().light2Pos=Vector3(Pot_x,Pot_y,30)
+	qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
 
-#for i in range(100):
+except ImportError:
+	pass
+
+
+#
+#for i in range(81):
 #	O.step()
+#	O.dt=100
 #	if(i%5==0):
 #		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
-
-
-O.dt=0.0000001
-
-for i in range(81):
-	O.step()
-	O.dt=100
-	if(i%5==0):
-		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
-
+#

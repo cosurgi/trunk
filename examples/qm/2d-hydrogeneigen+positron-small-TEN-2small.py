@@ -46,7 +46,7 @@ O.engines=[
                  ,Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential()],
 		[Law2_QMIGeom_QMIPhysCoulombParticles(),Law2_QMIGeom_QMIPhysCoulombParticleInPotential()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=20,doCopyTable=False,threadNum=32),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=20,doCopyTable=False,threadNum=8),
 	SchrodingerAnalyticPropagator(),
 ]
 
@@ -145,38 +145,30 @@ analyticBody.state     = QMPacketHydrogenEigenFunc(t0=-270,**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
 
-O.dt=100
+#O.dt=100
+O.dt=0.0000000001
 
 #O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
-## try:
-## 	from yade import qt
-## 	qt.Controller()
-## 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-## 	qt.controller.setWindowTitle(sys.argv[0])
-## 	qt.Renderer().blinkHighlight=False
-## 	qt.Renderer().light1Pos=Vector3( 1175,1130,500)
-## 	qt.Renderer().light2Pos=Vector3(-1130, 575,230)
-## 	qt.View()
-## 	#qt.Renderer().light2Pos=Vector3(Pot_x,Pot_y,30)
-## 	qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
-## 
-## except ImportError:
-## 	pass
-## 
+try:
+	from yade import qt
+	qt.Controller()
+	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+	qt.controller.setWindowTitle(sys.argv[0])
+	qt.Renderer().blinkHighlight=False
+	qt.Renderer().light1Pos=Vector3( 1175,1130,500)
+	qt.Renderer().light2Pos=Vector3(-1130, 575,230)
+	qt.View()
+	#qt.Renderer().light2Pos=Vector3(Pot_x,Pot_y,30)
+	qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
 
-#for i in range(100):
+except ImportError:
+	pass
+
+#for i in range(81):
 #	O.step()
+#	O.dt=100
 #	if(i%5==0):
 #		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
-
-
-O.dt=0.0000001
-
-for i in range(81):
-	O.step()
-	O.dt=100
-	if(i%5==0):
-		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
 

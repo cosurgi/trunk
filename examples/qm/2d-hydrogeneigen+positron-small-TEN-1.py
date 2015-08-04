@@ -13,8 +13,8 @@ Pot_x_tmp = 100.0
 Pot_y_tmp = 90.0
 oczko_x = 2.0*size1d/GRIDSIZE[0]
 oczko_y = 2.0*size1d/GRIDSIZE[0]
-Pot_x   = -halfSize[0]+(oczko_x)*(1.0*GRIDSIZE[0]/2+int(1.0*Pot_x_tmp/oczko_x))+(oczko_x*0.5) ## wiesza się gdy dam -20    } InteractionLoop.cpp:120
-Pot_y   = -halfSize[1]+(oczko_y)*(1.0*GRIDSIZE[1]/2+int(1.0*Pot_y_tmp/oczko_y))+(oczko_y*0.5) ##                  +15 ???  } bo wcale nie jest symetryczne!!
+Pot_x   = -halfSize[0]+(oczko_x)*(1.0*GRIDSIZE[0]/2+int(1.0*Pot_x_tmp/oczko_x))+(oczko_x*0.33) ## wiesza się gdy dam -20    } InteractionLoop.cpp:120
+Pot_y   = -halfSize[1]+(oczko_y)*(1.0*GRIDSIZE[1]/2+int(1.0*Pot_y_tmp/oczko_y))+(oczko_y*0.33) ##                  +15 ???  } bo wcale nie jest symetryczne!!
 potentialCenter      = [ Pot_x, Pot_y ,0  ]
 potentialHalfSize    = halfSize # size ??
 potentialMaximum     = -100000000; # negative puts ZERO at center, positive - puts this value.
@@ -110,7 +110,7 @@ body0.shape     = QMGeometry(extents=halfSize,color=[0.9,0.5,0.5],displayOptions
                      ])
 body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=1,coefficient=potentialCoefficient_positron)
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-body0.state     = QMPacketGaussianWave(x0=x0_positron,t0=t0_positron,k0=k0_positron,a0=gaussWidth_positron,gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
+body0.state     = QMPacketGaussianWave(se3=(Vector3(oczko_x*0.66,oczko_y*0.66,0), Quaternion((1,0,0),0)),x0=x0_positron,t0=t0_positron,k0=k0_positron,a0=gaussWidth_positron,gridSize=GRIDSIZE) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
 O.bodies[nid].state.setNumeric()
 
