@@ -10,6 +10,9 @@
 #include <algorithm>    // std::transform
 #include <limits>
 
+#include <parallel/algorithm>
+#include <parallel/settings.h>
+
 #ifdef YADE_FFTW3
 #include <fftw3.h>
 #endif
@@ -296,6 +299,13 @@ Real SchrodingerKosloffPropagator::calcKosloffG(Real dt)
 };
 void SchrodingerKosloffPropagator::action()
 {
+	__gnu_parallel::_Settings s;
+	s.algorithm_strategy = __gnu_parallel::force_parallel;
+	__gnu_parallel::_Settings::set(s);
+	omp_set_dynamic(false);
+	omp_set_num_threads(20);
+	
+
 	//virialTheorem_Grid_check(); // FIXME - to powinno być chyba zależne od potencjału...
 	timeLimit.readWallClock();
 	static int maxIter(0);
@@ -371,5 +381,6 @@ HERE;
 		}
 // FIXME - for multiple entangled wavefunctions
 //	} YADE_PARALLEL_FOREACH_BODY_END();
+	omp_set_num_threads(1);
 }
 
