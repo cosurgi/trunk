@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d    = 60
+size1d    = 100
 halfSize  = [size1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
-GRIDSIZE  = 2**11
+GRIDSIZE  = 2048
 
 # potential parameters
 potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialCoefficient = [-1,0,0]
-potentialMaximum     = -100;
+potentialMaximum     = -100000;
 
-hydrogenEigenFunc_n   = 2
+hydrogenEigenFunc_n   = 3
 hydrogenEigenFunc_odd = 1
 
 O.engines=[
@@ -32,6 +32,8 @@ O.engines=[
 	SchrodingerAnalyticPropagator(),
 ]
 
+partsScale = 300
+
 stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
 displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -47,7 +49,7 @@ displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'point
 analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,partsScale=10,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+     QMDisplayOptions(renderWireLight=False,partsScale=partsScale,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
                       ,renderFFTScale=(4,1,1)
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
@@ -61,7 +63,7 @@ O.bodies[nid].state.setAnalytic()     # is propagated as analytical solution - n
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,partsScale=10,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+     QMDisplayOptions(renderWireLight=False,partsScale=partsScale,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
                       ,renderFFTScale=(4,1,1)
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
@@ -75,7 +77,7 @@ O.bodies[nid].state.setNumeric()      # is being propagated by SchrodingerKoslof
 ## 3: The box with potential
 potentialBody = QMBody()
 potentialBody.shape     = QMGeometry(extents=potentialHalfSize,step=[0.2,0.1,0.1],displayOptions=[
-     QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptionsPot)
+     QMDisplayOptions(stepRender=stepRenderHide,partsScale=partsScale,**displayOptionsPot)
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True
                       ,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi))
                       ,renderFFTScale=(4,1,0.02)
@@ -87,7 +89,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.001
-O.dt=.2
+O.dt=100
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

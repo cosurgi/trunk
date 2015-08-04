@@ -14,7 +14,7 @@ SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0
 SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])
 potentialCenter      = [ SH0,SH1 ,0  ]
 potentialHalfSize    = halfSize
-potentialCoefficient = [-0.5,0,0] # FIXMEatomowe
+potentialCoefficient = [-1,0,0] # FIXMEatomowe
 potentialMaximum     = -10000; # negative puts ZERO at center, positive - puts this value.
 
 hydrogenEigenFunc_n   = 3
@@ -34,7 +34,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False), # auto
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,threadNum=4), # auto
 	SchrodingerAnalyticPropagator(),
 ]
 
@@ -69,7 +69,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l, 0],'x0':potentialCenter,'gridSize':GRIDSIZE}
+coulombPacketArg      = {'m1':1,'m2_is_infinity':True,'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l, 0],'x0':potentialCenter,'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved

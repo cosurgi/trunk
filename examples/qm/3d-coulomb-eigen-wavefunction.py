@@ -69,7 +69,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],displayOptions=[QMDisplayOptions(**displayOptions1)])
 analyticBody.material  = QMParameters(dim=dimensions,hbar=1)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l,hydrogenEigenFunc_m],'gridSize':GRIDSIZE}
+coulombPacketArg      = {'m1':1,'m2_is_infinity':True,'energyLevel':[hydrogenEigenFunc_n, hydrogenEigenFunc_l,hydrogenEigenFunc_m],'gridSize':GRIDSIZE}
 analyticBody.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()      # is propagated as analytical solution - no calculations involved

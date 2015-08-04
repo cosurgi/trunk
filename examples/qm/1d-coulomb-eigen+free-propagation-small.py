@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-#size1d   = 20
-size1d   = 180###→ 80
+size1d   = 50
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
@@ -18,9 +17,9 @@ hydrogenEigenFunc_n   = 3 ###→ 3
 hydrogenEigenFunc_odd = 1
 
 # wavepacket parameters
-k0_x         = 0
+k0_x         = 0.2
 k0_y         = 0
-gaussWidth_x = 1.0
+gaussWidth_x = 5.0
 gaussWidth_y = 0.0
 potentialCoefficient1= [-1.0,0,0]
 potentialCoefficient2= [ 1.0,0,0]
@@ -39,7 +38,7 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=False,doCopyTable=True),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=False,doCopyTable=True,threadNum=4),
 	SchrodingerAnalyticPropagator(),
 ]
 
@@ -129,7 +128,7 @@ body1.groupMask = 2
 body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=body1_Opts)
 body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'x0':potentialCenter,'gridSize':[GRIDSIZE]}
+coulombPacketArg      = {'m1':1,'m2':1,'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'x0':potentialCenter,'gridSize':[GRIDSIZE]}
 body1.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body1)
 O.bodies[nid].state.setAnalytic()
@@ -149,12 +148,11 @@ body3.groupMask = 1
 body3.shape     = QMGeometry(extents=halfSize2,color=[1,1,1],displayOptions=body1_Opts)
 body3.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # m=2 FIXMEatomowe
                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
-coulombPacketArg      = {'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'x0':potentialCenter,'gridSize':[GRIDSIZE]}
 body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body3)
 O.bodies[nid].state.setNumeric()
 
-O.dt=.25
+O.dt=20
 
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
