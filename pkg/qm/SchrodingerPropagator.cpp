@@ -55,19 +55,14 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 // !! at least one virtual function in the .cpp file
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
-NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable()
+const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable()
 {
-	// previous loop was:   // FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!!
-	// previous loop was:   // prepare the potential  ψᵥ
-	// previous loop was:   NDimTable<Complexr> Vpsi={};
-	// previous loop was:   FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
-	// previous loop was:   	QMIGeom* igeom=dynamic_cast<QMIGeom*>(i->geom.get());
-	// previous loop was:   	if(igeom) {
-	// previous loop was:   		if(Vpsi.rank()==0) Vpsi =igeom->potentialMarginalDistribution;  // ψᵥ: V = ∑Vᵢ // FIXME chyba lepiej miec jakąś wavefunction obsługującą całość?
-	// previous loop was:   		else               Vpsi+=igeom->potentialMarginalDistribution;  // ψᵥ: V = ∑Vᵢ // FIXME i używając jej rozmiar bym tworzył potencjał?
-	// previous loop was:   	}
-	// previous loop was:   };
+	static bool generatedPotential_not_depends_on_time(false);
+	static NDimTable<Complexr> Vpsi_static={};
+	if(not generatedPotential_not_depends_on_time) {
+		generatedPotential_not_depends_on_time = true;
 
+		std::cerr << "W̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator assuming that potential does not depend on time.\n";
 
 	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!! FIXME FIXME FIXME FIXME,,,, FIXME, FIXME, FIXME, FIXME,
 	// prepare the potential  ψᵥ
@@ -83,8 +78,8 @@ NDimTable<Complexr> SchrodingerKosloffPropagator::get_full_potentialInteractionG
 		{
 			allPotentials.insert(iphys->potentialInteractionGlobal);
 		} else {
-			if(timeLimit.messageAllowed(10))
-				std::cerr << "\n\nW̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable can't find QMIPhys inside Interaction.\n\n";
+			if(timeLimit.messageAllowed(30))
+				std::cerr << "W̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable can't find QMIPhys inside Interaction.\n";
 		}
 	};
 
@@ -97,8 +92,7 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 //		exit(1);
 	}
 
-HERE;
-	NDimTable<Complexr> Vpsi={};
+HERE2;
 	for(auto& pot : allPotentials) {
 	// FIXME - this is actually a little wrong. Sometimes I can't add together different potentials !!!
 	//         I should perform whole separate SchrodingerKosloffPropagator integration for each of them!
@@ -106,8 +100,19 @@ HERE;
 	//           But sometimes I have just several different potential sources, which I should sum together
 	//                  → e.g. several barriers
 	//
-		if(Vpsi.rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ ) Vpsi =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
-		else              /* else dodaj kolejny potencjał */                             Vpsi+=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+HERE2;
+		if(Vpsi_static.rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ )
+		{
+HERE2;
+			Vpsi_static =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+HERE2;
+		}
+		else              /* else dodaj kolejny potencjał */
+		{
+HERE2;
+			Vpsi_static +=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+HERE2;
+		}
 	}
 	// FIXME end
 
@@ -121,7 +126,8 @@ HERE;
 
 
 // FIXME - ale jesli potencjał jest tylko jeden to powinienem używać referencje.........
-	return std::move(Vpsi);
+	}
+	return Vpsi_static;
 };
 
 boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable()
@@ -167,7 +173,7 @@ void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 
 Real SchrodingerKosloffPropagator::eMin()
 {
-HERE;
+HERE2;
 	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	return ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
 };
@@ -191,8 +197,8 @@ Real SchrodingerKosloffPropagator::eMax()
 {
 	Real ret(eKin()); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
-HERE;
-	NDimTable<Complexr>                        VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
+HERE2;
+	NDimTable<Complexr>     VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	ret += ((VGlobal.rank()!=0) ? (VGlobal.maxReal()) : (0));
 	return ret;
 }

@@ -115,7 +115,7 @@ found in [TalEzer1984]_"
 		TimeLimit timeLimit;
 		
 		// FIXME są różne typy, to jest podejrzane. Może w QMIPhys wystarczy trzymać NDimTable, a nie całe QMStateDiscreteGlobal ?
-		NDimTable<Complexr>                      get_full_potentialInteractionGlobal_psiGlobalTable();
+		const NDimTable<Complexr>&               get_full_potentialInteractionGlobal_psiGlobalTable();
 		boost::shared_ptr<QMStateDiscreteGlobal> get_full_psiGlobal__________________psiGlobalTable();
 		void virialTheorem_Grid_check();
 };
