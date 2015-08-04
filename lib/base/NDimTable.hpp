@@ -603,16 +603,29 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 
 		typedef std::function<not_complex(not_complex i, int d)>     IToX_func;
 		typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz)> FunctionVals;
-/* OK */	void fill1WithFunction(unsigned short int dim_, const IToX_func& iToX,const FunctionVals f)
+/* OK */	void fill1WithFunction(unsigned short int dim_, const IToX_func& iToX,const FunctionVals f, unsigned short int this_member=0)
 		{
-			if(dim_ != rank_d) throw std::out_of_range("\n\nERROR: NDimTable::fill1WithFunction works only for non-entangled wavefunctions.\n\n");
+			if(dim_ != rank_d) {
+				std::cerr << " rank_d        :( " << rank_d        <<" ) \n";
+				std::cerr << " dim_n         :( " << dim_n         <<" ) \n";
+				std::cerr << " total         :( " << total         <<" ) \n";
+				std::cerr << " dim_ (given)  :( " << dim_          <<" ) \n";
+				//throw std::out_of_range("\n\nERROR: NDimTable::fill1WithFunction works only for non-entangled wavefunctions.\n\n");
+				std::cerr << " this_member   :( " << this_member   <<" ) \n";
+			}
+			if(dim_ > rank_d) {
+				throw std::out_of_range("\n\nERROR: NDimTable::fill1WithFunction dim_ < rank_d !!.\n\n");
+			}
+			if(dim_ < rank_d and ( ((rank_d % dim_)!=0) or (int(this_member+1)*dim_ > int(rank_d)) )) {
+				throw std::out_of_range("\n\nERROR: NDimTable::fill1WithFunction bad rank or dimensions.\n\n");
+			}
 			DimN pos_i(rank_d,0);
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
 				Eigen::Matrix<not_complex,3,1> xyz(0,0,0);
 				//FIXME: czy iToX() daje dobry wynik, gdy środek State::pos jest przesunięty?? Chyba raczej nie?
 				//       a może musze to przesunięcie załatwiac osobno? Przy każdym wywołaniu tej methody, indywidaulnie?
-				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz[_d_]=iToX(pos_i[_d_],_d_);
+				for(unsigned int _d_=0 ; _d_< dim_ ; _d_++) xyz[_d_]=iToX(pos_i[_d_ + this_member*dim_],_d_);
 				parent::operator[](total_i) = f(xyz);
 //std::cerr << total_i << " " << pos_i[0] << " " << dim_ << " " << xyz[0] << " " << f(xyz) << "\n";
 				increment(pos_i);

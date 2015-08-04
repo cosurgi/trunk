@@ -92,7 +92,7 @@ REGISTER_SERIALIZABLE(QMStPotentialCoulomb);
 *
 *********************************************************************************/
 
-class St1_QMStPotentialCoulomb: public St1_QMStateAnalytic
+class St1_QMStPotentialCoulomb: public St1_QMStateAnalytic // FIXME - public St1_QMPotential ???????????
 {
 	public:
 		FUNCTOR1D(QMStPotentialCoulomb);
@@ -102,6 +102,7 @@ class St1_QMStPotentialCoulomb: public St1_QMStateAnalytic
 		friend class Law2_QMIGeom_QMIPhysCoulomb;
 		friend class Law2_QMIGeom_QMIPhysCoulombParticles;
 		friend class Law2_QMIGeom_QMIPhysCoulombParticlesFree;
+		friend class Law2_QMIGeom_QMIPhysCoulombParticleInPotential;
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
@@ -155,6 +156,8 @@ class QMIPhysCoulombParticles: public QMIPhys
 			, // attributes, public variables
 			  ((Vector3r,coefficient1,Vector3r(0.5,0.5,0.5),Attr::readonly,"Coulomb potential: V(r)=coefficient1/r, initialised from QMParticleCoulomb"))
 			  ((Vector3r,coefficient2,Vector3r(0.5,0.5,0.5),Attr::readonly,"Coulomb potential: V(r)=coefficient2/r, initialised from QMParticleCoulomb"))
+			// FIXME - to się dubluje, powinno dziedziczyć
+			  ((Real    ,potentialMaximum,100,Attr::readonly,"Coulomb potential limit, to prevent division by zero"))
 			, // constructor
 			createIndex();
 			, // python bindings
@@ -163,6 +166,35 @@ class QMIPhysCoulombParticles: public QMIPhys
 	REGISTER_CLASS_INDEX(QMIPhysCoulombParticles,QMIPhys);
 };
 REGISTER_SERIALIZABLE(QMIPhysCoulombParticles);
+
+/*********************************************************************************
+*
+* Q M particle interaction via harmonic potential         QMIPhysCoulombParticleInPotential
+*
+*********************************************************************************/
+
+/*! @brief QMIPhysCoulombParticleInPotential is the physical parameters concerning interaction happening between a particle and a harmonic potential.
+ */
+
+class QMIPhysCoulombParticleInPotential: public QMIPhys
+{
+	public:
+		virtual ~QMIPhysCoulombParticleInPotential();
+		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY( QMIPhysCoulombParticleInPotential /* class name */, QMIPhys /* base class */
+			, "QMIPhysCoulombParticleInPotential is the physical parameters concerning interaction happening between two particles" // class description
+			, // attributes, public variables
+			  ((Vector3r,coefficient1,Vector3r(0.5,0.5,0.5),Attr::readonly,"Coulomb potential: V(r)=coefficient1/r, initialised from QMParticleCoulomb"))
+			  ((Vector3r,coefficient2,Vector3r(0.5,0.5,0.5),Attr::readonly,"Coulomb potential: V(r)=coefficient2/r, initialised from QMParticleCoulomb"))
+			// FIXME - to się dubluje, powinno dziedziczyć
+			  ((Real    ,potentialMaximum,100,Attr::readonly,"Coulomb potential limit, to prevent division by zero"))
+			, // constructor
+			createIndex();
+			, // python bindings
+		);
+	DECLARE_LOGGER;
+	REGISTER_CLASS_INDEX(QMIPhysCoulombParticleInPotential,QMIPhys);
+};
+REGISTER_SERIALIZABLE(QMIPhysCoulombParticleInPotential);
 
 /*********************************************************************************
 *
@@ -234,13 +266,39 @@ class Law2_QMIGeom_QMIPhysCoulomb: public Law2_QMIGeom_QMIPhys_GlobalWavefunctio
 {
 	public:
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
-		FUNCTOR2D(QMIGeom,QMIPhys);
+		FUNCTOR2D(QMIGeom,QMIPhysCoulomb);
 		YADE_CLASS_BASE_DOC(Law2_QMIGeom_QMIPhysCoulomb,Law2_QMIGeom_QMIPhys_GlobalWavefunction,
 		"Handle quantum interaction described by :yref:`QMIGeom` and :yref:`QMIPhysCoulomb`.");
 		DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(Law2_QMIGeom_QMIPhysCoulomb);
+
+/*********************************************************************************
+*
+* Law2   QMIGeom + QMIPhysCoulomb  :  H A R M O N I C   P O T E N T I A L
+*
+*********************************************************************************/
+
+/*! @brief Handles interaction between particle and a harmonic potential
+ *
+ *  Mainly it just puts potential shape into the potential NDimTable.
+ *
+ *  Important note: every IPhysFunctor must call its parent's go() method so that
+ *  the higher level stuff gets taken care of        FIXME !!!!!!!!.
+ */
+
+class Law2_QMIGeom_QMIPhysCoulombParticleInPotential: public Law2_QMIGeom_QMIPhys_GlobalWavefunction
+{
+	public:
+		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
+		FUNCTOR2D(QMIGeom,QMIPhysCoulombParticleInPotential);
+		YADE_CLASS_BASE_DOC(Law2_QMIGeom_QMIPhysCoulombParticleInPotential,Law2_QMIGeom_QMIPhys_GlobalWavefunction,
+		"Handle quantum interaction described by :yref:`QMIGeom` and :yref:`QMIPhysCoulomb`.");
+		DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Law2_QMIGeom_QMIPhysCoulombParticleInPotential);
 
 /*********************************************************************************
 *
@@ -260,7 +318,7 @@ class Law2_QMIGeom_QMIPhysCoulombParticles: public Law2_QMIGeom_QMIPhys_GlobalWa
 {
 	public:
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
-		FUNCTOR2D(QMIGeom,QMIPhys);
+		FUNCTOR2D(QMIGeom,QMIPhysCoulombParticles);
 		YADE_CLASS_BASE_DOC(Law2_QMIGeom_QMIPhysCoulombParticles,Law2_QMIGeom_QMIPhys_GlobalWavefunction,
 		"Handle quantum interaction described by :yref:`QMIGeom` and :yref:`QMIPhysCoulombParticles`.");
 		DECLARE_LOGGER;
@@ -293,6 +351,32 @@ class Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles: public 
 };
 
 REGISTER_SERIALIZABLE(Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles);
+
+/*********************************************************************************
+*
+* Ip2   QMParticleCoulomb   QMParametersCoulomb  →  QMIPhysCoulombParticles
+*
+*********************************************************************************/
+
+/*! @brief When two QMParticleCoulomb collide, the info about potential coefficients is needed
+ *
+ *  Important note: every Ip2_2xQMParameters_QMIPhys must call its parent's go() method so that
+ *  the higher level stuff gets taken care of.
+ */
+
+class Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential: public Ip2_2xQMParameters_QMIPhys
+{
+	public:
+		virtual void go       (const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&);
+		virtual void goReverse(const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&);
+	YADE_CLASS_BASE_DOC(Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential,Ip2_2xQMParameters_QMIPhys
+	  ,"Create (or update) physical parameters of the interaction between two :yref:`QMParticleCoulomb`, hbar, dimension (parent) + harmonic potentials coefficients.");
+	FUNCTOR2D(QMParticleCoulomb,QMParametersCoulomb);
+	DEFINE_FUNCTOR_ORDER_2D(QMParticleCoulomb,QMParametersCoulomb);
+	DECLARE_LOGGER;
+};
+
+REGISTER_SERIALIZABLE(Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential);
 
 /*********************************************************************************
 *
