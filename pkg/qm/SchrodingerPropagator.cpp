@@ -39,7 +39,13 @@ void SchrodingerAnalyticPropagator::action()
 		if(analytic and /* FIXME? not sure... will it try to propagate potentials?? */ (analytic->isAnalytic()) )
 		{
 			analytic->t += dt;
-			analytic->wasGenerated = false;
+			// FIXME - problem polega na tym, że QMState służy do przechowywania funkcji falowych (które zwykle zależą od czasu), podczas
+			// gdy St1_QMState służy do przechowywania potencjałów. Ale jednocześnie oba używają QMStateAnalytic, żeby trzymać parametry
+			// do wzorów, oraz wzory.
+			//
+			// Rozwiązanie jest takie, że analitycznyść powinienem oddelegować do NDimTable i w ten sposób już nigdy sobie nie zawracać nią głowy
+			// po prostu jako generator NDimTable będę podawał funkcję, w stylu [](){ return val;};
+			if(analytic->changesWithTime_FIXME()) { analytic->wasGenerated = false; };
 //std::cerr << "SchrodingerAnalyticPropagator t+=dt " << b->getId() << "\n";
 
 		}

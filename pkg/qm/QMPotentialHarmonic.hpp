@@ -91,7 +91,7 @@ REGISTER_SERIALIZABLE(QMStPotentialHarmonic);
 *
 *********************************************************************************/
 
-class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic
+class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic // FIXME - public St1_QMPotential ???????????
 {
 	public:
 		FUNCTOR1D(QMStPotentialHarmonic);
@@ -103,6 +103,8 @@ class St1_QMStPotentialHarmonic: public St1_QMStateAnalytic
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
+	public: //protected??
+		virtual bool changesWithTime() {return false;};
 };
 REGISTER_SERIALIZABLE(St1_QMStPotentialHarmonic);
 

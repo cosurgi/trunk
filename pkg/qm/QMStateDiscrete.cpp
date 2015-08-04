@@ -118,6 +118,7 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 			// need to recalculate step, because of rounding errors for gridSize
 			for(size_t i=0 ; i < qms->gridSize.size() ; i++) qmg->step[i]=qms->getSpatialSize()[i]/((Real)(qms->gridSize[i]));
 		}
+//HERE2;
 		this->calculateTableValuesPosition(par,dynamic_cast<QMState*>(qms));
 		try {
 			qms->setMaterialAndGenerator(par,shared_from_this());
@@ -125,8 +126,8 @@ void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Ma
 			// FIXME - serialization of StateDispatcher gone wrong?
 			std::cerr << "St1_QMStateDiscrete::go() exception boost::bad_weak_ptr, there's no shared_ptr to this="<<this<<" class. FIXME:I see it in StateDispatcher, why??. Serialization gone wrong?\n";
 		}
-	} else if(qms->isAnalytic()) {
-//std::cerr << " 4    racalculating psiGlobalTable\n";
+	} else if(qms->isAnalytic() and this->changesWithTime()) {
+//HERE2;
 		qms->wasGenerated = false;// keep on calculating, since it is analytic
 		this->calculateTableValuesPosition(par,qms);
 	}
@@ -151,6 +152,7 @@ bool really_needs_recalculation=false;
 if((not qms->getPsiGlobalExists()) or qms->getPsiGlobalExisting()->psiGlobalTable.rank() == par->dim ) {
 really_needs_recalculation = true;
 			qms->getPsiGlobalNew()     ->psiGlobalTable.resize(qms->gridSize);
+//HERE2;
 			qms->getPsiGlobalExisting()->psiGlobalTable.fill1WithFunction( par->dim
 				, [&](Real i, int d)->Real    { return qms->iToX(i,d);}                       // xyz position function
 				, [&](Vector3r& xyz)->Complexr{ return this->getValPos(xyz,par.get(),qms);}   // function value at xyz

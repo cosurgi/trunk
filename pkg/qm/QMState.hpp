@@ -30,6 +30,8 @@ class St1_QMState: public StateFunctor, public boost::enable_shared_from_this<St
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms)
 		{ throw std::runtime_error("\n\nSt1_QMState::getValPos was called directly.\n\n");};
+	public: // protected??
+		virtual bool changesWithTime() {return true;};
 };
 REGISTER_SERIALIZABLE(St1_QMState);
 
@@ -58,6 +60,8 @@ REGISTER_SERIALIZABLE(St1_QMState);
  */
 class QMState: public State
 {
+	public: // protected?? // FIXME, FIXME, FIXME !!!!!!!!!!!!!!!!!! duplikat z tą samą funkcją w St1_QMState
+		virtual bool changesWithTime_FIXME() {return true;};
 	public:
 // FIXME? mogę w końcu to skasować?		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par){throw;};    /// return complex quantum aplitude at given positional representation coordinates
 //		virtual Complexr getValInv(Vector3r xyz){};          /// return complex quantum aplitude at given wavenumber representation coordinates
@@ -123,6 +127,7 @@ class QMState: public State
 			.def("isNumeric"  ,&QMState::isNumeric  ,"Tells if this QMState is numerically propagated")
 			.def("setAnalytic",&QMState::setAnalytic,"Sets that this QMState is analytically propagated")
 			.def("setNumeric" ,&QMState::setNumeric ,"Sets that this QMState is numerically propagated")
+			.def("update"     ,&QMState::update     ,"If it's analytic - the perform update")
 		);
 		REGISTER_CLASS_INDEX(QMState,State);
 	private:

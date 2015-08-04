@@ -105,6 +105,8 @@ class St1_QMStPotentialCoulomb: public St1_QMStateAnalytic
 	private:
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz , const QMParameters* par, const QMState* qms);
+	public: //protected??
+		virtual bool changesWithTime() {return false;};
 };
 REGISTER_SERIALIZABLE(St1_QMStPotentialCoulomb);
 
