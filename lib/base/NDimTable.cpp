@@ -9,6 +9,7 @@
 	template<> cpp_int Zcc<int>::NDimTable_Alloc=0;
 	template<> std::map<void*,cpp_int/*,cmpr*/> Zcc<int>::NDimTable_Allocated={};
 #endif
+template<> int Thr<int>::number=1;
 
 template<> std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 template<> std::ostream & operator<<(std::ostream &os, const std::vector<double>& dim);

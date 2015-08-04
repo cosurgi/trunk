@@ -94,7 +94,8 @@ found in [TalEzer1984]_"
 			, // attributes, public variables
 			((Real    ,FIXMEatomowe_hbar,1               ,,"Planck's constant $h$ divided by $2\\pi$"))
 			((Real    ,FIXMEatomowe_MASS,1               ,,"FIXME - should use mass of the particle"))
-			((int     ,steps     ,-1     ,,"Override automatic selection of number of steps in Chebyshev expansion."))
+			((int     ,steps      ,-1    ,,"Override automatic selection of number of steps in Chebyshev expansion."))
+			((int     ,threadNum  ,1     ,,"Number of FFT threads."))
 			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
 			((bool    ,printIter  ,false ,,"Print Kosloff interation."))
 			((bool    ,doCopyTable,true  ,,"Whether to copy the NDimTable for calculation (memory waste, nice drawing)."))

@@ -238,6 +238,7 @@ HERE;
 
 //? NDimTable<Complexr> psi_0c(psi_0);
 //? psi_0c.shiftByHalf();
+	psi_1.set_num_threads(threadNum);
 	psi_1  = FFT(psi_0);                 // ψ₁: ψ₁=              ℱ(ψ₀)
 //? psi_1  = FFT(psi_0c);                 // ψ₁: ψ₁=              ℱ(ψ₀)
 //? psi_1.shiftByHalf();

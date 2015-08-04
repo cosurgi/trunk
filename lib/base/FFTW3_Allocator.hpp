@@ -29,6 +29,12 @@
 	};
 	using ZZ = Zcc<int>;
 #endif
+template<typename Type>
+struct Thr{
+//static cpp_int NDimTable_SIZE_TOTAL;
+static int number;
+};
+using Threads = Thr<int>;
 
 #include <memory>
 #include <fftw3.h>

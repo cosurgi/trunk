@@ -278,6 +278,7 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 		std::size_t                     size1(std::size_t n) const { return dim_n[n-1];}; // return size in nᵗʰ dimension (counting from 1)
 		const std::vector<std::size_t>& dim()  const         { return dim_n;     }; // return dim_n
 		std::size_t                     rank() const         { return rank_d;    }; // return number of dimensions
+		void				set_num_threads(int nt) const { Threads::number=nt;};
 
 		// at works for up to 3 dimensions, otherwise at(std::vector<std::size_t> >) must be used
 		// last index always changes fastest
@@ -709,9 +710,8 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);// FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
 
 static bool called(false); //http://www.fftw.org/doc/Usage-of-Multi_002dthreaded-FFTW.html
-if(not called) {std::cerr << "init threads: " << fftw_init_threads() << "\n"; called=true;};
-fftw_plan_with_nthreads(16);//omp_get_max_threads());
-
+if(not called) {std::cerr << "init "<< Threads::number <<" threads: " << fftw_init_threads() << "\n"; called=true;};
+fftw_plan_with_nthreads(Threads::number/*16*/);//omp_get_max_threads());
 
 			//(*this)=inp; // FIXME - jakoś inaczej
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
