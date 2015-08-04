@@ -135,6 +135,9 @@ void InteractionLoop::action(){
 		if(!I->functorCache.phys){
 			I->functorCache.phys=physDispatcher->getFunctor2D(b1->material,b2->material,swap);
 			assert(!swap); // InteractionPhysicsEngineUnits are symmetric
+			// FIXME - a wcale, że nie! elektron+potencjał
+			// ciekawe po zakomentowaniu tego asserta, się rozwala kompletnie, może dlatego, że ten swap nie został wykonany?
+			// a nie ma segfaulta, bo jest static_cast....
 		}
 		
 		if(!I->functorCache.phys){
