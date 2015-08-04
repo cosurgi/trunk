@@ -514,7 +514,36 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			not_complex cell_volume(1);
 			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
 			not_complex ret(0);
-			for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;}; return ret;
+			for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;};
+			return ret;
+		};
+/* ?? */	value_type integrateWithOther_BraKet(const NDimTable& other, std::vector<not_complex> spatial_sizes) const
+		{ // calculates <this|other>=∫ψ(x,y,…) φ*(x,y,…) dx dy d…
+			if(     (spatial_sizes.size()==rank_d)
+			    and (rank_d == other.rank_d)
+			    and (dim_n  == other.dim_n )
+			    and (total  == other.total ) )
+			{
+				not_complex cell_volume(1);
+				for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+				value_type ret(0);
+				//for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;};
+				//{std::transform(this->begin(),this->end(),other.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
+				auto it1 = this->begin();
+				auto it2 = other.begin();
+				for( ; it1 != this->end() ; it1++ , it2++ )
+				{
+					ret += (std::conj(*it1) * (*it2) )*cell_volume;
+				}
+				return ret;
+			} else {
+				std::cerr << "\n\n ERROR: bad sizes of two wavefunctions:\n";
+				std::cerr << " spatial_sizes : " << spatial_sizes                             << "\n";
+				std::cerr << " rank_d        :( " << rank_d        <<" ) vs. ( " << other.rank_d   <<" ) \n";
+				std::cerr << " dim_n         :( " << dim_n         <<" ) vs. ( " << other.dim_n    <<" ) \n";
+				std::cerr << " total         :( " << total         <<" ) vs. ( " << other.total    <<" ) \n";
+				return 0;
+			}
 		};
 /* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes,bool normalize=true,bool densityOnly=false)
 		{
