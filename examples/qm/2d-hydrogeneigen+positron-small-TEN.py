@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 dimensions = 2
-SMALLER    = 1
-size1d     = 800#/SMALLER
+SMALLER    = 2
+size1d     = 800/SMALLER
 GRIDSIZE   = [320/SMALLER,256/SMALLER] # GRIDSIZE   = [320,256]
 halfSize   = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
@@ -23,7 +23,7 @@ potentialMaximum     = -100000000; # negative puts ZERO at center, positive - pu
 potentialCoefficient_positron = [ 1.0 ,0.0,0.0]
 k0_positron                   = [-0.12,0.0,0.0]
 gaussWidth_positron           = [ 60  ,60 ,0  ]
-t0_positron                   = 4500
+t0_positron                   = 4500/SMALLER
 x0_positron                   = [0,-140+Pot_y,0]
 
 # wavepacket_2 parameters, electron on stationary orbit
@@ -176,7 +176,7 @@ O.dt=0.0000001
 
 for i in range(81):
 	O.step()
-	O.dt=200
+	O.dt=100
 	if(i%5==0):
 		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
 
