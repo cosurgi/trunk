@@ -179,7 +179,7 @@ std::cerr << "COPY constr.(const NDimTable& other): " << ++ZZ::NDimTable_Instanc
 			#endif
 		};
 		template<typename L> NDimTable(const NDimTable<L>& other) 
-			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total) , dirty(true)
+			: parent(other.begin(),other.end()), rank_d(other.rank_d), dim_n(other.dim_n), total(other.total), dirty(true)
 		{
 #ifdef DEBUG_NDIM_RAM
 std::cerr << "CoPy(!) constr.(const NDimTable<L>&): " << ++ZZ::NDimTable_Instances << "\n";

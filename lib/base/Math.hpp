@@ -10,6 +10,7 @@
 #define HERE
 #endif
 #define HERE2 std::cout << ":::::::------ At " __FILE__ ":" << __LINE__ << std::endl
+#define HERE_ERROR(err) std::cout<< std::endl<< std::endl << "FATAL ERROR At " __FILE__ ":" << __LINE__ << " :  " << err << std::endl<< std::endl
 
 #ifdef FLOAT128_PRECISION
 	#if BOOST_VERSION<105400

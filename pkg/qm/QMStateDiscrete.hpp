@@ -51,7 +51,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 			, // attributes, public variables
 /* FIXME - dubluje się z NDimTable::dim_n */			((vector<size_t>,gridSize , vector<size_t>({}), Attr::readonly ,"Lattice grid size used to describe the wave function. For FFT purposes that should be a power of 2."))
 ////////////////////////////// serializacja.......................
-		((boost::shared_ptr<QMStateDiscreteGlobal>,psiGlobal           ,,Attr::hidden," // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać.... "))
+		((boost::shared_ptr<QMStateDiscreteGlobal>,psiGlobal           ,,Attr::readonly," // FIXME - on sam powinien być swoim psiGlobal, a nie tu go trzymać.... "))
 		((vector<Real>                            ,spatialSize         ,,Attr::readonly," // cannot be public, because it's public in Box←QMGeometry::extents, it is synchronized by St1_QMStateDiscrete "))
 		((int                                     ,whichPartOfpsiGlobal,,Attr::readonly," // For entangled wavefunctions it says where this wavefunction starts in the entangled tensor "))
 			, // constructor
