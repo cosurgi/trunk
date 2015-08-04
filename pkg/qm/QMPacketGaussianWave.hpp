@@ -68,6 +68,16 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			, // python bindings
 		);
 		REGISTER_CLASS_INDEX(QMPacketGaussianWave,QMStateAnalytic);
+		virtual Real energy() {
+			std::cerr << "FIXMEatomowe: assuming hbar=1, m=1\n";
+			int dim=this->gridSize.size();
+			Real hbar=1;
+			Real m=1;
+			Real ret=0;
+			for(int i=0 ; i<dim ; i++)
+				ret += pow(hbar*k0[i],2)/(2*m);
+			return ret;
+		};
 };
 REGISTER_SERIALIZABLE(QMPacketGaussianWave);
 

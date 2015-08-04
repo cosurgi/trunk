@@ -17,6 +17,15 @@ YADE_PLUGIN(
 CREATE_LOGGER(QMPacketHarmonicEigenFunc);
 // !! at least one virtual function in the .cpp file
 QMPacketHarmonicEigenFunc::~QMPacketHarmonicEigenFunc(){};
+Real QMPacketHarmonicEigenFunc::energy() {
+	St1_QMPacketHarmonicEigenFunc FIXMEequation;
+	std::cerr << "FIXMEatomowe: assuming hbar=1, m=1\n";
+	int dim=this->gridSize.size();
+	Real ret=0;
+	for(int i=0 ; i<dim ; i++)
+		ret += FIXMEequation.En(energyLevel[i]);
+	return ret;
+};
 
 vector<boost::rational<signed long> > St1_QMPacketHarmonicEigenFunc::hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha)
 {

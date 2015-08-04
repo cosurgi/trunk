@@ -66,6 +66,7 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			createIndex();
 			, // python bindings
 		);
+		virtual Real energy();
 		REGISTER_CLASS_INDEX(QMPacketHarmonicEigenFunc,QMStateAnalytic);
 };
 REGISTER_SERIALIZABLE(QMPacketHarmonicEigenFunc);
@@ -86,8 +87,8 @@ class St1_QMPacketHarmonicEigenFunc: public St1_QMStateAnalytic
 		);
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
-	private:
 		Real      En(int n);
+	private:
 		vector<boost::rational<signed long> > hermitePolynomialCoefficients(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
 		vector<boost::rational<signed long> > hermitePolynomialScaled(unsigned int order, boost::rational<signed long> lambdaPerAlpha);
 		Complexr  quantumOscillatorWavefunction(unsigned int,Real); // FIXME: assume hbar=1, mass=1, frequency=1

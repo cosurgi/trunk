@@ -66,11 +66,15 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			((Vector3i ,energyLevel,Vector3i::Zero(),,"Energy level 'n' in xyz-directions of quantum harmonic oscillator"))
 			((Real     ,t0  ,0                      ,,"Initial time for generated wave packet"))
 			((Vector3r ,x0  ,Vector3r::Zero()        ,,"Initial wave packet center at $t=0$"))
+			((Real     ,m1  ,0                      ,,"First  mass"))
+			((Real     ,m2  ,0                      ,,"Second mass"))
+			((bool     ,m2_is_infinity  ,false      ,,"Whether second mass is inifinite (for potentials)"))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();
 			, // python bindings
 		);
+		virtual Real energy();
 		REGISTER_CLASS_INDEX(QMPacketHydrogenEigenFunc,QMStateAnalytic);
 };
 REGISTER_SERIALIZABLE(QMPacketHydrogenEigenFunc);
@@ -91,24 +95,40 @@ class St1_QMPacketHydrogenEigenFunc: public St1_QMStateAnalytic
 		);
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
-	private:
-		boost::tuple<Real,Real,Real> FIXMEatomowe() {
+	public:
+		boost::tuple<Real,Real,Real> FIXMEatomowe_func(const QMPacketHydrogenEigenFunc* hyd) {
+			// sanity checks
+			if(hyd->m1==0 or (hyd->m2==0 and hyd->m2_is_infinity==false)) {
+				HERE_ERROR("m1==0 or (m2==0 and m2_is_infinity==false)");
+				std::cerr << "m1 = " << hyd->m1 << "\n";
+				std::cerr << "m2 = " << hyd->m2 << "\n";
+				std::cerr << "m2_is_infinity = " << hyd->m2_is_infinity << "\n";
+				exit(1);
+			}
+
 			Real hbar = 1;
-			Real m1   = 1;
-			Real m2   = 1;
+			Real m1   = hyd->m1;
+			Real m2   = hyd->m2;
 			Real mi   = m1*m2/(m1+m2);  // dla dwóch cząstek
-			//     mi   = 0.25;                 // dla jednej cząstki w nieruchomym potencjale
+			if(hyd->m2_is_infinity) {
+				mi   = 1;           // dla jednej cząstki w nieruchomym potencjale
+			}
+			if(mi == 0){
+				HERE_ERROR("mi == 0 ????");
+				exit(1);
+			}
 			Real e    = 1;
 			Real a0   = pow(hbar,2)/(mi*pow(e,2));
 			return boost::make_tuple(hbar, mi, a0);
 		};
-
+	public:
 		Real      En_1D(int n);
 		Real      En_2D(int n, Real hbar, Real mi, Real a0); // FIXMEatomowe - here it's fixed. This fix must propagate upwards through the code
 		Real      En_3D(int n);
-		Complexr  quantumHydrogenWavefunction_1D(int n, bool even    , Real x);         // FIXME: assume hbar=1, mass=1
-		Complexr  quantumHydrogenWavefunction_2D(int n, int  l       , Real x, Real y); // FIXME: assume hbar=1, mass=1, frequency=1
-		Complexr  quantumHydrogenWavefunction_3D(int n, int  l, int m, Vector3r xyz); // FIXME: assume hbar=1, mass=1, frequency=1
+	private:
+		Complexr  quantumHydrogenWavefunction_1D(                                     int n, bool even    , Real x);         // FIXME: assumed here hbar=1, mass=1
+		Complexr  quantumHydrogenWavefunction_2D(const QMPacketHydrogenEigenFunc* hyd,int n, int  l       , Real x, Real y); // FIXED here !
+		Complexr  quantumHydrogenWavefunction_3D(                                     int n, int  l, int m, Vector3r xyz);   // FIXME: assumed here hbar=1, mass=1, frequency=1
 };
 REGISTER_SERIALIZABLE(St1_QMPacketHydrogenEigenFunc);
 
