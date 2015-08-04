@@ -24,6 +24,8 @@
 
 class QMStatePotential: public QMStateAnalytic
 {
+	public: // protected?? // FIXME, FIXME, FIXME !!!!!!!!!!!!!!!!!! duplikat z tą samą funkcją w St1_QMState
+		virtual bool changesWithTime_FIXME() {return false;};
 	public:
 		virtual ~QMStatePotential();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStatePotential /* class name*/, QMStateAnalytic /* base class */
@@ -84,7 +86,7 @@ class QMIGeom: public IGeom
 			  ((vector<Real>,size2,vector<Real>({}),,"1st wavepacket size in position representation space"))
 			  ((vector<size_t>,gridSize1,vector<size_t>({}),,"Lattice grid size used to describe the 1st wavefunction."))
 			  ((vector<size_t>,gridSize2,vector<size_t>({}),,"Lattice grid size used to describe the 2nd wavefunction."))
-			  ((NDimTable<Complexr>,potentialMarginalDistribution,,Attr::hidden,"representation of potential only for purposes of drawing on the screen"))
+//			  ((NDimTable<Complexr>,potentialMarginalDistribution,,Attr::hidden,"representation of potential only for purposes of drawing on the screen"))
 // Compare in history, very long time ago:  InteractingBox2InteractingBox4ClosestFeatures.cpp (git lof, git lol -p)
 //			((Vector3r , relativePosition21    , ,, "Relative position    of two boxes with wavefunctions or potentials."))
 //			((         , relativeOrientation21 , ,, "Relative orientation of two boxes with wavefunctions or potentials."))

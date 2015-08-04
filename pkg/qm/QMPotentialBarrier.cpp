@@ -127,7 +127,18 @@ bool Law2_QMIGeom_QMIPhysBarrier::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& i
 	//FIXME - how to avoid getting Body from scene?
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 HERE;
-	NDimTable<Complexr>& val(qmigeom->potentialMarginalDistribution);
+//	NDimTable<Complexr>& val(qmigeom->potentialMarginalDistribution);
+
+	if(not  barrier->potentialInteractionGlobal) {
+		barrier->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
+		barrier->potentialInteractionGlobal->wasGenerated=false;
+	}
+		// FIXME ! - tensorProduct !!
+HERE;
+	NDimTable<Complexr>& val(barrier->potentialInteractionGlobal->psiGlobalTable);
+
+
+
 
 	if(psi->gridSize.size() <= 3) {
 // FIXME (1↓) problem zaczyna się tutaj, ponieważ robiąc resize tak żeby pasowały do siebie, zakładam jednocześnie że siatki się idealnie nakrywają.
@@ -148,10 +159,10 @@ HERE;
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysBarrier::go, dim>3\n"; exit(1); };
 
 // FIXME - this should go to Ip2_::go (parent, toplevel)
-/*FIXME*/	if(not barrier->potentialInteractionGlobal)
-/*FIXME*/		barrier->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
-/*FIXME*/		// FIXME ! - tensorProduct !!
-/*FIXME*/	barrier->potentialInteractionGlobal->psiGlobalTable = val;
+/*FIXME*///	if(not barrier->potentialInteractionGlobal)
+/*FIXME*///		barrier->potentialInteractionGlobal = boost::shared_ptr<QMStateDiscreteGlobal>(new QMStateDiscreteGlobal);
+/*FIXME*///		// FIXME ! - tensorProduct !!
+/*FIXME*///	barrier->potentialInteractionGlobal->psiGlobalTable = val;
 
 	return true;
 };

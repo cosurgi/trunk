@@ -207,7 +207,7 @@ bool Law2_QMIGeom_QMIPhysCoulomb::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& i
 	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id1]->state.get());
 // FIXME(3) !!!!!!!! on nie może tutaj robić QMIGeom !!!!!!! musi robić QMIPhys !!!!! (i do tego musi to robić w Ip2_*)
 HERE;
-	NDimTable<Complexr>& val_I_GeomMarginal(qmigeom->potentialMarginalDistribution);
+//	NDimTable<Complexr>& val_I_GeomMarginal(qmigeom->potentialMarginalDistribution);
 
 
 /*FIXME*/	if(not harmonic->potentialInteractionGlobal)
@@ -228,7 +228,7 @@ HERE;
 	} else { std::cerr << "\nLaw2_QMIGeom_QMIPhysCoulomb::go, dim>3\n"; exit(1); };
 
 // FIXME - this should go to Ip2_::go (parent, toplevel)
-/*FIXME*/	val_I_GeomMarginal = val;
+/*FIXME*/	//val_I_GeomMarginal = val;
 // FIXME 2 - this is duplicate (a little) with Law2_QMIGeom_QMIPhysCoulombParticles, but here it knows that there is static potential, not a particle.
 
 	return true;
