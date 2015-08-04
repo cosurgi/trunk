@@ -73,6 +73,20 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("partOfpsiGlobal",&QMStateDiscrete::partOfpsiGlobal,"If it's entangled, tell where it starts.")
 			.def("atPsiGlobal",&QMStateDiscrete::atPsiGlobalExisting,"Return value at given table (grid) position.")
 			.def("integratePsiGlobal",&QMStateDiscrete::integratePsiGlobal,"Return total probability.")
+/* ?? no TESTs */	.def("braKet",&QMStateDiscrete::braKet,"Calculate <this|other>=∫ψ(x,y,…) φ*(x,y,…) dx dy d… , \nexample call:\npsi1=O.bodies[0].state;psi2=O.bodies[1].state;\npsi1.braKet(psi2)")
+/* ?? no TESTs */	.def(boost::python::self_ns::self | boost::shared_ptr<QMStateDiscrete>())
+/* ?? no TESTs */	.def("subtract",&QMStateDiscrete::subtract,"Returns new wavefunction ϕ(x,y,…)=ψ(x,y,…)-φ(x,y,…), they must have all dimensions the same.")
+/* ?? no TESTs */	.def(boost::python::self_ns::self - boost::shared_ptr<QMStateDiscrete>())
+/* ?? no TESTs */	.def("copy",&QMStateDiscrete::copy,"Returns new copy of this state.")
+/* ?? no TESTs */	.def("energy",&QMStateDiscrete::energy,"Returns energy as calculated from analytical formulas.")
+/* ?? no TESTs *////	.def("numericEnergy" ,&QMStateDiscrete::numericEnergy,"Returns energy as <E>=<ψ|iℏ ∂/∂t|ψ>")
+                                                                          // FIXME - ajaj, tak to się nie da, muszę:
+									  // 1. zapisać psi1
+									  // 2. wykonać krocz czasowy do przodu z mały dt
+									  // 3. obliczyć (psi2(t+dt)-psi1(t))/dt 
+									  //      http://www.sosmath.com/calculus/diff/der00/der00.html
+									  // 4. przemnozyć przez iℏ
+									  // 5. no i mam już "pochodną", teraz liczę psi1|pochodna
 // FIXME - chciałem żeby at() odnosiło się do tej klasy, a nie globalExisting, a to po to, żebym mógł brać gridSize
 //			.def("getPsiGlobalExisting",&QMStateDiscrete::getPsiGlobalExisting,"Return QMStateDiscreteGlobal.")
 		);
@@ -124,6 +138,21 @@ or directly by filling in the discrete values in the table. It is used for numer
 		size_t partOfpsiGlobalZero()  { if(whichPartOfpsiGlobal<0) return 0; return size_t(whichPartOfpsiGlobal); };
 
 		Real integratePsiGlobal();
+
+
+// operations, operators
+// http://www.boost.org/doc/libs/1_58_0/libs/python/doc/tutorial/doc/html/python/exposing.html
+/* ?? no TESTs */	std::complex<Real> operator| (boost::shared_ptr<QMStateDiscrete> other){return braKet(other);};
+/* ?? no TESTs */	std::complex<Real> braKet    (boost::shared_ptr<QMStateDiscrete> other);
+/* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> operator- (boost::shared_ptr<QMStateDiscrete> other){return subtract(other);};
+/* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> subtract  (boost::shared_ptr<QMStateDiscrete> other);
+/* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> copy  ();
+/* ?? no TESTs */	virtual Real energy() { std::cerr << "Analytic formula unknown\n"; return 0; };
+/* ?? no TESTs */	//Real numericEnergy()          { std::cerr << "ERROR: n.i.y\n"; return 0; };
+////////////////////////
+
+
+
 // this is the real wavefunction - entangled, and s̳h̳a̳r̳e̳d̳ among other particles.
 		bool                                      getPsiGlobalExists  () { return (bool)(psiGlobal);};
 		boost::shared_ptr<QMStateDiscreteGlobal>& setPsiGlobal        (boost::shared_ptr<QMStateDiscreteGlobal>& s) { psiGlobal = s; return psiGlobal;};

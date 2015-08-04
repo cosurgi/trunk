@@ -40,6 +40,66 @@ Real QMStateDiscrete::integratePsiGlobal()
 	return getPsiGlobalExisting()->psiGlobalTable.integrateAllNormSquared(getPsiGlobalExisting()->getSpatialSizeGlobal());
 };
 
+std::complex<Real> QMStateDiscrete::braKet(boost::shared_ptr<QMStateDiscrete> o)
+{
+	if( not (getPsiGlobalExists() and o->getPsiGlobalExists()) ) {
+		std::cerr << "ERROR braKet(other): psiGlobal doesn't exist\n";
+		return 0;
+	}
+	if( getPsiGlobalExisting()->getSpatialSizeGlobal() != o->getPsiGlobalExisting()->getSpatialSizeGlobal() ) {
+		std::cerr << "ERROR braKet(other): different spatial sizes: "<<getPsiGlobalExisting()->getSpatialSizeGlobal()<<" and "<<o->getPsiGlobalExisting()->getSpatialSizeGlobal()<< "\n";
+		return 0;
+	}
+	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_BraKet(o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
+};
+
+boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::subtract(boost::shared_ptr<QMStateDiscrete> other)
+{
+	if( not (getPsiGlobalExists() and other->getPsiGlobalExists()) ) {
+		std::cerr << "ERROR subtract(other): psiGlobal doesn't exist\n";
+		return boost::shared_ptr<QMStateDiscrete>();
+	}
+	if( getPsiGlobalExisting()->getSpatialSizeGlobal() != other->getPsiGlobalExisting()->getSpatialSizeGlobal() ) {
+		std::cerr << "ERROR subtract(other): different spatial sizes: "<<getPsiGlobalExisting()->getSpatialSizeGlobal()<<" and "<<other->getPsiGlobalExisting()->getSpatialSizeGlobal()<< "\n";
+		return boost::shared_ptr<QMStateDiscrete>();
+	}
+	if(    (
+		     (getPsiGlobalExisting()->psiGlobalTable.rank() != other->getPsiGlobalExisting()->psiGlobalTable.rank()) 
+		 or  (getPsiGlobalExisting()->psiGlobalTable.dim()  != other->getPsiGlobalExisting()->psiGlobalTable.dim() ) 
+		 or  (getPsiGlobalExisting()->psiGlobalTable.size_total()  != other->getPsiGlobalExisting()->psiGlobalTable.size_total() ) 
+		)) {
+		std::cerr << "\n\n ERROR: bad sizes of two wavefunctions:\n";
+		std::cerr << " spatial_sizes : " << getPsiGlobalExisting()->getSpatialSizeGlobal()        << "\n";
+		std::cerr << " rank_d        :( " << getPsiGlobalExisting()->psiGlobalTable.rank()        <<" ) vs. ( " << other->getPsiGlobalExisting()->psiGlobalTable.rank()       <<" ) \n";
+		std::cerr << " dim_n         :( " << getPsiGlobalExisting()->psiGlobalTable.dim()         <<" ) vs. ( " << other->getPsiGlobalExisting()->psiGlobalTable.dim()        <<" ) \n";
+		std::cerr << " total         :( " << getPsiGlobalExisting()->psiGlobalTable.size_total()  <<" ) vs. ( " << other->getPsiGlobalExisting()->psiGlobalTable.size_total() <<" ) \n";
+		return boost::shared_ptr<QMStateDiscrete>();
+	}
+	auto ret = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
+	ret->spatialSize          = this->spatialSize;
+	ret->whichPartOfpsiGlobal = this->whichPartOfpsiGlobal;
+
+	ret->getPsiGlobalNew()      ->psiGlobalTable  = this ->getPsiGlobalExisting()->psiGlobalTable;
+	ret->getPsiGlobalExisting() ->psiGlobalTable -= other->getPsiGlobalExisting()->psiGlobalTable;
+	ret->getPsiGlobalExisting() ->setSpatialSizeGlobal( this->getPsiGlobalExisting()->getSpatialSizeGlobal() );
+	return ret;
+};
+
+boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::copy()
+{
+	if( not (getPsiGlobalExists())) {
+		std::cerr << "ERROR copy(): psiGlobal doesn't exist\n";
+		return boost::shared_ptr<QMStateDiscrete>();
+	}
+	auto ret = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
+	ret->spatialSize          = this->spatialSize;
+	ret->whichPartOfpsiGlobal = this->whichPartOfpsiGlobal;
+
+	ret->getPsiGlobalNew()      ->psiGlobalTable  = this ->getPsiGlobalExisting()->psiGlobalTable;
+	ret->getPsiGlobalExisting() ->setSpatialSizeGlobal( this->getPsiGlobalExisting()->getSpatialSizeGlobal() );
+	return ret;
+};
+
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)
 {
 	QMStateDiscrete*         qms = static_cast <QMStateDiscrete*>(state.get());
