@@ -97,7 +97,7 @@ found in [TalEzer1984]_"
 			((int     ,steps      ,-1    ,,"Override automatic selection of number of steps in Chebyshev expansion."))
 			((int     ,threadNum  ,1     ,,"Number of FFT threads."))
 			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
-			((bool    ,printIter  ,false ,,"Print Kosloff interation."))
+			((int     ,printIter  ,0     ,,"Print Kosloff interation."))
 			((bool    ,doCopyTable,true  ,,"Whether to copy the NDimTable for calculation (memory waste, nice drawing)."))
 			, // constructor
 			, // python bindings

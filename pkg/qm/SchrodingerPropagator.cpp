@@ -312,7 +312,7 @@ HERE;
 			// never stop when i < R*1.3, unless steps is positive. Auto stop expanding series based on std::numeric_limits<Real>::min()
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
-				if(printIter) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << "\n";
+				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
 HERE;
 				NDimTable<Complexr> psi_2;              // ψ₂     :
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
@@ -327,7 +327,7 @@ HERE;
 	/*//	↑↑↑*/	psiGlobal->psiGlobalTable = psi_dt;
 			// FIXME: but it actually wastes twice more memory
 
-			if(timeLimit.messageAllowed(4)) std::cerr << "(not &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(not &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
 	// FIXME - full duplicate of the block above, except for the reference
@@ -343,7 +343,7 @@ HERE;
 			Complexr ak(1);
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
-				if(printIter) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << "\n";
+				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
 				NDimTable<Complexr> psi_2;              // ψ₂     :
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
@@ -352,7 +352,7 @@ HERE;
 				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
-			if(timeLimit.messageAllowed(4)) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 		}
 // FIXME - for multiple entangled wavefunctions
