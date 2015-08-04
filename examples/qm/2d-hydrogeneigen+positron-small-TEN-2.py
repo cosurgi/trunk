@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 dimensions = 2
-SMALLER    = 2
-size1d     = 800/SMALLER
-GRIDSIZE   = [320/SMALLER,256/SMALLER] # GRIDSIZE   = [320,256]
+SMALLER    = 1
+size1d     = 560/SMALLER
+GRIDSIZE   = [224/SMALLER,180/SMALLER] # GRIDSIZE   = [320,256]
 halfSize   = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
@@ -23,7 +23,7 @@ potentialMaximum     = -100000000; # negative puts ZERO at center, positive - pu
 potentialCoefficient_positron = [ 1.0 ,0.0,0.0]
 k0_positron                   = [-0.12,0.0,0.0]
 gaussWidth_positron           = [ 60  ,60 ,0  ]
-t0_positron                   = 4500/SMALLER
+t0_positron                   = 3100/SMALLER
 x0_positron                   = [0,-140+Pot_y,0]
 
 # wavepacket_2 parameters, electron on stationary orbit
@@ -145,7 +145,7 @@ analyticBody.state     = QMPacketHydrogenEigenFunc(t0=-270,**coulombPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic()       # is propagated as analytical solution - no calculations involved
 
-O.dt=200
+O.dt=100
 
 #O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
