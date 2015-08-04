@@ -46,7 +46,7 @@ O.engines=[
                  ,Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticleInPotential()],
 		[Law2_QMIGeom_QMIPhysCoulombParticles(),Law2_QMIGeom_QMIPhysCoulombParticleInPotential()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=20,doCopyTable=False,threadNum=8),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,printIter=1,doCopyTable=False,threadNum=16),
 	SchrodingerAnalyticPropagator(),
 ]
 
@@ -159,9 +159,9 @@ try:
 	qt.Renderer().blinkHighlight=False
 	qt.Renderer().light1Pos=Vector3( 1175,1130,500)
 	qt.Renderer().light2Pos=Vector3(-1130, 575,230)
-	qt.View()
+	#qt.View()
 	#qt.Renderer().light2Pos=Vector3(Pot_x,Pot_y,30)
-	qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
+	#qt.views()[0].center(False,size1d*1.5) # median=False, suggestedRadius = 5
 
 except ImportError:
 	pass

@@ -35,7 +35,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(steps=-1,threadNum=4),
+	SchrodingerKosloffPropagator(steps=-1,threadNum=8),
 ]
 
 partsScale = 20000
@@ -90,24 +90,24 @@ O.dt=100
 #O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
-try:
-	from yade import qt
-	qt.Controller()
-	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.controller.setWindowTitle(sys.argv[0])
-	qt.Renderer().blinkHighlight=False
-	qt.View()
-        qt.Renderer().light2Pos=[Pot_x,Pot_y,30]
-	qt.views()[0].center(False,250) # median=False, suggestedRadius = 5
+## try:
+## 	from yade import qt
+## 	qt.Controller()
+## 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+## 	qt.controller.setWindowTitle(sys.argv[0])
+## 	qt.Renderer().blinkHighlight=False
+## 	qt.View()
+##         qt.Renderer().light2Pos=[Pot_x,Pot_y,30]
+## 	qt.views()[0].center(False,250) # median=False, suggestedRadius = 5
+## 
+## except ImportError:
+## 	pass
 
-except ImportError:
-	pass
 
+O.dt=0.0000001
+for i in range(51):
+	O.step()
+	O.dt=200
+	if(i%5==0):
+		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.gz")
 
-#O.dt=0.0000001
-#for i in range(51):
-#	O.step()
-#	O.dt=200
-#	if(i%5==0):
-#		O.save(str(sys.argv[0])+"_"+str(O.iter)+".yade.bz2")
-#

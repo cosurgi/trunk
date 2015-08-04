@@ -34,7 +34,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(threadNum=8),
 	SchrodingerAnalyticPropagator(),
 ]
 
