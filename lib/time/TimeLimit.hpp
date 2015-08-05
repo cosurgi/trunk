@@ -32,8 +32,13 @@ class TimeLimit
 		void readWallClock() {
 			lastWallClock=getClock();
 		};
-		bool tooLong(double waitTime) {
+		bool tooLong(double waitTime) { // seconds
 			return (getClock() - lastWallClock) > waitTime;
+		};
+		void printDelay(std::string msg) {
+			lastMessage=getClock();
+			std::cerr << "\t\t... " << (lastMessage-lastWallClock) << "\n" << msg << "  ";
+			lastWallClock=getClock();
 		};
 	private:
 		double lastMessage;

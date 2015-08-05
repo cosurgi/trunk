@@ -113,6 +113,9 @@ found in [TalEzer1984]_"
 	DECLARE_LOGGER;
 	private:
 		TimeLimit timeLimit;
+
+// this one was used to do some profiling to find the slowest parts of the algorithm
+//		TimeLimit delay;
 		
 		// FIXME są różne typy, to jest podejrzane. Może w QMIPhys wystarczy trzymać NDimTable, a nie całe QMStateDiscreteGlobal ?
 		const NDimTable<Complexr>&               get_full_potentialInteractionGlobal_psiGlobalTable();

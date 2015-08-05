@@ -35,6 +35,9 @@
 #include "lib/base/FFTW3_Allocator.hpp"
 #endif
 
+//FIXME - remove that
+//#include "lib/time/TimeLimit.hpp"
+
 template <typename C> std::ostream & operator<<(std::ostream & os, const std::vector<C>& dim)
 {
 	for(size_t i=0 ; i<dim.size() ; i++ )
@@ -254,8 +257,11 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 
 		// allocation
 /* OK */	void resize(const std::vector<std::size_t>& d ) {
+//std::cerr << "  resize d(given) = ("<< d << "), dim_n = (" << dim_n << ")\n";
 			if(dim_n==d) return;
+//std::cerr << "  calcDimRankTotal(d)\n";
 			calcDimRankTotal(d);
+//std::cerr << "  parent_resize(total)\n";
 			parent_resize(total);
 		};
 /* OK */	void resize(const std::vector<std::size_t>& d, value_type init) {
@@ -342,7 +348,13 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			return true;
 		};
 		// elementwise operations
-		NDimTable& operator  = (const NDimTable& )=default;
+		// NDimTable& operator  = (const NDimTable& )=default;  // this one is too slow
+		NDimTable& operator  = (const NDimTable& T) {
+//std::cerr << "   NDimTable& operator  = (const NDimTable& T)  ";
+			this->resize(T.dim());
+			__gnu_parallel::transform(    T.begin(),    T.end(),this->begin(),[](const K& v){return v;});
+			return *this;
+		};
 		NDimTable& operator  = (      NDimTable&&)=default;
 		NDimTable& operator -  (          ) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return  -v;});  return *this;};
 		NDimTable& operator += (const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v+k;});  return *this;};
@@ -749,6 +761,8 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 		void doFFT(const NDimTable& inp,bool forward)
 		{
 		{
+//static TimeLimit delay;
+//delay.printDelay("  FFT start, mutex");
 			static boost::mutex mxFFT_FIXME;
 			boost::mutex::scoped_lock scoped_lock(mxFFT_FIXME);// FIXME ←----- !! ponieważ ciągle robię nowe fftw_plan_dft(...) to muszę robić mutex
 
@@ -757,20 +771,26 @@ if(not called) {std::cerr << "init "<< Threads::number <<" threads: " << fftw_in
 fftw_plan_with_nthreads(Threads::number/*16*/);//omp_get_max_threads());
 
 			//(*this)=inp; // FIXME - jakoś inaczej
+//delay.printDelay("  FFT this->resize");
 			this->resize(inp.dim()); // FIXME - jakoś inaczej
 			#ifdef YADE_FFTW3
+//delay.printDelay("  FFT reinterpret_cast");
 			fftw_complex *in, *out;
 			in  = reinterpret_cast<fftw_complex*>(&(const_cast<NDimTable&>(inp). operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			out = reinterpret_cast<fftw_complex*>(&(                       this->operator[](0)));//(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
 			std::vector<int> dim_int(inp.dim().begin(),inp.dim().end());
 // FIXME - fftw_plan_dft is not re-entrant. Must have mutex here. But (FIXME!!!!) better not create & destroy fftw_plan all the time!!
 // w SchrodingerKosloffPropagator zrobię jakieś FFT.makePlan() a potem pilnuję żeby pętla była ciągle na tych samych NDimTable....
+//delay.printDelay("  FFT create PLAN!!");
 			fftw_plan p_FFT=fftw_plan_dft((int)rank_d,&dim_int[0], in, out, forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
 			//dirty=false;
+//delay.printDelay("  FFT execute plan!!");
 			fftw_execute(p_FFT);
 // FIXME - do not destroy & create plan all the time. Just make one and keep it!! Unless dimensions changed - by calling resize().
 			if(not forward) this->operator/=((int)(inp.total));
+//delay.printDelay("  FFT destroy plan!!");
 			fftw_destroy_plan(p_FFT);
+//delay.printDelay("  FFT plan destroyed!!");
 			#else
 			#error fftw3 library is needed
 			#endif

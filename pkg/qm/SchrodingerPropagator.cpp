@@ -215,6 +215,7 @@ HERE2;
 void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
 	/*FIXME - remove*/QMStateDiscrete* psi)
 {
+//delay.printDelay("calc_Hnorm_psi");	//	1: 1.7s		2: 0s		3: 0s		4: 0s		5: 0s		6: 0s		7: 0s
 	Real mass(FIXMEatomowe_MASS); // FIXME - this shouldn't be here
 	Real dt=scene->dt;
 
@@ -226,6 +227,7 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 HERE;
 	static NDimTable<Real    > kTable(psi_0.dim());
 	if(! hasTable){
+//delay.printDelay("make kTable");	//	1: 24.2s
 		hasTable=true;
 		// FIXME!!!!!  wow, gdy będę miał dobry warunek na krok siatki, to będę mógł automatycznie zagęszczać i rozluźniać siatkę!
 		//             wystarczy że nowa siatka będzie interpolowana ze starej siatki, i co jakiś czas będzie automatycznie skalowana
@@ -238,7 +240,9 @@ HERE;
 	
 	// prepare the potential  ψᵥ
 HERE;
-	NDimTable<Complexr> Vpsi( get_full_potentialInteractionGlobal_psiGlobalTable() );
+//delay.printDelay("copy Vpsi _________");//	1: 3.4s		2: 3.2s		3: 15.4s	4: 3.6s		5: 3.3s		6: 3.3s		7: 3.1s
+	static NDimTable<Complexr> Vpsi = {}; // static to avoid creating and destroying, just copy
+	Vpsi = get_full_potentialInteractionGlobal_psiGlobalTable();
 	
 	// previous loop was:   NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	// previous loop was:   FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
@@ -248,24 +252,30 @@ HERE;
 	// previous loop was:   	}
 	// previous loop was:   };
 
+//delay.printDelay("Vpsi mult");		//	1: 0.5s		2: 0.4s		3: 0.3s		4: 0.4s		5: 0.3s		6: 0.3s		7: 0.3s
 	if(Vpsi.rank() != 0)
 		Vpsi    .multMult(psi_0,dt/(FIXMEatomowe_hbar*R));// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
 
 //? NDimTable<Complexr> psi_0c(psi_0);
 //? psi_0c.shiftByHalf();
 	psi_1.set_num_threads(threadNum);
-	psi_1  = FFT(psi_0);                 // ψ₁: ψ₁=              ℱ(ψ₀)
+//delay.printDelay("FFT");		//	1: 7s		2: 23.5s	3: 3.7s		4: 3.7s		5: 3.5s		6: 3.8s		7: 3.6s
+	psi_1.doFFT(psi_0,true);                 // ψ₁: ψ₁=              ℱ(ψ₀)
 //? psi_1  = FFT(psi_0c);                 // ψ₁: ψ₁=              ℱ(ψ₀)
 //? psi_1.shiftByHalf();
+//delay.printDelay("kTable");		//	1: 0.3s		2: 0.3s		3: 0.4s		4: 0.3s		5: 0.2s		6: 0.4s		7: 0.3s
 	psi_1 *= kTable;                     // ψ₁: ψ₁=           -k²ℱ(ψ₀)
 //? psi_1.shiftByHalf();
+//delay.printDelay("IFFT");		//	1: 3.8s		2: 4.0s		3: 4.4s		4: 4.1s		5: 3.8s		6: 4.0s		7: 3.9s
 	psi_1   .IFFT();                     // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
 //? psi_1.shiftByHalf();
+//delay.printDelay("mult,etc");		//	1: 1.0s		2: 0.8s		3: 1.25s	4: 1.0s		5: 0.9s		6: 1.2s		7: 1.0s
 	psi_1 *= dt*FIXMEatomowe_hbar/(R*2*mass);         // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
 	psi_1   .mult2Add(psi_0,(1+G/R));    // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
 
 	if(Vpsi.rank() != 0)
 		psi_1 -= Vpsi;               // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+//delay.printDelay("mult,etc end");	//	1: 0.7s		2: 10.8s	3: 1.1s		4: 0.9s		5: 0.9s		6: 1.2s		7: 0.9s
 
 	// FIXME: return std::move(psi_1);
 }
@@ -303,7 +313,7 @@ void SchrodingerKosloffPropagator::action()
 	s.algorithm_strategy = __gnu_parallel::force_parallel;
 	__gnu_parallel::_Settings::set(s);
 	omp_set_dynamic(false);
-	omp_set_num_threads(20);
+	omp_set_num_threads(threadNum);
 	
 
 	//virialTheorem_Grid_check(); // FIXME - to powinno być chyba zależne od potencjału...
@@ -326,7 +336,9 @@ HERE;
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
+			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+//						1: 0.7s
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
 			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
@@ -336,13 +348,18 @@ HERE;
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
 				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
+//						1: dotąd 0.7s
 HERE;
-				NDimTable<Complexr> psi_2;              // ψ₂     :
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+//							1:	2: 10.8s	3: 1.1s		4: 0.9s		5: 0.9s		6: 1.2s
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
-				psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
-				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+//delay.printDelay("mult2 etc end");        //		1:	2: 0s		3: 0s		4: 0s		5: 0s		6: 0s
+				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
+				//psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+				std::swap(psi_0,psi_1);
+				std::swap(psi_1,psi_2);
+//delay.printDelay("swap end");             //		1:	2: 0s		3: 0s		4: 0s		5: 0s		6: 0s
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
@@ -358,6 +375,7 @@ HERE;
 			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
 			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
+			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
@@ -366,13 +384,16 @@ HERE;
 			Complexr ak(1);
 			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
 			{
-				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << "/" << maxIter << " ak="<<ak<<"\n";
-				NDimTable<Complexr> psi_2;              // ψ₂     :
+				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator O.iter="<<(scene->iter)<<", loop iter=" << i << "/" << maxIter << " ak="<<ak<<"\n";
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
-				psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
-				psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+//delay.printDelay("mult2 etc end");
+				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
+				//psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+				std::swap(psi_0,psi_1);
+				std::swap(psi_1,psi_2);
+//delay.printDelay("swap end");
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
