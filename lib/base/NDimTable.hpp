@@ -25,7 +25,8 @@
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <Eigen/Core>
-#include <parallel/algorithm>
+
+//#include <parallel/algorithm>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -348,26 +349,28 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			return true;
 		};
 		// elementwise operations
-		// NDimTable& operator  = (const NDimTable& )=default;  // this one is too slow
-		NDimTable& operator  = (const NDimTable& T) {
-//std::cerr << "   NDimTable& operator  = (const NDimTable& T)  ";
-			this->resize(T.dim());
-			__gnu_parallel::transform(    T.begin(),    T.end(),this->begin(),[](const K& v){return v;});
-			return *this;
-		};
-		NDimTable& operator  = (      NDimTable&&)=default;
-		NDimTable& operator -  (          ) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return  -v;});  return *this;};
-		NDimTable& operator += (const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v+k;});  return *this;};
-		NDimTable& operator -= (const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v-k;});  return *this;};
-		NDimTable& operator *= (const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v*k;});  return *this;};
-		NDimTable& operator /= (const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v/k;});  return *this;};
+		NDimTable& operator  = (const NDimTable& )=default;
 
-		template<typename L> NDimTable& operator += (const NDimTable<L>& T) {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v+l;});return *this;};
-		template<typename L> NDimTable& operator -= (const NDimTable<L>& T) {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v-l;});return *this;};
+//		NDimTable& operator  = (const NDimTable& T) {  // ..... I got some data corruption, maybe due to __gnu_parallel::transform ? 
+////std::cerr << "   NDimTable& operator  = (const NDimTable& T)  ";
+//			this->resize(T.dim());
+//			__gnu_parallel::transform(    T.begin(),    T.end(),this->begin(),[](const K& v){return v;});
+//			return *this;
+//		};
+
+		NDimTable& operator  = (      NDimTable&&)=default;
+		NDimTable& operator -  (          ) {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return  -v;});  return *this;}; 
+		NDimTable& operator += (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v+k;});  return *this;};
+		NDimTable& operator -= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v-k;});  return *this;}; 
+		NDimTable& operator *= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v*k;});  return *this;}; 
+		NDimTable& operator /= (const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return v/k;});  return *this;}; 
+
+		template<typename L> NDimTable& operator += (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v+l;});return *this;};
+		template<typename L> NDimTable& operator -= (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v-l;});return *this;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! operators *= and /= implement  http://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29
-		template<typename L> NDimTable& operator *= (const NDimTable<L>& T) {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
-		template<typename L> NDimTable& operator /= (const NDimTable<L>& T) {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v/l;});return *this;};
+		template<typename L> NDimTable& operator *= (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
+		template<typename L> NDimTable& operator /= (const NDimTable<L>& T) {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[](K& v,const L& l){return v/l;});return *this;}; 
 
 		// FIXME: should be 'K'-type not 'double'-type. But min(), max() works only with real numbers. 
 		// FIXME: this is because potential should be real valued (but isn't)
@@ -376,21 +379,21 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 		not_complex maxReal() const {not_complex ret(std::real(this->front())); for(K v : (*this)){ret  = std::max(std::real(v),ret);}; return ret;};
 		// !!!!!!!!!!!
 		// !IMPORTANT! for effciency, these do not copy construct new data, they modify in-place!
-		NDimTable& abs()           {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
-		NDimTable& pow(const K& k) {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
-		NDimTable& sqrt()          {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};
-		NDimTable& conj()          {__gnu_parallel::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::conj(v   );}); return *this;};
+		NDimTable& abs()           {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::abs(v    );}); return *this;};
+		NDimTable& pow(const K& k) {std::transform(this->begin(),this->end(),this->begin(),[k](K& v){return std::pow(v,k  );}); return *this;};
+		NDimTable& sqrt()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::sqrt(v   );}); return *this;};
+		NDimTable& conj()          {std::transform(this->begin(),this->end(),this->begin(),[ ](K& v){return std::conj(v   );}); return *this;};
 
 		template<typename L> NDimTable& mult2Add(const NDimTable<L>& T,const K& k)
-		                           {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v+l*k;});return *this;};
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v+l*k;});return *this;};
 		template<typename L> NDimTable& mult2Sub(const NDimTable<L>& T,const K& k)
-		                           {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v-l*k;});return *this;};
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v-l*k;});return *this;};
 		template<typename L> NDimTable& mult1Sub(const K& k,const NDimTable<L>& T)
-		                           {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*k-l;});return *this;};
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*k-l;});return *this;};
 		template<typename L> NDimTable& multMult(const NDimTable<L>& T,const K& k)
-		                           {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*l*k;});return *this;};
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k](K& v,const L& l){return v*l*k;});return *this;};
 		template<typename L> NDimTable& mult1Mult2Add(const K& k1,const NDimTable<L>& T,const K& k2)
-		                           {__gnu_parallel::transform(this->begin(),this->end(),T.begin(),this->begin(),[k1,k2](K& v,const L& l){return v*k1+l*k2;});return *this;};
+		                           {std::transform(this->begin(),this->end(),T.begin(),this->begin(),[k1,k2](K& v,const L& l){return v*k1+l*k2;});return *this;};
 
 		// // contractions (returns new container of different dimension, or works on a provided container of expected dimension)
 		// //
