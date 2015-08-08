@@ -28,15 +28,15 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParticleCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticles()]
 	),
-	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(threadNum=8),
 ]
 
-displayOptions1        = { 'partsScale':70,'partsSquared':1
+displayOptions1        = { 'partsScale':70,'partsSquared':0
                           ,'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'renderMaxTime':0.5}
-displayOptions2        = { 'partsScale':70,'partsSquared':1
+displayOptions2        = { 'partsScale':70,'partsSquared':0
                           ,'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']

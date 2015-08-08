@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-size1d   = 560
-GRIDSIZE  = [224,180] # 2.5
+size1d   = 2.5*300
+GRIDSIZE  = [4*160,4*128] # 2.5
 halfSize  = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 # potential parameters
 potentialCoefficient= [ 1.0,0,0]
-Pot_x = 100
-Pot_y =  90
+Pot_x =   5.0
+Pot_y = 100.0
 SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])+Pot_x ## wiesza się gdy dam -20    } InteractionLoop.cpp:120
 SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])+Pot_y ##                  +15 ???  } bo wcale nie jest symetryczne!!
 potentialCenter      = [ SH0,SH1 ,0  ]
@@ -18,9 +18,9 @@ potentialMaximum     = -100000000; # negative puts ZERO at center, positive - pu
 
 # wavepacket parameters
 k0                  = [-0.12,0.0,0.0]
-gaussWidth          = [ 60  ,60 ,0  ]
+gaussWidth          = [ 30  ,30 ,0  ]
 t0                  = 3100
-x0                  = [0,-140+Pot_y,0]
+x0                  = [0,-10+Pot_y,0]
 
 O.engines=[
 	StateDispatcher([
@@ -35,7 +35,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(steps=-1,threadNum=8),
+	SchrodingerKosloffPropagator(steps=-1,threadNum=16),
 ]
 
 partsScale = 20000
@@ -84,7 +84,7 @@ O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=100
+O.dt=50
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 #O.save('/tmp/a.xml.bz2');

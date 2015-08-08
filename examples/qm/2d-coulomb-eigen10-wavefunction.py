@@ -32,7 +32,7 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(steps=-1,virialCheck=False), # auto
+	SchrodingerKosloffPropagator(steps=-1,virialCheck=False,threadNum=8), # auto
 	SchrodingerAnalyticPropagator(),
 ]
 
