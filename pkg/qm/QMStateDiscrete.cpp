@@ -9,6 +9,8 @@
 #include "QMGeometry.hpp"
 #include <core/Scene.hpp>
 
+#include<lib/serialization/ObjectIO.hpp>
+
 YADE_PLUGIN(
 	(QMStateDiscrete)
 	(St1_QMStateDiscrete)
@@ -51,6 +53,59 @@ std::complex<Real> QMStateDiscrete::braKet(boost::shared_ptr<QMStateDiscrete> o)
 		return 0;
 	}
 	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_BraKet(o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
+};
+
+std::vector<Real> QMStateDiscrete::search(boost::shared_ptr<QMStateDiscrete> o)
+{
+	
+	if( not (getPsiGlobalExists() and o->getPsiGlobalExists()) ) {
+		std::cerr << "ERROR search(other): psiGlobal doesn't exist\n";
+		return {};
+	}
+	if( getPsiGlobalExisting()->getSpatialSizeGlobal() != o->getPsiGlobalExisting()->getSpatialSizeGlobal() ) {
+		std::cerr << "ERROR search(other): different spatial sizes: "<<getPsiGlobalExisting()->getSpatialSizeGlobal()<<" and "<<o->getPsiGlobalExisting()->getSpatialSizeGlobal()<< "\n";
+		return {};
+	}
+	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_search(o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
+};
+
+std::vector<Real> QMStateDiscrete::searchRange(boost::shared_ptr<QMStateDiscrete> o,std::vector<Real> start,std::vector<Real> end)
+{
+	
+	if( not (getPsiGlobalExists() and o->getPsiGlobalExists()) ) {
+		std::cerr << "ERROR search(other): psiGlobal doesn't exist\n";
+		return {};
+	}
+	if( getPsiGlobalExisting()->getSpatialSizeGlobal() != o->getPsiGlobalExisting()->getSpatialSizeGlobal() ) {
+		std::cerr << "ERROR search(other): different spatial sizes: "<<getPsiGlobalExisting()->getSpatialSizeGlobal()<<" and "<<o->getPsiGlobalExisting()->getSpatialSizeGlobal()<< "\n";
+		return {};
+	}
+	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_searchRange(start,end,o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
+};
+
+void QMStateDiscrete::zeroRange(std::vector<Real> start,std::vector<Real> end, bool outside)
+{
+	
+	if( not (getPsiGlobalExists() ) ) {
+		std::cerr << "ERROR: psiGlobal doesn't exist\n";
+		return;
+	}
+	getPsiGlobalExisting()->psiGlobalTable.zeroRange(start,end,getPsiGlobalExisting()->getSpatialSizeGlobal(),outside);
+	return;
+};
+
+std::complex<Real> QMStateDiscrete::searchAt(boost::shared_ptr<QMStateDiscrete> o,std::vector<size_t> where)
+{
+	
+	if( not (getPsiGlobalExists() and o->getPsiGlobalExists()) ) {
+		std::cerr << "ERROR search(other): psiGlobal doesn't exist\n";
+		return {};
+	}
+	if( getPsiGlobalExisting()->getSpatialSizeGlobal() != o->getPsiGlobalExisting()->getSpatialSizeGlobal() ) {
+		std::cerr << "ERROR search(other): different spatial sizes: "<<getPsiGlobalExisting()->getSpatialSizeGlobal()<<" and "<<o->getPsiGlobalExisting()->getSpatialSizeGlobal()<< "\n";
+		return {};
+	}
+	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_searchAt(where,o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
 };
 
 boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::subtract(boost::shared_ptr<QMStateDiscrete> other)
@@ -98,6 +153,38 @@ boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::copy()
 	ret->getPsiGlobalNew()      ->psiGlobalTable  = this ->getPsiGlobalExisting()->psiGlobalTable;
 	ret->getPsiGlobalExisting() ->setSpatialSizeGlobal( this->getPsiGlobalExisting()->getSpatialSizeGlobal() );
 	return ret;
+};
+
+boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::load(std::string fname)
+{
+	auto ret = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
+	
+	if(fname.size()==0) throw runtime_error("empty filename !.");
+	yade::ObjectIO::load(fname,"ret",ret);
+//	ret->spatialSize          = this->spatialSize;
+//	ret->whichPartOfpsiGlobal = this->whichPartOfpsiGlobal;
+//
+//	ret->getPsiGlobalNew()      ->psiGlobalTable  = this ->getPsiGlobalExisting()->psiGlobalTable;
+//	ret->getPsiGlobalExisting() ->setSpatialSizeGlobal( this->getPsiGlobalExisting()->getSpatialSizeGlobal() );
+	return ret;
+};
+
+void QMStateDiscrete::save(std::string fname)
+{
+	if( not (getPsiGlobalExists())) {
+		std::cerr << "ERROR copy(): psiGlobal doesn't exist\n";
+		return;
+	}
+	if(fname.size()==0) throw runtime_error("empty filename !.");
+
+	auto ret = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
+	ret->spatialSize          = this->spatialSize;
+	ret->whichPartOfpsiGlobal = this->whichPartOfpsiGlobal;
+
+	ret->getPsiGlobalNew()      ->psiGlobalTable  = this ->getPsiGlobalExisting()->psiGlobalTable;
+	ret->getPsiGlobalExisting() ->setSpatialSizeGlobal( this->getPsiGlobalExisting()->getSpatialSizeGlobal() );
+
+	yade::ObjectIO::save(fname,"ret",ret);
 };
 
 void St1_QMStateDiscrete::go(const shared_ptr<State>& state, const shared_ptr<Material>& mat, const Body* b)

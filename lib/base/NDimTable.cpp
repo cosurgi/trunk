@@ -14,3 +14,6 @@ template<> int Thr<int>::number=16;
 template<> std::ostream & operator<<(std::ostream &os, const std::vector<std::size_t>& dim);
 template<> std::ostream & operator<<(std::ostream &os, const std::vector<double>& dim);
 
+template<> bool operator>=(const std::vector<std::size_t>& a, const std::vector<std::size_t>& b);
+template<> bool operator< (const std::vector<std::size_t>& a, const std::vector<std::size_t>& b);
+

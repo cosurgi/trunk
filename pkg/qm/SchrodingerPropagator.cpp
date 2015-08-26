@@ -166,7 +166,12 @@ boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_
 	return *allPsiGlobals.begin();
 };
 
-// Virial theorem: 2*<E_kin> = -<E_pot>
+// Virial theorem: 2*<E_kin> = -<E_pot> (dla wodoru), więcej mam w notatkach ołówkiem na str. 30 w "quantum olecular dynamics on grids"
+// oraz coś w http://www.physicspages.com/2013/01/18/virial-theorem-in-3-d/
+//
+// generalnie chodzi o wzór, że <T>=0.5*b<V>, gdzie b to potęga x w potencjale
+//
+// wtedy ten grid check mógłby sprawdzać sensowność dobranej siatki, ale musiałby znać rodzaj potencjału
 
 void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 {
@@ -406,4 +411,60 @@ HERE;
 
 //	omp_set_num_threads(1);
 }
+
+
+
+
+/* simplified main loop
+
+NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+NDimTable<Complexr>  psi_0 (psi_dt);                    // ψ₀
+NDimTable<Complexr>  psi_1 = {};                        // ψ₁
+NDimTable<Complexr>  psi_2 = {};                        // ψ₂
+calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());            // ψ₁     : ψ₁     =     (1+G/R)ψ₀+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) - (dt V ψ₀)/(ℏ R)
+Complexr ak0=calcAK(0,R);                               // a₀
+Complexr ak1=calcAK(1,R);                               // a₁
+psi_dt .mult1Mult2Add(ak0, psi_1,ak1);                  // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
+int i(0);
+Complexr ak(1);
+for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
+{
+	calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());    // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) - (dt V ψ₁)/(ℏ R)
+	psi_2  .mult1Sub(2,psi_0);                      // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) - (dt V ψ₁)/(ℏ R) ) - ψ₀
+	psi_dt .mult2Add(psi_2,ak=calcAK(i,R));         // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
+	std::swap(psi_0,psi_1);                         // ψ₀ ← ψ₁
+	std::swap(psi_1,psi_2);                         // ψ₁ ← ψ₂
+}
+psi_dt *= std::exp(-1.0*Mathr::I*(R+G));                // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
+
+*/
+/*
+
+void SchrodingerKosloffPropagator::calc_Hnorm_psi(
+	  const NDimTable<Complexr>& psi_0
+	, NDimTable<Complexr>& psi_1,
+	, QMStateDiscrete* psi)
+{
+	Real mass = psi->getMass();
+	Real dt   = scene->dt;
+
+	NDimTable<Real    >& kTable = psi->getkTable();
+	NDimTable<Complexr>& Vpsi = psi->getPotential();
+	
+// ψᵥ: ψᵥ=(dt V ψ₀)/(ℏ R)
+	if(Vpsi.rank() != 0)
+		Vpsi    .multMult(psi_0,dt/(FIXMEatomowe_hbar*R));
+
+// use all available processors in FFT calculations
+	psi_1.set_num_threads(threadNum);
+	psi_1.doFFT(psi_0,true);                 // ψ₁: ψ₁=              ℱ(ψ₀)
+	psi_1 *= kTable;                     // ψ₁: ψ₁=           -k²ℱ(ψ₀)
+	psi_1   .IFFT();                     // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
+	psi_1 *= dt*hbar/(R*2*mass);         // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m)
+	psi_1   .mult2Add(psi_0,(1+G/R));    // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀
+
+	if(Vpsi.rank() != 0)
+		psi_1 -= Vpsi;               // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+}
+*/
 

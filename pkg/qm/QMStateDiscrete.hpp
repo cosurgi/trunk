@@ -73,11 +73,17 @@ or directly by filling in the discrete values in the table. It is used for numer
 			.def("partOfpsiGlobal",&QMStateDiscrete::partOfpsiGlobal,"If it's entangled, tell where it starts.")
 			.def("atPsiGlobal",&QMStateDiscrete::atPsiGlobalExisting,"Return value at given table (grid) position.")
 			.def("integratePsiGlobal",&QMStateDiscrete::integratePsiGlobal,"Return total probability.")
+/* ?? no TESTs */	.def("search",&QMStateDiscrete::search,"Search for maximal overlap |<this|other>|²=|∫ψ(x,y,…) φ*(x,y,…) dx dy d…|², one function is moved over another and integrated. Maxium value is returend, and the displacement of `other` to fit `this`.")
+/* ?? no TESTs */	.def("searchAt",&QMStateDiscrete::searchAt,"Check for maximal overlap |<this|other>|²=|∫ψ(x,y,…) φ*(x,y,…) dx dy d…|², one function is overlapped over another and integrated.")
+/* ?? no TESTs */	.def("searchRange",&QMStateDiscrete::searchRange,"Check for maximal overlap |<this|other>|²=|∫ψ(x,y,…) φ*(x,y,…) dx dy d…|², one function is overlapped over another and integrated.")
+/* ?? no TESTs */	.def("zeroRange",&QMStateDiscrete::zeroRange,"Zero the wavefunction in specified range.")
 /* ?? no TESTs */	.def("braKet",&QMStateDiscrete::braKet,"Calculate <this|other>=∫ψ(x,y,…) φ*(x,y,…) dx dy d… , \nexample call:\npsi1=O.bodies[0].state;psi2=O.bodies[1].state;\npsi1.braKet(psi2)")
 /* ?? no TESTs */	.def(boost::python::self_ns::self | boost::shared_ptr<QMStateDiscrete>())
 /* ?? no TESTs */	.def("subtract",&QMStateDiscrete::subtract,"Returns new wavefunction ϕ(x,y,…)=ψ(x,y,…)-φ(x,y,…), they must have all dimensions the same.")
 /* ?? no TESTs */	.def(boost::python::self_ns::self - boost::shared_ptr<QMStateDiscrete>())
 /* ?? no TESTs */	.def("copy",&QMStateDiscrete::copy,"Returns new copy of this state.")
+/* ?? no TESTs */	.def("load",&QMStateDiscrete::load,"Just like 'copy' command - raturns a new state, but loaded from file.")
+/* ?? no TESTs */	.def("save",&QMStateDiscrete::save,"Saves the global state of this state to file.")
 /* ?? no TESTs */	.def("energy",&QMStateDiscrete::energy,"Returns energy as calculated from analytical formulas.")
 /* ?? no TESTs *////	.def("numericEnergy" ,&QMStateDiscrete::numericEnergy,"Returns energy as <E>=<ψ|iℏ ∂/∂t|ψ>")
                                                                           // FIXME - ajaj, tak to się nie da, muszę:
@@ -144,9 +150,15 @@ or directly by filling in the discrete values in the table. It is used for numer
 // http://www.boost.org/doc/libs/1_58_0/libs/python/doc/tutorial/doc/html/python/exposing.html
 /* ?? no TESTs */	std::complex<Real> operator| (boost::shared_ptr<QMStateDiscrete> other){return braKet(other);};
 /* ?? no TESTs */	std::complex<Real> braKet    (boost::shared_ptr<QMStateDiscrete> other);
+/* ?? no TESTs */	std::vector<Real>  search    (boost::shared_ptr<QMStateDiscrete> other);
+/* ?? no TESTs */	std::vector<Real>  searchRange(boost::shared_ptr<QMStateDiscrete> other,std::vector<Real>,std::vector<Real>);
+/* ?? no TESTs */	void               zeroRange (std::vector<Real>,std::vector<Real>,bool);
+/* ?? no TESTs */	std::complex<Real> searchAt  (boost::shared_ptr<QMStateDiscrete> other,std::vector<size_t>);
 /* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> operator- (boost::shared_ptr<QMStateDiscrete> other){return subtract(other);};
 /* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> subtract  (boost::shared_ptr<QMStateDiscrete> other);
 /* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> copy  ();
+/* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> load  (std::string fname);
+/* ?? no TESTs */	void                               save  (std::string fname);
 /* ?? no TESTs */	virtual Real energy() { std::cerr << "Analytic formula unknown\n"; return 0; };
 /* ?? no TESTs */	//Real numericEnergy()          { std::cerr << "ERROR: n.i.y\n"; return 0; };
 ////////////////////////

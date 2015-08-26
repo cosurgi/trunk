@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <memory>
 #include <vector>
+#include <utility>
 #include <cassert>
 #include <boost/foreach.hpp>
 #include <algorithm>    // std::transform
@@ -48,6 +49,21 @@ template <typename C> std::ostream & operator<<(std::ostream & os, const std::ve
 	}
 	return os;
 };
+
+template <typename C>
+/* ?? */	bool operator>=(const std::vector<C>& a, const std::vector<C>& b) {
+			if(a.size() != b.size()) return false;
+			bool ret=true;
+			for(size_t i=0 ; i<a.size() ; i++) ret = ret and a[i]>=b[i];
+			return ret;
+		};
+template <typename C>
+/* ?? */	bool operator< (const std::vector<C>& a, const std::vector<C>& b) {
+			if(a.size() != b.size()) return false;
+			bool ret=true;
+			for(size_t i=0 ; i<a.size() ; i++) ret = ret and a[i]< b[i];
+			return ret;
+		};
 
 template <typename K> // FIXME: do something so that only float, double, long double, float128 are allowed.
 class NDimTable : private std::vector<K
@@ -148,6 +164,22 @@ class NDimTable : private std::vector<K
 				ret += i;
 			};
 			return ret;
+		};
+		
+/* ?? */	inline std::pair<bool,std::size_t> calcPositionSafeSilent(const std::vector<size_t>& position) const {
+			std::size_t ret(position[0]);                 // store i⁰
+			if(ret >= dim_n[0])
+				return std::make_pair(false,0);       // verify that i⁰<n⁰
+			for(std::size_t m=1; m<rank_d ; m++) {
+				std::size_t i      = position[m];     // get position at mᵗʰ dimension, eg. i¹
+				std::size_t n      = dim_n[m];        // get array        dimension n , eg. n¹
+				if(i >= n)
+					return std::make_pair(false,0);
+				//ret = ret*n+i;
+				ret *= n;
+				ret += i;
+			};
+			return std::make_pair(true,ret);
 		};
 	public:
 		//friend bool unitTesting<typename K>(const NDimTable<K>&);
@@ -316,7 +348,15 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			}
 			return ret;
 		};
-/* OK*/		reference atSafe(const std::vector<size_t>& pos)                           { return parent::operator[](calcPositionSafe(pos));     };
+/* ?? */	value_type atSafeSilent(const std::vector<size_t>& pos) const
+		{
+			auto posA = calcPositionSafeSilent(pos);
+			if(posA.first == true)
+				return parent::operator[](posA.second);
+			else
+				return 0;
+		};
+/* OK */	reference atSafe(const std::vector<size_t>& pos)                           { return parent::operator[](calcPositionSafe(pos));     };
 /* OK */	reference at(const std::vector<size_t>& pos, std::size_t start=0)          { return parent::operator[](calcPosition(pos,start));   };
 /* OK */	reference at(std::size_t i)                             { assert(rank_d==1); return parent::operator[](            i            ); };
 /* OK */	reference at(std::size_t i,std::size_t j)               { assert(rank_d==2); return parent::operator[](            j+i*dim_n[1] ); };
@@ -520,6 +560,7 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 /* OK */	K integrateAll(std::vector<not_complex> spatial_sizes) const
 		{
 			assert(spatial_sizes.size()==rank_d);
+/* use Riemann tensor here */
 			not_complex cell_volume(1);
 			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
 			K ret(0); for(K v : (*this)){ret += v*cell_volume;}; return ret;
@@ -527,6 +568,7 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 /* OK */	not_complex integrateAllNormSquared(std::vector<not_complex> spatial_sizes) const
 		{
 			assert(spatial_sizes.size()==rank_d);
+/* use Riemann tensor here */
 			not_complex cell_volume(1);
 			for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
 			not_complex ret(0);
@@ -561,12 +603,248 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 				return 0;
 			}
 		};
+/* ?? */	value_type integrateWithOther_searchAt(DimN pos_external,const NDimTable& other, std::vector<not_complex> spatial_sizes) const
+		{
+			not_complex cell_volume(1);
+			for(size_t i=0 ; i<rank_d ; i++)
+				cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+			DimN pos_internal(rank_d,0);
+			DimN newPos_i(rank_d,0);
+			value_type thisIntegral(0);
+			for(std::size_t total_internal=0;total_internal< total; total_internal++) {
+
+				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
+					newPos_i[_d_] = (pos_internal[_d_]-dim_n[_d_]/2+pos_external[_d_]);
+
+				auto val1=this->atSafeSilent(pos_internal);
+				auto val2=other.atSafeSilent(newPos_i);
+				thisIntegral += (std::conj(val1) * (val2) )*cell_volume;
+				increment(pos_internal);
+			}
+			return thisIntegral;
+		};
+
+/* ?? */	void zeroRange(std::vector<not_complex> start,std::vector<not_complex> end,std::vector<not_complex> spatial_sizes, bool outside)
+		{
+
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";
+			if(     (spatial_sizes.size()==rank_d)
+			    and (start.size() == rank_d)
+			    and (end.size()   == rank_d) )
+			{
+				DimN pos_start(rank_d,0);
+				DimN pos_end  (rank_d,0);
+				std::cerr<<"FIXME: zakładam że środek siatki jest w początku układu współrzędnych!\n";
+				std::cerr<<"FIXME: zakres start,end trzeba podać licząc od lewego dolnego rogu!\n";
+				for(size_t i=0 ; i<spatial_sizes.size() ; i++) {
+					int start__ = int( 1.0*dim_n[i]*(start[i]/spatial_sizes[i]) );
+					int end____ = int( 1.0*dim_n[i]*(end  [i]/spatial_sizes[i]) );
+					if(start__ >= 0 and start__ < int(dim_n[i]) and start__ < end____ and end____ >= 0 and end____ < int(dim_n[i]) ) {
+						pos_start[i] = size_t(start__);//+dim_n[i]/2;
+						pos_end  [i] = size_t(end____);//+dim_n[i]/2;
+						std::cerr << "start["<<i<<"]="<<start__<<", end["<<i<<"]="<<end____<<"\n";
+					} else {
+						std::cerr << "\nboundary error\n";
+						return;
+					}
+				};
+				// - external loop is shifting `other` over `this`, from -half…+half
+				// - internal loop is calculating integral
+				DimN pos_external (rank_d,0);
+				for(std::size_t total_external=0;total_external < total; total_external++) {
+					if(outside xor (pos_external >= pos_start and pos_external<pos_end))
+					{
+						//auto val1=this->atSafeSilent(pos_internal);
+						//auto val2=other.atSafeSilent(newPos_i);
+						at(pos_external)=0;
+					}
+					increment(pos_external);
+				}
+				return;
+			} else {
+				std::cerr << "\n\n some ERROR\n";
+				return;
+			}
+		}
+/* ?? */	std::vector<not_complex> integrateWithOther_searchRange(std::vector<not_complex> start,std::vector<not_complex> end,const NDimTable& other, std::vector<not_complex> spatial_sizes) const
+		{
+
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";
+			if(     (spatial_sizes.size()==rank_d)
+			    and (rank_d == other.rank_d)
+			    and (dim_n  == other.dim_n )
+			    and (total  == other.total ) 
+			    and (start.size() == rank_d)
+			    and (end.size()   == rank_d) )
+			{
+				DimN pos_start(rank_d,0);
+				DimN pos_end  (rank_d,0);
+				std::cerr<<"FIXME: zakładam że środek siatki jest w początku układu współrzędnych!\n";
+				std::cerr<<"FIXME: zakres start,end trzeba podać licząc od lewego dolnego rogu!\n";
+				for(size_t i=0 ; i<spatial_sizes.size() ; i++) {
+					int start__ = int( 1.0*dim_n[i]*(start[i]/spatial_sizes[i]) );
+					int end____ = int( 1.0*dim_n[i]*(end  [i]/spatial_sizes[i]) );
+					if(start__ >= 0 and start__ < int(dim_n[i]) and start__ < end____ and end____ >= 0 and end____ < int(dim_n[i]) ) {
+						pos_start[i] = size_t(start__);//+dim_n[i]/2;
+						pos_end  [i] = size_t(end____);//+dim_n[i]/2;
+						std::cerr << "start["<<i<<"]="<<start__<<", end["<<i<<"]="<<end____<<"\n";
+					} else {
+						std::cerr << "\nboundary error\n";
+						return {};
+					}
+				};
+				/////////////////////////////////////////////////////////////////
+				//not_complex cell_volume(1);
+				//for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+				//value_type ret(0);
+				////for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;};
+				////{std::transform(this->begin(),this->end(),other.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
+				//auto it1 = this->begin();
+				//auto it2 = other.begin();
+				//for( ; it1 != this->end() ; it1++ , it2++ )
+				//{
+				//	ret += (std::conj(*it1) * (*it2) )*cell_volume;
+				//}
+				//return ret;
+				/////////////////////////////////////////////////////////////////
+				not_complex cell_volume(1);
+				for(size_t i=0 ; i<rank_d ; i++)
+					cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+				not_complex maximum_found_RET=0;
+				DimN pos_maximum_RET(rank_d,0);
+				// - external loop is shifting `other` over `this`, from -half…+half
+				// - internal loop is calculating integral
+				DimN pos_external (rank_d,0);
+				for(std::size_t total_external=0;total_external < total; total_external++) {
+					//value_type thisIntegral(0);// = integrateWithOther_searchAt(pos_external,other,spatial_sizes);
+					value_type thisIntegral=0;
+					if(pos_external >= pos_start and pos_external<pos_end)
+					{
+					//////////////////
+						std::cerr << "checking: " << pos_external << "\n";
+						DimN pos_internal(rank_d,0);
+						DimN newPos_i(rank_d,0);
+						for(std::size_t total_internal=0;total_internal< total; total_internal++) {
+
+							for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
+								newPos_i[_d_] = (pos_internal[_d_]-dim_n[_d_]/2+pos_external[_d_]);
+
+							auto val1=this->atSafeSilent(pos_internal);
+							auto val2=other.atSafeSilent(newPos_i);
+							thisIntegral += (std::conj(val1) * (val2) )*cell_volume;
+							increment(pos_internal);
+						}
+					}
+					//////////////////
+					not_complex thisIntSq = std::real(thisIntegral*std::conj(thisIntegral));
+					if(thisIntSq > maximum_found_RET) {
+						maximum_found_RET = thisIntSq;
+						pos_maximum_RET   = pos_external;
+					};
+					increment(pos_external);
+				}
+				std::vector<not_complex> ret={};
+				ret.push_back(maximum_found_RET);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<dim_n.size() ; i++) ret.push_back(dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(pos_maximum_RET[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*pos_maximum_RET[i]*spatial_sizes[i]/dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*pos_maximum_RET[i]-0.5*dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001); // FIXME FIXME ↓ zakładam, że centrum siatki jest w początku układu współrzędnych!!
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*(1.0*pos_maximum_RET[i]-0.5*dim_n[i])*spatial_sizes[i]/dim_n[i]);
+				return ret;
+			} else {
+				std::cerr << "\n\n ERROR: bad sizes of two wavefunctions:\n";
+				std::cerr << " spatial_sizes : " << spatial_sizes                             << "\n";
+				std::cerr << " rank_d        :( " << rank_d        <<" ) vs. ( " << other.rank_d   <<" ) \n";
+				std::cerr << " dim_n         :( " << dim_n         <<" ) vs. ( " << other.dim_n    <<" ) \n";
+				std::cerr << " total         :( " << total         <<" ) vs. ( " << other.total    <<" ) \n";
+				return {};
+			}
+
+
+
+
+
+		}
+/* ?? */	std::vector<not_complex> integrateWithOther_search(const NDimTable& other, std::vector<not_complex> spatial_sizes) const
+		{ // calculates <this|other>=∫ψ(x,y,…) φ*(x,y,…) dx dy d…
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";
+			if(     (spatial_sizes.size()==rank_d)
+			    and (rank_d == other.rank_d)
+			    and (dim_n  == other.dim_n )
+			    and (total  == other.total ) )
+			{
+				/////////////////////////////////////////////////////////////////
+				//not_complex cell_volume(1);
+				//for(size_t i=0 ; i<rank_d ; i++) cell_volume *= (not_complex)(spatial_sizes[i])/(not_complex)(dim_n[i]);
+				//value_type ret(0);
+				////for(K v : (*this)){ret += std::real(std::conj(v)*v)*cell_volume;};
+				////{std::transform(this->begin(),this->end(),other.begin(),this->begin(),[](K& v,const L& l){return v*l;});return *this;};
+				//auto it1 = this->begin();
+				//auto it2 = other.begin();
+				//for( ; it1 != this->end() ; it1++ , it2++ )
+				//{
+				//	ret += (std::conj(*it1) * (*it2) )*cell_volume;
+				//}
+				//return ret;
+				/////////////////////////////////////////////////////////////////
+				not_complex maximum_found_RET=0;
+				DimN pos_maximum_RET(rank_d,0);
+				// - external loop is shifting `other` over `this`, from -half…+half
+				// - internal loop is calculating integral
+				DimN pos_external (rank_d,0);
+				for(std::size_t total_external=0;total_external < total; total_external++) {
+					value_type thisIntegral = integrateWithOther_searchAt(pos_external,other,spatial_sizes);
+					not_complex thisIntSq = std::real(thisIntegral*std::conj(thisIntegral));
+					if(thisIntSq > maximum_found_RET) {
+						maximum_found_RET = thisIntSq;
+						pos_maximum_RET   = pos_external;
+					};
+					increment(pos_external);
+				}
+				std::vector<not_complex> ret={};
+				ret.push_back(maximum_found_RET);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<dim_n.size() ; i++) ret.push_back(dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(pos_maximum_RET[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*pos_maximum_RET[i]*spatial_sizes[i]/dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*pos_maximum_RET[i]-0.5*dim_n[i]);
+				ret.push_back(-0.001);
+				ret.push_back(-0.001);
+				for(size_t i = 0; i<pos_maximum_RET.size() ; i++) ret.push_back(1.0*(1.0*pos_maximum_RET[i]-0.5*dim_n[i])*spatial_sizes[i]/dim_n[i]);
+				return ret;
+			} else {
+				std::cerr << "\n\n ERROR: bad sizes of two wavefunctions:\n";
+				std::cerr << " spatial_sizes : " << spatial_sizes                             << "\n";
+				std::cerr << " rank_d        :( " << rank_d        <<" ) vs. ( " << other.rank_d   <<" ) \n";
+				std::cerr << " dim_n         :( " << dim_n         <<" ) vs. ( " << other.dim_n    <<" ) \n";
+				std::cerr << " total         :( " << total         <<" ) vs. ( " << other.total    <<" ) \n";
+				return {};
+			}
+		};
 /* OK */	NDimTable<K> calcMarginalDistribution(std::vector<short int> remain, std::vector<not_complex> spatial_sizes,bool normalize=true,bool densityOnly=false)
 		{
 			assert(remain.size()==rank_d);
 			assert(spatial_sizes.size()==rank_d);
 /* */			std::vector<not_complex> new_spatial_sizes={};
 			DimN dim_new={};
+/* use Riemann tensor here */
 			not_complex cell_volume(1);
 			for(size_t i=0 ; i<rank_d ; i++) {
 				assert(remain[i]==0 or remain[i]==1);
