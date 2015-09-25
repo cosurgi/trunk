@@ -1,34 +1,37 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-dimensions= 2
-size1d   = 360
-halfSize1 = [size1d,size1d,0.1]
-halfSize2 = halfSize1
-GRIDSIZE  = [128,128]
+dimensions = 2
+size1d     = 300
+GRIDSIZE   = [160,128]
+halfSize   = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
+halfSize1  = halfSize
+halfSize2  = halfSize1
 
-# hydrogen parameters
+
+# potential parameters
+potentialCoefficient_proton = [ 1.0,0,0]    # unmovable proton
+Pot_x_tmp =   5.0
+#Pot_y_tmp =  60.0
+Pot_y_tmp =   0.0
 oczko_x = 2.0*size1d/GRIDSIZE[0]
-oczko_y = 2.0*size1d/GRIDSIZE[1]
-SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
-SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])
-potentialCenter      = [ SH0,SH1 ,0  ]
-
-#potentialCenter      = [ 0 ,0  ,0  ]
-potentialHalfSize    = Vector3(size1d,size1d,3)
+oczko_y = 2.0*size1d/GRIDSIZE[0]
+Pot_x   = -halfSize[0]+(oczko_x)*(1.0*GRIDSIZE[0]/2+int(1.0*Pot_x_tmp/oczko_x))+(oczko_x*0.33) ## wiesza się gdy dam -20    } InteractionLoop.cpp:120
+Pot_y   = -halfSize[1]+(oczko_y)*(1.0*GRIDSIZE[1]/2+int(1.0*Pot_y_tmp/oczko_y))+(oczko_y*0.33) ##                  +15 ???  } bo wcale nie jest symetryczne!!
+potentialCenter      = [ Pot_x, Pot_y ,0  ]
+potentialHalfSize    = halfSize
 potentialMaximum     = -100000000; # negative puts ZERO at center, positive - puts this value.
-hydrogenEigenFunc_n  = 5
-hydrogenEigenFunc_l  = 4
+hydrogenEigenFunc_n  = 8
+hydrogenEigenFunc_l  = -5
 
 # wavepacket parameters
-k0_x         = 0.01
+k0_x         = -0.12
 k0_y         = 0
-t0           = 400
-gaussWidth_x = 20.0
-gaussWidth_y = 20.0
+t0           = 160
+gaussWidth_x = 30.0
+gaussWidth_y = 30.0
 potentialCoefficient1= [-1.0,0,0]
 potentialCoefficient2= [ 1.0,0,0]
-
 
 O.engines=[
 	StateDispatcher([
@@ -117,11 +120,6 @@ body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body3)
 O.bodies[nid].state.setNumeric()
 
-O.dt=50
-
-O.save('/tmp/a.xml.bz2');
-#o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
-
 ############################################
 ##### now the part pertaining to plots #####
 ############################################
@@ -134,12 +132,18 @@ plot.plots={'t':('error')}
 
 def myAddPlotData():
 	symId=0
-	numId=1
+	numId=2
 	O.bodies[symId].state.update()
 	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
 	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
-plot.liveInterval=.2
+plot.liveInterval=2.0
 plot.plot(subPlots=False)
+
+
+O.dt=80
+
+#O.save('/tmp/a.xml.bz2');
+#o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
 try:
 	from yade import qt
@@ -148,7 +152,7 @@ try:
 	qt.Renderer().blinkHighlight=False
 	qt.View()
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.views()[0].center(False,60) # median=False, suggestedRadius = 5
+	qt.views()[0].center(False,260) # median=False, suggestedRadius = 5
 except ImportError:
 	pass
 #O.run(20000)

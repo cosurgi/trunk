@@ -6,7 +6,7 @@ size1d   = 50
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
-GRIDSIZE  =1024 ###→ 2**9
+GRIDSIZE  =512  ###→ 2**9
 
 # hydrogen parameters
 #potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]

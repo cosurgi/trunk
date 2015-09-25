@@ -2,23 +2,24 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 2
-#size1d    =  8000         # bardzo wysokie n
-#GRIDSIZE  = [2**15,2**15] # bardzo wysokie n
-SC        = 1
-size1d    = 120*SC
-GRIDSIZE  = [SC*2**8,SC*2**8]
-halfSize  = [size1d,size1d,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
+size1d   = 300 ## ciekawe - gdy jest 820 - to już się rozwala liczenie
+GRIDSIZE  = [160,128] # 2.5
+## liczę około 120 iteracji
+halfSize  = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
+############################################################################################## FIXME ↓
 # potential parameters
-SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
-SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])
+Pot_x =   5.0
+Pot_y =  60.0
+SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])+Pot_x ## wiesza się gdy dam -20      } InteractionLoop.cpp:120
+SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])+Pot_y ##                    +15 ???  } bo wcale nie jest symetryczne!!
 potentialCenter      = [ SH0,SH1 ,0  ]
 potentialHalfSize    = halfSize
-potentialCoefficient = [-1,0,0] # FIXMEatomowe
-potentialMaximum     = -10000; # negative puts ZERO at center, positive - puts this value.
+potentialCoefficient = [-1.0,0,0]
+potentialMaximum     = -100000000; # negative puts ZERO at center, positive - puts this value.
 
-hydrogenEigenFunc_n   = 3
-hydrogenEigenFunc_l   = 1
+hydrogenEigenFunc_n   = 8
+hydrogenEigenFunc_l   = -5
 
 
 O.engines=[
@@ -34,31 +35,33 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,virialCheck=False,threadNum=16), # auto
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,printIter=0,doCopyTable=True,threadNum=4),#FIXMEatomowe_MASS=1), # auto
 	SchrodingerAnalyticPropagator(),
 	PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
+
+partsScale = 20000
 
 ## Create:
 # 1. analytical gauss packet - only use it to initialise the discrete packet
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-displayOptions1        = { 'renderWireLight':True,'partsScale':250
+displayOptions1        = { 'renderWireLight':True,'partsScale':partsScale
                           ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
 #		    ,'partsSquared':1
                           ,'renderMaxTime':0.5
                           }
-displayOptions2        = { 'renderWireLight':False,'partsScale':250
+displayOptions2        = { 'renderWireLight':False,'partsScale':partsScale
                           ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
 #		    ,'partsSquared':1
                           ,'renderMaxTime':0.5
                           }
-displayOptionsPot      = { 'renderWireLight':True,'partsScale':250
+displayOptionsPot      = { 'renderWireLight':True,'partsScale':partsScale
                           ,'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                           ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -94,11 +97,12 @@ id_H=O.bodies.append(potentialBody)
 ## Define timestep for the calculations
 #O.dt=.000001
 #O.dt=10
-O.dt=2
+O.dt=80
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
-O.save('/tmp/a.xml.bz2');
+#O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+
 ############################################
 ##### now the part pertaining to plots #####
 ############################################
@@ -118,7 +122,6 @@ def myAddPlotData():
 plot.liveInterval=.2
 plot.plot(subPlots=False)
 
-
 try:
 	from yade import qt
 	qt.Controller()
@@ -126,12 +129,25 @@ try:
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
 	qt.View()
-	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
+	qt.views()[0].center(False,250) # median=False, suggestedRadius = 5
 	Gl1_QMGeometry().analyticUsesStepOfDiscrete=True
 	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
-	O.bodies[id_H].shape.displayOptions[0].step=[2.0,2.0,2.0]
+        qt.Renderer().light2Pos=[Pot_x,Pot_y,30]
+	#O.bodies[id_H].shape.displayOptions[0].step=[2.0,2.0,2.0]
 except ImportError:
 	pass
 
 #O.run(20000)
+
+
+
+
+
+
+
+
+
+
+
+
 

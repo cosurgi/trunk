@@ -1,34 +1,37 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-dimensions= 2
-size1d   = 360
-halfSize1 = [size1d,size1d,0.1]
-halfSize2 = halfSize1
-GRIDSIZE  = [128,128]
+dimensions = 2
+size1d     = 300
+GRIDSIZE   = [160,128]
+halfSize   = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
+halfSize1  = halfSize
+halfSize2  = halfSize1
 
-# hydrogen parameters
+
+# potential parameters
+potentialCoefficient_proton = [ 1.0,0,0]    # unmovable proton
+Pot_x_tmp =   0.0
+#Pot_y_tmp =  60.0
+Pot_y_tmp =   0.0
 oczko_x = 2.0*size1d/GRIDSIZE[0]
-oczko_y = 2.0*size1d/GRIDSIZE[1]
-SH0= -size1d+(2.0*size1d/GRIDSIZE[0])*(1.0*GRIDSIZE[0]/2)+(1.0*size1d/GRIDSIZE[0])
-SH1= -size1d+(2.0*size1d/GRIDSIZE[1])*(1.0*GRIDSIZE[1]/2)+(1.0*size1d/GRIDSIZE[1])
-potentialCenter      = [ SH0,SH1 ,0  ]
-
-#potentialCenter      = [ 0 ,0  ,0  ]
-potentialHalfSize    = Vector3(size1d,size1d,3)
+oczko_y = 2.0*size1d/GRIDSIZE[0]
+Pot_x   = -halfSize[0]+(oczko_x)*(1.0*GRIDSIZE[0]/2+int(1.0*Pot_x_tmp/oczko_x))+(oczko_x*0.33) ## wiesza się gdy dam -20    } InteractionLoop.cpp:120
+Pot_y   = -halfSize[1]+(oczko_y)*(1.0*GRIDSIZE[1]/2+int(1.0*Pot_y_tmp/oczko_y))+(oczko_y*0.33) ##                  +15 ???  } bo wcale nie jest symetryczne!!
+potentialCenter      = [ Pot_x, Pot_y ,0  ]
+potentialHalfSize    = halfSize
 potentialMaximum     = -100000000; # negative puts ZERO at center, positive - puts this value.
-hydrogenEigenFunc_n  = 5
-hydrogenEigenFunc_l  = 4
+hydrogenEigenFunc_n  = int(sys.argv[1]) #7
+hydrogenEigenFunc_l  = int(sys.argv[2]) #-6
 
 # wavepacket parameters
-k0_x         = 0.01
+k0_x         = -0.12
 k0_y         = 0
-t0           = 400
-gaussWidth_x = 20.0
-gaussWidth_y = 20.0
+t0           = 160
+gaussWidth_x = 30.0
+gaussWidth_y = 30.0
 potentialCoefficient1= [-1.0,0,0]
 potentialCoefficient2= [ 1.0,0,0]
-
 
 O.engines=[
 	StateDispatcher([
@@ -45,7 +48,7 @@ O.engines=[
 	),
 	SchrodingerKosloffPropagator(printIter=20,doCopyTable=False,threadNum=16),#FIXMEatomowe_MASS=1),
 	SchrodingerAnalyticPropagator(),
-	PyRunner(iterPeriod=1,command='myAddPlotData()')
+#	PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
 scaleAll=30000
@@ -117,11 +120,6 @@ body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body3)
 O.bodies[nid].state.setNumeric()
 
-O.dt=50
-
-O.save('/tmp/a.xml.bz2');
-#o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
-
 ############################################
 ##### now the part pertaining to plots #####
 ############################################
@@ -134,76 +132,37 @@ plot.plots={'t':('error')}
 
 def myAddPlotData():
 	symId=0
-	numId=1
+	numId=2
 	O.bodies[symId].state.update()
 	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
 	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
-plot.liveInterval=.2
-plot.plot(subPlots=False)
-
-try:
-	from yade import qt
-	qt.Controller()
-	qt.controller.setWindowTitle("Electron-positron pair in 2D")
-	qt.Renderer().blinkHighlight=False
-	qt.View()
-	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.views()[0].center(False,60) # median=False, suggestedRadius = 5
-except ImportError:
-	pass
-#O.run(20000)
+# noQT # plot.liveInterval=2.0
+# noQT # plot.plot(subPlots=False)
 
 
-#### save result for comparison with mathematica
-#
-# nn=O.bodies[0].state
-# ff=open("1d-harmonic-interaction-yade.txt",'w')
-# for i in range(nn.gridSize[0]):
-#     ff.write(str(nn.iToX(i,0))+" "+str(nn.iToX(96,1))+" "+str((nn.atPsiGlobal([i,96])).real)+" "+str((nn.atPsiGlobal([i,96])).imag)+"\n")
-# ff.close()
-#Yade [3]: def zapisz(nazwa,x2):
-#     ...:     nn=O.bodies[0].state
-#     ...:     ff=open(nazwa,'w')
-#     ...:     for i in range(nn.gridSize[0]):
-#     ...:         ff.write(str(nn.iToX(i,0))+" "+str(nn.iToX(x2,1))+" "+str((nn.atPsiGlobal([i,x2])).real)+" "+str((nn.atPsiGlobal([i,x2])).imag)+"\n")
-#     ...:     ff.close()
-#     ...:     
+O.dt=1e-20
+print("hydrogenEigenFunc_n = "+str(hydrogenEigenFunc_n))
+print("hydrogenEigenFunc_l = "+str(hydrogenEigenFunc_l))
 
+O.step()
+print("hydrogenEigenFunc_n = "+str(hydrogenEigenFunc_n))
+print("hydrogenEigenFunc_l = "+str(hydrogenEigenFunc_l))
 
-#zapisz("1d-harmonic-interaction-yade_0.05_506.txt",506)
-#zapisz("1d-harmonic-interaction-yade_0.05_507.txt",507)
-#zapisz("1d-harmonic-interaction-yade_0.05_508.txt",508)
-#zapisz("1d-harmonic-interaction-yade_0.05_509.txt",509)
-#zapisz("1d-harmonic-interaction-yade_0.05_510.txt",510)
-#zapisz("1d-harmonic-interaction-yade_0.05_511.txt",511)
-#zapisz("1d-harmonic-interaction-yade_0.05_512.txt",512)
-#zapisz("1d-harmonic-interaction-yade_0.05_513.txt",513)
-#zapisz("1d-harmonic-interaction-yade_0.05_514.txt",514)
-#zapisz("1d-harmonic-interaction-yade_0.05_515.txt",515)
-#zapisz("1d-harmonic-interaction-yade_0.05_516.txt",516)
-#zapisz("1d-harmonic-interaction-yade_0.05_517.txt",517)
-#zapisz("1d-harmonic-interaction-yade_0.05_518.txt",518)
+O.bodies[2].state.save("n="+str(hydrogenEigenFunc_n)+",l="+str(hydrogenEigenFunc_l)+".yade.gz")
 
-#zapisz("1d-harmonic-interaction-yade_0.1_506.txt",506)
-#zapisz("1d-harmonic-interaction-yade_0.1_507.txt",507)
-#zapisz("1d-harmonic-interaction-yade_0.1_508.txt",508)
-#zapisz("1d-harmonic-interaction-yade_0.1_509.txt",509)
-#zapisz("1d-harmonic-interaction-yade_0.1_510.txt",510)
-#zapisz("1d-harmonic-interaction-yade_0.1_511.txt",511)
-#zapisz("1d-harmonic-interaction-yade_0.1_512.txt",512)
-#zapisz("1d-harmonic-interaction-yade_0.1_513.txt",513)
-#zapisz("1d-harmonic-interaction-yade_0.1_514.txt",514)
-#zapisz("1d-harmonic-interaction-yade_0.1_515.txt",515)
-#zapisz("1d-harmonic-interaction-yade_0.1_516.txt",516)
-#zapisz("1d-harmonic-interaction-yade_0.1_517.txt",517)
-#zapisz("1d-harmonic-interaction-yade_0.1_518.txt",518)
+exit()
 
-# gnuplot 
-#N="./1d-harmonic-interaction-yade_0."
-#M="./1d-harmonic-interaction-mathematica_0."
-#set grid
-#set xtics 1
-#t=512
-#plot N."05_".sprintf("%.3i",t).".txt" u 1:3 w l lt 1,N."05_".sprintf("%.3i",t).".txt" u 1:4 w l lt 2,M."05_".sprintf("%.3i",t).".txt" u 1:3 w l lt 3,M."05_".sprintf("%.3i",t).".txt" u 1:4 w l lt 4 title sprintf("%.3i",t)
-#plot N."1_".sprintf("%.3i",t).".txt" u 1:3 w l lt 1,N."1_".sprintf("%.3i",t).".txt" u 1:4 w l lt 2,M."1_".sprintf("%.3i",t).".txt" u 1:3 w l lt 3,M."1_".sprintf("%.3i",t).".txt" u 1:4 w l lt 4 title sprintf("%.3i",t)
-#
+#O.save('/tmp/a.xml.bz2');
+#o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+
+# noQT # try:
+# noQT # 	from yade import qt
+# noQT # 	qt.Controller()
+# noQT # 	qt.controller.setWindowTitle("Electron-positron pair in 2D")
+# noQT # 	qt.Renderer().blinkHighlight=False
+# noQT # 	qt.View()
+# noQT # 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+# noQT # 	qt.views()[0].center(False,260) # median=False, suggestedRadius = 5
+# noQT # except ImportError:
+# noQT # 	pass
+# noQT # 

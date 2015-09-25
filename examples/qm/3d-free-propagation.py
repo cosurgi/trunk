@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 3
-size1d   = 10
+size1d   = 50
 halfSize  = [size1d,size1d*1.5,size1d]
 
 ## This is a simple test:
@@ -17,8 +17,9 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(threadNum=16),
 	SchrodingerAnalyticPropagator()
+	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
 
@@ -41,7 +42,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],display
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 #gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[2.5,0,0],'a0':[0.5,0.5,0.5],'gridSize':[128]*dimensions}
 # FFTW is best at handling sizes of the form 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ , where e+f is either 0 or 1  ## http://www.nanophys.kth.se/nanophys/fftw-info/fftw_3.html
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'gridSize':[24,42,24]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,1.5],'gridSize':[128,256,128]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
@@ -66,16 +67,35 @@ O.dt=.07
 #O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
 
-try:
-	from yade import qt
-	qt.Controller()
-	qt.controller.setWindowTitle("3D free propagating packet")
-	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
-	qt.Renderer().blinkHighlight=False
-	qt.View()
-	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
+############################################
+##### now the part pertaining to plots #####
+############################################
 
-except ImportError:
-	pass
+from yade import plot
+## we will have 2 plots:
+## 1. t as function of i (joke test function)
+## 2. i as function of t on left y-axis ('|||' makes the separation) and z_sph, v_sph (as green circles connected with line) and z_sph_half again as function of t
+plot.plots={'t':('error')}
+
+def myAddPlotData():
+	symId=0
+	numId=1
+	O.bodies[symId].state.update()
+	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
+	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+plot.liveInterval=.2
+plot.plot(subPlots=False)
+
+#try:
+#	from yade import qt
+#	qt.Controller()
+#	qt.controller.setWindowTitle("3D free propagating packet")
+#	#qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
+#	qt.Renderer().blinkHighlight=False
+#	qt.View()
+#	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
+#
+#except ImportError:
+#	pass
 #O.run(20000)
 

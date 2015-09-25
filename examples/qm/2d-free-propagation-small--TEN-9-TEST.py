@@ -1,21 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-dimensions= 2
-size1d   =1200
-GRIDSIZE  = [512,384] # 2.5
-## liczę około 120 iteracji
+dimensions = 2
+size1d     = 300
+GRIDSIZE   = [160,128]
 halfSize  = [size1d,size1d*(1.0*GRIDSIZE[1]/GRIDSIZE[0]),0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
-## This is a simple test:
-## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
-## - it is compared with the same movement, but calculated analytically
-## The error between numerical and analytical solution is plot on the graph
 
+Pot_y =  60.0
 # wavepacket parameters
 k0                  = [-0.12,0.0,0.0]
-gaussWidth          = [ 50  ,50 ,0  ]
-t0                  = 4000
-x0                  = [0,-200,0]
+gaussWidth          = [ 30  ,30 ,0  ]
+t0                  = 1100
+x0                  = [0,-40+Pot_y,0]
 
 O.engines=[
 	StateDispatcher([
@@ -64,7 +60,7 @@ nid=O.bodies.append(numericalBody)
 O.bodies[nid].state.setNumeric()   # is being propagated by SchrodingerKosloffPropagator
 
 ## Define timestep for the calculations
-O.dt=100
+O.dt=80
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

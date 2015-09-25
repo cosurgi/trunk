@@ -54,7 +54,7 @@ displayOptions2        = { 'renderWireLight':False,'partsScale':partsScale
                           }
 displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
-                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'stepRender':["default hidden","hidden","frame","stripes","mesh"]
                     }
 
@@ -77,7 +77,7 @@ O.bodies[nid].state.setNumeric()          # is being propagated by SchrodingerKo
 
 ## 3: The box with potential
 potentialBody = QMBody()
-potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],wire=True,displayOptions=[QMDisplayOptions(partsScale=1,**displayOptionsPot)])
+potentialBody.shape     = QMGeometry(extents=potentialHalfSize,color=[0.1,0.4,0.1],wire=True,displayOptions=[QMDisplayOptions(partsScale=-1,**displayOptionsPot)])
 potentialBody.material  = QMParametersCoulomb(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
 potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)

@@ -3,15 +3,15 @@
 
 dimensions= 1
 #size1d   = 20
-size1d   = 80###→ 80
+size1d   =120###→ 80
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
-GRIDSIZE  =1024 ###→ 2**9
+GRIDSIZE  =2048 ###→ 2**9
 
 # hydrogen parameters
-#potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
-potentialCenter      = [ 0 ,0  ,0  ]
+potentialCenter      = [ -size1d+(2.0*size1d/GRIDSIZE)*(1.0*GRIDSIZE/2)+(1.0*size1d/GRIDSIZE) ,0  ,0  ]
+#potentialCenter      = [ 0 ,0  ,0  ]
 potentialHalfSize    = Vector3(size1d,3,3)
 potentialMaximum     = 10000;
 hydrogenEigenFunc_n   = 3 ###→ 3
@@ -39,8 +39,9 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=10,doCopyTable=True,threadNum=4),
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=10,doCopyTable=True,threadNum=8),
 	SchrodingerAnalyticPropagator(),
+	PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
 scaleAll=50
@@ -157,6 +158,25 @@ O.dt=10
 
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+############################################
+##### now the part pertaining to plots #####
+############################################
+
+from yade import plot
+## we will have 2 plots:
+## 1. t as function of i (joke test function)
+## 2. i as function of t on left y-axis ('|||' makes the separation) and z_sph, v_sph (as green circles connected with line) and z_sph_half again as function of t
+plot.plots={'t':('error')}
+
+def myAddPlotData():
+	symId=0
+	numId=2
+	O.bodies[symId].state.update()
+	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
+	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+plot.liveInterval=.2
+plot.plot(subPlots=False)
+
 
 try:
 	from yade import qt

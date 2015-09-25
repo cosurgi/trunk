@@ -20,6 +20,7 @@ O.engines=[
 	]),
 	SchrodingerKosloffPropagator(),
 	SchrodingerAnalyticPropagator()
+	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
 partsScale = 3000
@@ -69,6 +70,24 @@ O.dt=.1
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+############################################
+##### now the part pertaining to plots #####
+############################################
+
+from yade import plot
+## we will have 2 plots:
+## 1. t as function of i (joke test function)
+## 2. i as function of t on left y-axis ('|||' makes the separation) and z_sph, v_sph (as green circles connected with line) and z_sph_half again as function of t
+plot.plots={'t':('error')}
+
+def myAddPlotData():
+	symId=0
+	numId=1
+	O.bodies[symId].state.update()
+	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
+	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+plot.liveInterval=.2
+plot.plot(subPlots=False)
 
 try:
 	from yade import qt
