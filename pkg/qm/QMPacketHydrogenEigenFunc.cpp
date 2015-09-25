@@ -84,10 +84,10 @@ Complexr  St1_QMPacketHydrogenEigenFunc::quantumHydrogenWavefunction_2D(const QM
 	Real n=n_, l=l_;
 	auto R_nl=[](Real n,Real l,Real r,Real beta)->Complexr{
 		return
-		  beta
-		 *sqrt(factorial<Real>(n-1-abs(l))/(factorial<Real>(abs(l)+n-1)*(2*n-1))) // FIXME - precalculate this
-		 *exp(-((beta*r)/2))
-		 *pow((beta*r),abs(l))
+		  beta                                                                    // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME 
+		 *sqrt(factorial<Real>(n-1-abs(l))/(factorial<Real>(abs(l)+n-1)*(2*n-1))) // FIXME - precalculate this FIXME FIXME FIXME FIXME FIXME FIXME
+		 *exp(-((beta*r)/2))                                                      // tzn - te współczynniki zawsze są takie same, a liczenie
+		 *pow((beta*r),abs(l))                                                    // silni, itd zajmuje trochę czasu
 		 *laguerre(-abs(l)+n-1,2*abs(l),beta*r);
 	};
 	auto Psi_nl=[&R_nl](Real n, Real l, Real r, Real phi, Real a0)->Complexr{

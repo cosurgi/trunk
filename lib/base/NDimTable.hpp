@@ -557,6 +557,20 @@ std::cerr << "destructor                          : " << --ZZ::NDimTable_Instanc
 			return std::move(ret);
 		};
 
+/*
+FIXME: some links for later use, about integration:
+https://en.wikipedia.org/wiki/Simpson%27s_rule
+http://jeremykun.com/tag/simpsons-rule/
+http://mathworld.wolfram.com/Newton-CotesFormulas.html
+http://mathworld.wolfram.com/SimpsonsRule.html
+http://formulas.tutorvista.com/math/simpson-s-rule-formula.html
+http://eduinf.waw.pl/inf/alg/004_int/0004.php
+http://mathfaculty.fullerton.edu/mathews/n2003/SimpsonsRule2DMod.html
+http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
+
+*/
+
+
 /* OK */	K integrateAll(std::vector<not_complex> spatial_sizes) const
 		{
 			assert(spatial_sizes.size()==rank_d);
