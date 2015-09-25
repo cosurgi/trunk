@@ -1,0 +1,12 @@
+move 
+	lib/triangulation/Timer.h 
+	lib/triangulation/Timer.cpp 
+
+here, after merging QM into upstream
+
+to correctly compile Timer.cpp file a line must be added into CMakeLists.txt, similar to this diff:
+	git diff 0104faa..26dc2a0 CMakeLists.txt
+
+then
+	git rm lib/time/FIXME.txt
+

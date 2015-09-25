@@ -1,0 +1,49 @@
+dynamic_cast → static_cast
+std::cerr →→→ LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_FATAL
+
+// (1)
+###!!!!!!### https://cbx33.github.io/gitt/afterhours5-1.html
+
+// (2)
+// FIXME - później by się przydało wprowadzić boost::tuple, wtedy taki "tuple" by był w pythonie w jednym wierszu i bym miał ładnie skomasowany interfejs
+// http://uint32t.blogspot.com/2008/03/serializing-boosttuple-using.html
+// nawet te stare pomysły tuple<bool> (draw, points, wire, surface) co prawda zrobiłem Menu, ale teraz bym mógł zrobić:
+//      tuple<Menu(całkować lub nie),start_całki,end_całki,Menu(styl rysowania)>
+
+// FIXME - do NOT declare new variable, lost 2 hours here, how to avoid that? 
+
+        Answer: add -Wshadow to gcc options
+
+git stash - przydatne:  http://www.sitepoint.com/git-simply-stashing/
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   #include<boost/enable_shared_from_this.hpp>
+   class Serializable, public boost::enable_shared_from_this<Serializable>
+
+			e->sceneForEngine=shared_from_this();
+
+NASTĘPNIE NIGDZIE NIE UŻYWAĆ GOŁYCH WSKAŹNIKÓW!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  isnan, isinf - nie działa z -Ofast, ffast-math, ale pod tym linkiem ktoś zrobił coś co działa nawet w tym przypadku (na dole strony):
+  http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
+  mógłbym w całym yade przerobić isnan żeby było używane yade::isnan. A w yade::isnan zależnie od flag kompilacji używać albo to
+  albo systemowe, lub boost::isnan
+
+		// http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
+		// FIXME - use proper isnan everywhere
+			using boost::math::isnan;
+			using boost::math::isinf;
+		// FIXME - bleh, to nie pomogło - ffast-math nawet to rozwala
+			bool hasNan=(isnan<Real>(min[0])||isnan<Real>(min[1])||isnan<Real>(min[2])||isnan<Real>(max[0])||isnan<Real>(max[1])||isnan<Real>(max[2]));
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+NOTKA: ta paralelizacja dość dużo dała (oprócz korupcji), chyba rzeczywiście ten kompilator intela, z intelowską spralelizowaną biblioteką standardową mógłby przyspieszyć kilkukrotnie.
+
+
+
