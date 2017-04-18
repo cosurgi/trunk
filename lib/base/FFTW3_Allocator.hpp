@@ -29,12 +29,18 @@
 	};
 	using ZZ = Zcc<int>;
 #endif
+
+//FIXME: On some distributions using Thr_FIXME_linker produces a linker error.
+//#define FORCE_N_THREADS 2
+
+#ifndef FORCE_N_THREADS
 template<typename Type>
-struct Thr{
+struct Thr_FIXME_linker{
 //static cpp_int NDimTable_SIZE_TOTAL;
 static int number;
 };
-using Threads = Thr<int>;
+using Threads_MAYBE_LINKER_ERROR = Thr_FIXME_linker<int>;
+#endif
 
 #include <memory>
 #include <fftw3.h>
