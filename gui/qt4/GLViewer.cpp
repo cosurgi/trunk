@@ -498,7 +498,7 @@ float YadeCamera::zNear() const
       case Camera::PERSPECTIVE  :*/ z = zMin; /*break;
       case Camera::ORTHOGRAPHIC : z = 0.0;  break;
       }*/
-  return z;
+  return qreal(z);
 }
 
 QString GLViewer::helpString() const
