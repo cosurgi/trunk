@@ -1,8 +1,14 @@
 // 2015 © Janek Kozicki <cosurgi@gmail.com>
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 #include "QMPotentialFromFile.hpp"
 
 #include <lib/time/TimeLimit.hpp>
+#include <lib/smoothing/Spline6Interpolate.hpp>
+
 TimeLimit timeLimitF; // FIXME - remove when finshed fixing
 
 YADE_PLUGIN(
@@ -23,6 +29,69 @@ CREATE_LOGGER(QMParametersFromFile);
 // !! at least one virtual function in the .cpp file
 QMParametersFromFile::~QMParametersFromFile(){};
 
+void QMParametersFromFile::readFileIfDidnt() {
+//	std::cerr << "\nQMParametersFromFile::readFileIfDidnt\n";
+//	std::cerr << "  fileLoaded = " << fileLoaded << "\n";
+//	std::cerr << "  filename   = " << filename   << "\n";
+//	std::cerr << "  columnX    = " << columnX    << "\n";
+//	std::cerr << "  columnVal  = " << columnVal  << "\n";
+	if(fileLoaded) return;
+	if(filename == "" ) {
+		std::cerr << "WARNING: can't read file with this EMPTY name: \"" << filename << "\" doing nothing.\n";
+		return;
+	};
+	std::ifstream file;
+	std::string line;
+	std::vector<Real> row;
+	std::cerr << "Reading potential data from file: \""<< filename << "\"\n";
+	std::vector<std::vector<Real> > fileData;
+	file.open(filename);
+	if(file.is_open()) {
+		while (getline (file, line)) {
+			if(line.size() == 0) continue;
+			size_t pos=0;
+			while( (pos+1) < line.size() and line[pos]==' ') { pos++; }; // skip ' ' at start of the line
+			if(line[pos] == '#') continue;                               // skip commented lines
+			std::stringstream ss(line);
+			while(not ss.eof()) {
+				Real val=0;
+				ss >> val;
+				if(not ss.eof()) row.push_back(val);
+			}
+			fileData.push_back(row);
+			row.clear();
+			//cout << line << endl;
+		}
+		file.close();
+	} else {
+		std::cerr << "ERROR: can't read file with this name: \"" << filename << "\"\n";
+		exit(1);
+	}
+// // print fileData for debugging ...
+//	for(size_t i=0 ; i < fileData.size() ; i++) {
+//		for(size_t j=0 ; j < fileData[i].size() ; j++) {
+//			std::cout << fileData[i][j] << " ";
+//		}
+//		std::cout << "\n";
+//	}
+
+	// now extract the interesting X,val information
+	fileDataX.clear();
+	fileDataVal.clear();
+	int  _col_x  = columnX   -1;
+	int  _val_y  = columnVal -1;
+	for(size_t i=0 ; i < fileData.size() ; i++) {
+		if(_col_x >= 0 and _col_x < (int)fileData[i].size()  and  _val_y >=0 and _val_y < (int)fileData[i].size() ) {
+			fileDataX  .push_back( fileData[i][_col_x] );
+			fileDataVal.push_back( fileData[i][_val_y] );
+		} else {
+			std::cerr << "ERROR 2 in  QMParametersFromFile::readFileIfDidnt    columnX   = " << _col_x+1 << " is wrong\n";
+			std::cerr << "        or  QMParametersFromFile::readFileIfDidnt    columnVal = " << _val_y+1 << " is wrong.\n";
+		}
+	}
+	fileLoaded=true;
+};
+
 /*********************************************************************************
 *
 * Q M   S T A T E    F R O M   F I L E                       QMStPotentialFromFile
@@ -41,10 +110,46 @@ QMStPotentialFromFile::~QMStPotentialFromFile(){};
 Complexr St1_QMStPotentialFromFile::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
 {
 	//const QMStPotentialFromFile*        state = static_cast <const QMStPotentialFromFile*>(qms);
-	const QMParametersFromFile* barrier = dynamic_cast<const QMParametersFromFile*>(pm);
+	QMParametersFromFile* barrier = const_cast<QMParametersFromFile*>(dynamic_cast<const QMParametersFromFile*>(pm));
 	if(not barrier) { throw std::runtime_error("\n\nERROR: St1_QMStPotentialFromFile::getValPos() nas no QMParametersFromFile, but rather `"
 		+std::string(pm?pm->getClassName():"")+"`.\n\n");};
-	return 200;//barrier->height;
+
+//	std::cerr << barrier->fileData.size() << "," << barrier->filename << "," << barrier->columnX << "," << barrier->columnVal <<"\n";
+
+	barrier->readFileIfDidnt();
+
+	Real x   = pos[0]                  ,y =pos[1]                  ,z =pos[2];
+	// to teraz interpolujemy
+	int idx_row = 0;
+	while(  (idx_row < (int)barrier->fileDataX.size())  and  (barrier->fileDataX[idx_row] < x) ) { idx_row++; };
+	if(idx_row >=  (int)barrier->fileDataX.size() ) idx_row = barrier->fileDataX.size()-1;
+	if((idx_row < 0) or (idx_row >= (int)barrier->fileDataX.size() ) ) {
+		std::cerr << "ERROR 1 in St1_QMStPotentialFromFile::getValPos     ( idx_row < 0 ) or  ( idx_row >= barrier->fileData.size() )\n";
+		exit(1);
+	}
+
+	if(idx_row == (int)(barrier->fileDataX.size()-1) ) return barrier->fileDataVal[idx_row]; // after end of potential
+	if(idx_row == 0                                  ) return barrier->fileDataVal[idx_row]; // before start of potential
+
+	Real x_before  = barrier->fileDataX[idx_row-1];
+	Real x_after   = barrier->fileDataX[idx_row  ];
+	if(not( x >= x_before and x <= x_after)) {
+		std::cerr << "ERROR 2  nonsense error  not( x > x_before and x < x_after)\n";
+		exit(1);
+	}
+	// row 'between lines' that will be used for interpolating the value
+	Real x_idx_row = (x - x_before)/(x_after - x_before) + idx_row -1;
+
+	if(x_idx_row >= 7 and x_idx_row <  barrier->fileDataX.size()-7) { // Spline6Interpolate is possible
+		return spline6InterpolatePoint1D<Real>(barrier->fileDataVal,x_idx_row);
+	} else { // must use linear interpolation
+		// return barrier->fileDataVal[idx_row];//barrier->height;                    // to jest linijka która daje wynik bez interpolowania.
+		Real val_before = barrier->fileDataVal[idx_row-1];
+		Real val_after  = barrier->fileDataVal[idx_row  ];
+		Real t = (x - x_before)/(x_after - x_before);
+		// return linearInterpolatePoint1D<Real>(barrier->fileDataVal,x_idx_row);	// FIXME wrzucić to do  linearInterpolatePoint1D in yade/lib/smoothing/
+		return (1-t)*val_before + t*val_after;
+	}
 };
 
 /*********************************************************************************
@@ -83,6 +188,12 @@ void Ip2_QMParameters_QMParametersFromFile_QMIPhysFromFile::go(
 // FIXME: it's only for display, so this should go to Gl1_QMIGeom or Gl1_QMIGeomHarmonic (?) or Gl1_QMIPhys or Gl1_QMIPhysHarmonic
 //        but then - the potential itself shall be drawn just like before: as a Box ??
 	// pot->height = qm2->height;
+	pot->filename    = qm2->filename;
+	pot->columnX     = qm2->columnX;
+	pot->columnVal   = qm2->columnVal;
+	pot->fileLoaded  = qm2->fileLoaded;
+	pot->fileDataX   = qm2->fileDataX;   // FIXME - ojej kopiuje!
+	pot->fileDataVal = qm2->fileDataVal; // FIXME - ojej kopiuje!
 
 // FIXME: create here QMIPhys::potentialInteractionGlobal
 //        then call 
@@ -126,9 +237,12 @@ if(FIXME_param.dim != 1) {
 	std::cerr << "\nERROR: only 1D potentials from filenames are working now\n\n";
 	exit(1);
 };
-	FIXME_param.filename = barrier->filename;
-	FIXME_param.columnX  = barrier->columnX;
-	FIXME_param.columnVal= barrier->columnVal;
+	FIXME_param.filename    = barrier->filename;
+	FIXME_param.columnX     = barrier->columnX;
+	FIXME_param.columnVal   = barrier->columnVal;
+	FIXME_param.fileLoaded  = barrier->fileLoaded;
+	FIXME_param.fileDataX   = barrier->fileDataX;   // FIXME - o rany, kopiuję całą tablicę !!
+	FIXME_param.fileDataVal = barrier->fileDataVal; // FIXME - o rany, kopiuję całą tablicę !!
 	St1_QMStPotentialFromFile FIXME_equation;
 
 	//FIXME - how to avoid getting Body from scene?

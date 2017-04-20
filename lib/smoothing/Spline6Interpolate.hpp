@@ -58,7 +58,7 @@ valueType  spline6InterpolatePoint1D(
 	int      start_x=(size_t)(std::floor(posX))+STA
 		,end_x  =(size_t)(std::floor(posX))+END;
 	
-	assert(start_x>=0 and end_x<=values1D.size());
+	assert(start_x>=0 and end_x<=(int)values1D.size());
 
 	for(int x=start_x ; x<end_x ; ++x)
 		ret += values1D[x]*spline6Interpolation<floatType>((floatType)(x)-posX);

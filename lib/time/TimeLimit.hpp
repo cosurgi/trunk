@@ -7,7 +7,7 @@
  *     it is used only if you want to print some messages, but not too frequently - to avoid flooding
  *
  *  2. readWallClock()              ← first call this
- *     tooLong(waitTime)            ← then call this to determine if your algorithm is taking too much time
+ *     tooLong(waitTime)            ← then call this to determine if your algorithm is taking too much time in seconds
  *     it is used for doing non-critical calculations and making sure that they do not take too much time
  */
 

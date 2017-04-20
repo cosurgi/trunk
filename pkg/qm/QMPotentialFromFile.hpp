@@ -18,17 +18,21 @@
 class QMParametersFromFile: public QMParameters
 {
 	public:
+		void readFileIfDidnt();
 		virtual ~QMParametersFromFile();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMParametersFromFile /* class name*/, QMParameters /* base class */
 			, "It's a potential described by a text file (only 1d for now!)" // class description
 			, // attributes, public variables
-			  ((std::string ,filename ,"" ,,"Potential source text file: V(columnX)=filename(columnVal)"))
-			  ((int         ,columnX  ,-1 ,,"X coordinate for potential value, using atomic units"))
-			  ((int         ,columnVal,-1 ,,"Value of potential at given X coordinate, using Hartree energy"))
-			  ((bool        ,fileLoaded,false,Attr::readonly,"Stores information whether the file has been already loaded"))
+			  ((std::string       ,filename   ,""   ,              ,"Potential source text file: V(columnX)=filename(columnVal)"))
+			  ((int               ,columnX    ,-1   ,              ,"X coordinate for potential value, using atomic units (column count starts from 1)"))
+			  ((int               ,columnVal  ,-1   ,              ,"Value of potential at given X coordinate, using Hartree energy (column count starts from 1)"))
+			  ((bool              ,fileLoaded ,false,Attr::readonly,"Stores information whether the file has been already loaded"))
+			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
+			  ((std::vector<Real> ,fileDataX  ,     ,Attr::readonly,"The data loaded from file, the X coordinates"))
+			  ((std::vector<Real> ,fileDataVal,     ,Attr::readonly,"The data loaded from file, the Values of potential coordinates"))
 			, // constructor
 			  createIndex();
-	);
+		);
 	REGISTER_CLASS_INDEX(QMParametersFromFile,QMParameters);
 };
 REGISTER_SERIALIZABLE(QMParametersFromFile);
@@ -50,7 +54,7 @@ class QMStPotentialFromFile: public QMStatePotential
 	public:
 		virtual ~QMStPotentialFromFile();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMStPotentialFromFile /* class name*/, QMStatePotential /* base class */
-			, "It's an unmovable potential barrier: a source of potential (interaction)" // class description
+			, "It's a custom potential read from file: a source of potential (interaction)" // class description
 			, // attributes, public variables
 			, // constructor
 			  createIndex();
@@ -100,6 +104,10 @@ class QMIPhysFromFile: public QMIPhys
 			  ((std::string ,filename ,""  ,Attr::readonly,"Potential source text file: V(columnX)=filename(columnVal)"))
 			  ((int         ,columnX  ,-1  ,Attr::readonly,"X coordinate for potential value, using atomic units"))
 			  ((int         ,columnVal,-1  ,Attr::readonly,"Value of potential at given X coordinate, using Hartree energy"))
+			  ((bool                            ,fileLoaded,false,Attr::readonly,"Stores information whether the file has been already loaded"))
+			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
+			  ((std::vector<Real> ,fileDataX  ,     ,Attr::readonly,"The data loaded from file, the X coordinates"))
+			  ((std::vector<Real> ,fileDataVal,     ,Attr::readonly,"The data loaded from file, the Values of potential coordinates"))
 			, // constructor
 			createIndex();
 			, // python bindings

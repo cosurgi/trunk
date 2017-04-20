@@ -2,23 +2,30 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d   = 15
-halfSize  = [size1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
+startX    = -100
+end__X    = 100
+size1d    = end__X-startX
+halfSize  = [size1d/2,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
+# The grid size must be a power of 2 to allow FFT. Here 2**13=8192 is used.
+gridSize  = 2**11
 
 # wavepacket parameters
-k0_x       = 10
-gaussWidth = 0.1
+k0_x       = 0
+gaussWidth = 0.95/2.0
+x0_center  = 6.15
+mass       = 1604.391494
 
 # potential parameters
-potentialCenter1  = [ 2.0,0  ,0  ]
-potentialCenter2  = [-2.0,0  ,0  ]
-potentialHalfSize = [1.0,0.1,0.1]
+potentialCenter1  = [(startX+end__X)*0.5,0,0]
+potentialHalfSize = halfSize
 potentialFileName = "LiH_pot.txt"
 potentialColumnX  = 1
-potentialColumVal = 2
+potentialColumnVal= 2
 
 # draw scale (was potentialValue)
-partsScale = 200
+potentialDrawScale  = 50  # 5000
+potentialDrawminusZ = -10 # -340
+
 
 O.engines=[
 	StateDispatcher([
@@ -50,8 +57,8 @@ stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
 ## 1: Analytical packet
 analyticBody = QMBody()
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(stepRender=stepRenderHide)])
-analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**11]}
+analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=mass)
+gaussPacketArg         = {'x0':[x0_center,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[gridSize]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 #nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
 #O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
@@ -63,15 +70,17 @@ numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptio
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,4), Quaternion((1,0,0),0)))
 ])
 numericalBody.material  = analyticBody.material
-# The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(numericalBody)
 O.bodies[nid].state.setNumeric()          # is being propagated by SchrodingerKosloffPropagator
 
 ## 3: The box with potential
 potentialBody1 = QMBody()
-potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[QMDisplayOptions(partsScale=-partsScale,**displayOptionsPot)])
-potentialBody1.material  = QMParametersFromFile(dim=dimensions,hbar=1,filename=potentialFileName,columnX=potentialColumnX,columnVal=potentialColumVal)
+potentialBody1.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
+                                         QMDisplayOptions(partsScale=potentialDrawScale
+                                        ,renderSe3=(Vector3(0,0,potentialDrawminusZ), Quaternion((1,0,0),0))
+                                        ,**displayOptionsPot)])
+potentialBody1.material  = QMParametersFromFile(dim=dimensions,hbar=1,filename=potentialFileName,columnX=potentialColumnX,columnVal=potentialColumnVal)
 potentialBody1.state     = QMStPotentialFromFile(se3=[potentialCenter1,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody1)
 
@@ -87,7 +96,7 @@ try:
 	from yade import qt
 	qt.Controller()
 	qt.Renderer().blinkHighlight=False
-	#Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
+	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
 	#Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
 	qt.View()
 	qt.controller.setWindowTitle("Packet inside a 1D well")

@@ -26,7 +26,7 @@ class QMDisplayOptions: public Serializable
 			((Menu,partAbsolute     ,Menu({"default wire"   ,"hidden","nodes","big nodes","points","wire","surface"}),,"Show absolute value of the wavefunction"))
 			((Menu,partImaginary    ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show imaginary component"))
 			((Menu,partReal         ,Menu({"default surface","hidden","nodes","big nodes","points","wire","surface"}),,"Show real component"))
-			((int ,partsScale       ,1.0,,"Scaling of the wavefunction or potential. Positive number multiplies, negative divides by absolute value."))
+			((int ,partsScale       ,1.0,,"Scaling of the wavefunction or potential. Positive number multiplies, negative divides by absolute value. UNBLOCK in Display->Gl1_QMGeometry"))
 			((bool,partsSquared     ,false,,"Show squares of selected parts to draw (eg. squared partAbsolute is probability)"))
 			((int ,renderAmbient    ,30,Attr::hidden,"Amount of ambient light falling on surface"))
 			((int ,renderDiffuse    ,100,Attr::hidden,"Amount of diffuse light reflected by surface"))
