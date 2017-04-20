@@ -8,6 +8,7 @@
 
 #include <lib/time/TimeLimit.hpp>
 #include <lib/smoothing/Spline6Interpolate.hpp>
+//#include <lib/smoothing/Sinc16Interpolate.hpp>
 
 TimeLimit timeLimitF; // FIXME - remove when finshed fixing
 
@@ -56,7 +57,9 @@ void QMParametersFromFile::readFileIfDidnt() {
 			while(not ss.eof()) {
 				Real val=0;
 				ss >> val;
-				if(not ss.eof()) row.push_back(val);
+				// if(not ss.eof())   // didn't work: it skipped adding numbers if there wasn't en extra empty character after last number
+				//                       so instead we have an extra column with '0'
+				row.push_back(val);
 			}
 			fileData.push_back(row);
 			row.clear();
@@ -140,8 +143,9 @@ Complexr St1_QMStPotentialFromFile::getValPos(Vector3r pos , const QMParameters*
 	// row 'between lines' that will be used for interpolating the value
 	Real x_idx_row = (x - x_before)/(x_after - x_before) + idx_row -1;
 
-	if(x_idx_row >= 7 and x_idx_row <  barrier->fileDataX.size()-7) { // Spline6Interpolate is possible
+	if(x_idx_row >= 3 and x_idx_row <  barrier->fileDataX.size()-3) { // Spline6Interpolate is possible
 		return spline6InterpolatePoint1D<Real>(barrier->fileDataVal,x_idx_row);
+		//return sinc16InterpolatePoint1D <Real>(barrier->fileDataVal,x_idx_row);
 	} else { // must use linear interpolation
 		// return barrier->fileDataVal[idx_row];//barrier->height;                    // to jest linijka która daje wynik bez interpolowania.
 		Real val_before = barrier->fileDataVal[idx_row-1];
