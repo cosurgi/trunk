@@ -355,16 +355,16 @@ HERE;
 				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
 //						1: dotąd 0.7s
 HERE;
-				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
-//							1:	2: 10.8s	3: 1.1s		4: 0.9s		5: 0.9s		6: 1.2s
-				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
-				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
-//delay.printDelay("mult2 etc end");        //		1:	2: 0s		3: 0s		4: 0s		5: 0s		6: 0s
-				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
-				//psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+//1:2: 10.8s 3: 1.1s 4: 0.9s 5: 0.9s 6: 1.2s
+				psi_2  .mult1Sub(2,psi_0);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+				psi_dt .mult2Add(psi_2,ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
+//delay.printDelay("mult2 etc end");//1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
+				//psi_0=std::move(psi_1);                         // ψ₀ ← ψ₁
+				//psi_1=std::move(psi_2);                         // ψ₁ ← ψ₂
 				std::swap(psi_0,psi_1);
 				std::swap(psi_1,psi_2);
-//delay.printDelay("swap end");             //		1:	2: 0s		3: 0s		4: 0s		5: 0s		6: 0s
+//delay.printDelay("swap end");     //1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 			}
 			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
