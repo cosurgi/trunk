@@ -341,7 +341,7 @@ void SchrodingerKosloffPropagator::action()
 		if(! hasDampTable){
 			hasDampTable=true;
 			if(dampNodeCount > 0) { /////////////////// DAMPING !!!! ABC
-				dTable.becomeDampingTable(dampNodeCount);
+				dTable.becomeDampingTable(dampNodeCount); // FIXME - Vector3r dampNodeCount - osobne dla każdego wymiaru
 				if(dampDebugPrint) {
 					dTable.print();
 				}

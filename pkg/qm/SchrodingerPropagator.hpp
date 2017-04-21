@@ -99,7 +99,7 @@ found in [TalEzer1984]_"
 			((bool    ,virialCheck,false ,,"Check energies using virial theorem (Coulomb potential ONLY - FIXME!!!!!!!!)."))
 			((int     ,printIter  ,0     ,,"Print Kosloff interation."))
 			((bool    ,doCopyTable,true  ,,"Whether to copy the NDimTable for calculation (memory waste, nice drawing)."))
-			((int     ,dampNodeCount ,-1  ,,"Number of nodes on the edge, where damping is implemented."))
+			((int     ,dampNodeCount ,-1  ,,"Number of nodes on the edge, where damping is implemented.")) // FIXME - osobne ilości dampNodeCount przy większej liczbie wymiarów.
 			((bool    ,dampDebugPrint,true,,"When true the damping NDimTable is written to file 'dampDebugPrint', once."))
 			, // constructor
 			, // python bindings
