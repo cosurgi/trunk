@@ -328,12 +328,26 @@ void SchrodingerKosloffPropagator::action()
 	Real G   = calcKosloffG(scene->dt); // FIXME -  that's duplicate here, depends on dt !!
 	Real R13 = 1.3*R;
 	Real min = 10000.0*std::numeric_limits<Real>::min(); // get the numeric minimum, smallest number. To compare if anything is smaller than it, this one must be larger.
+
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 // FIXME - for multiple entangled wavefunctions
 //	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 
 		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable() );
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
+
+		static bool hasDampTable(false);  /////////////////// DAMPING !!!! ABC
+		static NDimTable<Real    > dTable(psiGlobal->psiGlobalTable.dim()); /////////////////// DAMPING !!!! ABC
+		if(! hasDampTable){
+			hasDampTable=true;
+			if(dampNodeCount > 0) { /////////////////// DAMPING !!!! ABC
+				dTable.becomeDampingTable(dampNodeCount);
+				if(dampDebugPrint) {
+					dTable.print();
+				}
+			};
+		}
+
 		if(psiGlobal and doCopyTable) {
 	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
 HERE;

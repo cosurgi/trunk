@@ -913,6 +913,33 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 			}
 		};
 
+/* ?? */	void becomeDampingTable(int dampNodeCount)
+		{
+			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲,\n FFTW is best with 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ, for e+f either 0 or 1\n";
+			DimN pos_i(rank_d,0);
+			auto dampingFunc = [](not_complex n, not_complex band, not_complex size)->not_complex  {
+//				return std::exp(-std::pow( (std::pow(1-(n<=band or n>=(size-band))?(  std::pow((std::abs(n-size/2)-(size/2-band))/band,2)  ):(0),-1))-1 ,2));
+// ~/Sienkiewicz/absorbtion-NDimTable-wzor.nb
+				return std::exp(not_complex(
+					-std::pow(
+						1.0/ (1 -	(
+									(n<=band or n>=(size-band))?
+									std::pow((std::abs(n-size/2)-(size/2 - band))/band,2.0)
+									:(0)
+								)
+						      )-1.0
+					 ,2.0))
+				);
+			};
+			// last index varies fastest
+			for(std::size_t total_i=0;total_i < total; total_i++) {
+				parent::operator[](total_i) = 1;
+				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
+					parent::operator[](total_i) *= dampingFunc(pos_i[_d_],dampNodeCount,dim_n[_d_]-1);
+				increment(pos_i);
+			}
+		};
+
 		typedef std::function<not_complex(not_complex i, int d)>     IToX_func;
 		typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz)> FunctionVals;
 /* OK */	void fill1WithFunction(unsigned short int dim_, const IToX_func& iToX,const FunctionVals f, unsigned short int this_member=0)
