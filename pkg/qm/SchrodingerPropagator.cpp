@@ -357,6 +357,8 @@ HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+/* ?? */		if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */			psi_1 *= dTable; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
 //						1: 0.7s
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
@@ -371,7 +373,11 @@ HERE;
 HERE;
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 //1:2: 10.8s 3: 1.1s 4: 0.9s 5: 0.9s 6: 1.2s
+/* ?? */			if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */				psi_0 *= dTable; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
 				psi_2  .mult1Sub(2,psi_0);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+/* ?? */			if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */				psi_2 *= dTable; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
 //delay.printDelay("mult2 etc end");//1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 				//psi_0=std::move(psi_1);                         // ψ₀ ← ψ₁
@@ -396,6 +402,8 @@ HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
 			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+/* ?? */		if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */			psi_1 *= dTable; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
 			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
@@ -405,7 +413,11 @@ HERE;
 			{
 				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator O.iter="<<(scene->iter)<<", loop iter=" << i << "/" << maxIter << " ak="<<ak<<"\n";
 				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+/* ?? */			if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */				psi_0 *= dTable; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
 				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+/* ?? */			if(dampNodeCount>0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+/* ?? */				psi_2 *= dTable; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
 //delay.printDelay("mult2 etc end");
 				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
