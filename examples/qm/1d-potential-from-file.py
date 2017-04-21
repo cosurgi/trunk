@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-startX    = -100
-end__X    = 100
+startX    = -100  # -500
+end__X    =  100  #  500
 size1d    = end__X-startX
 halfSize  = [size1d/2,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 # The grid size must be a power of 2 to allow FFT. Here 2**13=8192 is used.
-gridSize  = 2**11
+gridSize  = 2**11 # 2**16
 
 # wavepacket parameters
 k0_x       = 0
-gaussWidth = 0.95/2.0
+gaussWidth = 0.95 #/2.0
 x0_center  = 6.15
 mass       = 1604.391494
 
@@ -25,7 +25,7 @@ potentialColumnVal= 2
 # draw scale (was potentialValue)
 potentialDrawScale  = 50  # 5000
 potentialDrawminusZ = -10 # -340
-
+psiDrawScale        = 30
 
 O.engines=[
 	StateDispatcher([
@@ -40,7 +40,10 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersFromFile_QMIPhysFromFile()],
 		[Law2_QMIGeom_QMIPhysFromFile()]
 	),
-	SchrodingerKosloffPropagator(),
+	#SchrodingerAnalyticPropagator(),
+	SchrodingerKosloffPropagator(threadNum=32),
+	PyRunner(iterPeriod=1,command='myAddPlotData()'),
+	PyRunner(iterPeriod=10,command='savePlotData()')
 ]
 
 displayOptionsPot= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -56,18 +59,19 @@ stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(stepRender=stepRenderHide)])
+analyticBody.groupMask = 2
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[QMDisplayOptions(partsScale=psiDrawScale,stepRender=stepRenderHide)])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=mass)
 gaussPacketArg         = {'x0':[x0_center,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[gridSize]}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
-#nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
-#O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
+nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
+O.bodies[nid].state.setAnalytic()        # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
-     QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False)
-    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,4), Quaternion((1,0,0),0)))
+     QMDisplayOptions(partsScale=psiDrawScale,stepRender=stepRenderHide,renderWireLight=False)
+    ,QMDisplayOptions(partsScale=psiDrawScale,stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,40), Quaternion((1,0,0),0)))
 ])
 numericalBody.material  = analyticBody.material
 numericalBody.state     = QMPacketGaussianWave(**gaussPacketArg)
@@ -86,11 +90,34 @@ O.bodies.append(potentialBody1)
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.001
+#O.dt=.001
+#O.dt=.2
+O.dt=1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+
+############################################
+##### now the part pertaining to plots #####
+############################################
+
+from yade import plot
+plot.plots={'t':('re','im','abs')}
+
+def myAddPlotData():
+	symId=0
+	numId=1
+	O.bodies[symId].state.update()
+	#psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
+	autocorr = ((O.bodies[symId].state)|(O.bodies[numId].state))
+	plot.addData(t=O.time,re=autocorr.real,im=autocorr.imag,abs=abs(autocorr) )
+
+def savePlotData():
+	plot.saveDataTxt('testy_cols_'+str(potentialColumnX)+'_'+str(potentialColumnVal)+'.txt')
+
+plot.liveInterval=.2
+plot.plot(subPlots=False)
 
 try:
 	from yade import qt
@@ -99,7 +126,8 @@ try:
 	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
 	#Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
 	qt.View()
-	qt.controller.setWindowTitle("Packet inside a 1D well")
+	#qt.controller.setWindowTitle("Packet inside a 1D well")
+	qt.controller.setWindowTitle("col_x="+str(potentialColumnX)+' col_y='+str(potentialColumnVal))
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 except ImportError:
