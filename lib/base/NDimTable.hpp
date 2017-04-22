@@ -930,6 +930,18 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 						      )-1.0
 					 ,2.0))
 				);
+// this one is much worse: it looks like std::min(1,exp(-x)), so there is a discontinuity in first derivative - a ridge.
+//
+//				return std::exp(not_complex(
+//					/*-*/ 2.0*std::pow(
+//						/*1.0/ */(1 -	(
+//									(n<=band or n>=(size-band))?
+//									std::pow((std::abs(n-size/2)-(size/2 - band))/band,/*2*/1.0)
+//									:(0)
+//								)
+//						      )-1.0
+//					 ,/*2*/1.0))
+//				);
 			};
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
