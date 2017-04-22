@@ -3,7 +3,7 @@
 
 dimensions = 1
 size1d     = 500
-GRIDSIZE   = [196]
+GRIDSIZE   = [512]
 halfSize   = [size1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 ## This is a simple test:
@@ -18,7 +18,7 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-	SchrodingerKosloffPropagator(),
+	SchrodingerKosloffPropagator(dampNodeCount=32,threadNum=2),
 	SchrodingerAnalyticPropagator()
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]

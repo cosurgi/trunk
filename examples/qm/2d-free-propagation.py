@@ -17,7 +17,7 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-	SchrodingerKosloffPropagator(steps=-1),
+	SchrodingerKosloffPropagator(steps=-1,dampNodeCount=16,threadNum=8),
 	SchrodingerAnalyticPropagator()
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
@@ -35,7 +35,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.9,0.9,0.9],display
 # So no material for now.
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
 #gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[3,2,0],'gridSize':[128,64]}    # ← previously used arguments, were nice too!
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,0],'gridSize':[64,128]} # ← arguments I tried when introducing 3D
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[0.4,2,0],'a0':[1.5,2,0],'gridSize':[128,128]} # ← arguments I tried when introducing 3D
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
