@@ -27,6 +27,7 @@ class QMParametersFromFile: public QMParameters
 			  ((int               ,columnX    ,-1   ,              ,"X coordinate for potential value, using atomic units (column count starts from 1)"))
 			  ((Real              ,shiftX     ,0    ,              ,"X coordinate is shifted by this value"))
 			  ((int               ,columnVal  ,-1   ,              ,"Value of potential at given X coordinate, using Hartree energy (column count starts from 1)"))
+			  ((Real              ,shiftVal   ,0    ,              ,"Value is shifted by this shiftVal"))
 			  ((bool              ,fileLoaded ,false,Attr::readonly,"Stores information whether the file has been already loaded"))
 			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
 			  ((std::vector<Real> ,fileDataX  ,     ,Attr::readonly,"The data loaded from file, the X coordinates"))
@@ -102,11 +103,12 @@ class QMIPhysFromFile: public QMIPhys
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY( QMIPhysFromFile /* class name */, QMIPhys /* base class */
 			, "QMIPhysFromFile is the physical parameters concerning interaction happening between two particles" // class description
 			, // attributes, public variables
-			  ((std::string ,filename ,""  ,Attr::readonly,"Potential source text file: V(columnX)=filename(columnVal)"))
-			  ((int         ,columnX  ,-1  ,Attr::readonly,"X coordinate for potential value, using atomic units"))
-			  ((Real        ,shiftX   ,0   ,              ,"X coordinate is shifted by this value"))
-			  ((int         ,columnVal,-1  ,Attr::readonly,"Value of potential at given X coordinate, using Hartree energy"))
-			  ((bool                            ,fileLoaded,false,Attr::readonly,"Stores information whether the file has been already loaded"))
+			  ((std::string       ,filename   ,""   ,Attr::readonly,"Potential source text file: V(columnX)=filename(columnVal)"))
+			  ((int               ,columnX    ,-1   ,Attr::readonly,"X coordinate for potential value, using atomic units"))
+			  ((Real              ,shiftX     ,0    ,Attr::readonly,"X coordinate is shifted by this value"))
+			  ((int               ,columnVal  ,-1   ,Attr::readonly,"Value of potential at given X coordinate, using Hartree energy"))
+			  ((Real              ,shiftVal   ,0    ,Attr::readonly,"Value is shifted by this shiftVal"))
+			  ((bool              ,fileLoaded ,false,Attr::readonly,"Stores information whether the file has been already loaded"))
 			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
 			  ((std::vector<Real> ,fileDataX  ,     ,Attr::readonly,"The data loaded from file, the X coordinates"))
 			  ((std::vector<Real> ,fileDataVal,     ,Attr::readonly,"The data loaded from file, the Values of potential coordinates"))
