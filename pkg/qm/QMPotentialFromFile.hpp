@@ -25,6 +25,7 @@ class QMParametersFromFile: public QMParameters
 			, // attributes, public variables
 			  ((std::string       ,filename   ,""   ,              ,"Potential source text file: V(columnX)=filename(columnVal)"))
 			  ((int               ,columnX    ,-1   ,              ,"X coordinate for potential value, using atomic units (column count starts from 1)"))
+			  ((Real              ,shiftX     ,0    ,              ,"X coordinate is shifted by this value"))
 			  ((int               ,columnVal  ,-1   ,              ,"Value of potential at given X coordinate, using Hartree energy (column count starts from 1)"))
 			  ((bool              ,fileLoaded ,false,Attr::readonly,"Stores information whether the file has been already loaded"))
 			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
@@ -103,6 +104,7 @@ class QMIPhysFromFile: public QMIPhys
 			, // attributes, public variables
 			  ((std::string ,filename ,""  ,Attr::readonly,"Potential source text file: V(columnX)=filename(columnVal)"))
 			  ((int         ,columnX  ,-1  ,Attr::readonly,"X coordinate for potential value, using atomic units"))
+			  ((Real        ,shiftX   ,0   ,              ,"X coordinate is shifted by this value"))
 			  ((int         ,columnVal,-1  ,Attr::readonly,"Value of potential at given X coordinate, using Hartree energy"))
 			  ((bool                            ,fileLoaded,false,Attr::readonly,"Stores information whether the file has been already loaded"))
 			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))

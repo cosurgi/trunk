@@ -35,6 +35,7 @@ void QMParametersFromFile::readFileIfDidnt() {
 //	std::cerr << "  fileLoaded = " << fileLoaded << "\n";
 //	std::cerr << "  filename   = " << filename   << "\n";
 //	std::cerr << "  columnX    = " << columnX    << "\n";
+//	std::cerr << "  shiftX     = " << shiftX     << "\n";
 //	std::cerr << "  columnVal  = " << columnVal  << "\n";
 	if(fileLoaded) return;
 	if(filename == "" ) {
@@ -85,7 +86,7 @@ void QMParametersFromFile::readFileIfDidnt() {
 	int  _val_y  = columnVal -1;
 	for(size_t i=0 ; i < fileData.size() ; i++) {
 		if(_col_x >= 0 and _col_x < (int)fileData[i].size()  and  _val_y >=0 and _val_y < (int)fileData[i].size() ) {
-			fileDataX  .push_back( fileData[i][_col_x] );
+			fileDataX  .push_back( fileData[i][_col_x] + shiftX );
 			fileDataVal.push_back( fileData[i][_val_y] );
 		} else {
 			std::cerr << "ERROR 2 in  QMParametersFromFile::readFileIfDidnt    columnX   = " << _col_x+1 << " is wrong\n";
@@ -194,6 +195,7 @@ void Ip2_QMParameters_QMParametersFromFile_QMIPhysFromFile::go(
 	// pot->height = qm2->height;
 	pot->filename    = qm2->filename;
 	pot->columnX     = qm2->columnX;
+	pot->shiftX      = qm2->shiftX ;
 	pot->columnVal   = qm2->columnVal;
 	pot->fileLoaded  = qm2->fileLoaded;
 	pot->fileDataX   = qm2->fileDataX;   // FIXME - ojej kopiuje!
@@ -243,6 +245,7 @@ if(FIXME_param.dim != 1) {
 };
 	FIXME_param.filename    = barrier->filename;
 	FIXME_param.columnX     = barrier->columnX;
+	FIXME_param.shiftX      = barrier->shiftX ;
 	FIXME_param.columnVal   = barrier->columnVal;
 	FIXME_param.fileLoaded  = barrier->fileLoaded;
 	FIXME_param.fileDataX   = barrier->fileDataX;   // FIXME - o rany, kopiuję całą tablicę !!
