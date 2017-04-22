@@ -913,46 +913,71 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 			}
 		};
 
-/* ?? */	void becomeDampingTable(int dampNodeCount)
+		typedef std::function<not_complex(not_complex i, int d)>     IToX_func;
+		typedef std::function<not_complex(int d)>                    start_func;
+
+// FIXME - to poowinno być w jakiejś osobnej klasie QMDamping, czy jakoś tak i w niej siedzi tylko ten wzór f(x) na tą krzywą tłumiącą, a SchrodingerKosloffPropagator powinien
+//         tą klasę po prostu wyszukiwać i używać. Np. dodajemy damping jako ciało lub sposób oddziaływania
+//         a klasy wyszukujące oddziaływania przygotowują ją dla SchrodingerKosloffPropagator żeby ją sobie użył, i wtedy ją można normalnie narysować. 
+//         a teraz jej rysowanie to będą jakieś kombinacje alpejskie
+
+/* ?? */	void becomeDampingTable(not_complex dampMarginMin ,not_complex dampMarginMax , not_complex dampExponent , int dampFormula , const IToX_func& iToX, const start_func& start)
 		{
 			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲,\n FFTW is best with 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ, for e+f either 0 or 1\n";
 			DimN pos_i(rank_d,0);
-			auto dampingFunc = [](not_complex n, not_complex band, not_complex size)->not_complex  {
+			auto dampingFunc = [](not_complex n, not_complex band_min, not_complex band_max, not_complex size , not_complex dampExponent , int dampFormula )->not_complex  {
 //				return std::exp(-std::pow( (std::pow(1-(n<=band or n>=(size-band))?(  std::pow((std::abs(n-size/2)-(size/2-band))/band,2)  ):(0),-1))-1 ,2));
 // ~/Sienkiewicz/absorbtion-NDimTable-wzor.nb
-				return std::exp(not_complex(
-					-std::pow(
-						1.0/ (1 -	(
-									(n<=band or n>=(size-band))?
-									std::pow((std::abs(n-size/2)-(size/2 - band))/band,2.0)
-									:(0)
-								)
-						      )-1.0
-					 ,2.0))
-				);
+				if(dampFormula == 0) {
+					return std::exp(not_complex(
+						-dampExponent*std::pow(
+							1.0/ (1 -	(
+										  (n<=band_min or n>=(size-band_max))?
+										( (n<=band_min)?
+											std::pow((std::abs(n-size/2)-(size/2 - band_min))/band_min,2.0)
+											:
+											std::pow((std::abs(n-size/2)-(size/2 - band_max))/band_max,2.0)
+										)
+										:(0)
+									)
+							      )-1.0
+						 ,/*2*/1.0))
+					);
+				}
+				else
+				{
 // this one is much worse: it looks like std::min(1,exp(-x)), so there is a discontinuity in first derivative - a ridge.
-//
-//				return std::exp(not_complex(
-//					/*-*/ 2.0*std::pow(
-//						/*1.0/ */(1 -	(
-//									(n<=band or n>=(size-band))?
-//									std::pow((std::abs(n-size/2)-(size/2 - band))/band,/*2*/1.0)
-//									:(0)
-//								)
-//						      )-1.0
-//					 ,/*2*/1.0))
-//				);
+					return std::exp(not_complex(
+						/*-*/ dampExponent*std::pow(
+							/*1.0/ */(1 -	(
+										  (n<=band_min or n>=(size-band_max))?
+										( (n<=band_min)?
+											std::pow((std::abs(n-size/2)-(size/2 - band_min))/band_min,/*2*/1.0)
+											:
+											std::pow((std::abs(n-size/2)-(size/2 - band_max))/band_max,/*2*/1.0)
+										)
+										:(0)
+									)
+							      )-1.0
+						 ,/*2*/1.0))
+					);
+				}
 			};
 			// last index varies fastest
 			for(std::size_t total_i=0;total_i < total; total_i++) {
 				parent::operator[](total_i) = 1;
 				for(unsigned int _d_=0 ; _d_<rank_d ; _d_++)
-					parent::operator[](total_i) *= dampingFunc(pos_i[_d_],dampNodeCount,dim_n[_d_]-1);
+					parent::operator[](total_i) *= dampingFunc(
+									   iToX(pos_i[_d_],_d_) - start(_d_)
+									 , dampMarginMin
+									 , dampMarginMax
+									 , iToX(dim_n[_d_]-1,_d_) - start(_d_)
+									 , dampExponent
+									 , dampFormula);
 				increment(pos_i);
 			}
 		};
 
-		typedef std::function<not_complex(not_complex i, int d)>     IToX_func;
 		typedef std::function<value_type (Eigen::Matrix<not_complex,3,1>& xyz)> FunctionVals;
 /* OK */	void fill1WithFunction(unsigned short int dim_, const IToX_func& iToX,const FunctionVals f, unsigned short int this_member=0)
 		{
