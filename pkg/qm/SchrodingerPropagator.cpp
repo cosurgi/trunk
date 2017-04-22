@@ -342,7 +342,7 @@ void SchrodingerKosloffPropagator::action()
 			hasDampTable=true;
 			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { /////////////////// DAMPING !!!! ABC
 				std::cerr << "\nWARNING ---- dampMarginBandMin and dampMarginBandMax are using only X size of mesh\n";
-				dTable.becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormula
+				dTable.becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormulaSmooth
 				, [&](Real i, int d)->Real    { return psiGlobal->iToX(i,d);}
 				, [&](int d        )->Real    { return psiGlobal->start(d);}
 				); // FIXME - powinien być std::vector<Real> dampMarginBandMin,dampMarginBandMax; tzn. osobne dla każdego wymiaru

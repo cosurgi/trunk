@@ -10,7 +10,7 @@ energy_shift_val = -0.067908708333333
 
 dampMarginBandMin = 2
 dampMarginBandMax = 10
-dampFormula       = 0   # 0 - uses exp() with smoothed edge, 1 - uses 'traditional' exp() with discontinuity
+dampFormulaSmooth = False   # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
 dampExponent      = 4
 
 size1d    = end__X-startX
@@ -54,7 +54,7 @@ O.engines=[
              FIXMEatomowe_MASS = mass
             ,dampMarginBandMin = dampMarginBandMin
             ,dampMarginBandMax = dampMarginBandMax
-            ,dampFormula       = dampFormula
+            ,dampFormulaSmooth = dampFormulaSmooth
             ,dampExponent      = dampExponent
             ,dampDebugPrint    = True
             ,threadNum         = 1
