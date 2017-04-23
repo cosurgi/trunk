@@ -83,14 +83,14 @@ std::vector<Real> QMStateDiscrete::searchRange(boost::shared_ptr<QMStateDiscrete
 	return getPsiGlobalExisting()->psiGlobalTable.integrateWithOther_searchRange(start,end,o->getPsiGlobalExisting()->psiGlobalTable, getPsiGlobalExisting()->getSpatialSizeGlobal());
 };
 
-void QMStateDiscrete::zeroRange(std::vector<Real> start,std::vector<Real> end, bool outside)
+void QMStateDiscrete::zeroRange(std::vector<Real> start,std::vector<Real> end, bool outside,bool debug)
 {
 	
 	if( not (getPsiGlobalExists() ) ) {
 		std::cerr << "ERROR: psiGlobal doesn't exist\n";
 		return;
 	}
-	getPsiGlobalExisting()->psiGlobalTable.zeroRange(start,end,getPsiGlobalExisting()->getSpatialSizeGlobal(),outside);
+	getPsiGlobalExisting()->psiGlobalTable.zeroRange(start,end,getPsiGlobalExisting()->getSpatialSizeGlobal(),outside,debug);
 	return;
 };
 

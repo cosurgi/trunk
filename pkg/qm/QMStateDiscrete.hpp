@@ -152,7 +152,7 @@ or directly by filling in the discrete values in the table. It is used for numer
 /* ?? no TESTs */	std::complex<Real> braKet    (boost::shared_ptr<QMStateDiscrete> other);
 /* ?? no TESTs */	std::vector<Real>  search    (boost::shared_ptr<QMStateDiscrete> other);
 /* ?? no TESTs */	std::vector<Real>  searchRange(boost::shared_ptr<QMStateDiscrete> other,std::vector<Real>,std::vector<Real>);
-/* ?? no TESTs */	void               zeroRange (std::vector<Real>,std::vector<Real>,bool);
+/* ?? no TESTs */	void               zeroRange (std::vector<Real>,std::vector<Real>,bool,bool);
 /* ?? no TESTs */	std::complex<Real> searchAt  (boost::shared_ptr<QMStateDiscrete> other,std::vector<size_t>);
 /* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> operator- (boost::shared_ptr<QMStateDiscrete> other){return subtract(other);};
 /* ?? no TESTs */	boost::shared_ptr<QMStateDiscrete> subtract  (boost::shared_ptr<QMStateDiscrete> other);

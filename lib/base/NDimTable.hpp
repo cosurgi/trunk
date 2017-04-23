@@ -642,7 +642,7 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 			return thisIntegral;
 		};
 
-/* ?? */	void zeroRange(std::vector<not_complex> start,std::vector<not_complex> end,std::vector<not_complex> spatial_sizes, bool outside)
+/* ?? */	void zeroRange(std::vector<not_complex> start,std::vector<not_complex> end,std::vector<not_complex> spatial_sizes, bool outside, bool debug)
 		{
 
 			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";
@@ -652,17 +652,24 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 			{
 				DimN pos_start(rank_d,0);
 				DimN pos_end  (rank_d,0);
-				std::cerr<<"FIXME: zakładam że środek siatki jest w początku układu współrzędnych!\n";
-				std::cerr<<"FIXME: zakres start,end trzeba podać licząc od lewego dolnego rogu!\n";
+				static bool first_zeroRange=true;
+				if(first_zeroRange or debug) { // FIXME
+					std::cerr<<"FIXME: zakładam że środek siatki jest w początku układu współrzędnych!\n";
+					std::cerr<<"FIXME: zakres start,end trzeba podać licząc od lewego dolnego rogu!\n";
+					first_zeroRange=false;
+				}
 				for(size_t i=0 ; i<spatial_sizes.size() ; i++) {
-					int start__ = int( 1.0*dim_n[i]*(start[i]/spatial_sizes[i]) );
-					int end____ = int( 1.0*dim_n[i]*(end  [i]/spatial_sizes[i]) );
+					int start__ = std::max( 0              , int( 1.0*dim_n[i]*(start[i]/spatial_sizes[i]) ) );
+					int end____ = std::min( int(dim_n[i])-1, int( 1.0*dim_n[i]*(end  [i]/spatial_sizes[i]) ) );
 					if(start__ >= 0 and start__ < int(dim_n[i]) and start__ < end____ and end____ >= 0 and end____ < int(dim_n[i]) ) {
 						pos_start[i] = size_t(start__);//+dim_n[i]/2;
 						pos_end  [i] = size_t(end____);//+dim_n[i]/2;
-						std::cerr << "start["<<i<<"]="<<start__<<", end["<<i<<"]="<<end____<<"\n";
+						if(debug) {
+							std::cerr << "start["<<i<<"]="<<start__<<", end["<<i<<"]="<<end____<<"\n";
+						}
 					} else {
 						std::cerr << "\nboundary error\n";
+						std::cerr << "start["<<i<<"]="<<start__<<", end["<<i<<"]="<<end____<<"\n";
 						return;
 					}
 				};
