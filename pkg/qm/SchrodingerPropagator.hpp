@@ -69,6 +69,8 @@ REGISTER_SERIALIZABLE(SchrodingerAnalyticPropagator);
 class SchrodingerKosloffPropagator: public GlobalEngine
 {
 	public:
+		NDimTable<Complexr>                      global_dTable;    // FIXME - ten tutaj to już jest prawdziwa bezsensowna proteza :(
+		boost::shared_ptr<QMStateDiscreteGlobal> global_psiGlobal; //         Na pewno w wielu przypadkach nie działa
 		virtual void action();
 		Real eMin();
 		Real eKin();
@@ -149,8 +151,11 @@ class GlExtra_QMEngine : public GlExtraDrawer {
 		, // Doc
 		"Find an instance of :yref:`SchrodingerKosloffPropagator` and show its damping 'dTable' or momentum 'kTable'."
 		, // Attrs
-		((bool,dTable,true,,"Draw dTable"))
-		((boost::shared_ptr<SchrodingerKosloffPropagator>,qmEngine,,,"Drawing stuff from :yref:`SchrodingerKosloffPropagator`"))
+		((bool,drawDTable,true,,"Draw dTable"))
+		((bool,dampForceWire,false,,"Draw dTable and force wireframe"))
+		((Vector3r,dampColor,Vector3r(1,1,1),,"dTable color"))
+		((boost::shared_ptr<Serializable>,dampDisplayOptions,,,"..?"))
+		((boost::shared_ptr<SchrodingerKosloffPropagator>,qmEngine,,Attr::hidden,"Drawing stuff from :yref:`SchrodingerKosloffPropagator`"))
 	);
 };
 

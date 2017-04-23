@@ -56,7 +56,7 @@ O.engines=[
             ,dampMarginBandMax = dampMarginBandMax
             ,dampFormulaSmooth = dampFormulaSmooth
             ,dampExponent      = dampExponent
-            ,dampDebugPrint    = True
+            ,dampDebugPrint    = False
             ,threadNum         = 1
             ),
 	PyRunner(iterPeriod=1,command='myAddPlotData()'),
@@ -66,6 +66,11 @@ O.engines=[
 displayOptionsPot= { 'partAbsolute':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
                     ,'partReal':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default stripes","hidden","frame","stripes","mesh"]}
+
+displayOptionsDamp= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
 		    ,'stepRender':["default stripes","hidden","frame","stripes","mesh"]}
 
 stepRenderHide   =["default hidden","hidden","frame","stripes","mesh"]
@@ -149,6 +154,9 @@ try:
 	from yade import qt
 	qt.Controller()
 	qt.Renderer().blinkHighlight=False
+        qt.Renderer().extraDrawers=[GlExtra_QMEngine(drawDTable=True,dampColor=Vector3(1,1,1)
+                    ,dampDisplayOptions=QMDisplayOptions(partsScale=10
+                    ,renderSe3=(Vector3(0,0,0), Quaternion((1,0,0),0)),**displayOptionsDamp))]
 	Gl1_QMGeometry().analyticUsesScaleOfDiscrete=False
 	#Gl1_QMGeometry().analyticUsesStepOfDiscrete=False
 	qt.View()

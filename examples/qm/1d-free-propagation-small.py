@@ -6,6 +6,11 @@ size1d     = 500
 GRIDSIZE   = [512]
 halfSize   = [size1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
+dampMarginBandMin = 5
+dampMarginBandMax = 100
+dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+dampExponent      = 3
+
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
 ## - it is compared with the same movement, but calculated analytically
@@ -18,10 +23,21 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-	SchrodingerKosloffPropagator(dampNodeCount=32,threadNum=2),
+	SchrodingerKosloffPropagator(
+             dampMarginBandMin = dampMarginBandMin
+            ,dampMarginBandMax = dampMarginBandMax
+            ,dampFormulaSmooth = dampFormulaSmooth
+            ,dampExponent      = dampExponent
+            ,threadNum=2),
 	SchrodingerAnalyticPropagator()
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
+
+dampDrawScale     = 100
+displayOptionsDamp= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default stripes","hidden","frame","stripes","mesh"]}
 
 partsScale = 3000
 
@@ -37,7 +53,7 @@ analyticBody = QMBody()
 analyticBody.groupMask = 2
 analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.8,0.8,0.8],displayOptions=[
      QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False)
-    ,QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,4), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,250), Quaternion((1,0,0),0)))
 ])
 # it's too simple now. Later we will have quarks (up, down, etc.), leptons and bosons as a material.
 # So no material for now.
@@ -53,7 +69,7 @@ numericalBody = QMBody()
 numericalBody.groupMask = 1
 numericalBody.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOptions=[
      QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False)
-    ,QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,4), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(partsScale=partsScale,stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,250), Quaternion((1,0,0),0)))
 ])
 numericalBody.material  = analyticBody.material
 # Initialize the discrete wavefunction using the analytical gaussPacket created earlier.
@@ -65,7 +81,7 @@ O.bodies[nid].state.setNumeric()    # is being propagated by SchrodingerKosloffP
 
 ## Define timestep for the calculations
 #O.dt=.000001
-O.dt=.1
+O.dt=10
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -84,7 +100,9 @@ def myAddPlotData():
 	symId=0
 	numId=1
 	O.bodies[symId].state.update()
-	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))	
+	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
+        psiDiff.zeroRange([0],[dampMarginBandMin],False)
+        psiDiff.zeroRange([2*size1d - dampMarginBandMax -0.5],[2*size1d -0.5],False)
 	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
 plot.liveInterval=.2
 plot.plot(subPlots=False)
@@ -96,6 +114,9 @@ try:
 	qt.controller.setWindowTitle("1D free prop. of gaussian packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+        qt.Renderer().extraDrawers=[GlExtra_QMEngine(drawDTable=True,dampColor=Vector3(1,1,1)
+                    ,dampDisplayOptions=QMDisplayOptions(partsScale=dampDrawScale
+                    ,renderSe3=(Vector3(0,0,0), Quaternion((1,0,0),0)),**displayOptionsDamp))]
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 except ImportError:
 	pass

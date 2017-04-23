@@ -352,7 +352,9 @@ void SchrodingerKosloffPropagator::action()
 					std::cout << std::setprecision(std::numeric_limits<double>::digits10+1);
 					dTable.print();
 				}
-				hasDampTableCheck=true;
+				global_dTable     = dTable;
+				global_psiGlobal  = psiGlobal;
+				hasDampTableCheck = true;
 			};
 		}
 
@@ -502,6 +504,9 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(
 }
 */
 
+#include "Gl1_QMGeometry.hpp"
+
+// FIXME - ten tutaj to już jest prawdziwa bezsensowna proteza :( Na pewno w wielu przypadkach nie działa
 
 CREATE_LOGGER(GlExtra_QMEngine);
 
@@ -512,8 +517,31 @@ void GlExtra_QMEngine::render(){
 	if(!qmEngine){ FOREACH(boost::shared_ptr<Engine> e, scene->engines){ qmEngine=YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e); if(qmEngine) break; } }
 	if(!qmEngine){ LOG_ERROR("No SchrodingerKosloffPropagator in O.engines, killing myself."); dead=true; return; }
 
-	if(dTable and qmEngine->hasDampTableCheck) { // we are drawing dTable, because it was generated
-		std::cerr << "must draw here !\n";
+	if(drawDTable and qmEngine->hasDampTableCheck) { // we are drawing dTable, because it was generated
+		//std::cerr << "must draw here !\n";
+		shared_ptr<QMDisplayOptions> curOpt=YADE_PTR_DYN_CAST<QMDisplayOptions>(dampDisplayOptions);
+		if(curOpt) {
+
+			curOpt->step=Vector3r(0,0,0);
+			for(size_t i=0 ; i < std::min(3,(int)qmEngine->global_dTable.rank()) ; i++) {
+				curOpt->renderGlobal_i[ i         ] = (int)(i);
+				curOpt->renderAxis_i  [ i         ] = (i % 3 ); // we will have to draw along this axis: 0,1,2 = x,y,z
+				curOpt->renderSize    [ i         ] = qmEngine->global_psiGlobal->getSpatialSizeGlobal()[i]; // it will have this size
+
+				curOpt->step [i]=qmEngine->global_psiGlobal->getSpatialSizeGlobal()[curOpt->renderGlobal_i[i]]/((Real)(qmEngine->global_psiGlobal->gridSize[curOpt->renderGlobal_i[i]]));
+				curOpt->start[i]=qmEngine->global_psiGlobal->start                 (curOpt->renderGlobal_i[i]);                  // FIXME? or not? problem is that N-nodes have (N-1) lines between: |---|---|---|---|---
+				curOpt->end  [i]=qmEngine->global_psiGlobal->end                   (curOpt->renderGlobal_i[i])- curOpt->step[i]; // maybe change the start() and end() values in QMStateDiscrete??   ¹ 1 ² 2 ³ 3 ⁴ 4 ⁵ 5
+			}
+
+			GLViewInfo glinfo_ignored;
+			Gl1_NDimTable worker;
+			worker.drawNDimTable(
+				// curOpt->marginalDistribution
+				 qmEngine->global_dTable
+				,curOpt,dampColor,dampForceWire,glinfo_ignored);
+		} else {
+			std::cerr << "problem with drawing damping, no dampDisplayOptions defined!\n";
+		}
 	}
 };
 

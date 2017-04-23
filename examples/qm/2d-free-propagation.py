@@ -5,6 +5,11 @@ dimensions= 2
 size1d   = 10
 halfSize  = [size1d,size1d*1.5,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
+dampMarginBandMin = 3
+dampMarginBandMax = 5
+dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+dampExponent      = 1
+
 ## This is a simple test:
 ## - a freely moving particle according to Schrodinger equation is calculated using Tal-Ezer Kosloff 1984 method
 ## - it is compared with the same movement, but calculated analytically
@@ -17,10 +22,21 @@ O.engines=[
 	SpatialQuickSortCollider([
 		Bo1_Box_Aabb(),
 	]),
-	SchrodingerKosloffPropagator(steps=-1,dampNodeCount=16,threadNum=8),
+	SchrodingerKosloffPropagator(
+             steps=-1
+            ,dampMarginBandMin = dampMarginBandMin
+            ,dampMarginBandMax = dampMarginBandMax
+            ,dampFormulaSmooth = dampFormulaSmooth
+            ,dampExponent      = dampExponent
+            ,threadNum=1),
 	SchrodingerAnalyticPropagator()
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
+
+displayOptionsDamp= { 'partAbsolute':['default wire', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partImaginary':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+                    ,'partReal':['default hidden', 'hidden', 'nodes', 'points', 'wire', 'surface']
+		    ,'stepRender':["default stripes","hidden","frame","stripes","mesh"]}
 
 ## Two particles are created - the analytical one, and the numerical one. They
 ## do not interact, they are two separate calculations in fact.
@@ -86,6 +102,9 @@ try:
 	qt.controller.setWindowTitle("2D free propagating packet")
 	qt.controller.setViewAxes(dir=(0,1,0),up=(0,0,1))
 	qt.Renderer().blinkHighlight=False
+        qt.Renderer().extraDrawers=[GlExtra_QMEngine(drawDTable=True,dampColor=Vector3(1,1,1)
+                    ,dampDisplayOptions=QMDisplayOptions(partsScale=10
+                    ,renderSe3=(Vector3(0,0,0), Quaternion((1,0,0),0)),**displayOptionsDamp))]
 	qt.View()
 	qt.views()[0].center(False,5) # median=False, suggestedRadius = 5
 
