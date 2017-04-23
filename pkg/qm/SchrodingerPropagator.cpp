@@ -20,6 +20,7 @@
 YADE_PLUGIN(
 	(SchrodingerAnalyticPropagator)
 	(SchrodingerKosloffPropagator)
+	(GlExtra_QMEngine)
 	);
 
 /*********************************************************************************
@@ -338,8 +339,9 @@ void SchrodingerKosloffPropagator::action()
 
 		static bool hasDampTable(false);  /////////////////// DAMPING !!!! ABC
 		static NDimTable<Real    > dTable(psiGlobal->psiGlobalTable.dim()); /////////////////// DAMPING !!!! ABC
-		if(! hasDampTable){
+		if((not hasDampTable) or (hasDampTableRegen)){
 			hasDampTable=true;
+			hasDampTableRegen = false;
 			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { /////////////////// DAMPING !!!! ABC
 				std::cerr << "\nWARNING ---- dampMarginBandMin and dampMarginBandMax are using only X size of mesh\n";
 				dTable.becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormulaSmooth
@@ -350,6 +352,7 @@ void SchrodingerKosloffPropagator::action()
 					std::cout << std::setprecision(std::numeric_limits<double>::digits10+1);
 					dTable.print();
 				}
+				hasDampTableCheck=true;
 			};
 		}
 
@@ -498,4 +501,19 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(
 		psi_1 -= Vpsi;               // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 }
 */
+
+
+CREATE_LOGGER(GlExtra_QMEngine);
+
+void GlExtra_QMEngine::render(){
+	// scene object changed (after reload, for instance), for re-initialization
+	if(qmEngine and qmEngine->scene!=scene) qmEngine=boost::shared_ptr<SchrodingerKosloffPropagator>();
+
+	if(!qmEngine){ FOREACH(boost::shared_ptr<Engine> e, scene->engines){ qmEngine=YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e); if(qmEngine) break; } }
+	if(!qmEngine){ LOG_ERROR("No SchrodingerKosloffPropagator in O.engines, killing myself."); dead=true; return; }
+
+	if(dTable and qmEngine->hasDampTableCheck) { // we are drawing dTable, because it was generated
+		std::cerr << "must draw here !\n";
+	}
+};
 

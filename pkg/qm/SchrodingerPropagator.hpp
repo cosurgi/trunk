@@ -106,6 +106,8 @@ found in [TalEzer1984]_"
 			((bool    ,dampFormulaSmooth,true,,"true - uses exp() with smoothed edge, false - uses 'traditional' exp() with discontinuity"))
 			((Real    ,dampExponent     ,1   ,,"The coefficient 'c' in exp(-c*gamma(r))"))
 			((bool    ,dampDebugPrint   ,true,,"When true the damping NDimTable is written to file 'dampDebugPrint', once."))
+			((bool    ,hasDampTableCheck,false ,Attr::readonly,"Notify if dampTable was generated"))
+			((bool    ,hasDampTableRegen,false ,              ,"Force regenerating damping NDimTable if options were changed"))
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
@@ -132,4 +134,25 @@ found in [TalEzer1984]_"
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);
 
 
+
+#include<pkg/common/OpenGLRenderer.hpp>
+#include <lib/opengl/OpenGLWrapper.hpp>
+
+class GlExtra_QMEngine : public GlExtraDrawer {
+	public:
+	DECLARE_LOGGER;
+	virtual void render();
+	YADE_CLASS_BASE_DOC_ATTRS( // Class
+		GlExtra_QMEngine
+		,// Base
+		GlExtraDrawer
+		, // Doc
+		"Find an instance of :yref:`SchrodingerKosloffPropagator` and show its damping 'dTable' or momentum 'kTable'."
+		, // Attrs
+		((bool,dTable,true,,"Draw dTable"))
+		((boost::shared_ptr<SchrodingerKosloffPropagator>,qmEngine,,,"Drawing stuff from :yref:`SchrodingerKosloffPropagator`"))
+	);
+};
+
+REGISTER_SERIALIZABLE(GlExtra_QMEngine);
 
