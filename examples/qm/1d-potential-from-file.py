@@ -9,9 +9,9 @@ zero_shift_left  = -45
 energy_shift_val = -0.067908708333333
 
 dampMarginBandMin = 2
-dampMarginBandMax = 10
-dampFormulaSmooth = False   # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
-dampExponent      = 4
+dampMarginBandMax = 20
+dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+dampExponent      = 0.02
 
 size1d    = end__X-startX
 halfSize  = [size1d/2,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
@@ -122,7 +122,8 @@ O.bodies.append(potentialBody1)
 #O.dt=.001
 #O.dt=.2
 #O.dt=1
-O.dt=6
+#O.dt=6
+O.dt=300
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
@@ -154,6 +155,7 @@ try:
 	from yade import qt
 	qt.Controller()
 	qt.Renderer().blinkHighlight=False
+	qt.Renderer().bgColor=Vector3(0,0,0)
         qt.Renderer().extraDrawers=[GlExtra_QMEngine(drawDTable=True,dampColor=Vector3(1,1,1)
                     ,dampDisplayOptions=QMDisplayOptions(partsScale=10
                     ,renderSe3=(Vector3(0,0,0), Quaternion((1,0,0),0)),**displayOptionsDamp))]

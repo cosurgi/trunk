@@ -7,9 +7,11 @@ GRIDSIZE   = [2**12]
 halfSize   = [halfSize1d,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
 
 dampMarginBandMin = 2
-dampMarginBandMax = 10
+dampMarginBandMax = 20
 dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
-dampExponent      = 4
+dampExponent      = 0.01
+#dampFormulaSmooth = False   # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+#dampExponent      = 4
 
 zero_shift_left  = -45
 k0_x       = 8
