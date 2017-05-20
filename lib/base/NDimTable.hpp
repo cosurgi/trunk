@@ -642,7 +642,12 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 			return thisIntegral;
 		};
 
-/* ?? */	void zeroRange(std::vector<not_complex> start,std::vector<not_complex> end,std::vector<not_complex> spatial_sizes, bool outside, bool debug)
+/* ?? */	void zeroRange(
+				 std::vector<not_complex> start
+				,std::vector<not_complex> end
+				,std::vector<not_complex> spatial_sizes
+				, bool outside // FIXME: porządnie wybierać region
+				, bool debug)
 		{
 
 			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲ in some direction, can't shift by half.\n";

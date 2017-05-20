@@ -146,6 +146,10 @@ boost::shared_ptr<QMStateDiscrete> QMStateDiscrete::copy()
 		std::cerr << "ERROR copy(): psiGlobal doesn't exist\n";
 		return boost::shared_ptr<QMStateDiscrete>();
 	}
+	// FIXME - brakuje gridSize !!!!!!!!!!!!!!!!!!
+
+	// nn5=O.bodies[wp_id].state.copy()  # WAZNE - kopiuje zeby nie modyfikowac oryginalu
+	// nn5.gridSize   // wychodzi [] !!! pusta lista
 	auto ret = boost::shared_ptr<QMStateDiscrete>(new QMStateDiscrete);
 	ret->spatialSize          = this->spatialSize;
 	ret->whichPartOfpsiGlobal = this->whichPartOfpsiGlobal;
