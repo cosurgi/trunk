@@ -973,6 +973,11 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 							      )-1.0
 						 ,/*2*/1.0))
 					);
+// INFO: próbowałem zreprodukować ten błąd numeryczny który się w obliczeniach robi, myślałem że w std::exp(). Ale tutaj się nie udało. Bedę musiał ruszyć Kosloffa bezpośrednio.
+//					auto gamma = [](double r, double r0, double rMax, double c)->double{ return c*(r-r0)/(rMax-r);};
+//					return std::exp(
+//						-std::max(0.0,gamma(n,size-band_max,size,dampExponent))
+//					);
 				}
 			};
 			// last index varies fastest

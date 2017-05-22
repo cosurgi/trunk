@@ -10,8 +10,8 @@ energy_shift_val = -0.067908708333333
 
 dampMarginBandMin = 2
 dampMarginBandMax = 20
-dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
-dampExponent      = 0.02
+dampFormulaSmooth = False # True  #- uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+dampExponent      = 10    # 0.02
 
 size1d    = end__X-startX
 halfSize  = [size1d/2,0.1,0.1]# must be three components, because yade is inherently 3D and uses Vector3r. Remaining components will be used for AABB
@@ -56,7 +56,7 @@ O.engines=[
             ,dampMarginBandMax = dampMarginBandMax
             ,dampFormulaSmooth = dampFormulaSmooth
             ,dampExponent      = dampExponent
-            ,dampDebugPrint    = False
+            ,dampDebugPrint    = True
             ,threadNum         = 1
             ),
 	PyRunner(iterPeriod=1,command='myAddPlotData()'),
