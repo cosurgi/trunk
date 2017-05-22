@@ -20,7 +20,7 @@ class QMParametersHarmonic: public QMParameters
 	public:
 		virtual ~QMParametersHarmonic();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(	QMParametersHarmonic /* class name*/, QMParameters /* base class */
-			, "It's a potential barrier with given height" // class description
+			, "It's a harmonic potential with given coefficient" // class description
 			, // attributes, public variables
 			//((Real     QMParameters::hbar
 			//((size_t   QMParameters::dim 
