@@ -13,6 +13,7 @@ gaussWidth = 0.5
 potentialCenter   = [ 0.0,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)
 potentialCoefficient= [0.5,0.5,0.5]
+potentialCoefficientby2= [1.0,1.0,1.0]
 
 O.engines=[
 	StateDispatcher([
@@ -27,7 +28,9 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()],
 		[Law2_QMIGeom_QMIPhysHarmonic()]
 	),
-	SchrodingerKosloffPropagator(steps=-1),
+	SchrodingerAnalyticPropagator(),
+	SchrodingerKosloffPropagator(steps=-1)
+	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
 stepRenderStripes=["default stripes","hidden","frame","stripes","mesh"]
@@ -44,12 +47,17 @@ displayOptions   = { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 
 ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
+analyticBody.groupMask = 2
+#analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
+analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[
+     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
+])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10]}
+gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
-#nid=O.bodies.append(analyticBody)        # do not append, it is used only to create the numerical one
-#O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
+nid=O.bodies.append(analyticBody)
+O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
@@ -79,6 +87,26 @@ O.dt=.01
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'
+
+############################################
+##### now the part pertaining to plots #####
+############################################
+
+from yade import plot
+## we will have 2 plots:
+## 1. t as function of i (joke test function)
+## 2. i as function of t on left y-axis ('|||' makes the separation) and z_sph, v_sph (as green circles connected with line) and z_sph_half again as function of t
+plot.plots={'t':('error')}
+
+def myAddPlotData():
+	symId=0
+	numId=1
+	O.bodies[symId].state.update()
+	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
+	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+plot.liveInterval=.2
+plot.plot(subPlots=False)
+
 
 try:
 	from yade import qt

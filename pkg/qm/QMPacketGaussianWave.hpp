@@ -62,6 +62,8 @@ For higher number of dimensions the x and k are replaced with a vector, and thus
 			((Real    ,t0  ,0               ,,"Initial wave packet center at $t=0$"))
 			((Vector3r,k0  ,Vector3r::Zero(),,"Initial wavenumber $k_0$"))
 			((Vector3r,a0  ,Vector3r::Zero(),,"Initial Gausian packet width $a_0$, sometimes called $\\sigma$"))
+			((Vector3r,w0  ,Vector3r::Zero(),,"The harmonic potential $\\omega$ in which gaussian wavepacket resides"))
+			((Vector3r,harmonic,Vector3r::Zero(),,"Allows to use gaussian wavepacket inside a harmonic potential, but then t0=0 is assumed. Must be either 0 or 1. Can be mixed between different spatial dimensions."))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();
@@ -97,7 +99,7 @@ class St1_QMPacketGaussianWave: public St1_QMStateAnalytic
 		//! return complex quantum aplitude at given positional representation coordinates
 		virtual Complexr getValPos(Vector3r xyz, const QMParameters* par, const QMState* qms);
 	private:
-		Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real t0,Real k0,Real m, Real a, Real h);
+		Complexr waveFunctionValue_1D_positionRepresentation(Real x,Real x0,Real t,Real t0,Real k0,Real m, Real a, Real hbar, Real harmonic, Real w);
 };
 REGISTER_SERIALIZABLE(St1_QMPacketGaussianWave);
 

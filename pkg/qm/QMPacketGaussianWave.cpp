@@ -35,8 +35,12 @@ Complexr St1_QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
 	Real m,    // particle mass
 	Real a,    // wavepacket width, sometimes called sigma, of the Gaussian distribution
 	Real hbar  // Planck's constant divided by 2pi
+
+	,Real harmonic
+	,Real w    // harmonic potential omega
 )
 {
+	if(harmonic == 0 or t == 0) {
 	x -= x0;
 	t -= t0;
 	return exp(
@@ -50,6 +54,29 @@ Complexr St1_QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
 	(
 		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*hbar*t/(a*m),0.5))
 	);
+	} else if(harmonic == 1) {
+		return  a*sqrt(hbar)
+			 *sqrt(-Mathr::I/sin(t*w))
+			 *sqrt(m*w/(a*hbar))
+			 *exp(
+				(a*a*
+					(-
+						(k0*k0*hbar*hbar+m*m*x*x*w*w)
+					)
+				 +Mathr::I*m*w*hbar*(x*x+x0*(x0+2.0*Mathr::I*a*a*k0))/(tan(w*t))
+				 +2.0*m*x*w*hbar*(a*a*k0-Mathr::I*x0)/sin(w*t)
+				)
+				/
+				(2.0*hbar*(hbar-Mathr::I*a*a*m*w/tan(w*t)))
+			 )
+			 /
+			 (
+				pow(Mathr::PI,0.25)*(pow(hbar-Mathr::I*a*a*m*w/tan(t*w),0.5))
+			 );
+	} else {
+		std::cerr << "St1_QMPacketGaussianWave: the harmonic parameter must be either 0 or 1"; exit(1);
+		return 0;
+	}
 };
 		
 Complexr St1_QMPacketGaussianWave::getValPos(Vector3r pos , const QMParameters* pm, const QMState* qms)
@@ -60,14 +87,14 @@ Complexr St1_QMPacketGaussianWave::getValPos(Vector3r pos , const QMParameters* 
 		+std::string(pm?pm->getClassName():"")+"`\n\n");};
 //std::cerr << "renderuję dla t = " << (p->t-p->t0) << "\n";
 	switch(par->dim) {
-		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar);
+		case 1 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar, p->harmonic[0], p->w0[0]);
 
-		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar);
+		case 2 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar, p->harmonic[0], p->w0[0])*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar, p->harmonic[1], p->w0[1]);
 
-		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar)*
-		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar)*
-				waveFunctionValue_1D_positionRepresentation(pos[2],p->x0[2],p->t,p->t0,p->k0[2],par->m,p->a0[2],par->hbar);
+		case 3 : return waveFunctionValue_1D_positionRepresentation(pos[0],p->x0[0],p->t,p->t0,p->k0[0],par->m,p->a0[0],par->hbar, p->harmonic[0], p->w0[0])*
+		                waveFunctionValue_1D_positionRepresentation(pos[1],p->x0[1],p->t,p->t0,p->k0[1],par->m,p->a0[1],par->hbar, p->harmonic[1], p->w0[1])*
+				waveFunctionValue_1D_positionRepresentation(pos[2],p->x0[2],p->t,p->t0,p->k0[2],par->m,p->a0[2],par->hbar, p->harmonic[2], p->w0[2]);
 				// FIXME - interesting thing: adding a new dimension is just a multiplication.
 				//         but calculating probability is multiplication by conjugate.
 				//         just as time is really just another dimension, but in Minkowski metric.
