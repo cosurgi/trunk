@@ -108,7 +108,7 @@ void Ip2_QMParameters_QMParametersBarrier_QMIPhysBarrier::goReverse(
 *********************************************************************************/
 
 #include <Eigen/Dense>
-#include <Eigen/src/Core/Functors.h>
+//#include <Eigen/src/Core/Functors.h>
 
 CREATE_LOGGER(Law2_QMIGeom_QMIPhysBarrier);
 

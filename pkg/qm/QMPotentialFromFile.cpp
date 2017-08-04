@@ -227,7 +227,7 @@ void Ip2_QMParameters_QMParametersFromFile_QMIPhysFromFile::goReverse(
 *********************************************************************************/
 
 #include <Eigen/Dense>
-#include <Eigen/src/Core/Functors.h>
+//#include <Eigen/src/Core/Functors.h>
 
 CREATE_LOGGER(Law2_QMIGeom_QMIPhysFromFile);
 
