@@ -54,7 +54,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],display
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
+gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
