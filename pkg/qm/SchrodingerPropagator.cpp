@@ -281,6 +281,17 @@ HERE;
 
 	if(Vpsi.rank() != 0)
 		psi_1 -= Vpsi;               // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+//
+//
+//
+// UWAGA: to chyba powyżej jakoś zniweolowałem że wywołuję J_k(R) zamiast J_k(-R), zmieniłem znaki w formule rekurencyjnej na tworzenie T_k:
+// 
+//        mam +(1+G/R)-V     a powinienem mieć
+//            -(1+G/R)+V
+//
+//        chyba
+//
+
 //delay.printDelay("mult,etc end");	//	1: 0.7s		2: 10.8s	3: 1.1s		4: 0.9s		5: 0.9s		6: 1.2s		7: 0.9s
 
 	// FIXME: return std::move(psi_1);
