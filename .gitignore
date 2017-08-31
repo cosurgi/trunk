@@ -42,3 +42,6 @@ trunk.iml
 
 Session??.vim
 *.swp
+
+CMakeLists.txt-EigenVersions
+
