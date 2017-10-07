@@ -35,6 +35,7 @@ class QMDisplayOptions: public Serializable
 			((bool,renderSmoothing  ,true,,"Smooth the displayed surface"))
 			((int ,renderSpecular   ,0,/*Attr::hidden*/,"Amount of specular light reflected by surface"))
 			((bool,renderWireLight  ,true,,"Use glEnable(GL_LIGHTING) when drawing wire. Wires are BRIGHTer when off."))
+			((bool,renderBlack      ,false,,"Use black color for absolute, instead of white."))
 			((bool,renderFFT        ,false,,"Render FFT"))
 // FIXME - automatic partsScale when adding new QMDisplayOptions - e.g. average from other existing.
 /* FIXME? */		((bool,renderRotated45  ,false,,"Before drawing the wavefunction do a (sort of) 45degree (N-dim) rotation of it: FIXME - need to find a better way to do this. It is used to draw Hydrogen in another representation: ψ(r,φ)Ψ(R)=ψ(x₁,y₁,x₂,y₂)"))

@@ -432,12 +432,12 @@ Gl1_NDimTable::Gl1_NDimTable()
 	valueToDraw.push_back( [](std::complex<Real> a){ return std::real(a*std::conj(a));                         } );
 
 	colorToDraw.resize(0);                                                                  // draw FFT in yellowish color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)).cwiseProduct(FFTcol)); } ); // display partReal               in bluish   color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)).cwiseProduct(FFTcol)); } ); // display partImaginary          in reddish  color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col                                    .cwiseProduct(FFTcol)); } ); // display abs value              original color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)).cwiseProduct(FFTcol)); } ); // display partReal      (squred) in bluish   color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)).cwiseProduct(FFTcol)); } ); // display partImaginary (square) in reddish  color
-	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); return Vector3r(col                                    .cwiseProduct(FFTcol)); } ); // for probability use            original color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7);                                                    return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)).cwiseProduct(FFTcol)); } ); // display partReal               in bluish   color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7);                                                    return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)).cwiseProduct(FFTcol)); } ); // display partImaginary          in reddish  color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); if(opt->renderBlack) FFTcol=Vector3r(0.0,0.0,0.0); return Vector3r(col                                    .cwiseProduct(FFTcol)); } ); // display abs value              original color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7);                                                    return Vector3r(col.cwiseProduct(Vector3r(0.4,0.4,1.0)).cwiseProduct(FFTcol)); } ); // display partReal      (squred) in bluish   color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7);                                                    return Vector3r(col.cwiseProduct(Vector3r(1.0,0.4,0.4)).cwiseProduct(FFTcol)); } ); // display partImaginary (square) in reddish  color
+	colorToDraw.push_back( [this](Vector3r col){ Vector3r FFTcol(1,1,1); if(opt->renderFFT) FFTcol=Vector3r(1.1,1.1,0.7); if(opt->renderBlack) FFTcol=Vector3r(0.0,0.0,0.0); return Vector3r(col                                    .cwiseProduct(FFTcol)); } ); // for probability use            original color
 };
 
 void Gl1_NDimTable::calcNormalVectors(
