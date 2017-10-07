@@ -70,7 +70,15 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 {
 	public:
 		NDimTable<Complexr>                      global_dTable;    // FIXME - ten tutaj to już jest prawdziwa bezsensowna proteza :(
+		NDimTable<Complexr>                      Vpsi_NOTstatic__ANYMORE;
+		NDimTable<Real>                          kTable_NOTstatic__ANYMORE;
+		Real					 last_dt_NOTstatic__ANYMORE;
+		Real					 last_R;
+		Real					 last_G;
+		Real					 last_dtR;
+		Real					 last_dtG;
 		boost::shared_ptr<QMStateDiscreteGlobal> global_psiGlobal; //         Na pewno w wielu przypadkach nie działa
+		NDimTable<Real>				 dTable_NOTstatic__ANYMORE;
 		virtual void action();
 		Real eMin();
 		Real eKin();
@@ -110,6 +118,18 @@ found in [TalEzer1984]_"
 			((bool    ,dampDebugPrint   ,true,,"When true the damping NDimTable is written to file 'dampDebugPrint', once."))
 			((bool    ,hasDampTableCheck,false ,Attr::readonly,"Notify if dampTable was generated"))
 			((bool    ,hasDampTableRegen,false ,              ,"Force regenerating damping NDimTable if options were changed"))
+
+			// Próbuję jak najmniejszym wysiłkiem dopisać możliwość liczenia na kilku kanałach niezależnie.
+			// groupMask , kilka kanałów
+			((bool    ,useGroupMaskBool,false ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
+			((mask_t  ,useGroupThisMask,    1 ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
+			((bool    ,hasTable_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to note that kTable, for calculating 2nd derivatives, has been generated"))
+			((bool    ,kosloffR_needs_Update, true ,(Attr::hidden|Attr::noSave),"helper bool, to note that Kosloff R, G must be updated for some reason"))
+			((bool    ,kosloffG_needs_Update, true ,(Attr::hidden|Attr::noSave),"helper bool, to note that Kosloff R, G must be updated for some reason"))
+			((int     ,maxIter_NOTstatic__ANYMORE, 0 ,(Attr::hidden|Attr::noSave),"helper for printing maxIter"))
+			((bool    ,hasdTable_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to note that dTable, for calculating ABC damping, has been generated"))
+			((bool    ,potentialCanChangeNOW_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to know if potential needs more regenrating"))
+
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
