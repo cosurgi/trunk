@@ -205,7 +205,7 @@ void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 	};
 };
 
-Real SchrodingerKosloffPropagator::eMin()
+Real SchrodingerKosloffPropagator::eMinThisChannel()
 {
 HERE2;
 	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
@@ -227,7 +227,7 @@ Real SchrodingerKosloffPropagator::eKin()
 	return ret;
 }
 
-Real SchrodingerKosloffPropagator::eMax()
+Real SchrodingerKosloffPropagator::eMaxThisChannel()
 {
 	Real ret(eKin()); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
@@ -235,6 +235,56 @@ HERE2;
 	NDimTable<Complexr>     VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
 	ret += ((VGlobal.rank()!=0) ? (VGlobal.maxReal()) : (0));
 	return ret;
+}
+
+Real SchrodingerKosloffPropagator::eMin()
+{
+	Real local_eMin = eMinThisChannel();
+	//std::cerr << "_______ running SchrodingerKosloffPropagator::eMin local_eMin="<<local_eMin<<" for groupMask "<< useGroupThisMask<<"\n";
+	if(not useGroupMaskBoolEnergyMinMax) return local_eMin;
+	if(useGroupMaskEnergyMinMax == 0) { std::cerr << "\n\nERROR: useGroupMaskBoolEnergyMinMax == true, but useGroupMaskEnergyMinMax == 0\n\n"; exit(1);};
+	// OK, to teraz zbieramy minimum ze wszystkich kanałów.
+	for(auto& e : scene->engines) {
+		boost::shared_ptr<SchrodingerKosloffPropagator> kosloff_channel = YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e);
+		if(kosloff_channel) {
+			if(kosloff_channel->useGroupMaskBool == false) {
+				std::cerr << "\nfound kosloff_channel with groupMask == " << kosloff_channel->useGroupThisMask << "\n";
+				std::cerr << "ERROR: but it has useGroupMaskBool == false\n\n"; exit(1);
+			}
+			if( (kosloff_channel->useGroupThisMask & this->useGroupMaskEnergyMinMax) != 0) {
+				//Real other_min = kosloff_channel->eMinThisChannel();
+				//std::cerr << "_______  for groupMask "<< useGroupThisMask<< "other_min = " << other_min << "\n";
+				//local_eMin = std::min(local_eMin , other_min);
+				local_eMin = std::min(local_eMin , kosloff_channel->eMinThisChannel());
+			}
+		}
+	}
+	return local_eMin;
+}
+
+Real SchrodingerKosloffPropagator::eMax()
+{
+	Real local_eMax = eMaxThisChannel();
+	//std::cerr << "======= running SchrodingerKosloffPropagator::eMax local_eMax="<<local_eMax<<" for groupMask "<< useGroupThisMask<<"\n";
+	if(not useGroupMaskBoolEnergyMinMax) return local_eMax;
+	if(useGroupMaskEnergyMinMax == 0) { std::cerr << "\n\nERROR: useGroupMaskBoolEnergyMinMax == true, but useGroupMaskEnergyMinMax == 0\n\n"; exit(1);};
+	// OK, to teraz zbieramy maximum ze wszystkich kanałów.
+	for(auto& e : scene->engines) {
+		boost::shared_ptr<SchrodingerKosloffPropagator> kosloff_channel = YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e);
+		if(kosloff_channel) {
+			if(kosloff_channel->useGroupMaskBool == false) {
+				std::cerr << "\n======= found kosloff_channel with groupMask == " << kosloff_channel->useGroupThisMask << "\n";
+				std::cerr << "ERROR: but it has useGroupMaskBool == false\n\n"; exit(1);
+			}
+			if( (kosloff_channel->useGroupThisMask & this->useGroupMaskEnergyMinMax) != 0) {
+				//Real other_max = kosloff_channel->eMaxThisChannel();
+				//std::cerr << "=======  for groupMask "<< useGroupThisMask<< "other_max = " << other_max << "\n";
+				//local_eMax = std::min(local_eMax , other_max);
+				local_eMax = std::min(local_eMax , kosloff_channel->eMaxThisChannel());
+			}
+		}
+	}
+	return local_eMax;
 }
 
 void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,

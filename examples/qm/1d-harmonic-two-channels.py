@@ -11,6 +11,7 @@ gaussWidth = 0.5
 
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
+potentialCenter2  = [ 2.0,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)
 potentialCoefficient = [0.5,0.5,0.5]
 potentialCoefficient2= [0.8,0.8,0.8]
@@ -30,8 +31,8 @@ O.engines=[
 		[Law2_QMIGeom_QMIPhysHarmonic()]
 	)
 	,SchrodingerAnalyticPropagator()
-	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=4)
-	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=8)
+	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=4, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
+	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=8, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 
@@ -56,7 +57,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],display
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
+gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[1024],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
@@ -107,7 +108,7 @@ potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
 ])
 potentialBody2.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient2)
-potentialBody2.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
+potentialBody2.state     = QMStPotentialHarmonic(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
 
 

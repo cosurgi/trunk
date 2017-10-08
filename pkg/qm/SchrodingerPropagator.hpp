@@ -83,6 +83,8 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		Real eMin();
 		Real eKin();
 		Real eMax();
+		Real eMinThisChannel();
+		Real eMaxThisChannel();
 		Real calcKosloffR(Real dt);// { return dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG(Real dt);// { return dt*eMin()/(2*FIXMEatomowe_hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
@@ -130,11 +132,16 @@ found in [TalEzer1984]_"
 			((bool    ,hasdTable_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to note that dTable, for calculating ABC damping, has been generated"))
 			((bool    ,potentialCanChangeNOW_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to know if potential needs more regenrating"))
 
+			((bool    ,useGroupMaskBoolEnergyMinMax,false ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
+			((mask_t  ,useGroupMaskEnergyMinMax    ,    0 ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
+
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
 			.def("eKin"  ,&SchrodingerKosloffPropagator::eKin  ,"Get maximum allowed by the grid kinetic energy.")
 			.def("eMax"  ,&SchrodingerKosloffPropagator::eMax  ,"Get maximum energy.")
+			.def("eMinThisChannel"  ,&SchrodingerKosloffPropagator::eMinThisChannel  ,"Get minimum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
+			.def("eMaxThisChannel"  ,&SchrodingerKosloffPropagator::eMaxThisChannel  ,"Get maximum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
 			.def("R"     ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("calcR" ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("G"     ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
