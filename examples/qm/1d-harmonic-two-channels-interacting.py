@@ -19,16 +19,23 @@ potentialCoefficientby2= [1.0,1.0,1.0]
 
 O.engines=[
 	StateDispatcher([
-		St1_QMPacketGaussianWave(),
-		St1_QMStPotentialHarmonic(),
+		 St1_QMPacketGaussianWave()
+		#,St1_QMStPotentialHarmonic()
+		,St1_QMStPotentialFromFile()
 	])
 	,SpatialQuickSortCollider([
-		Bo1_Box_Aabb(),
+		 Bo1_Box_Aabb()
 	])
 	,InteractionLoop(
-		[Ig2_2xQMGeometry_QMIGeom()],
-		[Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()],
-		[Law2_QMIGeom_QMIPhysHarmonic()]
+		 [Ig2_2xQMGeometry_QMIGeom()]
+		,[
+                 # Ip2_QMParameters_QMParametersHarmonic_QMIPhysHarmonic()
+		 Ip2_QMParameters_QMParametersFromFile_QMIPhysFromFile()
+                ]
+		,[
+                 # Law2_QMIGeom_QMIPhysHarmonic()
+		 Law2_QMIGeom_QMIPhysFromFile()
+                ]
 	)
 	,SchrodingerAnalyticPropagator()
 	,SchrodingerKosloffPropagator(steps=-1, useGroupMasks=True, useGroupTheseMasks=4+8)
@@ -83,8 +90,8 @@ potentialBody.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
      QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
 ])
-potentialBody.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient)
-potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion((1,0,0),0)])
+potentialBody.material  = QMParametersFromFile(dim=1,hbar=1,filename="1d-harmonic-eigen-wavefunction-FromFile-test-0.001.txt",columnX=1,shiftX=0,shiftVal=0,columnVal=2)
+potentialBody.state     = QMStPotentialFromFile(se3=[potentialCenter,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody)
 
 ## 4: The numerical one: (another channel)
@@ -108,9 +115,28 @@ potentialBody2.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
      QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
 ])
-potentialBody2.material  = QMParametersHarmonic(dim=dimensions,hbar=1,coefficient=potentialCoefficient2)
-potentialBody2.state     = QMStPotentialHarmonic(se3=[potentialCenter2,Quaternion((1,0,0),0)])
+potentialBody2.material  = QMParametersFromFile(dim=1,hbar=1,filename="1d-harmonic-eigen-wavefunction-FromFile-test-0.001.txt",columnX=1,shiftX=0,shiftVal=0,columnVal=2)
+potentialBody2.state     = QMStPotentialFromFile(se3=[potentialCenter2,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody2)
+
+
+## 6: The box with interaction potential between two channels
+potentialBody3 = QMBody()
+potentialBody3.groupMask = 8+4
+potentialBody3.shape     = QMGeometry(extents=potentialHalfSize,displayOptions=[
+     QMDisplayOptions(stepRender=stepRenderHide,partsScale=-10,**displayOptions)
+    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),pi)),**displayOptions)
+])
+potentialBody3.material  = QMParametersFromFile(
+                                          dim=1
+                                         ,hbar=1
+                                         ,filename="test_interaction_pot.txt"
+                                         ,columnX=1
+                                         ,shiftX=0
+                                         ,shiftVal=0
+                                         ,columnVal=2)
+potentialBody3.state     = QMStPotentialFromFile(se3=[potentialCenter,Quaternion((1,0,0),0)])
+O.bodies.append(potentialBody3)
 
 
 

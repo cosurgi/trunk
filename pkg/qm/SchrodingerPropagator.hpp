@@ -95,7 +95,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
 		// FIXME: same with get_full_potentialInteractionGlobal_psiGlobalTable() - it can precalculate, and recalculate only upon dirty is set.
 		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
-		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id);
+		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id, std::vector<NDimTable<Complexr> >& all_psi_0);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name

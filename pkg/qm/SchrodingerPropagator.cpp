@@ -273,7 +273,7 @@ Real SchrodingerKosloffPropagator::eMax()
 }
 
 void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
-	/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id)
+	/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id, std::vector<NDimTable<Complexr> >& all_psi_0)
 {
 //delay.printDelay("calc_Hnorm_psi");	//	1: 1.7s		2: 0s		3: 0s		4: 0s		5: 0s		6: 0s		7: 0s
 	Real mass(FIXMEatomowe_MASS); // FIXME - this shouldn't be here
@@ -348,7 +348,7 @@ HERE;
 //
 //
 //
-// UWAGA: to chyba powyżej jakoś zniweolowałem że wywołuję J_k(R) zamiast J_k(-R), zmieniłem znaki w formule rekurencyjnej na tworzenie T_k:
+// UWAGA: to chyba powyżej jakoś zniwelowałem że wywołuję J_k(R) zamiast J_k(-R), zmieniłem znaki w formule rekurencyjnej na tworzenie T_k:
 // 
 //        mam +(1+G/R)-V     a powinienem mieć
 //            -(1+G/R)+V
@@ -469,7 +469,6 @@ void SchrodingerKosloffPropagator::action()
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 // FIXME - for multiple entangled wavefunctions
 
-	for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
 
 //	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 
@@ -479,79 +478,98 @@ void SchrodingerKosloffPropagator::action()
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable(channel_mask_id) );
+	std::vector<boost::shared_ptr<QMStateDiscreteGlobal> > psiGlobal;
+	psiGlobal.resize(allChannelMasks.size());
+
+	for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
+		// szykuję dTable dla wszystkich kanałów.
+		psiGlobal[channel_mask_id] = ( get_full_psiGlobal__________________psiGlobalTable(channel_mask_id) );
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 
 		//static bool hasDampTable(false);  /////////////////// DAMPING !!!! ABC
 		//static NDimTable<Real    > dTable(psiGlobal->psiGlobalTable.dim()); /////////////////// DAMPING !!!! ABC
 		if((not hasdTable_NOTstatic__ANYMORE[channel_mask_id]) or (hasDampTableRegen)){
 			hasdTable_NOTstatic__ANYMORE[channel_mask_id]=true;
-			dTable_NOTstatic__ANYMORE[channel_mask_id].resize(psiGlobal->psiGlobalTable.dim());
+			dTable_NOTstatic__ANYMORE[channel_mask_id].resize(psiGlobal[channel_mask_id]->psiGlobalTable.dim());
 			hasDampTableRegen = false;
 			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { /////////////////// DAMPING !!!! ABC
 				std::cerr << "\nWARNING ---- dampMarginBandMin and dampMarginBandMax are using only X size of mesh\n";
 				dTable_NOTstatic__ANYMORE[channel_mask_id].becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormulaSmooth
-				, [&](Real i, int d)->Real    { return psiGlobal->iToX(i,d);}
-				, [&](int d        )->Real    { return psiGlobal->start(d);}
+				, [&](Real i, int d)->Real    { return psiGlobal[channel_mask_id]->iToX(i,d);}
+				, [&](int d        )->Real    { return psiGlobal[channel_mask_id]->start(d);}
 				); // FIXME - powinien być std::vector<Real> dampMarginBandMin,dampMarginBandMax; tzn. osobne dla każdego wymiaru
 				if(dampDebugPrint) {
 					std::cout << std::setprecision(std::numeric_limits<double>::digits10+1);
 					dTable_NOTstatic__ANYMORE[channel_mask_id].print();
 				}
+				// FIXME - rysowany jest tylko damping z ostatniego kanału
 				global_dTable     = dTable_NOTstatic__ANYMORE[channel_mask_id];
-				global_psiGlobal  = psiGlobal;
+				global_psiGlobal  = psiGlobal[channel_mask_id];
 				hasDampTableCheck = true;
 			};
 		}
-		if(psiGlobal and doCopyTable) {
-	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
+	}
+	std::vector<NDimTable<Complexr> > psi_dt; psi_dt.resize(allChannelMasks.size());
+	std::vector<NDimTable<Complexr> > psi_0 ; psi_0 .resize(allChannelMasks.size());
+	std::vector<NDimTable<Complexr> > psi_1 ; psi_1 .resize(allChannelMasks.size());
+	std::vector<NDimTable<Complexr> > psi_2 ; psi_2 .resize(allChannelMasks.size());
+	if(psiGlobal[0] and doCopyTable) {
+		for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
+		// teraz muszę przygotować wszystkie kanały
+	////   ↓↓↓       FIXME: this is          ↓ only because with & it draws the middle of calculations
 HERE;
-			NDimTable<Complexr>/*&*/ psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
-			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
+			/*NDimTable<Complexr>*//*&*/ psi_dt[channel_mask_id]=(psiGlobal[channel_mask_id]->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+			/*NDimTable<Complexr>*/  psi_0[channel_mask_id] = psi_dt[channel_mask_id];            // ψ₀
 HERE;
-			NDimTable<Complexr>  psi_1 = {};                // ψ₁
-			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
-			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get(), channel_mask_id );    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+			/*NDimTable<Complexr>  psi_1 = {};*/                // ψ₁
+			/*NDimTable<Complexr>  psi_2 = {};*/                // ψ₂     :
+			calc_Hnorm_psi(psi_0[channel_mask_id],psi_1[channel_mask_id],psiGlobal[channel_mask_id].get(), channel_mask_id , psi_0);    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 /* ?? */		if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */			psi_1 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
+/* ?? */			psi_1[channel_mask_id] *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
 //						1: 0.7s
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
-			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
-			int i(0);
-			Complexr ak(1);
-			// never stop when i < R*1.3, unless steps is positive. Auto stop expanding series based on std::numeric_limits<Real>::min()
-			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
-			{
+			psi_dt[channel_mask_id] .mult1Mult2Add(ak0, psi_1[channel_mask_id],ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
+		}
+		int i(0);
+		Complexr ak(1);
+		// never stop when i < R*1.3, unless steps is positive. Auto stop expanding series based on std::numeric_limits<Real>::min()
+		for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
+		{
+			for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
 				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
 //						1: dotąd 0.7s
 HERE;
-				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get() , channel_mask_id);      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+				calc_Hnorm_psi(psi_1[channel_mask_id],psi_2[channel_mask_id],psiGlobal[channel_mask_id].get() , channel_mask_id, psi_1);      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 //1:2: 10.8s 3: 1.1s 4: 0.9s 5: 0.9s 6: 1.2s
 /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_0 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
-				psi_2  .mult1Sub(2,psi_0);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+/* ?? */				psi_0[channel_mask_id] *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
+				psi_2[channel_mask_id]  .mult1Sub(2,psi_0[channel_mask_id]);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_2 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
-				psi_dt .mult2Add(psi_2,ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
+/* ?? */				psi_2[channel_mask_id] *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
+				psi_dt[channel_mask_id] .mult2Add(psi_2[channel_mask_id],ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
 //delay.printDelay("mult2 etc end");//1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 				//psi_0=std::move(psi_1);                         // ψ₀ ← ψ₁
 				//psi_1=std::move(psi_2);                         // ψ₁ ← ψ₂
-				std::swap(psi_0,psi_1);
-				std::swap(psi_1,psi_2);
+				std::swap(psi_0[channel_mask_id],psi_1[channel_mask_id]);
+				std::swap(psi_1[channel_mask_id],psi_2[channel_mask_id]);
 //delay.printDelay("swap end");     //1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 			}
-			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
+		}
+		for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
+		// na koniec mogę wszystkie wynikowe sumy przemnożyć
+			psi_dt[channel_mask_id] *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
 
 			// FIXME: this is    ↓ only because with & it draws the middle of calculations
-	/*//	↑↑↑*/	psiGlobal->psiGlobalTable = psi_dt;
+	/*//	↑↑↑*/	psiGlobal[channel_mask_id]->psiGlobalTable = psi_dt[channel_mask_id];
 			// FIXME: but it actually wastes twice more memory
 
 			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(not &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
 			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
 	// FIXME - full duplicate of the block above, except for the reference
-		} else if(psiGlobal and not doCopyTable) {
+		}
+	} else if(psiGlobal[0] and not doCopyTable) {
 /*.. */  std::cerr << "\n\n\n ERROR: doCopyTable == false   is NOT IMPLEMENTED NOW ! bo robiłem obliczenia wielokanałowe i nie chciałem dublować wszystkiego!\n\n";
 /*.. */  exit(1);
 //.. //  			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
@@ -592,7 +610,7 @@ HERE;
 // FIXME - for multiple entangled wavefunctions
 //	} YADE_PARALLEL_FOREACH_BODY_END();
 
-	}
+//	}
 
 //	omp_set_num_threads(1);
 }
