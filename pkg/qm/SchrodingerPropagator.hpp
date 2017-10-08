@@ -69,28 +69,33 @@ REGISTER_SERIALIZABLE(SchrodingerAnalyticPropagator);
 class SchrodingerKosloffPropagator: public GlobalEngine
 {
 	public:
+		std::vector<mask_t>			 allChannelMasks;
+		void findAllEligibleGroupMasks();
+		std::vector<bool>                        potentialCanChangeNOW_NOTstatic__ANYMORE;
+		std::vector<NDimTable<Complexr> >        Vpsi_NOTstatic__ANYMORE;
+		std::vector<NDimTable<Real> >		 kTable_NOTstatic__ANYMORE;
+		std::vector<bool>                        haskTable_NOTstatic__ANYMORE;
+		std::vector<NDimTable<Real> >		 dTable_NOTstatic__ANYMORE;
+		std::vector<bool>			 hasdTable_NOTstatic__ANYMORE;
+
 		NDimTable<Complexr>                      global_dTable;    // FIXME - ten tutaj to już jest prawdziwa bezsensowna proteza :(
-		NDimTable<Complexr>                      Vpsi_NOTstatic__ANYMORE;
-		NDimTable<Real>                          kTable_NOTstatic__ANYMORE;
-		Real					 last_dt_NOTstatic__ANYMORE;
 		Real					 last_R;
 		Real					 last_G;
 		Real					 last_dtR;
 		Real					 last_dtG;
 		boost::shared_ptr<QMStateDiscreteGlobal> global_psiGlobal; //         Na pewno w wielu przypadkach nie działa
-		NDimTable<Real>				 dTable_NOTstatic__ANYMORE;
 		virtual void action();
 		Real eMin();
-		Real eKin();
+		Real eKinSelectedChannel(size_t mask_id);
 		Real eMax();
-		Real eMinThisChannel();
-		Real eMaxThisChannel();
+		Real eMinSelectedChannel(size_t mask_id);
+		Real eMaxSelectedChannel(size_t mask_id);
 		Real calcKosloffR(Real dt);// { return dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);}; // calculate R parameter in Kosloff method
 		Real calcKosloffG(Real dt);// { return dt*eMin()/(2*FIXMEatomowe_hbar);};            // calculate G parameter in Kosloff method
 		// FIXME: all ak can be precalculated, only recalculate if scene->dt changes
 		// FIXME: same with get_full_potentialInteractionGlobal_psiGlobalTable() - it can precalculate, and recalculate only upon dirty is set.
 		Complexr calcAK(int k,Real R) { return std::pow(Mathr::I,k)*(2.0 - Real(k==0))*(boost::math::cyl_bessel_j(k,R));};
-		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi);
+		void calc_Hnorm_psi(const NDimTable<Complexr>& in,NDimTable<Complexr>& out,/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id);
 		virtual ~SchrodingerKosloffPropagator();
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 			  // class name
@@ -123,25 +128,24 @@ found in [TalEzer1984]_"
 
 			// Próbuję jak najmniejszym wysiłkiem dopisać możliwość liczenia na kilku kanałach niezależnie.
 			// groupMask , kilka kanałów
-			((bool    ,useGroupMaskBool,false ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
-			((mask_t  ,useGroupThisMask,    1 ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
-			((bool    ,hasTable_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to note that kTable, for calculating 2nd derivatives, has been generated"))
+			((bool    ,useGroupMasks,false ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
+			((mask_t  ,useGroupTheseMasks,    1 ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
+//			((bool    ,useGroupMaskBool,false ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
+//			((mask_t  ,useGroupThisMask,    1 ,              ,"This SchrodingerKosloffPropagator will act only on wavefunctions & potential with given groupMask"))
 			((bool    ,kosloffR_needs_Update, true ,(Attr::hidden|Attr::noSave),"helper bool, to note that Kosloff R, G must be updated for some reason"))
 			((bool    ,kosloffG_needs_Update, true ,(Attr::hidden|Attr::noSave),"helper bool, to note that Kosloff R, G must be updated for some reason"))
 			((int     ,maxIter_NOTstatic__ANYMORE, 0 ,(Attr::hidden|Attr::noSave),"helper for printing maxIter"))
-			((bool    ,hasdTable_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to note that dTable, for calculating ABC damping, has been generated"))
-			((bool    ,potentialCanChangeNOW_NOTstatic__ANYMORE, false ,(Attr::hidden|Attr::noSave),"helper bool,  to know if potential needs more regenrating"))
 
-			((bool    ,useGroupMaskBoolEnergyMinMax,false ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
-			((mask_t  ,useGroupMaskEnergyMinMax    ,    0 ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
+//			((bool    ,useGroupMaskBoolEnergyMinMax,false ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
+//			((mask_t  ,useGroupMaskEnergyMinMax    ,    0 ,              ,"Use Emin,Emax from all SchrodingerKosloffPropagators that match this mask"))
 
 			, // constructor
 			, // python bindings
 			.def("eMin"  ,&SchrodingerKosloffPropagator::eMin  ,"Get minimum energy.")
-			.def("eKin"  ,&SchrodingerKosloffPropagator::eKin  ,"Get maximum allowed by the grid kinetic energy.")
+			.def("eKinSelectedChannel"  ,&SchrodingerKosloffPropagator::eKinSelectedChannel  ,"Get maximum allowed by the grid kinetic energy.")
 			.def("eMax"  ,&SchrodingerKosloffPropagator::eMax  ,"Get maximum energy.")
-			.def("eMinThisChannel"  ,&SchrodingerKosloffPropagator::eMinThisChannel  ,"Get minimum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
-			.def("eMaxThisChannel"  ,&SchrodingerKosloffPropagator::eMaxThisChannel  ,"Get maximum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
+			.def("eMinSelectedChannel"  ,&SchrodingerKosloffPropagator::eMinSelectedChannel,"Get minimum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
+			.def("eMaxSelectedChannel"  ,&SchrodingerKosloffPropagator::eMaxSelectedChannel,"Get maximum energy, ignoring other channels (ignoring useGroupMaskEnergyMinMax).")
 			.def("R"     ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("calcR" ,&SchrodingerKosloffPropagator::calcKosloffR  ,"Calculate R parameter in Kosloff method.")
 			.def("G"     ,&SchrodingerKosloffPropagator::calcKosloffG  ,"Calculate G parameter in Kosloff method.")
@@ -156,8 +160,8 @@ found in [TalEzer1984]_"
 //		TimeLimit delay;
 		
 		// FIXME są różne typy, to jest podejrzane. Może w QMIPhys wystarczy trzymać NDimTable, a nie całe QMStateDiscreteGlobal ?
-		const NDimTable<Complexr>&               get_full_potentialInteractionGlobal_psiGlobalTable();
-		boost::shared_ptr<QMStateDiscreteGlobal> get_full_psiGlobal__________________psiGlobalTable();
+		const NDimTable<Complexr>&               get_full_potentialInteractionGlobal_psiGlobalTable(size_t mask_id);
+		boost::shared_ptr<QMStateDiscreteGlobal> get_full_psiGlobal__________________psiGlobalTable(size_t mask_id);
 		void virialTheorem_Grid_check();
 };
 REGISTER_SERIALIZABLE(SchrodingerKosloffPropagator);

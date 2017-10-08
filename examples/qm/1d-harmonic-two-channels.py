@@ -31,8 +31,9 @@ O.engines=[
 		[Law2_QMIGeom_QMIPhysHarmonic()]
 	)
 	,SchrodingerAnalyticPropagator()
-	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=4, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
-	,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=8, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
+	,SchrodingerKosloffPropagator(steps=-1, useGroupMasks=True, useGroupTheseMasks=4+8)
+	#,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=4, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
+	#,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=8, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
 	,PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]
 

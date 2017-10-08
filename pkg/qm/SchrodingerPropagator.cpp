@@ -65,14 +65,25 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 // !! at least one virtual function in the .cpp file
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
-const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable()
+
+// XXX XXX ////////////////////////////////////////////////// dotąd przeczytane XXX XXX
+
+const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable(size_t mask_id)
 {
-//std::cerr << "\nget_full_potentialInteractionGlobal_psiGlobalTable useGroupThisMask="<<useGroupThisMask<<"\n";
+//std::cerr << "\nget_full_potentialInteractionGlobal_psiGlobalTable allChannelMasks["<< mask_id <<"]="<<allChannelMasks[mask_id]<<"\n";
 	//static bool generatedPotential_not_depends_on_time(false);
 //	static NDimTable<Complexr> Vpsi_static={};
-	if(not potentialCanChangeNOW_NOTstatic__ANYMORE) {
+
+	if(potentialCanChangeNOW_NOTstatic__ANYMORE.size() == 0) {
+		potentialCanChangeNOW_NOTstatic__ANYMORE.resize(allChannelMasks.size(),false);
+	}
+	if(Vpsi_NOTstatic__ANYMORE.size() == 0) {
+		Vpsi_NOTstatic__ANYMORE.resize(allChannelMasks.size());
+	}
+
+	if(not potentialCanChangeNOW_NOTstatic__ANYMORE[mask_id]) {
 		//generatedPotential_not_depends_on_time = true;
-		potentialCanChangeNOW_NOTstatic__ANYMORE = true; // FIXME - to bez sensu nazwewnictwo, ale zaraz mi się przyda.
+		potentialCanChangeNOW_NOTstatic__ANYMORE[mask_id] = true; // FIXME - to bez sensu nazwewnictwo, ale zaraz mi się przyda.
 
 		std::cerr << "W̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator assuming that potential does not depend on time.\n";
 
@@ -87,9 +98,9 @@ const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInter
 			or dynamic_cast<QMStateDiscrete*>((*(scene->bodies))[I->id2]->state.get())->isNumeric()
 		      )
 		// groupMask , kilka kanałów
-		  and ( ( not useGroupMaskBool ) or ( useGroupMaskBool  and
-				(		(*(scene->bodies))[I->id1]->maskCompatible(useGroupThisMask)
-					and 	(*(scene->bodies))[I->id2]->maskCompatible(useGroupThisMask)
+		  and ( ( not useGroupMasks ) or ( allChannelMasks[mask_id] and
+				(		(*(scene->bodies))[I->id1]->maskCompatible(allChannelMasks[mask_id])
+					and 	(*(scene->bodies))[I->id2]->maskCompatible(allChannelMasks[mask_id])
 				)
 			)
 		      )
@@ -112,7 +123,7 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 	}
 
 HERE2;
-//std::cerr << "\n→→→→→→→→→→→       useGroupThisMask="<<useGroupThisMask<<" allPotentials.size()="<<allPotentials.size()<<"\n\n";
+//std::cerr << "\n→→→→→→→→→→→      allChannelMasks["<< mask_id <<"]="<<allChannelMasks[mask_id]<<" allPotentials.size()="<<allPotentials.size()<<"\n\n";
 	for(auto& pot : allPotentials) {
 	// FIXME - this is actually a little wrong. Sometimes I can't add together different potentials !!!
 	//         I should perform whole separate SchrodingerKosloffPropagator integration for each of them!
@@ -121,16 +132,18 @@ HERE2;
 	//                  → e.g. several barriers
 	//
 HERE2;
-		if(Vpsi_NOTstatic__ANYMORE.rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ )
+		if(Vpsi_NOTstatic__ANYMORE[mask_id].rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ )
 		{
 HERE2;
-			Vpsi_NOTstatic__ANYMORE =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+std::cerr << "------------------------------------------- RESET\n";
+			Vpsi_NOTstatic__ANYMORE[mask_id] =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
 HERE2;
 		}
 		else              /* else dodaj kolejny potencjał */
 		{
 HERE2;
-			Vpsi_NOTstatic__ANYMORE +=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
+std::cerr << "------------------------------------------- dodawanie \n";
+			Vpsi_NOTstatic__ANYMORE[mask_id] +=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
 HERE2;
 		}
 	}
@@ -147,10 +160,10 @@ HERE2;
 
 // FIXME - ale jesli potencjał jest tylko jeden to powinienem używać referencje.........
 	}
-	return Vpsi_NOTstatic__ANYMORE;
+	return Vpsi_NOTstatic__ANYMORE[mask_id];
 };
 
-boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable()
+boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable(size_t mask_id)
 {
 	// previous loop was:   FOREACH(const shared_ptr<Body>& b, *scene->bodies){
 	// previous loop was:   	QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
@@ -167,7 +180,7 @@ boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_
 	FOREACH(const shared_ptr<Body>& b , *scene->bodies){
 
 		// groupMask , kilka kanałów
-		if(useGroupMaskBool and (not b->maskCompatible(useGroupThisMask)))
+		if(useGroupMasks and (not b->maskCompatible(allChannelMasks[mask_id])))
 			continue;
 
 		QMStateDiscrete* psiLocal=dynamic_cast<QMStateDiscrete*>(b->state.get());
@@ -205,18 +218,18 @@ void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 	};
 };
 
-Real SchrodingerKosloffPropagator::eMinThisChannel()
+Real SchrodingerKosloffPropagator::eMinSelectedChannel(size_t idx)
 {
 HERE2;
-	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
+	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable(idx) );
 	return ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
 };
 
-Real SchrodingerKosloffPropagator::eKin()
+Real SchrodingerKosloffPropagator::eKinSelectedChannel(size_t idx)
 {
 	Real ret(0); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
-	boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable() );
+	boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable(idx) );
 	if(psiGlobal) {
 		int rank = psiGlobal->psiGlobalTable.rank();
 		Real Ekin(0);
@@ -227,68 +240,40 @@ Real SchrodingerKosloffPropagator::eKin()
 	return ret;
 }
 
-Real SchrodingerKosloffPropagator::eMaxThisChannel()
+Real SchrodingerKosloffPropagator::eMaxSelectedChannel(size_t idx)
 {
-	Real ret(eKin()); // assume that negative maximum energy is not possible
+	Real ret(eKinSelectedChannel(idx)); // assume that negative maximum energy is not possible
 	// FIXME                                                                                ↓ ?  bez sensu, że w obu to się nazywa psiGlobalTable ....
 HERE2;
-	NDimTable<Complexr>     VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable() );
+	NDimTable<Complexr>     VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable(idx) );
 	ret += ((VGlobal.rank()!=0) ? (VGlobal.maxReal()) : (0));
 	return ret;
 }
 
 Real SchrodingerKosloffPropagator::eMin()
 {
-	Real local_eMin = eMinThisChannel();
-	//std::cerr << "_______ running SchrodingerKosloffPropagator::eMin local_eMin="<<local_eMin<<" for groupMask "<< useGroupThisMask<<"\n";
-	if(not useGroupMaskBoolEnergyMinMax) return local_eMin;
-	if(useGroupMaskEnergyMinMax == 0) { std::cerr << "\n\nERROR: useGroupMaskBoolEnergyMinMax == true, but useGroupMaskEnergyMinMax == 0\n\n"; exit(1);};
-	// OK, to teraz zbieramy minimum ze wszystkich kanałów.
-	for(auto& e : scene->engines) {
-		boost::shared_ptr<SchrodingerKosloffPropagator> kosloff_channel = YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e);
-		if(kosloff_channel) {
-			if(kosloff_channel->useGroupMaskBool == false) {
-				std::cerr << "\nfound kosloff_channel with groupMask == " << kosloff_channel->useGroupThisMask << "\n";
-				std::cerr << "ERROR: but it has useGroupMaskBool == false\n\n"; exit(1);
-			}
-			if( (kosloff_channel->useGroupThisMask & this->useGroupMaskEnergyMinMax) != 0) {
-				//Real other_min = kosloff_channel->eMinThisChannel();
-				//std::cerr << "_______  for groupMask "<< useGroupThisMask<< "other_min = " << other_min << "\n";
-				//local_eMin = std::min(local_eMin , other_min);
-				local_eMin = std::min(local_eMin , kosloff_channel->eMinThisChannel());
-			}
-		}
+	Real local_eMin = eMinSelectedChannel(0);
+	// OK, to teraz zbieramy minimum z pozostałych kanałów.
+	for(size_t i = 1 ; i<allChannelMasks.size() ; i++ )
+	{
+		local_eMin = std::min(local_eMin , eMinSelectedChannel(i));
 	}
 	return local_eMin;
 }
 
 Real SchrodingerKosloffPropagator::eMax()
 {
-	Real local_eMax = eMaxThisChannel();
-	//std::cerr << "======= running SchrodingerKosloffPropagator::eMax local_eMax="<<local_eMax<<" for groupMask "<< useGroupThisMask<<"\n";
-	if(not useGroupMaskBoolEnergyMinMax) return local_eMax;
-	if(useGroupMaskEnergyMinMax == 0) { std::cerr << "\n\nERROR: useGroupMaskBoolEnergyMinMax == true, but useGroupMaskEnergyMinMax == 0\n\n"; exit(1);};
-	// OK, to teraz zbieramy maximum ze wszystkich kanałów.
-	for(auto& e : scene->engines) {
-		boost::shared_ptr<SchrodingerKosloffPropagator> kosloff_channel = YADE_PTR_DYN_CAST<SchrodingerKosloffPropagator>(e);
-		if(kosloff_channel) {
-			if(kosloff_channel->useGroupMaskBool == false) {
-				std::cerr << "\n======= found kosloff_channel with groupMask == " << kosloff_channel->useGroupThisMask << "\n";
-				std::cerr << "ERROR: but it has useGroupMaskBool == false\n\n"; exit(1);
-			}
-			if( (kosloff_channel->useGroupThisMask & this->useGroupMaskEnergyMinMax) != 0) {
-				//Real other_max = kosloff_channel->eMaxThisChannel();
-				//std::cerr << "=======  for groupMask "<< useGroupThisMask<< "other_max = " << other_max << "\n";
-				//local_eMax = std::min(local_eMax , other_max);
-				local_eMax = std::min(local_eMax , kosloff_channel->eMaxThisChannel());
-			}
-		}
+	Real local_eMax = eMaxSelectedChannel(0);
+	// OK, to teraz zbieramy maximum z pozostałych kanałów.
+	for(size_t i = 1 ; i<allChannelMasks.size() ; i++ )
+	{
+		local_eMax = std::max(local_eMax , eMaxSelectedChannel(i));
 	}
 	return local_eMax;
 }
 
 void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
-	/*FIXME - remove*/QMStateDiscrete* psi)
+	/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id)
 {
 //delay.printDelay("calc_Hnorm_psi");	//	1: 1.7s		2: 0s		3: 0s		4: 0s		5: 0s		6: 0s		7: 0s
 	Real mass(FIXMEatomowe_MASS); // FIXME - this shouldn't be here
@@ -304,13 +289,13 @@ void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi
 	//static bool hasTable(false);
 HERE;
 	//static NDimTable<Real    > kTable(psi_0.dim());
-	if(! hasTable_NOTstatic__ANYMORE){
+	if(! haskTable_NOTstatic__ANYMORE[mask_id]){
 //delay.printDelay("make kTable");	//	1: 24.2s
-		hasTable_NOTstatic__ANYMORE=true;
-		kTable_NOTstatic__ANYMORE.resize(psi_0.dim());
+		haskTable_NOTstatic__ANYMORE[mask_id]=true;
+		kTable_NOTstatic__ANYMORE[mask_id].resize(psi_0.dim());
 		// FIXME!!!!!  wow, gdy będę miał dobry warunek na krok siatki, to będę mógł automatycznie zagęszczać i rozluźniać siatkę!
 		//             wystarczy że nowa siatka będzie interpolowana ze starej siatki, i co jakiś czas będzie automatycznie skalowana
-		kTable_NOTstatic__ANYMORE.becomeMinusKSquaredTable( [&psi](Real i,int d)->Real{ return psi->iToK(i,d);});
+		kTable_NOTstatic__ANYMORE[mask_id].becomeMinusKSquaredTable( [&psi](Real i,int d)->Real{ return psi->iToK(i,d);});
 //? ← zakomentowane to oznacza, że mnożenie przez -k² odbywa się na "złej" wersji przestrzeni odwrotnej |         ,-.         | vs. |-.                  ,|
 //    ale o dziwno wszystkie wyniki są dobre, pytanie: dlaczego?                                        |________/___\________| vs. |__\________________/_|
 //? kTable.shiftByHalf();
@@ -322,7 +307,12 @@ HERE;
 //delay.printDelay("copy Vpsi _________");//	1: 3.4s		2: 3.2s		3: 15.4s	4: 3.6s		5: 3.3s		6: 3.3s		7: 3.1s
 //	static NDimTable<Complexr> Vpsi = {}; // static to avoid creating and destroying, just copy
 //std::cerr << "\n calc_Hnorm_psi   useGroupThisMask="<<useGroupThisMask<<"\n";
-	       NDimTable<Complexr> Vpsi = get_full_potentialInteractionGlobal_psiGlobalTable();  // just copy (żebym mógł przemnażać przez psi itp)
+
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+	       NDimTable<Complexr> Vpsi = get_full_potentialInteractionGlobal_psiGlobalTable(mask_id);  // just copy (żebym mógł przemnażać przez psi itp)
 	
 	// previous loop was:   NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	// previous loop was:   FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
@@ -344,7 +334,7 @@ HERE;
 //? psi_1  = FFT(psi_0c);                 // ψ₁: ψ₁=              ℱ(ψ₀)
 //? psi_1.shiftByHalf();
 //delay.printDelay("kTable");		//	1: 0.3s		2: 0.3s		3: 0.4s		4: 0.3s		5: 0.2s		6: 0.4s		7: 0.3s
-	psi_1 *= kTable_NOTstatic__ANYMORE;                     // ψ₁: ψ₁=           -k²ℱ(ψ₀)
+	psi_1 *= kTable_NOTstatic__ANYMORE[mask_id];                     // ψ₁: ψ₁=           -k²ℱ(ψ₀)
 //? psi_1.shiftByHalf();
 //delay.printDelay("IFFT");		//	1: 3.8s		2: 4.0s		3: 4.4s		4: 4.1s		5: 3.8s		6: 4.0s		7: 3.9s
 	psi_1   .IFFT();                     // ψ₁: ψ₁=       ℱ⁻¹(-k²ℱ(ψ₀))
@@ -428,8 +418,39 @@ Real SchrodingerKosloffPropagator::calcKosloffG(Real dt)
 */
 };
 
+
+void SchrodingerKosloffPropagator::findAllEligibleGroupMasks()
+{
+	// na niektórych kanałach może być sama funkcja falowa bez potencjału
+	// A jeśli jest potencjał bez funkcji falowej to ignorujemy taki kanał.
+	FOREACH(const shared_ptr<Body>& b , *scene->bodies){
+		// groupMask , kilka kanałów
+		if(useGroupMasks and (not b->maskCompatible(useGroupTheseMasks)))
+			continue;
+
+		QMStateDiscrete* psiLocal=dynamic_cast<QMStateDiscrete*>(b->state.get());
+		if(    psiLocal and psiLocal->isNumeric() and psiLocal->getPsiGlobalExists() )
+			allChannelMasks.push_back(b->groupMask);
+	};
+	std::cerr << "SchrodingerKosloffPropagator::findAllEligibleGroupMasks() found masks:\n";
+	for(size_t i=0 ; i< allChannelMasks.size() ; i++) std::cerr << " → mask: " << allChannelMasks[i] << "\n";
+}
+
 void SchrodingerKosloffPropagator::action()
 {
+	// only once, find all channels of interest.
+	if(allChannelMasks.size() == 0) {
+		findAllEligibleGroupMasks();
+		kTable_NOTstatic__ANYMORE   .resize(allChannelMasks.size());
+		haskTable_NOTstatic__ANYMORE.resize(allChannelMasks.size(),false);
+		dTable_NOTstatic__ANYMORE   .resize(allChannelMasks.size());
+		hasdTable_NOTstatic__ANYMORE.resize(allChannelMasks.size(),false);
+	}
+	if(allChannelMasks.size() == 0) {
+		std::cerr << "\n\nERROR: SchrodingerKosloffPropagator::action() has nothing to wrok with\n\n";
+		exit(1);
+	}
+
 //	__gnu_parallel::_Settings s;
 //	s.algorithm_strategy = __gnu_parallel::force_parallel;
 //	__gnu_parallel::_Settings::set(s);
@@ -447,35 +468,41 @@ void SchrodingerKosloffPropagator::action()
 
 	// FIXME - not sure about this parallelization. Currently I have only one wavefunction.
 // FIXME - for multiple entangled wavefunctions
+
+	for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
+
 //	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 
-		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable() );
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//		size_t channel_mask_id = 0;
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+		boost::shared_ptr<QMStateDiscreteGlobal> psiGlobal( get_full_psiGlobal__________________psiGlobalTable(channel_mask_id) );
 //		QMStateDiscrete* psi=dynamic_cast<QMStateDiscrete*>(b->state.get());
 
 		//static bool hasDampTable(false);  /////////////////// DAMPING !!!! ABC
 		//static NDimTable<Real    > dTable(psiGlobal->psiGlobalTable.dim()); /////////////////// DAMPING !!!! ABC
-		if((not hasdTable_NOTstatic__ANYMORE) or (hasDampTableRegen)){
-			hasdTable_NOTstatic__ANYMORE=true;
-			dTable_NOTstatic__ANYMORE.resize(psiGlobal->psiGlobalTable.dim());
+		if((not hasdTable_NOTstatic__ANYMORE[channel_mask_id]) or (hasDampTableRegen)){
+			hasdTable_NOTstatic__ANYMORE[channel_mask_id]=true;
+			dTable_NOTstatic__ANYMORE[channel_mask_id].resize(psiGlobal->psiGlobalTable.dim());
 			hasDampTableRegen = false;
 			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { /////////////////// DAMPING !!!! ABC
 				std::cerr << "\nWARNING ---- dampMarginBandMin and dampMarginBandMax are using only X size of mesh\n";
-				dTable_NOTstatic__ANYMORE.becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormulaSmooth
+				dTable_NOTstatic__ANYMORE[channel_mask_id].becomeDampingTable(dampMarginBandMin,dampMarginBandMax,dampExponent,dampFormulaSmooth
 				, [&](Real i, int d)->Real    { return psiGlobal->iToX(i,d);}
 				, [&](int d        )->Real    { return psiGlobal->start(d);}
 				); // FIXME - powinien być std::vector<Real> dampMarginBandMin,dampMarginBandMax; tzn. osobne dla każdego wymiaru
 				if(dampDebugPrint) {
 					std::cout << std::setprecision(std::numeric_limits<double>::digits10+1);
-					dTable_NOTstatic__ANYMORE.print();
+					dTable_NOTstatic__ANYMORE[channel_mask_id].print();
 				}
-				global_dTable     = dTable_NOTstatic__ANYMORE;
+				global_dTable     = dTable_NOTstatic__ANYMORE[channel_mask_id];
 				global_psiGlobal  = psiGlobal;
 				hasDampTableCheck = true;
 			};
 		}
-
-// XXX XXX ////////////////////////////////////////////////// dotąd przeczytane XXX XXX
-
 		if(psiGlobal and doCopyTable) {
 	////   ↓↓↓       FIXME: this is    ↓ only because with & it draws the middle of calculations
 HERE;
@@ -484,9 +511,9 @@ HERE;
 HERE;
 			NDimTable<Complexr>  psi_1 = {};                // ψ₁
 			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
-			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get(), channel_mask_id );    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 /* ?? */		if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */			psi_1 *= dTable_NOTstatic__ANYMORE; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
+/* ?? */			psi_1 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
 //						1: 0.7s
 			Complexr ak0=calcAK(0,R);                       // a₀
 			Complexr ak1=calcAK(1,R);                       // a₁
@@ -499,13 +526,13 @@ HERE;
 				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator iter = " << i << " ak="<<ak<<"\n";
 //						1: dotąd 0.7s
 HERE;
-				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get() , channel_mask_id);      // ψ₂     : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
 //1:2: 10.8s 3: 1.1s 4: 0.9s 5: 0.9s 6: 1.2s
 /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_0 *= dTable_NOTstatic__ANYMORE; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
+/* ?? */				psi_0 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
 				psi_2  .mult1Sub(2,psi_0);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_2 *= dTable_NOTstatic__ANYMORE; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
+/* ?? */				psi_2 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
 				psi_dt .mult2Add(psi_2,ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
 //delay.printDelay("mult2 etc end");//1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 				//psi_0=std::move(psi_1);                         // ψ₀ ← ψ₁
@@ -525,43 +552,47 @@ HERE;
 //std::cerr << "SchrodingerKosloffPropagator t+=dt (calculating) " << b->getId() << "\n";
 	// FIXME - full duplicate of the block above, except for the reference
 		} else if(psiGlobal and not doCopyTable) {
-			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
-			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
-			NDimTable<Complexr>  psi_1 = {};                // ψ₁
-			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
-			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get());    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
-/* ?? */		if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */			psi_1 *= dTable_NOTstatic__ANYMORE; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
-			Complexr ak0=calcAK(0,R);                       // a₀
-			Complexr ak1=calcAK(1,R);                       // a₁
-			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
-			int i(0);
-			Complexr ak(1);
-			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
-			{
-				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator O.iter="<<(scene->iter)<<", loop iter=" << i << "/" << maxIter_NOTstatic__ANYMORE << " ak="<<ak<<"\n";
-				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get());//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
-/* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_0 *= dTable_NOTstatic__ANYMORE; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
-				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
-/* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
-/* ?? */				psi_2 *= dTable_NOTstatic__ANYMORE; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
-				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
-//delay.printDelay("mult2 etc end");
-				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
-				//psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
-				std::swap(psi_0,psi_1);
-				std::swap(psi_1,psi_2);
-//delay.printDelay("swap end");
-			}
-			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
-			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
-			maxIter_NOTstatic__ANYMORE = std::max(i-1,maxIter_NOTstatic__ANYMORE);
-			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
+/*.. */  std::cerr << "\n\n\n ERROR: doCopyTable == false   is NOT IMPLEMENTED NOW ! bo robiłem obliczenia wielokanałowe i nie chciałem dublować wszystkiego!\n\n";
+/*.. */  exit(1);
+//.. //  			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
+//.. //  			NDimTable<Complexr>  psi_0 (psi_dt);            // ψ₀
+//.. //  			NDimTable<Complexr>  psi_1 = {};                // ψ₁
+//.. //  			NDimTable<Complexr>  psi_2 = {};                // ψ₂     :
+//.. //  			calc_Hnorm_psi(psi_0,psi_1,psiGlobal.get(), channel_mask_id);    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+//.. //  /* ?? */		if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+//.. //  /* ?? */			psi_1 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
+//.. //  			Complexr ak0=calcAK(0,R);                       // a₀
+//.. //  			Complexr ak1=calcAK(1,R);                       // a₁
+//.. //  			psi_dt .mult1Mult2Add(ak0, psi_1,ak1);          // ψ(t+dt): ψ(t+dt)=a₀ψ₀+a₁ψ₁
+//.. //  			int i(0);
+//.. //  			Complexr ak(1);
+//.. //  			for(i=2 ; (steps > 1) ? (i<=steps):(i<R13 or (std::abs(std::real(ak))>min or std::abs(std::imag(ak))>min) ) ; i++)
+//.. //  			{
+//.. //  				if(printIter!=0 and ((i%printIter) ==0)) std::cerr << ":::::: SchrodingerKosloffPropagator O.iter="<<(scene->iter)<<", loop iter=" << i << "/" << maxIter_NOTstatic__ANYMORE << " ak="<<ak<<"\n";
+//.. //  				calc_Hnorm_psi(psi_1,psi_2,psiGlobal.get(), channel_mask_id);//ψ₂  : ψ₂     =     (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m)
+//.. //  /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+//.. //  /* ?? */				psi_0 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₀     : ψ₀     = e⁻ˠψ₀
+//.. //  				psi_2  .mult1Sub(2,psi_0);              // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
+//.. //  /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
+//.. //  /* ?? */				psi_2 *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
+//.. //  				psi_dt .mult2Add(psi_2,ak=calcAK(i,R)); // ψ(t+dt): ψ(t+dt)=ψ(t+dt) + aₖψₖ
+//.. //  //delay.printDelay("mult2 etc end");
+//.. //  				//psi_0=std::move(psi_1);                 // ψ₀ ← ψ₁
+//.. //  				//psi_1=std::move(psi_2);                 // ψ₁ ← ψ₂
+//.. //  				std::swap(psi_0,psi_1);
+//.. //  				std::swap(psi_1,psi_2);
+//.. //  //delay.printDelay("swap end");
+//.. //  			}
+//.. //  			psi_dt *= std::exp(-1.0*Mathr::I*(R+G));        // ψ(t+dt): ψ(t+dt)=exp(-i(R+G))*(a₀ψ₀+a₁ψ₁+a₂ψ₂+...)
+//.. //  			if(timeLimit.messageAllowed(4) or printIter!=0) std::cerr << "(use &) final |ak|=" << boost::lexical_cast<std::string>(std::abs(std::real(ak))+std::abs(std::imag(ak))) << " iterations: " << i-1 << "/" << steps << "\n";
+//.. //  			maxIter_NOTstatic__ANYMORE = std::max(i-1,maxIter_NOTstatic__ANYMORE);
+//.. //  			if(timeLimit.messageAllowed(6)) std::cerr << "Muszę wywalić hbar ze SchrodingerKosloffPropagator i używać to co jest w QMIPhys, lub obok.\n";
+//.. //  
 		}
 // FIXME - for multiple entangled wavefunctions
 //	} YADE_PARALLEL_FOREACH_BODY_END();
 
+	}
 
 //	omp_set_num_threads(1);
 }
@@ -641,7 +672,7 @@ void GlExtra_QMEngine::render(){
 		if(curOpt) {
 
 			curOpt->step=Vector3r(0,0,0);
-			for(size_t i=0 ; i < std::min(3,(int)qmEngine->global_dTable.rank()) ; i++) {
+			for(int i=0 ; i < std::min(3,(int)qmEngine->global_dTable.rank()) ; i++) {
 				curOpt->renderGlobal_i[ i         ] = (int)(i);
 				curOpt->renderAxis_i  [ i         ] = (i % 3 ); // we will have to draw along this axis: 0,1,2 = x,y,z
 				curOpt->renderSize    [ i         ] = qmEngine->global_psiGlobal->getSpatialSizeGlobal()[i]; // it will have this size
