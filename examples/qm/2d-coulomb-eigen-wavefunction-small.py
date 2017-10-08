@@ -35,7 +35,8 @@ O.engines=[
 		[Ip2_QMParameters_QMParametersCoulomb_QMIPhysCoulomb()],
 		[Law2_QMIGeom_QMIPhysCoulomb()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,printIter=20,doCopyTable=False,threadNum=4),#FIXMEatomowe_MASS=1), # auto
+############################################################################################ False ←←←← szybsze !!!!!!!!
+	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=1.0,steps=-1,printIter=20,doCopyTable=True,threadNum=4),#FIXMEatomowe_MASS=1), # auto
 	SchrodingerAnalyticPropagator(),
 ]
 

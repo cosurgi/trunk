@@ -400,7 +400,7 @@ Real SchrodingerKosloffPropagator::calcKosloffG(Real dt)
 //
 		last_dtG = dt;
 		kosloffG_needs_Update = false;
-		last_G = dt*(eMax() - eMin())/(2*FIXMEatomowe_hbar);
+		last_G = dt*eMin()/(2*FIXMEatomowe_hbar);
 	}
 	return last_G;
 
