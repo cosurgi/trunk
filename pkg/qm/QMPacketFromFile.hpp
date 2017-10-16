@@ -30,6 +30,7 @@ class QMPacketFromFile: public QMStateAnalytic
 			, // attributes, public variables
 			  ((std::string       ,filename   ,""   ,              ,"Potential source text file: V(columnX)=filename(columnVal)"))
 			  ((int               ,columnX    ,-1   ,              ,"X coordinate for potential value, using atomic units (column count starts from 1)"))
+			  ((Real              ,multX      ,1.0  ,              ,"X coordinate is multiplied by this value (before shifting it!)"))
 			  ((Real              ,shiftX     ,0    ,              ,"X coordinate is shifted by this value"))
 			  ((int               ,columnVal  ,-1   ,              ,"Value of potential at given X coordinate, using Hartree energy (column count starts from 1)"))
 			  ((Real              ,shiftVal   ,0    ,              ,"Value is shifted by this shiftVal"))

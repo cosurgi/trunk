@@ -85,7 +85,7 @@ void QMPacketFromFile::readFileIfDidnt() {
 	int  _val_y  = columnVal -1;
 	for(size_t i=0 ; i < fileData.size() ; i++) {
 		if(_col_x >= 0 and _col_x < (int)fileData[i].size()  and  _val_y >=0 and _val_y < (int)fileData[i].size() ) {
-			fileDataX  .push_back( fileData[i][_col_x] + shiftX   );
+			fileDataX  .push_back( fileData[i][_col_x]*multX + shiftX   );
 			fileDataVal.push_back( fileData[i][_val_y] + shiftVal );
 		} else {
 			std::cerr << "ERROR 2 in  QMPacketFromFile::readFileIfDidnt    columnX   = " << _col_x+1 << " is wrong\n";
