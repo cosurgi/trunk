@@ -7,13 +7,15 @@ halfSize  = [size1d,0.1,0.1] # must be three components, because yade is inheren
 
 # wavepacket parameters
 k0_x       = 6
+x0_0       = 4
 gaussWidth = 0.5
 
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)
-potentialCoefficient= [0.5,0.5,0.5]
-potentialCoefficientby2= [1.0,1.0,1.0]
+COFF = 4.5
+potentialCoefficient=    [0.5*COFF,0.5*COFF,0.5*COFF]
+potentialCoefficientby2= [1.0*sqrt(COFF),1.0*sqrt(COFF),1.0*sqrt(COFF)]
 
 O.engines=[
 	StateDispatcher([
@@ -54,7 +56,7 @@ analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],display
     ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
 ])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
+gaussPacketArg         = {'x0':[x0_0,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[2**10],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
 analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
 nid=O.bodies.append(analyticBody)
 O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
@@ -82,7 +84,8 @@ potentialBody.state     = QMStPotentialHarmonic(se3=[potentialCenter,Quaternion(
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
-O.dt=.01
+#O.dt=.01
+O.dt=.1
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');
