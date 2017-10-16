@@ -9,9 +9,12 @@ halfSize  = [size1d,0.1,0.1] # must be three components, because yade is inheren
 k0_x       = 6
 gaussWidth = 0.5
 
+grid_size  = 1024
+
 # potential parameters
 potentialCenter   = [ 0.0,0  ,0  ]
-potentialCenter2  = [ 2.0,0  ,0  ]
+potentialCenter2  = [ 4.0,0  ,0  ]
+potentialCenterInt= [ 2.0,0  ,0  ]
 potentialHalfSize = Vector3(size1d,3,3)
 potentialCoefficient = [0.5,0.5,0.5]
 potentialCoefficient2= [0.8,0.8,0.8]
@@ -37,7 +40,7 @@ O.engines=[
 		 Law2_QMIGeom_QMIPhysFromFile()
                 ]
 	)
-	,SchrodingerAnalyticPropagator()
+	#,SchrodingerAnalyticPropagator()
 	,SchrodingerKosloffPropagator(steps=-1, useGroupMasks=True, useGroupTheseMasks=4+8)
 	#,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=4, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
 	#,SchrodingerKosloffPropagator(steps=-1, useGroupMaskBool=True, useGroupThisMask=8, useGroupMaskBoolEnergyMinMax=True, useGroupMaskEnergyMinMax=8+4)
@@ -56,19 +59,19 @@ displayOptions   = { 'partAbsolute':['default nodes', 'hidden', 'nodes', 'points
 # 2. discrete packet
 # 3. potential barrier - as a box with given potential
 
-## 1: Analytical packet
+#  ## 1: Analytical packet
 analyticBody = QMBody()
-analyticBody.groupMask = 2
-#analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
-analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[
-     QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
-    ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
-])
+#  analyticBody.groupMask = 2
+#  #analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6])
+#  analyticBody.shape     = QMGeometry(extents=halfSize,color=[0.6,0.6,0.6],displayOptions=[
+#       QMDisplayOptions(renderWireLight=False,renderSe3=(Vector3(0,0,2), Quaternion((1,0,0),0)))
+#      ,QMDisplayOptions(stepRender=stepRenderHide,renderWireLight=False,renderFFT=True,renderSe3=(Vector3(0,0,-4), Quaternion((1,0,0),0)))
+#  ])
 analyticBody.material  = QMParticle(dim=dimensions,hbar=1,m=1)
-gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[1024],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
-analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
-nid=O.bodies.append(analyticBody)
-O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
+gaussPacketArg         = {'x0':[4,0,0],'t0':0,'k0':[k0_x,0,0],'a0':[gaussWidth,0,0],'gridSize':[grid_size],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
+#  analyticBody.state     = QMPacketGaussianWave(**gaussPacketArg)
+#  nid=O.bodies.append(analyticBody)
+#  O.bodies[nid].state.setAnalytic() # is propagated as analytical solution - no calculations involved
 
 ## 2: The numerical one:
 numericalBody = QMBody()
@@ -103,7 +106,7 @@ numericalBody2.shape     = QMGeometry(extents=halfSize,color=[1,1,1],displayOpti
 ])
 numericalBody2.material  = analyticBody.material
 # The grid size must be a power of 2 to allow FFT. Here 2**12=4096 is used.
-gaussPacketArg2        = {'x0':[4,0,0],'t0':0,'k0':[-k0_x*1.5,0,0],'a0':[gaussWidth,0,0],'gridSize':[1024],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
+gaussPacketArg2        = {'x0':[40000000000000,0,0],'t0':0,'k0':[-k0_x*1.5,0,0],'a0':[gaussWidth,0,0],'gridSize':[grid_size],'harmonic':[1,1,1],'w0':potentialCoefficientby2}
 numericalBody2.state     = QMPacketGaussianWave(**gaussPacketArg2)
 nid=O.bodies.append(numericalBody2)
 O.bodies[nid].state.setNumeric()      # is being propagated by SchrodingerKosloffPropagator
@@ -135,7 +138,7 @@ potentialBody3.material  = QMParametersFromFile(
                                          ,shiftX=0
                                          ,shiftVal=0
                                          ,columnVal=2)
-potentialBody3.state     = QMStPotentialFromFile(se3=[potentialCenter,Quaternion((1,0,0),0)])
+potentialBody3.state     = QMStPotentialFromFile(se3=[potentialCenterInt,Quaternion((1,0,0),0)])
 O.bodies.append(potentialBody3)
 
 
@@ -155,14 +158,18 @@ from yade import plot
 ## we will have 2 plots:
 ## 1. t as function of i (joke test function)
 ## 2. i as function of t on left y-axis ('|||' makes the separation) and z_sph, v_sph (as green circles connected with line) and z_sph_half again as function of t
-plot.plots={'t':('error')}
+plot.plots={'t':('sqr_abs_psi1','sqr_abs_psi2','suma')}
 
 def myAddPlotData():
-	symId=0
-	numId=1
-	O.bodies[symId].state.update()
-	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
-	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+	id1=0
+	id2=2
+	#O.bodies[id1].state.update()
+	#O.bodies[id2].state.update()
+	#psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
+	#plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
+        sqr_abs_psi1 = ( (O.bodies[id1].state)|(O.bodies[id1].state) ).real
+        sqr_abs_psi2 = ( (O.bodies[id2].state)|(O.bodies[id2].state) ).real
+        plot.addData (t=O.time,sqr_abs_psi1=sqr_abs_psi1,sqr_abs_psi2=sqr_abs_psi2,suma=(sqr_abs_psi1+sqr_abs_psi2))
 plot.liveInterval=.2
 plot.plot(subPlots=False)
 
