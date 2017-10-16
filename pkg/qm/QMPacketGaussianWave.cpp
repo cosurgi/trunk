@@ -55,7 +55,31 @@ Complexr St1_QMPacketGaussianWave::waveFunctionValue_1D_positionRepresentation(
 		pow(Mathr::PI,0.25)*(pow(a+Mathr::I*hbar*t/(a*m),0.5))
 	);
 	} else if(harmonic == 1) {
-		return  a*sqrt(hbar)
+		/*
+		 * NOTKA: bardzo ordynarnie szukałem jak naprawić ten błąd ze znakiem, ale wygląda na to, że się udało...
+		 *
+		 * Real tttime = Omega::instance().getScene()->time;
+		static Real prev_time(tttime);
+		if(prev_time != tttime) {
+			prev_time = tttime;
+			std::cerr << "1: " << (sin(w*t*0.5              ) > 0 ? "+ " : "- ");
+			std::cerr << "2: " << (sin(w*t*0.5-Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "3: " << (sin(w*t*0.5+Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "4: " << (sin(w*t*0.5-Mathr::HALF_PI) > 0 ? "+ " : "- ");
+			std::cerr << "5: " << (sin(w*t*0.5+Mathr::HALF_PI) > 0 ? "+ " : "- ");
+			std::cerr << "6: " << (cos(w*t*0.5              ) > 0 ? "+ " : "- ");
+			std::cerr << "7: " << (cos(w*t*0.5-Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "8: " << (cos(w*t*0.5+Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "9: " << (cos(w*t*0.5-Mathr::HALF_PI) > 0 ? "+ " : "- ");
+			std::cerr << "a: " << (cos(w*t*0.5+Mathr::HALF_PI) > 0 ? "+ " : "- ");
+			std::cerr << "b: " << (tan(w*t*0.5              ) > 0 ? "+ " : "- ");
+			std::cerr << "c: " << (tan(w*t*0.5-Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "d: " << (tan(w*t*0.5+Mathr::PI    ) > 0 ? "+ " : "- ");
+			std::cerr << "e: " << (tan(w*t*0.5-Mathr::HALF_PI) > 0 ? "+ " : "- ");
+			std::cerr << "f: " << (tan(w*t*0.5+Mathr::HALF_PI) > 0 ? "+\n" : "-\n");
+		}*/
+		Real sign_correction = sin(w*t*0.5+Mathr::HALF_PI) > 0 ? 1.0 : -1.0;
+		return  a*sqrt(hbar)*sign_correction
 			 *sqrt(-Mathr::I/sin(t*w))
 			 *sqrt(m*w/(a*hbar))
 			 *exp(
