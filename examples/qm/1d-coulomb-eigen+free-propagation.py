@@ -154,7 +154,8 @@ body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body3)
 O.bodies[nid].state.setNumeric()
 
-O.dt=10
+#O.dt=10
+O.dt=1
 
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'

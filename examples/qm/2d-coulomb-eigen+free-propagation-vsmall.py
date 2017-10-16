@@ -43,7 +43,8 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(printIter=20,doCopyTable=False,threadNum=16),#FIXMEatomowe_MASS=1),
+	#SchrodingerKosloffPropagator(printIter=20,doCopyTable=False,threadNum=16),#FIXMEatomowe_MASS=1),
+	SchrodingerKosloffPropagator(printIter=20,doCopyTable=True,threadNum=16),#FIXMEatomowe_MASS=1),
 	SchrodingerAnalyticPropagator(),
 	PyRunner(iterPeriod=1,command='myAddPlotData()')
 ]

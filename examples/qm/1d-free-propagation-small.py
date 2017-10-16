@@ -101,8 +101,10 @@ def myAddPlotData():
 	numId=1
 	O.bodies[symId].state.update()
 	psiDiff=((O.bodies[symId].state)-(O.bodies[numId].state))
-        psiDiff.zeroRange([0],[dampMarginBandMin],False)
-        psiDiff.zeroRange([2*size1d - dampMarginBandMax -0.5],[2*size1d -0.5],False)
+        zeroOutsideThisRange = False
+        printDebugInfo = False
+        psiDiff.zeroRange([0],[dampMarginBandMin],zeroOutsideThisRange,printDebugInfo)
+        psiDiff.zeroRange([2*size1d - dampMarginBandMax -0.5],[2*size1d -0.5],zeroOutsideThisRange,printDebugInfo)
 	plot.addData(t=O.time,error=(psiDiff|psiDiff).real)
 plot.liveInterval=.2
 plot.plot(subPlots=False)
