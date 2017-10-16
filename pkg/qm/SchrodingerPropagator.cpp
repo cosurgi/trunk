@@ -9,6 +9,7 @@
 #include <functional>   // std::plus, std::multiplies
 #include <algorithm>    // std::transform
 #include <limits>
+#include <boost/tuple/tuple_comparison.hpp>
 
 //#include <parallel/algorithm>
 //#include <parallel/settings.h>
@@ -66,10 +67,11 @@ CREATE_LOGGER(SchrodingerKosloffPropagator);
 SchrodingerKosloffPropagator::~SchrodingerKosloffPropagator(){};
 
 
-// XXX XXX ////////////////////////////////////////////////// dotąd przeczytane XXX XXX
+// XXX XXX ////////////////////////////////////////////////// dotąd przeczytane XXX XXX      ←←← NIEAKTUALNE ;)
 
 const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable(size_t mask_id)
 {
+//HERE2;
 //std::cerr << "\nget_full_potentialInteractionGlobal_psiGlobalTable allChannelMasks["<< mask_id <<"]="<<allChannelMasks[mask_id]<<"\n";
 	//static bool generatedPotential_not_depends_on_time(false);
 //	static NDimTable<Complexr> Vpsi_static={};
@@ -89,7 +91,8 @@ const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInter
 
 	// FIXME - should be somewhere else!!!!!  ← this is for Koslofff eq.2.4 !!! FIXME FIXME FIXME FIXME,,,, FIXME, FIXME, FIXME, FIXME,
 	// prepare the potential  ψᵥ
-	std::set<boost::shared_ptr<QMStateDiscreteGlobal> > allPotentials={};
+	std::set</*std::pair<*/boost::shared_ptr<QMStateDiscreteGlobal>/*,mask_t>*/ > allPotentials={};
+	std::set<boost::tuple<boost::shared_ptr<QMStateDiscreteGlobal>,mask_t,mask_t> > allInteractionPotentials={};
 	FOREACH(const shared_ptr<Interaction>& I, *scene->interactions){ // collect all potentials into one potential, but take care of entanglement
 		QMIPhys* iphys=dynamic_cast<QMIPhys*>(I->phys.get());
 		if(iphys
@@ -106,12 +109,24 @@ const NDimTable<Complexr>& SchrodingerKosloffPropagator::get_full_potentialInter
 		      )
 		  )
 		{
-			allPotentials.insert(iphys->potentialInteractionGlobal);
+			if(  (*(scene->bodies))[I->id1]->getGroupMask() == (*(scene->bodies))[I->id2]->getGroupMask() )
+			{ // do potencjału indywidualnego "H" prznaczonego wyłacznie dla danej funkcji falowej, jeśli groupMask są identyczne
+				std::cerr << "→→ id1 groupMask = " << (*(scene->bodies))[I->id1]->getGroupMask() << "\n";
+				std::cerr << "→→ id2 groupMask = " << (*(scene->bodies))[I->id2]->getGroupMask() << "\n";
+				allPotentials.insert(/*std::make_pair(*/iphys->potentialInteractionGlobal/*, XXX )*/); // XXX
+			}
+			else
+			{ // jeśli nie są identyczne, to znaczy że mamy potencjał oddziaływania
+				std::cerr << "→→ INTER id1 groupMask = " << (*(scene->bodies))[I->id1]->getGroupMask() << "\n";
+				std::cerr << "→→ INTER id2 groupMask = " << (*(scene->bodies))[I->id2]->getGroupMask() << "\n";
+				allInteractionPotentials.insert(boost::make_tuple(iphys->potentialInteractionGlobal , (*(scene->bodies))[I->id1]->getGroupMask() , (*(scene->bodies))[I->id2]->getGroupMask() ));
+			}
 		} else {
 			if(timeLimit.messageAllowed(30))
 				std::cerr << "W̲A̲R̲N̲I̲N̲G̲:̲ SchrodingerKosloffPropagator::get_full_potentialInteractionGlobal_psiGlobalTable can't find QMIPhys inside Interaction.\n";
 		}
 	};
+//HERE2;
 
 	if(allPotentials.size() > 1) {
 		if(timeLimit.messageAllowed(10))
@@ -122,7 +137,7 @@ o̲n̲ ̲e̲a̲c̲h̲ ̲c̲a̲l̲l̲!̲ ̲I̲ ̲n̲e̲e̲d̲ ̲s̲o̲m̲e̲ ̲d�
 //		exit(1);
 	}
 
-HERE2;
+//HERE2;
 //std::cerr << "\n→→→→→→→→→→→      allChannelMasks["<< mask_id <<"]="<<allChannelMasks[mask_id]<<" allPotentials.size()="<<allPotentials.size()<<"\n\n";
 	for(auto& pot : allPotentials) {
 	// FIXME - this is actually a little wrong. Sometimes I can't add together different potentials !!!
@@ -131,22 +146,71 @@ HERE2;
 	//           But sometimes I have just several different potential sources, which I should sum together
 	//                  → e.g. several barriers
 	//
-HERE2;
+//HERE2;
 		if(Vpsi_NOTstatic__ANYMORE[mask_id].rank()==0 /* tzn. jeśli jest pusty, to wykonaj przypisanie (kopiuj) */ )
 		{
-HERE2;
-std::cerr << "------------------------------------------- RESET\n";
+//HERE2;
 			Vpsi_NOTstatic__ANYMORE[mask_id] =pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
-HERE2;
+//HERE2;
 		}
 		else              /* else dodaj kolejny potencjał */
 		{
 HERE2;
-std::cerr << "------------------------------------------- dodawanie \n";
 			Vpsi_NOTstatic__ANYMORE[mask_id] +=pot->psiGlobalTable;  // ψᵥ: V = ∑Vᵢ
 HERE2;
 		}
 	}
+
+	for(auto& ipot : allInteractionPotentials) {
+		//std::set<boost::tuple<boost::shared_ptr<QMStateDiscreteGlobal>,mask_t,mask_t> > allInteractionPotentials={};
+		boost::shared_ptr<QMStateDiscreteGlobal> qms = ipot.get<0>();
+		mask_t mask1 = ipot.get<1>();
+		mask_t mask2 = ipot.get<2>();
+		bool istnieje_1_w_liscie_obslugiwanych_funkcji_falowych = std::find( allChannelMasks.begin(), allChannelMasks.end(), mask1) != allChannelMasks.end();
+		bool istnieje_2_w_liscie_obslugiwanych_funkcji_falowych = std::find( allChannelMasks.begin(), allChannelMasks.end(), mask2) != allChannelMasks.end();
+		if(istnieje_1_w_liscie_obslugiwanych_funkcji_falowych and istnieje_2_w_liscie_obslugiwanych_funkcji_falowych) {
+			std::cerr << "\nERROR: (allInteractionPotentials) oddziaływanie pomiędzy funkcjami falowymi nie moze mieć mask_t jednocześnie potencjału oddziałującego oraz funkcji falowej w liście f.falowych na które oddziałuje, to bez sensu.\n\n";
+			exit(1);
+		}
+		if(not istnieje_1_w_liscie_obslugiwanych_funkcji_falowych and not istnieje_2_w_liscie_obslugiwanych_funkcji_falowych) {
+			std::cerr << "\nERROR: (allInteractionPotentials) powienien być dokładnie jeden\n\n";
+			exit(1);
+		}
+		if(istnieje_2_w_liscie_obslugiwanych_funkcji_falowych) {
+			std::swap(mask1,mask2);
+		}
+		// OK, mam dokładnie jeden z nich w mask1.
+		// - mask1 to maska funkcji falowej.
+		// - mask2 to maska potencjału oddziałującego.
+		// czyli mask2 to jest maska z jakimi funkcjami falowymi ma to działać.
+		if(VpsiInteraction_NOTstatic__ANYMORE.find(mask1) != VpsiInteraction_NOTstatic__ANYMORE.end() ) {
+			// jakieś dla tej funkcji falowej już istnieją
+			if(VpsiInteraction_NOTstatic__ANYMORE[mask1].find(mask2) != VpsiInteraction_NOTstatic__ANYMORE[mask1].end() )
+			{ // ten konkretny istnieje
+				if(VpsiInteraction_NOTstatic__ANYMORE[mask1][mask2].rank() == 0) {
+					// istnieje ale ma zerowy rozmiar, skąd więc się tam wziął?
+					std::cerr << "\n// istnieje ale ma zerowy rozmiar, skąd więc się tam wziął?\n\n";
+HERE2;
+					exit(1);
+HERE2;
+				} else { // skoro istnieje, to robimy dodawanie.
+					std::cerr << "\n==============================\nWARNING: adding several interaction potentials together. This is rarely intended behaviour.\n\n";
+HERE2;
+					VpsiInteraction_NOTstatic__ANYMORE[mask1][mask2] += qms->psiGlobalTable;
+HERE2;
+				}
+			} else { // istnieją inne dla mask1, ale nie ten dla mask2, więc go wrzucamy
+HERE2;
+				VpsiInteraction_NOTstatic__ANYMORE[mask1][mask2] = qms->psiGlobalTable;
+HERE2;
+			}
+		} else { // skoro nie istnieją żadne dla tej funkcji falowej to go wrzucamy.
+//HERE2;
+			VpsiInteraction_NOTstatic__ANYMORE[mask1][mask2] = qms->psiGlobalTable;
+//HERE2;
+		}
+	}
+
 	// FIXME end
 
 	//if(allPotentials.size() == 0)	return 0;
@@ -160,8 +224,32 @@ HERE2;
 
 // FIXME - ale jesli potencjał jest tylko jeden to powinienem używać referencje.........
 	}
+//HERE2;
 	return Vpsi_NOTstatic__ANYMORE[mask_id];
 };
+		
+std::vector<NDimTable<Complexr> >	 SchrodingerKosloffPropagator::get_full_potentialCoupledInteractionGlobal_psiGlobalTable(size_t mask_id)
+{
+	std::vector<NDimTable<Complexr> > ret;
+	ret.resize(allChannelMasks.size());
+	for(size_t i = 0 ; i<allChannelMasks.size() ; i++) {
+		if(i != mask_id) {
+			// tylko pozadiagonalne elementy nas interesują
+			if(VpsiInteraction_NOTstatic__ANYMORE.find(allChannelMasks[i]) != VpsiInteraction_NOTstatic__ANYMORE.end() )
+			// tylko te które istnieją
+			{
+				for(std::map<mask_t,NDimTable<Complexr> >::iterator it = VpsiInteraction_NOTstatic__ANYMORE[allChannelMasks[i]].begin() ; it!=VpsiInteraction_NOTstatic__ANYMORE[allChannelMasks[i]].end() ; it++)
+				{
+					if( (it->first & allChannelMasks[i]) != 0) {
+						// ale tylko te które faktycznie oddziałują z mask_id
+						ret[i] = it->second;
+					}
+				}
+			}
+		}
+	}
+	return ret;
+}
 
 boost::shared_ptr<QMStateDiscreteGlobal> SchrodingerKosloffPropagator::get_full_psiGlobal__________________psiGlobalTable(size_t mask_id)
 {
@@ -220,9 +308,17 @@ void SchrodingerKosloffPropagator::virialTheorem_Grid_check()
 
 Real SchrodingerKosloffPropagator::eMinSelectedChannel(size_t idx)
 {
-HERE2;
+//HERE2;
 	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable(idx) );
-	return ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
+	Real ret = ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
+	std::vector<NDimTable<Complexr> > VGlobal_int( get_full_potentialCoupledInteractionGlobal_psiGlobalTable(idx) );
+	for(size_t i = 0 ; i<VGlobal_int.size() ; i++) {
+		if(VGlobal_int[i].rank() != 0) {
+			ret -= std::abs( VGlobal_int[i].minReal() );
+			ret -= std::abs( VGlobal_int[i].maxReal() );
+		}
+	}
+	return ret;
 };
 
 Real SchrodingerKosloffPropagator::eKinSelectedChannel(size_t idx)
@@ -247,6 +343,13 @@ Real SchrodingerKosloffPropagator::eMaxSelectedChannel(size_t idx)
 HERE2;
 	NDimTable<Complexr>     VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable(idx) );
 	ret += ((VGlobal.rank()!=0) ? (VGlobal.maxReal()) : (0));
+	std::vector<NDimTable<Complexr> > VGlobal_int( get_full_potentialCoupledInteractionGlobal_psiGlobalTable(idx) );
+	for(size_t i = 0 ; i<VGlobal_int.size() ; i++) {
+		if(VGlobal_int[i].rank() != 0) {
+			ret += std::abs( VGlobal_int[i].maxReal() );
+			ret += std::abs( VGlobal_int[i].minReal() );
+		}
+	}
 	return ret;
 }
 
@@ -258,6 +361,7 @@ Real SchrodingerKosloffPropagator::eMin()
 	{
 		local_eMin = std::min(local_eMin , eMinSelectedChannel(i));
 	}
+HERE2;
 	return local_eMin;
 }
 
@@ -272,8 +376,13 @@ Real SchrodingerKosloffPropagator::eMax()
 	return local_eMax;
 }
 
-void SchrodingerKosloffPropagator::calc_Hnorm_psi(const NDimTable<Complexr>& psi_0,NDimTable<Complexr>& psi_1,
-	/*FIXME - remove*/QMStateDiscrete* psi, size_t mask_id, std::vector<NDimTable<Complexr> >& all_psi_0)
+void SchrodingerKosloffPropagator::calc_Hnorm_psi(
+	  const NDimTable<Complexr>& psi_0
+	,       NDimTable<Complexr>& psi_1
+	, /*FIXME - remove*/QMStateDiscrete* psi
+	, size_t mask_id
+	, const std::vector<NDimTable<Complexr> >& all_psi_0
+)
 {
 //delay.printDelay("calc_Hnorm_psi");	//	1: 1.7s		2: 0s		3: 0s		4: 0s		5: 0s		6: 0s		7: 0s
 	Real mass(FIXMEatomowe_MASS); // FIXME - this shouldn't be here
@@ -313,6 +422,15 @@ HERE;
 ////////////////////////////////////////////////////////////////////
 
 	       NDimTable<Complexr> Vpsi = get_full_potentialInteractionGlobal_psiGlobalTable(mask_id);  // just copy (żebym mógł przemnażać przez psi itp)
+
+		// to jest tablica o rozmiarze allChannelMasks.size(), zawiera potencjały przez które nalezy przemnożyć pozostałe składowe all_psi_0
+		// muszę zrobić kopię aby możliwe było ich przemnażanie.
+		std::vector<NDimTable<Complexr> > V12_21_etc = get_full_potentialCoupledInteractionGlobal_psiGlobalTable(mask_id);
+		for(size_t i = 0 ; i<allChannelMasks.size() ; i++) {
+			if(V12_21_etc[i].rank() != 0) {
+				V12_21_etc[i] .multMult(all_psi_0[i],dt/(FIXMEatomowe_hbar*R));  // liczę   (dt Vⱼₖψₖ)/(ℏ R)
+			}
+		}
 	
 	// previous loop was:   NDimTable<Complexr> Vpsi(psi_0.dim(),0);
 	// previous loop was:   FOREACH(const shared_ptr<Interaction>& i, *scene->interactions){ // collect all potentials into one potential
@@ -345,6 +463,12 @@ HERE;
 
 	if(Vpsi.rank() != 0)
 		psi_1 -= Vpsi;               // ψ₁: ψ₁=(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
+
+		for(size_t i = 0 ; i<allChannelMasks.size() ; i++) {
+			if(V12_21_etc[i].rank() != 0) {
+				psi_1 -= V12_21_etc[i];  // liczę   (dt)/(ℏ R) * ΣVⱼₖψₖ
+			}
+		}
 //
 //
 //
@@ -523,6 +647,8 @@ HERE;
 HERE;
 			/*NDimTable<Complexr>  psi_1 = {};*/                // ψ₁
 			/*NDimTable<Complexr>  psi_2 = {};*/                // ψ₂     :
+		}
+		for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
 			calc_Hnorm_psi(psi_0[channel_mask_id],psi_1[channel_mask_id],psiGlobal[channel_mask_id].get(), channel_mask_id , psi_0);    // ψ₁     : ψ₁     =(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₀)) )/(ℏ R 2 m) + (1+G/R)ψ₀ - (dt V ψ₀)/(ℏ R)
 /* ?? */		if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
 /* ?? */			psi_1[channel_mask_id] *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                     // ψ₁     : ψ₁     = e⁻ˠψ₁
@@ -547,6 +673,8 @@ HERE;
 				psi_2[channel_mask_id]  .mult1Sub(2,psi_0[channel_mask_id]);                        // ψ₂     : ψ₂     = 2*( (1+G/R)ψ₁+(dt ℏ² ℱ⁻¹(-k²ℱ(ψ₁)) )/(ℏ R 2 m) ) - ψ₀
 /* ?? */			if(dampMarginBandMin > 0 and dampMarginBandMax > 0) { // ABC damping, Mandelshtam,Taylor 'Spectral projection approach to the quantum scattering calculations'
 /* ?? */				psi_2[channel_mask_id] *= dTable_NOTstatic__ANYMORE[channel_mask_id]; };                       // ψ₂     : ψ₂     = e⁻ˠψ₂
+			}
+			for(size_t channel_mask_id = 0 ; channel_mask_id < allChannelMasks.size() ; channel_mask_id++) {
 				psi_dt[channel_mask_id] .mult2Add(psi_2[channel_mask_id],ak=calcAK(i,R));           // ψ(t+dt): ψ(t+dt)= ψ(t+dt) + aₖψₖ
 //delay.printDelay("mult2 etc end");//1: 2: 0s 3: 0s 4: 0s 5: 0s 6: 0s
 				//psi_0=std::move(psi_1);                         // ψ₀ ← ψ₁
