@@ -343,7 +343,6 @@ Real SchrodingerKosloffPropagator::eKinSelectedChannel(size_t idx)
 // FIXME: sprawdzić czy dodanie samego
 //     numeric_limits<Real>::epsilon()
 // wystarczy
-plot.plot(subPlots=False)
 //
 	//return 1.001*ret; // złe dla pliku ~/Sienkiewicz/KLi/licze_v10_J37_J69/licze_J37_v14_test/zle_1.001.py
 	//return 1.01*ret; // dobre dla pliku ~/Sienkiewicz/KLi/licze_v10_J37_J69/licze_J37_v14_test/zle_1.001.py
