@@ -311,6 +311,7 @@ Real SchrodingerKosloffPropagator::eMinSelectedChannel(size_t idx)
 //HERE2;
 	NDimTable<Complexr> VGlobal( get_full_potentialInteractionGlobal_psiGlobalTable(idx) );
 	Real ret = ((VGlobal.rank()!=0) ? (VGlobal.minReal()) : (0));
+//	ret -= eKinSelectedChannel(idx); // assume that negative maximum energy is not possible
 	std::vector<NDimTable<Complexr> > VGlobal_int( get_full_potentialCoupledInteractionGlobal_psiGlobalTable(idx) );
 	for(size_t i = 0 ; i<VGlobal_int.size() ; i++) {
 		if(VGlobal_int[i].rank() != 0) {
@@ -330,10 +331,23 @@ Real SchrodingerKosloffPropagator::eKinSelectedChannel(size_t idx)
 		int rank = psiGlobal->psiGlobalTable.rank();
 		Real Ekin(0);
 		for(int dim=0 ; dim<rank ; dim++)
+		{
 			Ekin += std::pow(psiGlobal->kMax(dim)* 1/* FIXME: must be `hbar` here */,2)/(2 *FIXMEatomowe_MASS/*FIXME: must be mass here psi->m */);
+		}
 		ret=std::max(ret, Ekin );
 	}
-	return ret;
+// XXX XXX XXX XXX XXX XXXX Aaaaaaaaaaaaaaaaaaarrrrrrggggggggggghhhhhhhhhh   !!!!!!!!!!!????????????????
+// czyżby to był ten błąd który szukałem 2 lata ???
+// Jak będę to pisał na czysto to musze to dokładniej sprawdzić, skąd to się wzięło.
+//
+// FIXME: sprawdzić czy dodanie samego
+//     numeric_limits<Real>::epsilon()
+// wystarczy
+plot.plot(subPlots=False)
+//
+	//return 1.001*ret; // złe dla pliku ~/Sienkiewicz/KLi/licze_v10_J37_J69/licze_J37_v14_test/zle_1.001.py
+	//return 1.01*ret; // dobre dla pliku ~/Sienkiewicz/KLi/licze_v10_J37_J69/licze_J37_v14_test/zle_1.001.py
+	return 1.05*ret;
 }
 
 Real SchrodingerKosloffPropagator::eMaxSelectedChannel(size_t idx)
