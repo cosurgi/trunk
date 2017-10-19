@@ -111,7 +111,7 @@ class SchrodingerKosloffPropagator: public GlobalEngine
 			GlobalEngine
 			, // class description
 "Engine that propagates wavefunctions according to the time evolution operator of \
-Schrödinger equation. The solution to Shrödinger equation  ℍ̂ψ=iħψ̇ uses the time evolution \
+Schrödinger equation. The solution to Shrödinger equation  ℍ̂ψ=iħψ̇ (there's a dot over ψ̇) uses the time evolution \
 operator  Û=exp(-iℍ̂t/ħ), and is following: ψ=Ûψ. The wavefunction ψ is evolving in time and \
 here in SchrodingerKosloffPropagator it is calculated using Tal-Ezer and Kosloff approach \
 found in [TalEzer1984]_"

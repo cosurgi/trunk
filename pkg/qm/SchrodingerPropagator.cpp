@@ -630,6 +630,39 @@ void SchrodingerKosloffPropagator::action()
 					std::cout << std::setprecision(std::numeric_limits<double>::digits10+1);
 					dTable_NOTstatic__ANYMORE[channel_mask_id].print();
 				}
+
+				if(zeroWaveFunctionWhenDampOnNonzeroPotentialFromEdge)
+				{
+					// XXX FIXME notka
+					// zrobiłem to, ponieważ tłumienie ABC gdy potencjał był niezerowy źle działało, podejrzewam że wyprowadzenia w tamtym artykule
+					// zakładały że potencjał rzeczywisty jest zero. W każdym razie intencj i tak jest taka, że jeśli potencjał jest niezerowy w miejscu ABC
+					// to znaczy, że tam psi ma być zero.
+					// Tzn. bo to jest zazwyczaj tam gdzie potencjał miał być nieskończony.
+					// W molekule KLi, to było na lewo od początku układu, bo R jest tylko dodatnie
+					//
+					// FIXME - muszę to uogólnić na N-wymiarów.
+					//
+					// FIXME - przydałoby się jakoś jasno definiować że tam jest nieskończoność, bo w tej chwili to jest taka zgadywanka
+					//
+					NDimTable<Complexr> Vpsi = get_full_potentialInteractionGlobal_psiGlobalTable(channel_mask_id);  // just copy (żebym mógł przemnażać przez psi itp)
+					if(Vpsi.rank() == 1) {
+						Real valStart = std::real(Vpsi.at(0));
+						Real valEnd   = std::real(Vpsi.at(Vpsi.size0(0)-1));
+						if(valStart != 0) {
+							for(size_t i = 0 ;  (i < Vpsi.size0(0) ) and ( std::real(Vpsi.at(i)) == valStart )  ; i++) {
+								dTable_NOTstatic__ANYMORE[channel_mask_id].at(i) = 0;
+							}
+						}
+						if(valEnd   != 0) {
+							for(size_t i = Vpsi.size0(0)-1 ;  (i > 0 ) and ( std::real(Vpsi.at(i)) == valEnd )  ; i++) {
+								dTable_NOTstatic__ANYMORE[channel_mask_id].at(i) = 0;
+							}
+						}
+					} else {
+						std::cerr << "\n\n\n\n\n\n\n\n\n\n\n=============\nWARNING: this countermeasure in damping works only for dim==1 currently\n";
+					}
+				}
+
 				// FIXME - rysowany jest tylko damping z ostatniego kanału
 				global_dTable     = dTable_NOTstatic__ANYMORE[channel_mask_id];
 				global_psiGlobal  = psiGlobal[channel_mask_id];
