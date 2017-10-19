@@ -129,9 +129,13 @@ found in [TalEzer1984]_"
 			((Real    ,dampMarginBandMax,-1  ,,"Distance in atomic units from the edge, where damping is implemented."))
 			((bool    ,dampFormulaSmooth,true,,"true - uses exp() with smoothed edge, false - uses 'traditional' exp() with discontinuity"))
 			((Real    ,dampExponent     ,1   ,,"The coefficient 'c' in exp(-c*gamma(r))"))
+			((bool    ,dampExponentUseLR,false,,"Whether dampExponent is different for Left and Right."))
+			((Real    ,dampExponentLeft ,1   ,,"The coefficient 'c' in exp(-c*gamma(r))"))
+			((Real    ,dampExponentRight,1   ,,"The coefficient 'c' in exp(-c*gamma(r))"))
 			((bool    ,dampDebugPrint   ,true,,"When true the damping NDimTable is written to file 'dampDebugPrint', once."))
 			((bool    ,hasDampTableCheck,false ,Attr::readonly,"Notify if dampTable was generated"))
 			((bool    ,hasDampTableRegen,false ,              ,"Force regenerating damping NDimTable if options were changed"))
+			((bool    ,zeroWaveFunctionWhenDampOnNonzeroPotentialFromEdge,true , ,"Force zeroing wavefunction when V!=0 and ABD is used."))
 
 			// Próbuję jak najmniejszym wysiłkiem dopisać możliwość liczenia na kilku kanałach niezależnie.
 			// groupMask , kilka kanałów

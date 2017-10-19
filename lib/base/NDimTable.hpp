@@ -933,16 +933,18 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 //         a klasy wyszukujące oddziaływania przygotowują ją dla SchrodingerKosloffPropagator żeby ją sobie użył, i wtedy ją można normalnie narysować. 
 //         a teraz jej rysowanie to będą jakieś kombinacje alpejskie
 
-/* ?? */	void becomeDampingTable(not_complex dampMarginMin ,not_complex dampMarginMax , not_complex dampExponent , bool dampFormulaSmooth , const IToX_func& iToX, const start_func& start)
+/* ?? */	void becomeDampingTable(not_complex dampMarginMin ,not_complex dampMarginMax , not_complex dampExponent_left , not_complex dampExponent_right , bool dampFormulaSmooth , const IToX_func& iToX, const start_func& start)
 		{
 			for(auto size : dim_n) if((size%2)==1) std::cerr << "\nERROR: NDimTable has o̲d̲d̲ ̲s̲i̲z̲e̲,\n FFTW is best with 2ᵃ 3ᵇ 5ᶜ 7ᵈ 11ᵉ 13ᶠ, for e+f either 0 or 1\n";
 			DimN pos_i(rank_d,0);
-			auto dampingFunc = [](not_complex n, not_complex band_min, not_complex band_max, not_complex size , not_complex dampExponent , bool dampFormulaSmooth )->not_complex  {
+			auto dampingFunc = [](not_complex n, not_complex band_min, not_complex band_max, not_complex size , not_complex dampExponent_left , not_complex dampExponent_right , bool dampFormulaSmooth )->not_complex  {
 //				return std::exp(-std::pow( (std::pow(1-(n<=band or n>=(size-band))?(  std::pow((std::abs(n-size/2)-(size/2-band))/band,2)  ):(0),-1))-1 ,2));
 // ~/Sienkiewicz/absorbtion-NDimTable-wzor.nb
 				if(dampFormulaSmooth) {
 					return std::exp(not_complex(
-						-dampExponent*std::pow(
+						-(
+						    (n<=band_min)? dampExponent_left : dampExponent_right
+						 )*std::pow(
 							1.0/ (1 -	(
 										  (n<=band_min or n>=(size-band_max))?
 										( (n<=band_min)?
@@ -960,7 +962,9 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 				{
 // this one is much worse: it looks like std::min(1,exp(-x)), so there is a discontinuity in first derivative - a ridge.
 					return std::exp(not_complex(
-						/*-*/ dampExponent*std::pow(
+						/*-*/ (
+						        (n<=band_min)? dampExponent_left : dampExponent_right
+						      )*std::pow(
 							/*1.0/ */(1 -	(
 										  (n<=band_min or n>=(size-band_max))?
 										( (n<=band_min)?
@@ -989,7 +993,8 @@ http://www.value-at-risk.net/numerical-integration-multiple-dimensions/
 									 , dampMarginMin
 									 , dampMarginMax
 									 , iToX(dim_n[_d_]-1,_d_) - start(_d_)
-									 , dampExponent
+									 , dampExponent_left
+									 , dampExponent_right
 									 , dampFormulaSmooth);
 				increment(pos_i);
 			}
