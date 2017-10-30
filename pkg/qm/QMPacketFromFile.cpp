@@ -1,8 +1,11 @@
 // 2017 © Janek Kozicki <cosurgi@gmail.com>
 
 #include <iostream>
+#include <string>
 #include <sstream>
+#include <algorithm>
 #include <fstream>
+#include <iterator>
 
 #include "QMPacketFromFile.hpp"
 
@@ -28,19 +31,88 @@ CREATE_LOGGER(QMPacketFromFile);
 // !! at least one virtual function in the .cpp file
 QMPacketFromFile::~QMPacketFromFile(){};
 
-void QMPacketFromFile::readFileIfDidnt() {
-	if(fileLoaded) return;
-	std::cerr << "\nQMPacketFromFile::readFileIfDidnt\n";
-	std::cerr << "  fileLoaded = " << fileLoaded << "\n";
-	std::cerr << "  filename   = " << filename   << "\n";
-	std::cerr << "  columnX    = " << columnX    << "\n";
-	std::cerr << "  shiftX     = " << shiftX     << "\n";
-	std::cerr << "  columnVal  = " << columnVal  << "\n";
-	std::cerr << "  shiftVal   = " << shiftVal   << "\n";
-	if(filename == "" ) {
-		std::cerr << "WARNING: can't read file with this EMPTY name: \"" << filename << "\" doing nothing.\n";
-		return;
+void QMPacketFromFile::readFileInLevelFormat() {
+	std::ifstream file;
+	std::string line;
+	std::vector<Real> row;
+	std::cerr << "Reading potential data from file: \""<< filename << "\"\n";
+	std::vector<std::vector<Real> > fileData;
+	file.open(filename);
+	int file_line=0;
+	bool should_read_now=false;
+	bool found_vib=false;
+	fileDataX.clear();
+	fileDataVal.clear();
+	getline (file, line); file_line++;
+	if(line.size() != 0) {
+		std::cerr << "expected empty line here, the line number is: " << file_line << "\n";
+		exit(0);
 	};
+	if(file.is_open()) {
+		while (getline (file, line)) {
+			file_line++;
+			int vibrational=-1;
+			Real energy_read=0;
+			//getline (file, line); // while does this.
+			std::istringstream iss(line);
+			std::vector<string> tokens;
+			std::copy(std::istream_iterator<string>(iss),std::istream_iterator<string>(),std::back_inserter(tokens));
+			try {
+				vibrational=boost::lexical_cast<int>(tokens[2]);
+				energy_read=boost::lexical_cast<Real>(tokens[6]);
+			}
+			catch(const boost::bad_lexical_cast &) {
+				std::cerr << "line: '"<<line<<"'\ncannot read vibrational level: '"<<tokens[2]<<"' or energy: '"<< tokens[6] <<"', the line number is: " << file_line << "\n";
+				exit(0);
+			};
+			std::cerr << "Found vibrational level " << vibrational << " with energy= " << energy_read << "\n";
+			if(vibrational == fileLevelVibrational) {
+				std::cerr << "reading it\n";
+				should_read_now=true;
+			} else {
+				std::cerr << "skipping it\n";
+				should_read_now=false;
+			};
+			getline (file, line); file_line++;
+			std::cerr << "Skipping useless line: '" <<line<<"'\n";
+
+			getline (file, line); file_line++;
+			while(line.size() != 0) {
+				tokens.clear();
+				std::istringstream iss(line);
+				std::copy(std::istream_iterator<string>(iss),std::istream_iterator<string>(),std::back_inserter(tokens));
+				if(tokens.size() % 2 != 0) {
+					std::cerr << "Error: expected even number of columns in input line "<< file_line <<": '"<<line<<"'\n";
+					exit(0);
+				}
+				for(int i=0 ; i < tokens.size() ; i+=2 ) {
+					if(should_read_now) {
+						try {
+							fileDataX  .push_back( boost::lexical_cast<Real>(tokens[i  ])*multX + shiftX   );
+							fileDataVal.push_back( boost::lexical_cast<Real>(tokens[i+1]) + shiftVal );
+							found_vib=true;
+						} catch(boost::bad_lexical_cast &) {
+							std::cerr << "line: '"<<line<<"'\ncannot read wavefunction data x='"<<tokens[i]<<"' value='"<< tokens[i+1] <<"', the line number is: " << file_line << "\n";
+							exit(0);
+						}
+					}
+				}
+				getline (file, line); file_line++;
+			}
+			std::cerr << file_line << "\n";
+		}
+		file.close();
+	} else {
+		std::cerr << "ERROR: can't read file with this name: \"" << filename << "\"\n";
+		exit(1);
+	}
+	if(not found_vib) {
+		std::cerr << "ERROR: can't find required vibrational level: " << fileLevelVibrational << "\n";
+		exit(1);
+	}
+};
+
+void QMPacketFromFile::readFileInStandardFormat() {
 	std::ifstream file;
 	std::string line;
 	std::vector<Real> row;
@@ -92,7 +164,65 @@ void QMPacketFromFile::readFileIfDidnt() {
 			std::cerr << "        or  QMPacketFromFile::readFileIfDidnt    columnVal = " << _val_y+1 << " is wrong.\n";
 		}
 	}
+};
+
+void QMPacketFromFile::readFileIfDidnt() {
+	if(fileLoaded) return;
+	std::cerr << "\nQMPacketFromFile::readFileIfDidnt\n";
+	std::cerr << "  fileLoaded           = " << fileLoaded << "\n";
+	std::cerr << "  filename             = " << filename   << "\n";
+	std::cerr << "  columnX              = " << columnX    << "\n";
+	std::cerr << "  shiftX               = " << shiftX     << "\n";
+	std::cerr << "  columnVal            = " << columnVal  << "\n";
+	std::cerr << "  shiftVal             = " << shiftVal   << "\n";
+	std::cerr << "  fileLevelFormat      = " << fileLevelFormat << "\n";
+	std::cerr << "  fileLevelVibrational = " << fileLevelVibrational << "\n";
+	if(filename == "" ) {
+		std::cerr << "WARNING: can't read file with this EMPTY name: \"" << filename << "\" doing nothing.\n";
+		return;
+	};
+	if(fileLevelFormat) {
+		readFileInLevelFormat();
+	} else {
+		readFileInStandardFormat();
+	}
 	fileLoaded=true;
+	std::cerr << "Loading file "<< filename <<" finished\n";
+
+
+	if(expandRightDecay) {
+		Real decayFact = 0;
+		Real delta_x   = 0;
+		int  count     = 0;
+		for(int i=fileDataVal.size()-10 ; i<fileDataVal.size()-1 ; i++) {
+			decayFact += fileDataVal[i]/fileDataVal[i+1];
+			delta_x   += std::abs( fileDataX[i] - fileDataX[i+1] );
+			count++;
+		}
+		decayFact /= count;
+		delta_x   /= count;
+		std::cerr << "decay expand, using " << count << " points, delta x = " << delta_x << " decay factor = " << decayFact << "\n";
+		for(int i=0 ; i<expandRightDecayPoints ; i++) {
+			fileDataX.push_back  ( (*fileDataX  .rbegin())+delta_x  );
+			fileDataVal.push_back( (*fileDataVal.rbegin())/decayFact);
+		}
+		// add zero after adding all those points
+		fileDataX.push_back  ( (*fileDataX  .rbegin())+delta_x  );
+		fileDataVal.push_back( 0                                );
+	}
+
+	if(normalizeWaveFunction) {
+		std::cerr << "Normalizing wavefunction, using " << gridSize << " points\n";
+		// FIXME - nieco naiwne całkowanie:
+		Real sum_all = 0; // Real sum_all_sqrt = std::sqrt(std::accumulate(fileDataVal.begin(), fileDataVal.end(), 0))*;
+		for(int i = 0 ; i<fileDataVal.size() ; i++) {
+			sum_all += std::pow(fileDataVal[i],2.0)*std::abs(fileDataX[i]-fileDataX[i + ( i==0 ? 1 : -1 )  ]);
+		}
+		Real sum_all_sqrt = std::sqrt(sum_all);
+		for(Real& val : fileDataVal) {
+			val/=sum_all_sqrt;
+		}
+	}
 };
 
 /*********************************************************************************

@@ -15,9 +15,12 @@
 /*! @brief QMParametersFromFile stores parameters for a potential fromm a given filename
  */
 
-class QMPacketFromFile: public QMStateAnalytic
+class QMPacketFromFile: public QMStateAnalytic /// XXX FIXME - nie mogę znormalizować po załadowaniu z pliku, bo nie znam Δx
+                                               ///             a nie, zaraz: mogę bo przecież całkuję to załadowane. A nie zasiatkowane.
 {
 	public:
+		void readFileInLevelFormat();
+		void readFileInStandardFormat();
 		void readFileIfDidnt();
 		virtual ~QMPacketFromFile();
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
@@ -38,6 +41,11 @@ class QMPacketFromFile: public QMStateAnalytic
 			  //((std::vector<std::vector<Real> > ,fileData  ,  ,(Attr::hidden|Attr::readonly),"The data loaded from file"))
 			  ((std::vector<Real> ,fileDataX  ,     ,Attr::readonly,"The data loaded from file, the X coordinates"))
 			  ((std::vector<Real> ,fileDataVal,     ,Attr::readonly,"The data loaded from file, the Values of potential coordinates"))
+			  ((bool              ,fileLevelFormat,false,Attr::readonly,"Tells whether the file is in weird three-column format with vibrational levels separated by lines '  Level  v=  1   J=  0   E=  20461.2915 ,  wave function at  1621 points.' and '       R(1-st)=  2.86400000   mesh=  0.00200000   NBEG= 683   |LPRWF|=  1'"))
+			  ((int               ,fileLevelVibrational,-1,        ,"When loading from file written in level format pick this vibrational level. It is found by reading 'Level v=....' from text file."))
+			  ((bool              ,normalizeWaveFunction,false,Attr::readonly,"Tells whether the wavefunction should be normalized after loading"))
+			  ((bool              ,expandRightDecay,false,Attr::readonly,"Tells whether the wavefunction should be extended on the right side with exponential decay, last 10 points should be decaying exponentially for that to work."))
+			  ((int               ,expandRightDecayPoints,1000,Attr::readonly,"How many extra decay points to use."))
 			, // additional initializers (for references)
 			, // constructor
 			createIndex();
