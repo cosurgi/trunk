@@ -194,12 +194,18 @@ void QMPacketFromFile::readFileIfDidnt() {
 		Real decayFact = 0;
 		Real delta_x   = 0;
 		int  count     = 0;
+		bool must_zero = false;
 		for(int i=fileDataVal.size()-10 ; i<fileDataVal.size()-1 ; i++) {
-			decayFact += fileDataVal[i]/fileDataVal[i+1];
+			if(fileDataVal[i+1] != 0)
+				decayFact += fileDataVal[i]/fileDataVal[i+1];
+			else
+				must_zero = true;
 			delta_x   += std::abs( fileDataX[i] - fileDataX[i+1] );
 			count++;
 		}
 		decayFact /= count;
+		if(must_zero)
+			decayFact = 1e5;
 		delta_x   /= count;
 		std::cerr << "decay expand, using " << count << " points, delta x = " << delta_x << " decay factor = " << decayFact << "\n";
 		for(int i=0 ; i<expandRightDecayPoints ; i++) {
