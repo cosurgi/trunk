@@ -205,7 +205,7 @@ void QMPacketFromFile::readFileIfDidnt() {
 		}
 		decayFact /= count;
 		if(must_zero)
-			decayFact = 1e5;
+			decayFact = 1e5;  // FIXME - tak właściwie to nie ma sensu robić tych dodatkowych punktów, skoro wszystkie są zero....
 		delta_x   /= count;
 		std::cerr << "decay expand, using " << count << " points, delta x = " << delta_x << " decay factor = " << decayFact << "\n";
 		for(int i=0 ; i<expandRightDecayPoints ; i++) {
