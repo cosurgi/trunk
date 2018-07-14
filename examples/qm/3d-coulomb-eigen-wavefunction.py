@@ -94,8 +94,8 @@ potentialBody.state     = QMStPotentialCoulomb(se3=[potentialCenter,Quaternion((
 O.bodies.append(potentialBody)
 
 ## Define timestep for the calculations
-#O.dt=.000001
-O.dt=0.2
+O.dt=.000001
+#O.dt=0.2
 
 ## Save the scene to file, so that it can be loaded later. Supported extension are: .xml, .xml.gz, .xml.bz2.
 O.save('/tmp/a.xml.bz2');

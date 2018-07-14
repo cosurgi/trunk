@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 dimensions= 1
-size1d   = 50
+size1d   = 100
 halfSize1 = [size1d,0.2,0.1]
 halfSize2 = halfSize1
 #GRIDSIZE  = 16
@@ -16,8 +16,13 @@ potentialMaximum     = 10000;
 hydrogenEigenFunc_n   = 3 ###→ 3
 hydrogenEigenFunc_odd = 1
 
+dampMarginBandMin = 12
+dampMarginBandMax = 12
+dampFormulaSmooth = True    # True - uses exp() with smoothed edge, False - uses 'traditional' exp() cut-off with discontinuity in first derivative.
+dampExponent      = 0.016
+
 # wavepacket parameters
-k0_x         = 0.2
+k0_x         = 0.02
 k0_y         = 0
 gaussWidth_x = 5.0
 gaussWidth_y = 0.0
@@ -38,12 +43,20 @@ O.engines=[
 		[Ip2_QMParticleCoulomb_QMParametersCoulomb_QMIPhysCoulombParticles()],
 		[Law2_QMIGeom_QMIPhysCoulombParticlesFree()]
 	),
-	SchrodingerKosloffPropagator(FIXMEatomowe_MASS=2,printIter=False,doCopyTable=True,threadNum=4),
+#	SchrodingerKosloffPropagator(
+#            FIXMEatomowe_MASS=2
+#            ,printIter=False
+#            ,doCopyTable=True
+#            ,dampMarginBandMin = dampMarginBandMin
+#            ,dampMarginBandMax = dampMarginBandMax
+#            ,dampFormulaSmooth = dampFormulaSmooth
+#            ,dampExponent      = dampExponent
+#            ,threadNum=8),
 	SchrodingerAnalyticPropagator(),
 ]
 
-scaleAll=50
-separate_r_R=False
+scaleAll=250
+separate_r_R=True
 drawFFT=False
 fftPOS = size1d if drawFFT else 0.0
 displayEnt= { 'partAbsolute':['default surface', 'hidden', 'nodes', 'points', 'wire', 'surface']
@@ -117,7 +130,7 @@ body2_Opts = [
 ########## Analytic solutions
 body0           = QMBody()
 body0.groupMask = 2
-body0.shape     = QMGeometry(extents=halfSize1,color=[0.5,0.5,0.5],displayOptions=body0_Opts)
+body0.shape     = QMGeometry(extents=halfSize1,color=[0.9,0.9,0.9],displayOptions=body0_Opts)
 body0.material  = QMParticleCoulomb(dim=dimensions,hbar=1,m=4,coefficient=potentialCoefficient1) # m=2 FIXMEatomowe
 body0.state     = QMPacketGaussianWave(x0=potentialCenter,t0=0,k0=[k0_x,k0_y,0],a0=[gaussWidth_x,gaussWidth_y,0],gridSize=[GRIDSIZE]) #,se3=[[0.5,0.5,0.5],Quaternion((1,0,0),0)])
 nid=O.bodies.append(body0)
@@ -125,7 +138,7 @@ O.bodies[nid].state.setAnalytic()
 
 body1           = QMBody()
 body1.groupMask = 2
-body1.shape     = QMGeometry(extents=halfSize2,color=[0.6,0.6,0.6],displayOptions=body1_Opts)
+body1.shape     = QMGeometry(extents=halfSize2,color=[1.0,1.0,1.0],displayOptions=body1_Opts)
 body1.material  = QMParametersCoulomb(dim=dimensions,hbar=1#,m=2 # FIXMEatomowe
                                       ,coefficient=potentialCoefficient2,potentialMaximum=potentialMaximum)
 coulombPacketArg      = {'m1':1,'m2':1,'energyLevel':[hydrogenEigenFunc_n,hydrogenEigenFunc_odd,0],'x0':potentialCenter,'gridSize':[GRIDSIZE]}
@@ -152,7 +165,7 @@ body3.state     = QMPacketHydrogenEigenFunc(**coulombPacketArg)
 nid=O.bodies.append(body3)
 O.bodies[nid].state.setNumeric()
 
-O.dt=20
+O.dt=0.2
 
 O.save('/tmp/a.xml.bz2');
 #o.run(100000); o.wait(); print o.iter/o.realtime,'iterations/sec'

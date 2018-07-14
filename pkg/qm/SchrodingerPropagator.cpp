@@ -748,6 +748,7 @@ HERE;
 	// FIXME - full duplicate of the block above, except for the reference
 		}
 	} else if(psiGlobal[0] and not doCopyTable) {
+	// FIXME - zamiast dublować wszystko muszę to napisać w templejcie. Jedno wywołanie będzie na NDimTable<Complexr>& a drugie na NDimTable<Complexr>. I będzie kopiował lub nie.
 /*.. */  std::cerr << "\n\n\n ERROR: doCopyTable == false   is NOT IMPLEMENTED NOW ! bo robiłem obliczenia wielokanałowe i nie chciałem dublować wszystkiego!\n\n";
 /*.. */  exit(1);
 //.. //  			NDimTable<Complexr>& psi_dt(psiGlobal->psiGlobalTable); // will become ψ(t+dt): ψ(t+dt) = ψ₀
