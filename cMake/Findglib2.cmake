@@ -212,8 +212,9 @@ IF ( GLIB2_FOUND )
 	# which supports g_regex_match_simple
 	INCLUDE( CheckIncludeFiles )
 	SET( CMAKE_REQUIRED_INCLUDES ${GLIB2_INCLUDE_DIRS} )
-	#CHECK_INCLUDE_FILES ( glib/gregex.h HAVE_GLIB_GREGEX_H )
-	CHECK_INCLUDE_FILES ( glib.h HAVE_GLIB_GREGEX_H )
+	CHECK_INCLUDE_FILES ( glib/gregex.h HAVE_GLIB_GREGEX_H )
+	## FIXME This came here from merge with yade-qm-2014 branch.
+	#CHECK_INCLUDE_FILES ( glib.h HAVE_GLIB_GREGEX_H )
 	# Reset CMAKE_REQUIRED_INCLUDES
 	SET( CMAKE_REQUIRED_INCLUDES "" )
 ENDIF( GLIB2_FOUND )
