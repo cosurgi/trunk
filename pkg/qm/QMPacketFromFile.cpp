@@ -7,7 +7,11 @@
 #include <fstream>
 #include <iterator>
 
+#include "QMStateDiscreteGlobal.hpp"
+#include "QMStateDiscrete.hpp"
+#include "QMStateAnalytic.hpp"
 #include "QMPacketFromFile.hpp"
+#include "QMPotential.hpp"
 
 #include <lib/time/TimeLimit.hpp>
 #include <lib/smoothing/Spline6Interpolate.hpp>
