@@ -253,6 +253,8 @@ Complexr St1_QMPacketFromFile::waveFunctionValue_1D_positionRepresentation(Vecto
 
 	barrier->readFileIfDidnt();
 
+// FIXME - this "warning: unused variable ‘y’ [-Wunused-variable]" is a forwerod of incoming refactoring due to necessary variable number of dimensions.
+//         Not just 3D. Arbitrary amount of dimensions must be supported. From 1D through 16D up to even more. Also in triaxial test (;
 	Real x   = pos[0]                  ,y =pos[1]                  ,z =pos[2];
 	// to teraz interpolujemy
 	int idx_row = 0;
