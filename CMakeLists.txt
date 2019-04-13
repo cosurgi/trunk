@@ -90,7 +90,7 @@ ELSE()
   ENDIF()
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -Ofast    --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC -Ofast    --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++11")
 
 IF (DEBUG)
   SET(CMAKE_VERBOSE_MAKEFILE 1)
@@ -249,17 +249,17 @@ IF(ENABLE_GUI)
   FIND_PACKAGE(OpenGL)
   FIND_PACKAGE(GLUT)
   FIND_PACKAGE(glib2)
-
-# >>>start>>>> Add drop down menu QComboBox in qt4 interface
-  FIND_PACKAGE(QGLVIEWER)
-  IF(QT4_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
-    SET(GUI_LIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${QGLVIEWER_LIBRARIES})
-    SET(GUI_SRC_LIB "lib/opengl/GLUtils.cpp;py/wrapper/Menu.cpp;lib/base/NDimTable.cpp")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_OPENGL")
-    INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
-    INCLUDE_DIRECTORIES(${QT_INCLUDES})
-# >>> end >>>> Add drop down menu QComboBox in qt4 interface
     
+# # >>>start>>>> Add drop down menu QComboBox in qt4 interface
+#   FIND_PACKAGE(QGLVIEWER)
+#   IF(QT4_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
+#     SET(GUI_LIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${QGLVIEWER_LIBRARIES})
+#     SET(GUI_SRC_LIB "lib/opengl/GLUtils.cpp;py/wrapper/Menu.cpp;lib/base/NDimTable.cpp")
+#     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_OPENGL")
+#     INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
+#     INCLUDE_DIRECTORIES(${QT_INCLUDES})
+# # >>> end >>>> Add drop down menu QComboBox in qt4 interface
+
   IF(USE_QT5)
     MESSAGE(STATUS "USE QT5")
     FIND_PACKAGE(QGLVIEWER-qt5 REQUIRED)
@@ -468,6 +468,7 @@ IF(ENABLE_MASK_ARBITRARY)
 ELSE(ENABLE_MASK_ARBITRARY)
   SET(DISABLED_FEATS "${DISABLED_FEATS} MASK_ARBITRARY")
 ENDIF(ENABLE_MASK_ARBITRARY)
+
 #===========================================================
 IF(ENABLE_FFTW3)
   # FIXME - instead of 'double' default, I should put more IFs here and pick: double, long-double, float128
@@ -549,6 +550,8 @@ ELSE(ENABLE_POTENTIAL_BLOCKS)
 ENDIF(ENABLE_POTENTIAL_BLOCKS)  
 #===========================================================
 
+
+
 IF (INSTALL_PREFIX)
   SET(CMAKE_INSTALL_PREFIX ${INSTALL_PREFIX})
   MESSAGE(WARNING "Use CMAKE_INSTALL_PREFIX option instead of INSTALL_PREFIX! It will be removed soon.")
@@ -604,7 +607,7 @@ FILE(GLOB SRC_CORE "core/*.cpp")
 FILE(GLOB_RECURSE SRC_PKG  "pkg/*.cpp")
 FILE(GLOB SRC_LIB  "lib/*.cpp")
 
-SET(SRC_LIB "${SRC_LIB};lib/base/Math.cpp;lib/factory/ClassFactory.cpp;lib/factory/DynLibManager.cpp;lib/computational-geometry/MarchingCube.cpp")
+SET(SRC_LIB "${SRC_LIB};lib/base/Math.cpp;lib/factory/ClassFactory.cpp;lib/factory/DynLibManager.cpp")
 SET(SRC_LIB "${SRC_LIB};lib/serialization/Serializable.cpp;lib/pyutil/gil.cpp;core/main/pyboot.cpp;${GUI_SRC_LIB};${CGAL_SRC_LIB}")
 IF(ENABLE_POTENTIAL_PARTICLES)
   SET(SRC_LIB "${SRC_LIB};lib/computational-geometry/MarchingCube.cpp")
