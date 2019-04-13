@@ -1,4 +1,5 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
+// 2014 © Janek Kozicki <cosurgi@gmail.com>
 
 
 #include<lib/base/Math.hpp>
@@ -14,7 +15,12 @@
 	#include<pkg/common/GLDrawFunctors.hpp>
 	#include<pkg/common/OpenGLRenderer.hpp>
 #endif
+//<<<<<<< HEAD
+//#include<pkg/common/MatchMaker.hpp>
+//=======
 #include<pkg/common/MatchMaker.hpp>
+#include<boost/serialization/complex.hpp>
+//>>>>>>> Added qt4 display of std::complex<Real> in inspect
 
 // move this to the miniEigen wrapper later
 
@@ -183,6 +189,7 @@ BOOST_PYTHON_MODULE(_customConverters){
 		VECTOR_SEQ_CONV(int);
 		VECTOR_SEQ_CONV(bool);
 		VECTOR_SEQ_CONV(Real);
+		VECTOR_SEQ_CONV(std::complex<Real>);
 		VECTOR_SEQ_CONV(Se3r);
 		VECTOR_SEQ_CONV(Vector2r);
 		VECTOR_SEQ_CONV(Vector2i);

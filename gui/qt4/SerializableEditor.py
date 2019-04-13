@@ -132,7 +132,10 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 		QFrame.__init__(self,parent)
 		self.rows,self.cols=1,2
 		self.setContentsMargins(0,0,0,0)
-		self.first=True
+##<<<<<<< HEAD
+##		self.first=True
+##=======
+##>>>>>>> Added qt4 display of std::complex<Real> in inspect
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
@@ -141,17 +144,26 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 			w.textEdited.connect(self.isHot)
 			w.selectionChanged.connect(self.isHot)
 			w.editingFinished.connect(self.update)
-	def refresh(self,force=False):
+##<<<<<<< HEAD
+##	def refresh(self,force=False):
+##		val=self.getter()
+##		for row,col in itertools.product(range(self.rows),range(self.cols)):
+##			w=self.grid.itemAtPosition(row,col).widget()
+##			if(self.first or force):
+##				w.setText(str(val.real if col==0 else val.imag))
+##			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##			if (not w.hasFocus):
+##				w.setText(str(val.real if col==0 else val.imag))
+##				w.home(False) # make the left-most part visible, if the text is wider than the widget
+##		self.first=False
+##=======
+	def refresh(self):
 		val=self.getter()
 		for row,col in itertools.product(range(self.rows),range(self.cols)):
 			w=self.grid.itemAtPosition(row,col).widget()
-			if(self.first or force):
-				w.setText(str(val.real if col==0 else val.imag))
-			#if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
-			if (not w.hasFocus):
-				w.setText(str(val.real if col==0 else val.imag))
-				w.home(False) # make the left-most part visible, if the text is wider than the widget
-		self.first=False
+			w.setText(str(val.real if col==0 else val.imag))
+			if True or not w.hasFocus: w.home(False) # make the left-most part visible, if the text is wider than the widget
+##>>>>>>> Added qt4 display of std::complex<Real> in inspect
 	def update(self):
 		try:
 			val=self.getter()
@@ -161,8 +173,12 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 				val=complex(float(w1.text()),float(w2.text()))
 			logging.debug('setting'+str(val))
 			self.trySetter(val)
-		except ValueError:
-			self.refresh(force=True)
+##<<<<<<< HEAD
+##		except ValueError:
+##			self.refresh(force=True)
+##=======
+		except ValueError: self.refresh()
+##>>>>>>> Added qt4 display of std::complex<Real> in inspect
 	def setFocus(self): self.grid.itemAtPosition(0,0).widget().setFocus()
 
 class AttrEditor_Quaternion(AttrEditor,QFrame):
