@@ -3,6 +3,7 @@ template<> const Real Math<Real>::EPSILON = DBL_EPSILON;
 template<> const Real Math<Real>::ZERO_TOLERANCE = 1e-20;
 template<> const Real Math<Real>::MAX_REAL = DBL_MAX;
 #ifdef FLOAT128_PRECISION
+// FIXME - switch this to boost::math
 template<> const Real Math<Real>::PI = 3.1415926535897932384626433832795028841971693993751058Q;
 #else
 template<> const Real Math<Real>::PI = 4.0*std::atan(1.0);
