@@ -18,6 +18,9 @@
 #include <core/InteractionContainer.hpp>
 #include <core/TimeStepper.hpp>
 
+// FIXME - core cannot include common.
+#include <pkg/common/InteractionLoop.hpp>
+
 #include <pwd.h>
 #include <unistd.h>
 #include <time.h>
@@ -68,6 +71,7 @@ void Scene::postLoad(Scene&){
 	}
 
 	// update scene in all engines. FIXME - see in to_fix.txt in pkg/qm (use enable_shared_from_this everywhere)
+// FIXME - yade/core cannot #include yade/pkg/common. What for do I need it anyway??
 	FOREACH(const shared_ptr<Engine>& e, engines){
 		e->scene=this; // FIXME - should call e->updateScenePtrWith(scene), and then do other stuff, like this one below done by hand
 		shared_ptr<Dispatcher> disp = boost::dynamic_pointer_cast<Dispatcher>(e);
