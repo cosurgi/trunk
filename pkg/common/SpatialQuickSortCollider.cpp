@@ -64,7 +64,7 @@ void SpatialQuickSortCollider::action()
 		{
 			if ( rank[j]->min[0] > max[0]) break; // skip all others, because it's sorted along X
 			id2=rank[j]->id;
-			if(!Collider::mayCollide(Body::byId(id,scene).get(),Body::byId(id2,scene).get())) continue; // skip this pair id←→id2
+			if(!Collider::mayCollide(Body::byId(id,scene).get(),Body::byId(id2,scene).get())) continue; // skip this pair id←→id2  // this arrived here from QM merge. Was it removed in original branch?
 			if ( rank[j]->min[1] < max[1]
 			&& rank[j]->max[1] > min[1]
 			&& rank[j]->min[2] < max[2]
@@ -72,6 +72,7 @@ void SpatialQuickSortCollider::action()
 			// FIXME: can use http://eigen.tuxfamily.org/dox/group__TutorialReductionsVisitorsBroadcasting.html
 			// to make this much shorter, see pkg/qm/QMPotentialBarrier.cpp Law2_QMIGeom_QMIPhysBarrier::go
 			{
+				id2=rank[j]->id;
 				if ( (interaction = interactions->find(Body::id_t(id),Body::id_t(id2))) == 0)
 				{
 					interaction = shared_ptr<Interaction>(new Interaction(id,id2) );

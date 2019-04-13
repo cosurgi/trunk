@@ -68,4 +68,3 @@ class LinearDragEngine: public PartialEngine{
 	);
 };
 REGISTER_SERIALIZABLE(LinearDragEngine);
-

@@ -37,9 +37,9 @@ void InteractionLoop::action(){
 	updateScenePtrInteractionLoop();
 
 	// call Ig2Functor::preStep
-	FOREACH(const shared_ptr<IGeomFunctor>& ig2, geomDispatcher->functors) ig2->preStep();
+	FOREACH(const shared_ptr<IGeomFunctor>& ig2, geomDispatcher->functors) ig2->preStep(); // this arrived here from QM merge. Was it removed in original branch?
 	// call LawFunctor::preStep
-	FOREACH(const shared_ptr<LawFunctor>& law2, lawDispatcher->functors) law2->preStep();
+	FOREACH(const shared_ptr<LawFunctor>& law2, lawDispatcher->functors) law2->preStep();  // this arrived here from QM merge. Was it removed in original branch?
 
 	/*
 		initialize callbacks; they return pointer (used only in this timestep) to the function to be called
@@ -135,6 +135,7 @@ void InteractionLoop::action(){
 		if(!I->functorCache.phys){
 			I->functorCache.phys=physDispatcher->getFunctor2D(b1->material,b2->material,swap);
 			assert(!swap); // InteractionPhysicsEngineUnits are symmetric
+			// this arrived here from QM merge. Was it removed in original branch?
 			// FIXME - a wcale, że nie! elektron+potencjał
 			// ciekawe po zakomentowaniu tego asserta, się rozwala kompletnie, może dlatego, że ten swap nie został wykonany?
 			// a nie ma segfaulta, bo jest static_cast....
