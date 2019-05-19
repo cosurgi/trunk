@@ -1,5 +1,5 @@
 ===================================
-YADE - Yet Another Dynamic Engine
+YADE - Quantum Mechanics branch
 ===================================
 
 Extensible open-source framework for discrete numerical models, focused on 
