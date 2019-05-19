@@ -295,7 +295,7 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 #endif
 
 	else if(e->key()!=Qt::Key_Escape && e->key()!=Qt::Key_Space) QGLViewer::keyPressEvent(e);
-	updateGL();
+	updateGLViewer();
 }
 /* Center the scene such that periodic cell is contained in the view */
 void GLViewer::centerPeriodic(){

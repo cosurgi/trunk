@@ -635,7 +635,7 @@ class pyOmega{
 	long stopAtIter_get(){return OMEGA.getScene()->stopAtIter; }
 	void stopAtIter_set(long s){OMEGA.getScene()->stopAtIter=s; }
 	Real stopAtTime_get(){return OMEGA.getScene()->stopAtTime; }
-	void stopAtTime_set(long s){OMEGA.getScene()->stopAtTime=s; }
+	void stopAtTime_set(Real s){OMEGA.getScene()->stopAtTime=s; }
 
 
 	bool timingEnabled_get(){return TimingInfo::enabled;}
@@ -921,7 +921,7 @@ BOOST_PYTHON_MODULE(wrapper)
 		.def("replace",&pyBodyContainer::replace);
 	py::class_<pyBodyIterator>("BodyIterator",py::init<pyBodyIterator&>())
 		.def("__iter__",&pyBodyIterator::pyIter)
-		.def("next",&pyBodyIterator::pyNext);
+		.def("__next__",&pyBodyIterator::pyNext);
 	py::class_<pyInteractionContainer>("InteractionContainer","Access to :yref:`interactions<Interaction>` of simulation, by using \n\n#. id's of both :yref:`Bodies<Body>` of the interactions, e.g. ``O.interactions[23,65]``\n#. iteraction over the whole container::\n\n\tfor i in O.interactions: print i.id1,i.id2\n\n.. note::\n\tIteration silently skips interactions that are not :yref:`real<Interaction.isReal>`.",py::init<pyInteractionContainer&>())
 		.def("__iter__",&pyInteractionContainer::pyIter)
 		.def("__getitem__",&pyInteractionContainer::pyGetitem)
@@ -938,7 +938,7 @@ BOOST_PYTHON_MODULE(wrapper)
 		.def("clear",&pyInteractionContainer::clear,"Remove all interactions, and invalidate persistent collider data (if the collider supports it).");
 	py::class_<pyInteractionIterator>("InteractionIterator",py::init<pyInteractionIterator&>())
 		.def("__iter__",&pyInteractionIterator::pyIter)
-		.def("next",&pyInteractionIterator::pyNext);
+		.def("__next__",&pyInteractionIterator::pyNext);
 
 	py::class_<pyForceContainer>("ForceContainer",py::init<pyForceContainer&>())
 		.def("f",&pyForceContainer::force_get,(py::arg("id"),py::arg("sync")=false),"Force applied on body. For clumps in openMP, synchronize the force container with sync=True, else the value will be wrong.")

@@ -27,6 +27,9 @@
 
 #include "pygts.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+
 
 #if PYGTS_DEBUG
   #define SELF_CHECK if(!pygts_face_check((PyObject*)self)) {         \
@@ -301,7 +304,7 @@ static PyMethodDef methods[] = {
 static GtsObject * parent(GtsFace *face);
 
 static PyObject *
-new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+new_(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   PyObject *o;
   PygtsObject *obj;
@@ -466,7 +469,7 @@ new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
 
     /* If corresponding PyObject found in object table, we are done */
-    if( (obj=g_hash_table_lookup(obj_table,GTS_OBJECT(f))) != NULL ) {
+    if( (obj=(PygtsObject*)g_hash_table_lookup(obj_table,GTS_OBJECT(f))) != NULL ) {
       Py_INCREF(obj);
       return (PyObject*)obj;
     }
@@ -509,8 +512,7 @@ init(PygtsFace *self, PyObject *args, PyObject *kwds)
 
 /* Methods table */
 PyTypeObject PygtsFaceType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                       /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "gts.Face",              /* tp_name */
     sizeof(PygtsFace),       /* tp_basicsize */
     0,                       /* tp_itemsize */
@@ -548,7 +550,7 @@ PyTypeObject PygtsFaceType = {
     0,                       /* tp_dictoffset */
     (initproc)init,          /* tp_init */
     0,                       /* tp_alloc */
-    (newfunc)new             /* tp_new */
+    (newfunc)new_             /* tp_new */
 };
 
 
@@ -644,3 +646,6 @@ pygts_face_new(GtsFace *f)
   pygts_object_register(face);
   return PYGTS_FACE(face);
 }
+
+#pragma GCC diagnostic pop
+

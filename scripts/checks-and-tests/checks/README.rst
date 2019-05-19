@@ -1,4 +1,6 @@
-=== Checktesting ===
+
+Checktesting
+============
 
 1. Check tests perform comparisons of simulation results between different versions of yade, as discussed in http://www.mail-archive.com/yade-dev@lists.launchpad.net/msg05784.html and the whole thread. They differ with regression tests in the sense that they simulate more complex situations and combinations of different engines, and usually don't have a mathematical proof (though there is no restriction on the latest).
 
@@ -16,4 +18,5 @@
 
 8. A check test should never need more than a few seconds to run. If your typical script needs more, try and reduce the number of element or the number of steps.
 
-9. Failures are reported via a global variable "resultStatus", which should be ONLY INCREMENTED in a checkTests, never assigned to (resultStatus+=1 is ok, resultStatus=1 is bad), else the script would erase the history of the checkTests coming before it.
+9. Failures are reported via exception using python command: raise YadeCheckError(stringMessage)
+

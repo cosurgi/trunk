@@ -1,4 +1,5 @@
 /*CWBoon 2015 */
+#include<lib/compatibility/VTKCompatibility.hpp> // fix InsertNextTupleValue → InsertNextTuple name change (and others in the future)
 #ifdef YADE_POTENTIAL_PARTICLES
 #include "Gl1_PotentialParticle.hpp"
 
@@ -428,7 +429,7 @@ void PotentialParticleVTKRecorder::action() {
 		c[2]=color[2];
 		int nbCells=polydata->GetNumberOfPoints();
 		for (int i=0; i<nbCells; i++) {
-			pbColors->InsertNextTupleValue(c);
+			pbColors->INSERT_NEXT_TYPED_TUPLE(c);
 		}
 		polydata->GetPointData()->SetScalars(pbColors);
 		//polydata->Update();
@@ -469,14 +470,14 @@ void PotentialParticleVTKRecorder::action() {
 			v[0]=vel[0];
 			v[1]=vel[1];
 			v[2]=vel[2];
-			pbLinVelVec->InsertNextTupleValue(v);
+			pbLinVelVec->INSERT_NEXT_TUPLE(v);
 			pbLinVelLen->InsertNextValue(vel.norm());
 			const Vector3r& angVel = b->state->angVel;
 			float av[3]; //av = { angVel[0],angVel[1],angVel[2] };
 			av[0]=angVel[0];
 			av[1]=angVel[1];
 			av[2]=angVel[2];
-			pbAngVelVec->InsertNextTupleValue(av);
+			pbAngVelVec->INSERT_NEXT_TUPLE(av);
 			pbAngVelLen->InsertNextValue(angVel.norm());
 		}
 		// ################ velocity ###########################
@@ -548,8 +549,8 @@ void PotentialParticleVTKRecorder::action() {
 			// gives _signed_ scalar of normal force, following the convention used in the respective constitutive law
 			float fn[3]= {(float)phys->normalForce[0], (float)phys->normalForce[1], (float)phys->normalForce[2]};
 			float fs[3]= {(float)phys->shearForce[0],  (float)phys->shearForce[1],  (float)phys->shearForce[2]};
-			pbNormalForce->InsertNextTupleValue(fn);
-			pbShearForce->InsertNextTupleValue(fs);
+			pbNormalForce->INSERT_NEXT_TUPLE(fn);
+			pbShearForce->INSERT_NEXT_TUPLE(fs);
 			count++;
 		}
 		if(count>0) {

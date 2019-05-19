@@ -6,7 +6,8 @@
 # Coefficient of restitution is the ratio of speeds after and before an impact
 # This check-simulation checks the correctness of ViscoElasticEngine
 
-from yade import utils, plot
+from __future__ import print_function
+from yade import plot
 o = Omega()
 fr = 0.5;rho=2000
 tc = 0.001; en = 0.7; et = 0.7; o.dt = 0.0002*tc
@@ -54,4 +55,4 @@ O.run(1000000)
 O.wait()
 
 if ((abs(0.736356797441-en)/en)>tolerance):
-  resultStatus += 1
+  raise YadeCheckError("((abs(0.736356797441-en)/en)>tolerance)")

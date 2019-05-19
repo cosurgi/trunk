@@ -1,4 +1,8 @@
 # encoding: utf-8
+from builtins import zip
+
+from builtins import range
+from builtins import object
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import QtGui
@@ -61,7 +65,7 @@ def serializableHref(ser,attr=None,text=None):
 		if not text: text=klass.__name__
 	return makeWrapperHref(text,klass.__name__,attr,static=(attr and getattr(klass,attr)==getattr(ser,attr)))
 
-class AttrEditor():
+class AttrEditor(object):
 	"""Abstract base class handing some aspects common to all attribute editors.
 	Holds exacly one attribute which is updated whenever it changes."""
 	def __init__(self,getter=None,setter=None):
@@ -138,7 +142,7 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 		self.first=True
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=QLineEdit('')
 			self.grid.addWidget(w,row,col);
 			w.textEdited.connect(self.isHot)
@@ -146,7 +150,7 @@ class AttrEditor_Complex(AttrEditor,QLineEdit):
 			w.editingFinished.connect(self.update)
 	def refresh(self,force=False):
 		val=self.getter()
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=self.grid.itemAtPosition(row,col).widget()
 			if(self.first or force):
 				w.setText(str(val.real if col==0 else val.imag))
@@ -206,7 +210,7 @@ class AttrEditor_Se3(AttrEditor,QFrame):
 		AttrEditor.__init__(self,getter,setter)
 		QFrame.__init__(self,parent)
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
-		for row,col in itertools.product(range(2),range(5)): # one additional column for vertical line in quaternion
+		for row,col in itertools.product(list(range(2)),list(range(5))): # one additional column for vertical line in quaternion
 			if (row,col)==(0,3): continue
 			if (row,col)==(0,4): self.grid.addWidget(QLabel(u'←<i>pos</i> ↙<i>ori</i>',self),row,col); continue
 			if (row,col)==(1,3):
@@ -252,7 +256,7 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 		self.first=True
 		val=self.getter()
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=QLineEdit('')
 			self.grid.addWidget(w,row,col);
 			w.textEdited.connect(self.isHot)
@@ -260,7 +264,7 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 			w.editingFinished.connect(self.update)
 	def refresh(self,force=False):
 		val=self.getter()
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=self.grid.itemAtPosition(row,col).widget()
 			if(self.first or force):
 				w.setText(str(val[self.idxConverter(row,col)]))
@@ -271,7 +275,7 @@ class AttrEditor_MatrixX(AttrEditor,QFrame):
 	def update(self):
 		try:
 			val=self.getter()
-			for row,col in itertools.product(range(self.rows),range(self.cols)):
+			for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 				w=self.grid.itemAtPosition(row,col).widget()
 				if w.isModified(): val[self.idxConverter(row,col)]=float(w.text())
 			logging.debug('setting'+str(val))
@@ -289,20 +293,20 @@ class AttrEditor_MatrixXi(AttrEditor,QFrame):
 		self.idxConverter=idxConverter
 		self.setContentsMargins(0,0,0,0)
 		self.grid=QGridLayout(self); self.grid.setSpacing(0); self.grid.setMargin(0)
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=QSpinBox()
 			w.setRange(int(-1e9),int(1e9)); w.setSingleStep(1);
 			self.grid.addWidget(w,row,col);
 		self.refresh() # refresh before connecting signals!
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			self.grid.itemAtPosition(row,col).widget().valueChanged.connect(self.update)
 	def refresh(self):
 		val=self.getter()
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=self.grid.itemAtPosition(row,col).widget().setValue(val[self.idxConverter(row,col)])
 	def update(self):
 		val=self.getter(); modified=False
-		for row,col in itertools.product(range(self.rows),range(self.cols)):
+		for row,col in itertools.product(list(range(self.rows)),list(range(self.cols))):
 			w=self.grid.itemAtPosition(row,col).widget()
 			if w.value()!=val[self.idxConverter(row,col)]:
 				modified=True; val[self.idxConverter(row,col)]=w.value()
@@ -350,11 +354,11 @@ class AttrEditor_QComboBox(AttrEditor,QComboBox):
 		#print "update "+str(v)+ " " +str(self.getter() )
 		pass
 
-class Se3FakeType: pass
+class Se3FakeType(object): pass
 
-class DropDownMenuFakeType: pass
+class DropDownMenuFakeType(object): pass
 
-class size_t_FakeType: pass
+class size_t_FakeType(object): pass
 
 
 _fundamentalEditorMap={bool:AttrEditor_Bool,str:AttrEditor_Str,int:AttrEditor_Int,long:AttrEditor_Int,size_t_FakeType:AttrEditor_Int,float:AttrEditor_Float,complex:AttrEditor_Complex,Quaternion:AttrEditor_Quaternion,Vector2:AttrEditor_Vector2,Vector3:AttrEditor_Vector3,Vector6:AttrEditor_Vector6,Matrix3:AttrEditor_Matrix3,Vector6i:AttrEditor_Vector6i,Vector3i:AttrEditor_Vector3i,Vector2i:AttrEditor_Vector2i,Se3FakeType:AttrEditor_Se3,DropDownMenuFakeType:AttrEditor_QComboBox}
@@ -381,7 +385,7 @@ class SerializableEditor(QFrame):
 	import collections
 	import logging
 	# each attribute has one entry associated with itself
-	class EntryData:
+	class EntryData(object):
 		def __init__(self,name,T,flags=0):
 			self.name,self.T,self.flags=name,T,flags
 			self.lineNo,self.widget=None,None
@@ -444,7 +448,7 @@ class SerializableEditor(QFrame):
 			'IntrCallback':IntrCallback,'StateFunctor':StateFunctor,'BoundFunctor':BoundFunctor,'IGeomFunctor':IGeomFunctor,'IPhysFunctor':IPhysFunctor,'LawFunctor':LawFunctor,'KinematicEngine':KinematicEngine,
 			'GlShapeFunctor':GlShapeFunctor,'GlStateFunctor':GlStateFunctor,'GlIGeomFunctor':GlIGeomFunctor,'GlIPhysFunctor':GlIPhysFunctor,'GlBoundFunctor':GlBoundFunctor,'GlExtraDrawer':GlExtraDrawer
 		}
-		for T,ret in vecMap.items():
+		for T,ret in list(vecMap.items()):
 			if vecTest(T,cxxT):
 				logging.debug("Got type %s from cxx type %s"%(repr(ret),cxxT))
 				if (ret == str) and (len(val)>0) and (val[0][:7]=="default"): return DropDownMenuFakeType
@@ -460,7 +464,7 @@ class SerializableEditor(QFrame):
 			logging.error('TypeError when getting attributes of '+str(self.ser)+',skipping. ')
 			import traceback
 			traceback.print_exc()
-		attrs=self.ser.dict().keys(); attrs.sort()
+		attrs=list(self.ser.dict().keys()); attrs.sort()
 		for attr in attrs:
 			val=getattr(self.ser,attr) # get the value using serattr, as it might be different from what the dictionary provides (e.g. Body.blockedDOFs)
 			t=None
@@ -583,11 +587,11 @@ def makeSerializableLabel(ser,href=False,addr=True,boldHref=True,num=-1,count=-1
 		else: ret+=u'%d. '%num
 	if href: ret+=(u' <b>' if boldHref else u' ')+serializableHref(ser)+(u'</b> ' if boldHref else u' ')
 	else: ret+=ser.__class__.__name__+' '
-	if hasattr(ser,'label') and ser.label: ret+=u' “'+unicode(ser.label)+u'”'
+	if hasattr(ser,'label') and ser.label: ret+=u' “'+str(ser.label)+u'”'
 	# do not show address if there is a label already
 	elif addr:
 		import re
-		ss=unicode(ser); m=re.match(u'<(.*) instance at (0x.*)>',ss)
+		ss=str(ser); m=re.match(u'<(.*) instance at (0x.*)>',ss)
 		if m: ret+=m.group(2)
 		else: logging.warning(u"Serializable converted to str ('%s') does not contain 'instance at 0x…'"%ss)
 	return ret
@@ -716,7 +720,7 @@ class NewFundamentalDialog(QDialog):
 		self.layout.addWidget(self.scroll)
 		self.layout.addWidget(self.buttons)
 		self.setWindowModality(Qt.WindowModal)
-		class FakeObjClass: pass
+		class FakeObjClass(object): pass
 		self.fakeObj=FakeObjClass()
 		self.attrName=attrName
 		Klass=_fundamentalEditorMap.get(typeObj,None)
@@ -791,7 +795,7 @@ class SeqFundamentalEditor(QFrame):
 		field=self.form.itemAt(index,QFormLayout.LabelRole).widget() if index>=0 else None
 		menu=QMenu(self)
 		actNew,actKill,actUp,actDown=[menu.addAction(name) for name in (u'☘ New',u'☠ Remove',u'↑ Up',u'↓ Down')]
-		if index<0: [a.setEnabled(False) for a in actKill,actUp,actDown]
+		if index<0: [a.setEnabled(False) for a in (actKill,actUp,actDown)]
 		if index==len(seq)-1: actDown.setEnabled(False)
 		if index==0: actUp.setEnabled(False)
 		if field: field.setStyleSheet('QWidget { background: green }')
@@ -830,7 +834,7 @@ class SeqFundamentalEditor(QFrame):
 	def rebuild(self):
 		currSeq=self.getter()
 		# clear everything
-		rows=self.form.count()/2
+		rows=int(self.form.count()/2)
 		for row in range(rows):
 			logging.trace('counts',self.form.rowCount(),self.form.count())
 			for wi in self.form.itemAt(row,QFormLayout.FieldRole),self.form.itemAt(row,QFormLayout.LabelRole):
@@ -846,10 +850,10 @@ class SeqFundamentalEditor(QFrame):
 			errMsg.setReadOnly(True); errMsg.setText("Sorry, editing sequences of %s's is not (yet?) implemented."%(self.itemType.__name__))
 			self.form.insertRow(0,'<b>Error</b>',errMsg)
 			return
-		class ItemGetter():
+		class ItemGetter(object):
 			def __init__(self,getter,index): self.getter,self.index=getter,index
 			def __call__(self): return self.getter()[self.index]
-		class ItemSetter():
+		class ItemSetter(object):
 			def __init__(self,getter,setter,index): self.getter,self.setter,self.index=getter,setter,index
 			def __call__(self,val): seq=self.getter(); seq[self.index]=val; self.setter(seq)
 		for i,item in enumerate(currSeq):

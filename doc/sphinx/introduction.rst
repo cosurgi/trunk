@@ -1,3 +1,5 @@
+.. _IntroductionStart:
+
 ###############
 Introduction
 ###############
@@ -45,7 +47,7 @@ The command-line is `ipython <http://ipython.scipy.org>`_, python shell with enh
 
 Typically, you will not type Yade commands by hand, but use *scripts*, python programs describing and running your simulations. Let us take the most simple script that will just print "Hello world!"::
 
-	print "Hello world!"
+	print("Hello world!")
 
 Saving such script as ``hello.py``, it can be given as argument to Yade::
 
@@ -377,7 +379,7 @@ Bodies can be iterated over using standard python iteration syntax:
 .. ipython::
 
 	In [1]: for b in O.bodies:
-	   ...:    print b.id,b.shape.radius
+	   ...:    print(b.id,b.shape.radius)
 	   ...:
 	0 1.0
 	1 0.5
@@ -608,4 +610,4 @@ There is chain of types produced by earlier functors and accepted by later ones;
 	Chain of functors producing and accepting certain types. In the case shown, the ``Ig2`` functors produce :yref:`ScGeom` instances from all handled :ref:`Shapes<inheritanceGraphShape>` combinations; the ``Ig2`` functor produces :yref:`FrictMat`. The constitutive law functor ``Law2`` accepts the combination of types produced. Note that the types are stated in the functor's class names.
 
 .. note::
-	When Yade starts, O.engines is filled with a reasonable default list, so that it is not strictly necessary to redefine it when trying simple things. The default scene will handle spheres, boxes, and facets with :yref:`frictional<FrictMat>` properties correctly, and adjusts the timestep dynamically. You can find an example in :ysrc:`examples/simple-scene/simple-scene-default-engines.py`.
+	When Yade starts, O.engines is filled with a reasonable :ysrc:`default list<py/__init__.py.in#L94>`, so that it is not strictly necessary to redefine it when trying simple things. The default scene will handle spheres, boxes, and facets with :yref:`frictional<FrictMat>` properties correctly, and adjusts the timestep dynamically. You can find an example in :ysrc:`examples/simple-scene/simple-scene-default-engines.py`.

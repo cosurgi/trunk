@@ -1,5 +1,6 @@
 /* CWBoon 2016 */
 #ifdef YADE_POTENTIAL_BLOCKS
+#include<lib/compatibility/VTKCompatibility.hpp>
 
 #include "Gl1_PotentialBlock.hpp"
 #ifdef YADE_OPENGL
@@ -601,7 +602,7 @@ void PotentialBlockVTKRecorderTunnel::action(){
 		c[2]=color[2];
 		int nbCells=polydata->GetNumberOfPoints(); 
 		for (int i=0;i<nbCells;i++){
-			pbColors->InsertNextTupleValue(c);	
+			pbColors->INSERT_NEXT_TUPLE(c);	
 		}
 		polydata->GetPointData()->SetScalars(pbColors);
 		//polydata->Update();
@@ -634,14 +635,14 @@ void PotentialBlockVTKRecorderTunnel::action(){
 			v[0]=vel[0];
 			v[1]=vel[1];
 			v[2]=vel[2];
-			pbLinVelVec->InsertNextTupleValue(v);
+			pbLinVelVec->INSERT_NEXT_TUPLE(v);
 			pbLinVelLen->InsertNextValue(vel.norm());
 			const Vector3r& angVel = b->state->angVel;
 			float av[3]; //av = { angVel[0],angVel[1],angVel[2] };
 			av[0]=angVel[0];
 			av[1]=angVel[1];
 			av[2]=angVel[2];	
-			pbAngVelVec->InsertNextTupleValue(av);
+			pbAngVelVec->INSERT_NEXT_TUPLE(av);
 			pbAngVelLen->InsertNextValue(angVel.norm());
 			//if(b->state->refPos.squaredNorm()>0.001){ //if initialized
 				Vector3r displacement = pos- b->state->refPos;
@@ -649,7 +650,7 @@ void PotentialBlockVTKRecorderTunnel::action(){
 				disp[0]=displacement[0];
 				disp[1]=displacement[1];
 				disp[2]=displacement[2];				
-				pbDisplacementVec->InsertNextTupleValue(disp);
+				pbDisplacementVec->INSERT_NEXT_TUPLE(disp);
 
 			//}
 		}
@@ -753,11 +754,11 @@ void PotentialBlockVTKRecorderTunnel::action(){
 				float totalForce[3] = {fn[0]+fs[0], fn[1]+fs[1], fn[2]+fs[2]};
 				float totalStress[3] = {0.0,0.0,0.0}; //{totalForce[0]/phys->contactArea, totalForce[1]/phys->contactArea, totalForce[2]/phys->contactArea}; 
 				float mobilizedShear = phys->mobilizedShear;
-				pbTotalForce->InsertNextTupleValue(totalForce);
+				pbTotalForce->INSERT_NEXT_TUPLE(totalForce);
 				pbMobilizedShear->InsertNextValue(mobilizedShear);
-				pbNormalForce->InsertNextTupleValue(fn);
-				pbShearForce->InsertNextTupleValue(fs);
-				pbTotalStress->InsertNextTupleValue(totalStress);
+				pbNormalForce->INSERT_NEXT_TUPLE(fn);
+				pbShearForce->INSERT_NEXT_TUPLE(fs);
+				pbTotalStress->INSERT_NEXT_TUPLE(totalStress);
 				count++;
 			}
 			if(count>0){
@@ -949,7 +950,7 @@ void PotentialBlockVTKRecorder::action(){
 		c[2]=color[2];
 		int nbCells=polydata->GetNumberOfPoints(); 
 		for (int i=0;i<nbCells;i++){
-			pbColors->InsertNextTupleValue(c);	
+			pbColors->INSERT_NEXT_TUPLE(c);	
 		}	
 		polydata->GetPointData()->SetScalars(pbColors);
 		//polydata->Update();
@@ -984,14 +985,14 @@ void PotentialBlockVTKRecorder::action(){
 			v[0]=vel[0];
 			v[1]=vel[1];
 			v[2]=vel[2];
-			pbLinVelVec->InsertNextTupleValue(v);
+			pbLinVelVec->INSERT_NEXT_TUPLE(v);
 			pbLinVelLen->InsertNextValue(vel.norm());
 			const Vector3r& angVel = b->state->angVel;
 			float av[3]; //av = { angVel[0],angVel[1],angVel[2] };
 			av[0]=angVel[0];
 			av[1]=angVel[1];
 			av[2]=angVel[2];	
-			pbAngVelVec->InsertNextTupleValue(av);
+			pbAngVelVec->INSERT_NEXT_TUPLE(av);
 			pbAngVelLen->InsertNextValue(angVel.norm());
 		}
 		// ################ velocity ###########################
@@ -1068,8 +1069,8 @@ void PotentialBlockVTKRecorder::action(){
 				// gives _signed_ scalar of normal force, following the convention used in the respective constitutive law
 				float fn[3]={(float)phys->normalForce[0], (float)phys->normalForce[1], (float)phys->normalForce[2]};
 				float fs[3]={(float)phys->shearForce[0],  (float)phys->shearForce[1],  (float)phys->shearForce[2]};
-				pbNormalForce->InsertNextTupleValue(fn);
-				pbShearForce->InsertNextTupleValue(fs);
+				pbNormalForce->INSERT_NEXT_TUPLE(fn);
+				pbShearForce->INSERT_NEXT_TUPLE(fs);
 				count++;
 			}
 			if(count>0){

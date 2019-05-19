@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# encoding: utf-8
 
 # The model checks liquid migration model if it is enabled during compilation
-from yade import utils, plot
+from __future__ import print_function
+from yade import plot
 
 if ('LIQMIGRATION' in features):
   o = Omega()
@@ -58,37 +59,36 @@ if ('LIQMIGRATION' in features):
   ]
   
   def showData():
-    print "Step %d"%O.iter
-    print "idB=%d, Vf=%s, Vmin=%s;"%(id0, O.bodies[id0].state.Vf, O.bodies[id0].state.Vmin)
-    print "idB=%d, Vf=%s, Vmin=%s;"%(id1, O.bodies[id1].state.Vf, O.bodies[id1].state.Vmin)
-    print "idB=%d, Vf=%s, Vmin=%s;"%(id2, O.bodies[id2].state.Vf, O.bodies[id2].state.Vmin)
+    print("Step %d"%O.iter)
+    print("idB=%d, Vf=%s, Vmin=%s;"%(id0, O.bodies[id0].state.Vf, O.bodies[id0].state.Vmin))
+    print("idB=%d, Vf=%s, Vmin=%s;"%(id1, O.bodies[id1].state.Vf, O.bodies[id1].state.Vmin))
+    print("idB=%d, Vf=%s, Vmin=%s;"%(id2, O.bodies[id2].state.Vf, O.bodies[id2].state.Vmin))
     try:
-      print "Interaction[%d, %d].Vb=%s"%(id0, id1, O.interactions[id0,id1].phys.Vb)
+      print("Interaction[%d, %d].Vb=%s"%(id0, id1, O.interactions[id0,id1].phys.Vb))
     except:
       pass
     
     try:
-      print "Interaction[%d, %d].Vb=%s"%(id0, id2, O.interactions[id0,id2].phys.Vb)
+      print("Interaction[%d, %d].Vb=%s"%(id0, id2, O.interactions[id0,id2].phys.Vb))
     except:
       pass
-    print 
+    print()
   
   def switchVel():
     O.bodies[id1].state.vel=-O.bodies[id1].state.vel
     O.bodies[id2].state.vel=-O.bodies[id2].state.vel
   
-  resultStatus = 0
   O.run(3, True)
   if ((abs((O.interactions[id0,id1].phys.Vb - 0.03)/0.03) > tolerance) or 
       (abs((O.interactions[id0,id1].phys.Vb - 0.03)/0.03) > tolerance)):
-    resultStatus += 1
+    raise YadeCheckError("error number 1")
   
   switchVel()
   O.run(5, True)
   if ((abs((O.bodies[id0].state.Vf - 0.03)/0.03) > tolerance) or 
       (abs((O.bodies[id1].state.Vf - 0.04)/0.04) > tolerance) or
       (abs((O.bodies[id2].state.Vf - 0.05)/0.05) > tolerance)):
-    resultStatus += 1
+    raise YadeCheckError("error number 2")
   
   liqcontrol.particleconserve=False
   switchVel()
@@ -98,7 +98,7 @@ if ('LIQMIGRATION' in features):
   if ((abs((O.bodies[id0].state.Vf - 0.0465)/0.0465) > tolerance) or 
       (abs((O.bodies[id1].state.Vf - 0.0325)/0.0325) > tolerance) or
       (abs((O.bodies[id2].state.Vf - 0.041)/0.041) > tolerance)):
-    resultStatus += 1
+    raise YadeCheckError("error number 3")
 else:
-  print "This checkLiquidMigration.py cannot be executed because LIQMIGRATION is disabled"
+  print("This checkLiquidMigration.py cannot be executed because LIQMIGRATION is disabled")
   

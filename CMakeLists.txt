@@ -10,6 +10,7 @@
 #  ENABLE_CGAL: enable CGAL option (ON by default)
 #  ENABLE_VTK: enable VTK-export option (ON by default)
 #  ENABLE_OPENMP: enable OpenMP-parallelizing option (ON by default)
+#  ENABLE_MPI : Enable MPI communications in Yade. Used for Yade-OpenFOAM coupling.
 #  ENABLE_GTS: enable GTS-option (ON by default)
 #  ENABLE_GL2PS: enable GL2PS-option (ON by default)
 #  ENABLE_LINSOLV: enable LINSOLV-option (ON by default)
@@ -28,47 +29,91 @@
 #  VECTORIZE: enables vectorization and alignment in Eigen3 library, experimental (OFF by default)
 #  USE_QT5: use QT5 for GUI (ON by default)
 #  CHOLMOD_GPU link Yade to custom SuiteSparse installation and activate GPU accelerated PFV (OFF by default)
+#  ENABLE_PYTHON3: enable python 3 compilation instead of python2.7 (OFF by default)
+#  PYTHON_VERSION: force python version to the given one, set -1 to automatically use the last version on the system. (-1 by default)
 
 project(Yade C CXX)
 cmake_minimum_required(VERSION 2.8.11)
 
+
+#===========================================================
+SET(DEFAULT ON CACHE INTERNAL "Default value for enabled by default options")
+SET(LINKLIBS "")
+SET(CONFIGURED_FEATS "")
+SET(DISABLED_FEATS "")
+
+OPTION(ENABLE_VTK "Enable VTK" ${DEFAULT})
+OPTION(ENABLE_OPENMP "Enable OpenMP" ${DEFAULT})
+OPTION(ENABLE_MPI "Enable MPI environement and communications, required for coupling Yade with OpenFOAM  " ON)
+OPTION(ENABLE_GTS "Enable GTS" ${DEFAULT})
+OPTION(ENABLE_GUI "Enable GUI" ${DEFAULT})
+OPTION(ENABLE_CGAL "Enable CGAL" ${DEFAULT})
+OPTION(ENABLE_GL2PS "Enable GL2PS" ${DEFAULT})
+OPTION(ENABLE_LINSOLV "Enable direct solver for the flow engines (experimental)" ${DEFAULT})
+OPTION(ENABLE_PFVFLOW "Enable one-phase flow engines" ${DEFAULT})
+OPTION(ENABLE_TWOPHASEFLOW "Enable two-phase flow engines" ${DEFAULT})
+OPTION(ENABLE_SPH "Enable SPH" OFF)
+OPTION(ENABLE_LBMFLOW "Enable LBM engine (very experimental)" ON)
+OPTION(ENABLE_LIQMIGRATION "Enable liquid control (very experimental), see [Mani2013] for details" OFF)
+OPTION(ENABLE_MASK_ARBITRARY "Enable arbitrary precision of bitmask variables (only Body::groupMask yet implemented) (experimental). Use -DMASK_ARBITRARY_SIZE=int to set number of used bits (256 by default)" OFF)
+OPTION(ENABLE_PROFILING "Enable profiling, e.g. shows some more metrics, which can define bottlenecks of the code (OFF by default)" OFF)
+OPTION(ENABLE_POTENTIAL_PARTICLES "Enable potential particles" ON)
+OPTION(ENABLE_OAR "Generate script for oar-based task scheduler" OFF)
+OPTION(USE_QT5 "USE Qt5 for GUI" ON)
+OPTION(ENABLE_POTENTIAL_BLOCKS "Enable PotentialBlocks" ON)
+OPTION(ENABLE_DEFORM "Enable Deformation Engine" OFF)
+OPTION(CHOLMOD_GPU "Enable GPU acceleration flow engine direct solver" OFF)
+OPTION(ENABLE_THERMAL "Enable thermal engine (experimental)" OFF)
+#Set -DPYTHON_VERSION numeric option below:
+set(PYTHON_VERSION -1 CACHE STRING "Force python version to the given one. Defaults to -DPYTHON_VERSION=-1 which automatically uses the newest available python version on the system.")
+#===========================================================
+
+
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cMake")
 
-INCLUDE(FindPythonInterp)
-INCLUDE(FindOpenMP)
-INCLUDE(FindQt4)
-INCLUDE(FindPkgConfig)
 INCLUDE(GetVersion)
-INCLUDE(FindOpenGL)
-INCLUDE(FindGTS)
-INCLUDE(FindGL2PS)
-INCLUDE(FindCGAL)
-INCLUDE(FindNumPy)
-INCLUDE(FindLoki)
-INCLUDE(FindPythonModule)
-INCLUDE(FindFFTW3)
 INCLUDE(GNUInstallDirs)
-
 
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 
 #===========================================================
-# HACK!!! If the version of gcc is 4.8 or greater, we add -ftrack-macro-expansion=0 
+# HACK!!! If the version of gcc is 4.8 or greater, we add -ftrack-macro-expansion=0
 # and -save-temps into compiler to reduce the memory consumption during compilation.
 # See http://bugs.debian.org/726009 for more information
 # Can be removed later, if gcc fixes its regression
 # Taken from http://stackoverflow.com/questions/4058565/check-gcc-minor-in-cmake
 
-EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-IF (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
+# this line was trying to get the g++ version. But it does not work with ccache.
+# But we already have CMAKE_CXX_COMPILER_VERSION, so we don't need this line!
+#EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.8)
   MESSAGE(STATUS "GCC Version >= 4.8. Adding -ftrack-macro-expansion=0")
   ADD_DEFINITIONS("-ftrack-macro-expansion=0")
+ELSE()
+  MESSAGE(STATUS "GCC Version < 4.8. will not use -ftrack-macro-expansion=0")
 ENDIF()
 
 # -save-temps is not supported with ccache
-IF ((GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8) AND ( NOT "${CMAKE_CXX_COMPILER_LAUNCHER}" MATCHES ".*ccache" AND NOT DISABLE_SAVE_TEMPS))
+IF ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.8) AND ( NOT "${CMAKE_CXX_COMPILER_LAUNCHER}" MATCHES ".*ccache" AND NOT "${CMAKE_CXX_COMPILER}" MATCHES ".*ccache.*" AND NOT DISABLE_SAVE_TEMPS))
   MESSAGE(STATUS "GCC Version >= 4.8. Adding -save-temps")
   ADD_DEFINITIONS("-save-temps")
+ELSE()
+  IF ( "${CMAKE_CXX_COMPILER_LAUNCHER}" MATCHES ".*ccache" OR "${CMAKE_CXX_COMPILER}" MATCHES ".*ccache.*" )
+    MESSAGE(STATUS "ccache detected, will not use -save-temps")
+# on ubuntu 18.04 and 18.10 when ccache is used we need to fix some bug, see https://gitlab.kitware.com/cmake/cmake/issues/17275
+# but we can't do this on ubuntu 16.04 with cmake version 3.5.1, because that produces error: "list does not recognize sub-command FILTER".
+# So we must be above version 3.6, because https://cmake.org/cmake/help/v3.6/release/3.6.html?highlight=filter
+# Later maybe on some higher cmake version this will become unnecessary.
+    IF(CMAKE_VERSION VERSION_GREATER 3.6 OR CMAKE_VERSION VERSION_EQUAL 3.6)
+        string (STRIP "${CMAKE_CXX_COMPILER_ARG1}" __CXX_COMPILER_ARG1)
+        set(CMAKE_CXX_COMPILER_PREDEFINES_COMMAND "${CMAKE_CXX_COMPILER}" "${__CXX_COMPILER_ARG1}" "-dM" "-E" "-c" "${CMAKE_ROOT}/Modules/CMakeCXXCompilerABI.cpp")
+        list(FILTER CMAKE_CXX_COMPILER_PREDEFINES_COMMAND EXCLUDE REGEX "^$")
+        unset(__CXX_COMPILER_ARG1)
+    ENDIF()
+  ELSE()
+    MESSAGE(STATUS "GCC Version < 4.8 or DISABLE_SAVE_TEMPS. will not use -save-temps")
+  ENDIF()
 ENDIF()
 
 #===========================================================
@@ -82,7 +127,7 @@ ENDIF()
 IF ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
   ADD_DEFINITIONS("-ftemplate-depth-512 -fstack-protector ")
 ELSE()
-  IF (GCC_VERSION VERSION_GREATER 4.9 OR GCC_VERSION VERSION_EQUAL 4.9)
+  IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.9)
     MESSAGE(STATUS "GCC Version >= 4.9. Adding -fstack-protector-strong")
     ADD_DEFINITIONS("-fstack-protector-strong")
   ELSE()
@@ -100,71 +145,72 @@ ELSE (DEBUG)
   ADD_DEFINITIONS("-DNDEBUG")
 ENDIF (DEBUG)
 
+
+#==================================
+#====== *** PYTHON/BOOST *** ======
+#==================================
+INCLUDE(YadePythonHelpers)
+
+SET(PY3_VERSIONS 3.8 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0) #append newer python versions at the beginning here.
+SET(PY2_VERSIONS 2.7 2.6)
+IF(${PYTHON_VERSION} EQUAL -1)
+	SET(PY_VERSIONS_CHECK "${PY3_VERSIONS};${PY2_VERSIONS}")
+ELSEIF(${PYTHON_VERSION} EQUAL 2)
+	SET(PY_VERSIONS_CHECK "${PY2_VERSIONS}")
+ELSEIF(${PYTHON_VERSION} EQUAL 3)
+	SET(PY_VERSIONS_CHECK "${PY3_VERSIONS}")
+ELSE()
+	SET(PY_VERSIONS_CHECK "${PYTHON_VERSION}")
+ENDIF()
+
+MESSAGE("Loop on the following python versions and check available dependencies:${PY_VERSIONS_CHECK}" )
+FOREACH(py_version ${PY_VERSIONS_CHECK})
+	#Reset variables to be able to use finpythoninterp multiple times
+	unset(PYTHONINTERP_FOUND CACHE)
+	unset(PYTHON_EXECUTABLE CACHE)
+	#Set desired python version
+	set(Python_ADDITIONAL_VERSIONS ${py_version})
+	#Find python
+	FIND_PACKAGE(PythonInterp)
+	IF(NOT PythonInterp_FOUND)
+		MESSAGE(FATAL_ERROR "No python version could be found in your system.")
+	ENDIF()
+	#FindPythonInterp will try to fallback in older Python version, we have to check manually if it found the version we wish
+	PYTHON_VERSION_MATCHES(${py_version})
+	IF(NOT ${PYTHON_VERSION_MATCH})
+		CONTINUE()
+	ENDIF()
+	MESSAGE("Python version ${PYTHON_VERSION_STRING} found, try to import dependencies...")
+	FIND_PYTHON_PACKAGES()
+	IF(ALL_PYTHON_DEPENDENCIES_FOUND)
+		MESSAGE("Found all python dependencies with version ${PYTHON_VERSION_STRING}, will compile yade with that.")
+		BREAK()
+	ENDIF()
+ENDFOREACH()
+
+#After the loop on all python versions, having ALL_PYTHON_DEPENDENCIES_FOUND==FALSE must trigger an error:
+IF(NOT ALL_PYTHON_DEPENDENCIES_FOUND)
+	MESSAGE(FATAL_ERROR "No python version with all dependencies was found.")
+ENDIF()
+
+#======================================
+#====== *** END PYTHON/BOOST *** ======
+#======================================
+
 #===========================================================
-# Add possibility to use local boost installation (e.g. -DLocalBoost=1.46.1)
-
-IF ( NOT LocalBoost )
-  SET(LocalBoost "1.47.0") # Minimal required Boost version
-ENDIF ( NOT LocalBoost )
-FIND_PACKAGE(Boost ${LocalBoost} COMPONENTS python thread filesystem iostreams regex serialization system date_time REQUIRED)
-INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
-# for checking purpose
-MESSAGE("--   Boost_VERSION: " ${Boost_VERSION})
-MESSAGE("--   Boost_LIB_VERSION: " ${Boost_LIB_VERSION})
-MESSAGE("--   Boost_INCLUDE_DIRS: " ${Boost_INCLUDE_DIRS})
-MESSAGE("--   Boost_LIBRARIES: " ${Boost_LIBRARIES})
-ADD_DEFINITIONS(-DBOOST_MATH_DISABLE_FLOAT128=1)
-
-#===========================================================
-FIND_PACKAGE(NumPy REQUIRED)
-INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
-
 FIND_PACKAGE(Loki REQUIRED)
 INCLUDE_DIRECTORIES(${LOKI_INCLUDE_DIR})
 
 FIND_PACKAGE(Eigen3 REQUIRED)
 FIND_PACKAGE(BZip2 REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
-
-SET(Python_ADDITIONAL_VERSIONS 2.7)
-FIND_PACKAGE(PythonLibs REQUIRED)
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 #===========================================================
 
-SET(DEFAULT ON CACHE INTERNAL "Default value for enabled by default options")
-SET(LINKLIBS "")
-SET(CONFIGURED_FEATS "")
-SET(DISABLED_FEATS "")
-
-OPTION(ENABLE_VTK "Enable VTK" ${DEFAULT})
-OPTION(ENABLE_OPENMP "Enable OpenMP" ${DEFAULT})
-OPTION(ENABLE_GTS "Enable GTS" ${DEFAULT})
-OPTION(ENABLE_GUI "Enable GUI" ${DEFAULT})
-OPTION(ENABLE_CGAL "Enable CGAL" ${DEFAULT})
-OPTION(ENABLE_GL2PS "Enable GL2PS" ${DEFAULT})
-OPTION(ENABLE_LINSOLV "Enable direct solver for the flow engines (experimental)" ${DEFAULT})
-OPTION(ENABLE_PFVFLOW "Enable one-phase flow engines" ${DEFAULT})
-OPTION(ENABLE_TWOPHASEFLOW "Enable two-phase flow engines" ${DEFAULT})
-OPTION(ENABLE_SPH "Enable SPH" OFF)
-OPTION(ENABLE_LBMFLOW "Enable LBM engine (very experimental)" ON)
-OPTION(ENABLE_LIQMIGRATION "Enable liquid control (very experimental), see [Mani2013] for details" OFF)
-OPTION(ENABLE_MASK_ARBITRARY "Enable arbitrary precision of bitmask variables (only Body::groupMask yet implemented) (experimental). Use -DMASK_ARBITRARY_SIZE=int to set number of used bits (256 by default)" OFF)
-OPTION(ENABLE_PROFILING "Enable profiling, e.g. shows some more metrics, which can define bottlenecks of the code (OFF by default)" OFF)
-OPTION(ENABLE_POTENTIAL_PARTICLES "Enable potential particles" OFF)
-OPTION(ENABLE_OAR "Generate script for oar-based task scheduler" OFF)
-OPTION(USE_QT5 "USE Qt5 for GUI" ON)
-OPTION(ENABLE_POTENTIAL_BLOCKS "Enable PotentialBlocks" OFF)
-OPTION(ENABLE_DEFORM "Enable Deformation Engine" OFF)
-OPTION(CHOLMOD_GPU "Enable GPU acceleration flow engine direct solver" OFF)
-OPTION(ENABLE_THERMAL "Enable thermal engine (experimental)" OFF)
-OPTION(ENABLE_FFTW3 "Enable libfftw3 (used by Quantum Mechanics)" ${DEFAULT})
-
-#===========================================================
 # Use Eigen3 by default
 IF (EIGEN3_FOUND)
   INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
   MESSAGE(STATUS "Found Eigen3, version: ${EIGEN3_VERSION}")
-  
+
   # Minimal required version 3.2.1
   IF ((${EIGEN3_MAJOR_VERSION} LESS 2) OR ((${EIGEN3_MAJOR_VERSION} EQUAL 2) AND (${EIGEN3_MINOR_VERSION} LESS 1)))
     MESSAGE(FATAL_ERROR "Minimal required Eigen3 version is 3.2.1, please update Eigen3!")
@@ -176,7 +222,7 @@ IF (EIGEN3_FOUND)
   ELSE (NOT VECTORIZE)
     MESSAGE(STATUS "Enable vectorization")
   ENDIF (NOT VECTORIZE)
-  
+
 ENDIF(EIGEN3_FOUND)
 #===========================================================
 INCLUDE_DIRECTORIES(${BZIP2_INCLUDE_DIR})
@@ -249,16 +295,6 @@ IF(ENABLE_GUI)
   FIND_PACKAGE(OpenGL)
   FIND_PACKAGE(GLUT)
   FIND_PACKAGE(glib2)
-    
-# # >>>start>>>> Add drop down menu QComboBox in qt4 interface
-#   FIND_PACKAGE(QGLVIEWER)
-#   IF(QT4_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
-#     SET(GUI_LIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${QGLVIEWER_LIBRARIES})
-#     SET(GUI_SRC_LIB "lib/opengl/GLUtils.cpp;py/wrapper/Menu.cpp;lib/base/NDimTable.cpp")
-#     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_OPENGL")
-#     INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
-#     INCLUDE_DIRECTORIES(${QT_INCLUDES})
-# # >>> end >>>> Add drop down menu QComboBox in qt4 interface
 
   IF(USE_QT5)
     MESSAGE(STATUS "USE QT5")
@@ -270,7 +306,9 @@ IF(ENABLE_GUI)
       SET(GUI_LIBS ${GLUT_LIBRARY} ${QGLVIEWER_LIBRARIES})
       SET(GUI_SRC_LIB "lib/opengl/GLUtils.cpp")
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_OPENGL -DYADE_QT5")
-      
+      SET(Used_QT_VERSION_MAJOR ${QT5_VERSION_MAJOR})
+      SET(Used_QT_VERSION_MINOR ${QT5_VERSION_MINOR})
+      SET(Used_QT_VERSION_PATCH ${QT5_VERSION_PATCH})
       MESSAGE(STATUS "Found GUI-Qt5-LIBS")
       SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} GUI-Qt5")
     ELSE(Qt5Widgets_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
@@ -286,9 +324,12 @@ IF(ENABLE_GUI)
       SET(GUI_LIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${QGLVIEWER_LIBRARIES})
       SET(GUI_SRC_LIB "lib/opengl/GLUtils.cpp")
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_OPENGL -DYADE_QT4")
+      SET(Used_QT_VERSION_MAJOR ${QT_VERSION_MAJOR})
+      SET(Used_QT_VERSION_MINOR ${QT_VERSION_MINOR})
+      SET(Used_QT_VERSION_PATCH ${QT_VERSION_PATCH})
       INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
       INCLUDE_DIRECTORIES(${QT_INCLUDES})
-      
+
       MESSAGE(STATUS "Found GUI-LIBS")
       SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} GUI")
     ELSE(QT4_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
@@ -309,18 +350,18 @@ IF(ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW)
   ENDIF (NOT ENABLE_CGAL)
 ENDIF(ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW)
 #===========================================================
-IF(ENABLE_CGAL)  
+IF(ENABLE_CGAL)
   INCLUDE(FindGMP)
   FIND_PACKAGE(CGAL)
   FIND_PACKAGE(GMP)
   IF(CGAL_FOUND AND GMP_FOUND AND (NOT("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang"))) #Check for clang should be removed, when CGAL will be compilable by clang
-    
+
     FILE(GLOB CGAL_SRC_LIB "lib/triangulation/*.cpp")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CGAL_DEFINITIONS} -DYADE_CGAL")
     SET(LINKLIBS  "${LINKLIBS};${CGAL_LIBRARIES};${GMP_LIBRARIES};${GMPXX_LIBRARIES};")
     MESSAGE(STATUS "Found CGAL")
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} CGAL")
-    
+
     ADD_DEFINITIONS("-DCGAL_DISABLE_ROUNDING_MATH_CHECK -frounding-math")
 
     IF(ENABLE_PFVFLOW)
@@ -353,7 +394,7 @@ IF(ENABLE_LINSOLV)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CGAL_DEFINITIONS} -DLINSOLV -DFLOW_ENGINE")
 
     SET(LINKLIBS  "${LINKLIBS};${CHOLMOD_LIBRARIES};${AMD_LIBRARY};${CAMD_LIBRARY};${COLAMD_LIBRARY};${CCOLAMD_LIBRARY};${OPENBLAS_LIBRARY};${METIS_LIBRARY};${SUITESPARSE_LIBRARY}")
-    INCLUDE_DIRECTORIES(${METIS_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(${METIS_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR} ${BLAS_INCLUDE_DIR})
     MESSAGE(STATUS "Found Cholmod in " ${CHOLMOD_LIBRARIES})
     MESSAGE(STATUS "Found OpenBlas in " ${OPENBLAS_LIBRARY})
     MESSAGE(STATUS "Found Metis in " ${METIS_LIBRARY})
@@ -389,7 +430,23 @@ ELSE(ENABLE_LINSOLV)
          SET(ENABLE_TWOPHASEFLOW OFF)
       ENDIF(ENABLE_TWOPHASEFLOW)
 ENDIF(ENABLE_LINSOLV)
-
+#===============================================
+IF(ENABLE_MPI)
+  FIND_PACKAGE(MPI)
+  IF (MPI_FOUND)
+    INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_MPI")
+    SET (LINKLIBS "${LINKLIBS};${MPI_CXX_LIBRARIES};")
+    MESSAGE(STATUS "MPI found")
+    SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} MPI")
+  ELSE(MPI_FOUND)
+    MESSAGE(STATUS "MPI NOT FOUND, YADE-OpenFOAM coupling disabled")
+    SET (DISABLED_FEATS "${DISABLED_FEATS} MPI")
+  ENDIF(MPI_FOUND)
+ELSE(ENABLE_MPI)
+    SET (DISABLED_FEATS "${DISABLED_FEATS} MPI")
+ENDIF(ENABLE_MPI)
+#===============================================
 IF(ENABLE_TWOPHASEFLOW)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTWOPHASEFLOW")
 	SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} TWOPHASEFLOW")
@@ -435,7 +492,6 @@ ELSE(ENABLE_GL2PS)
   SET(DISABLED_FEATS "${DISABLED_FEATS} GL2PS")
 ENDIF(ENABLE_GL2PS)
 
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 
 #===========================================================
@@ -517,6 +573,7 @@ IF(ENABLE_POTENTIAL_PARTICLES)
     SET(LINKLIBS  "${LINKLIBS};${OPENBLAS_LIBRARY};${LAPACK_LIBRARY}")
     MESSAGE(STATUS "Found OpenBlas")
     MESSAGE(STATUS "Found Lapack")
+    INCLUDE_DIRECTORIES(${BLAS_INCLUDE_DIR})
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} PotentialParticles")
   ELSE(OPENBLAS_FOUND AND LAPACK_FOUND)
     MESSAGE(STATUS "Missing dependency for PotentialParticles, disabled")
@@ -530,24 +587,25 @@ ENDIF(ENABLE_POTENTIAL_PARTICLES)
 
 
 #===========================================================
-IF(ENABLE_POTENTIAL_BLOCKS)  
+IF(ENABLE_POTENTIAL_BLOCKS)
   INCLUDE(FindCLP)
   FIND_PACKAGE(OpenBlas REQUIRED)
   FIND_PACKAGE(LAPACK REQUIRED)
-  IF(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND) 
+  IF(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND)
     ADD_DEFINITIONS("-DYADE_POTENTIAL_BLOCKS")
     INCLUDE_DIRECTORIES(${CLP_INCLUDE_DIR} ${CLP2_INCLUDE_DIR} )
     SET(LINKLIBS  "${LINKLIBS};${CLP_LIBRARY};${CLP2_LIBRARY};${CLP3_LIBRARY};${OPENBLAS_LIBRARY};${LAPACK_LIBRARY}")
     MESSAGE(STATUS "Found CLP")
+    INCLUDE_DIRECTORIES(${BLAS_INCLUDE_DIR})
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} PotentialBlocks")
-  ELSE(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND) 
+  ELSE(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND)
     MESSAGE(STATUS "CLP NOT found")
     SET(DISABLED_FEATS "${DISABLED_FEATS} PotentialBlocks")
     SET(ENABLE_POTENTIAL_BLOCKS OFF)
-  ENDIF(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND) 
-ELSE(ENABLE_POTENTIAL_BLOCKS)  
+  ENDIF(CLP_FOUND AND OPENBLAS_FOUND AND LAPACK_FOUND)
+ELSE(ENABLE_POTENTIAL_BLOCKS)
   SET(DISABLED_FEATS "${DISABLED_FEATS} PotentialBlocks")
-ENDIF(ENABLE_POTENTIAL_BLOCKS)  
+ENDIF(ENABLE_POTENTIAL_BLOCKS)
 #===========================================================
 
 
@@ -627,10 +685,7 @@ IF (CHUNKSIZE)
 ELSE (CHUNKSIZE)
   ADD_LIBRARY(yade SHARED ${SRC_CORE} ${SRC_PKG} ${SRC_LIB})
 ENDIF (CHUNKSIZE)
-#===========================================================
-find_python_module(minieigen REQUIRED)
 
-find_python_module(Tkinter REQUIRED)
 #===========================================================
 
 ADD_LIBRARY(boot SHARED ${CMAKE_CURRENT_SOURCE_DIR}/core/main/pyboot.cpp)
@@ -673,6 +728,7 @@ IF(ENABLE_OAR)
 ENDIF(ENABLE_OAR)
 CONFIGURE_FILE(core/main/main.py.in "${CMAKE_BINARY_DIR}/bins/yade${SUFFIX}")
 CONFIGURE_FILE(py/config.py.in "${CMAKE_BINARY_DIR}/config.py")
+CONFIGURE_FILE(py/libVersions.py.in "${CMAKE_BINARY_DIR}/libVersions.py")
 CONFIGURE_FILE(py/__init__.py.in "${CMAKE_BINARY_DIR}/__init__.py")
 
 #===========================================================
@@ -694,6 +750,7 @@ IF(ENABLE_OAR)
 ENDIF(ENABLE_OAR)
 INSTALL(PROGRAMS "${CMAKE_BINARY_DIR}/bins/yade${SUFFIX}" DESTINATION ${YADE_EXEC_PATH}/)
 INSTALL(FILES "${CMAKE_BINARY_DIR}/config.py" DESTINATION ${YADE_PY_PATH}/yade/)
+INSTALL(FILES "${CMAKE_BINARY_DIR}/libVersions.py" DESTINATION ${YADE_PY_PATH}/yade/)
 INSTALL(FILES "${CMAKE_BINARY_DIR}/__init__.py" DESTINATION ${YADE_PY_PATH}/yade/)
 FILE(GLOB filesPYChecks "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/checks/*.py")
 INSTALL(FILES ${filesPYChecks} DESTINATION ${YADE_PY_PATH}/yade/tests/checks)
@@ -723,22 +780,25 @@ MESSAGE(STATUS "===========================================================")
 ADD_CUSTOM_TARGET(doc)
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc)
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc/sphinx)
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET doc PRE_BUILD
                   COMMAND rm -rf ${CMAKE_BINARY_DIR}/doc/sphinx/_build
                   COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/doc/* ${CMAKE_BINARY_DIR}/doc
-                  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/doc/sphinx ${YADE_EXEC_PATH}/yade${SUFFIX} yadeSphinx.py
+                  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/doc/sphinx ${YADE_EXEC_PATH}/yade${SUFFIX} -x yadeSphinx.py html
+                  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/doc/sphinx ${YADE_EXEC_PATH}/yade${SUFFIX} -x yadeSphinx.py latex
+                  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/doc/sphinx ${YADE_EXEC_PATH}/yade${SUFFIX} -x yadeSphinx.py epub
+                  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/doc/sphinx ${YADE_EXEC_PATH}/yade${SUFFIX} -x yadeSphinx.py workarounds
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc/sphinx
                   DEPENDS ${YADE_EXEC_PATH}/yade${SUFFIX}
                   )
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET doc POST_BUILD
                   COMMAND xelatex Yade.tex
                   COMMAND xelatex Yade.tex
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc/sphinx/_build/latex
                   DEPENDS ${YADE_EXEC_PATH}/yade${SUFFIX} ${CMAKE_BINARY_DIR}/doc/sphinx/_build/latex/Yade.tex
                   )
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET doc POST_BUILD
                   COMMAND rm -rf ${YADE_DOC_PATH}/html
                   COMMAND mv ${CMAKE_BINARY_DIR}/doc/sphinx/_build/html ${YADE_DOC_PATH}/html
@@ -746,7 +806,7 @@ ADD_CUSTOM_COMMAND(
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc/sphinx/_build/latex
                   DEPENDS ${YADE_EXEC_PATH}/yade${SUFFIX} ${CMAKE_BINARY_DIR}/doc/sphinx/_build/latex/Yade.tex
                   )
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET doc POST_BUILD
                   COMMAND mv ${CMAKE_BINARY_DIR}/doc/sphinx/_build/epub/Yade.epub ${YADE_DOC_PATH}/ || true
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc/sphinx/_build/latex
@@ -755,7 +815,7 @@ ADD_CUSTOM_COMMAND(
 #===========================================================
 #Building manpage
 ADD_CUSTOM_TARGET(manpage)
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET manpage POST_BUILD
                   COMMAND help2man ${YADE_EXEC_PATH}/yade${SUFFIX} > yade${SUFFIX}.1
                   COMMAND help2man ${YADE_EXEC_PATH}/yade${SUFFIX}-batch > yade${SUFFIX}-batch.1
@@ -767,7 +827,7 @@ ADD_CUSTOM_COMMAND(
 #===========================================================
 #Execute standard checks
 ADD_CUSTOM_TARGET(check)
-ADD_CUSTOM_COMMAND( 
+ADD_CUSTOM_COMMAND(
                   TARGET check POST_BUILD
                   COMMAND ${YADE_EXEC_PATH}/yade${SUFFIX} --test
                   COMMAND ${YADE_EXEC_PATH}/yade${SUFFIX} --check
@@ -775,5 +835,3 @@ ADD_CUSTOM_COMMAND(
                   DEPENDS ${YADE_EXEC_PATH}/yade${SUFFIX}
                   )
 #===========================================================
-
-
