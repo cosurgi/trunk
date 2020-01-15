@@ -4,6 +4,8 @@
 #include<core/Omega.hpp>
 #include<core/InteractionContainer.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 //! This could be -1 if id_t is re-typedef'ed as `int'
 const Body::id_t Body::ID_NONE=Body::id_t(-1);
 
@@ -21,7 +23,7 @@ boost::python::list Body::py_intrs(){
 }
 
 // return number of interactions of this particle
-const unsigned int Body::coordNumber() const {
+unsigned int Body::coordNumber() const {
 	unsigned int intrSize = 0;
 	for(auto it=this->intrs.begin(),end=this->intrs.end(); it!=end; ++it) {  //Iterate over all bodie's interactions
 		if(!(*it).second->isReal()) continue;
@@ -38,5 +40,5 @@ bool Body::maskOk(const mask_t& mask) const { return (mask==0 || ((groupMask & m
 bool Body::maskCompatible(const mask_t& mask) const { return (groupMask & mask) != 0; }
 #endif
 
-
+} // namespace yade
 

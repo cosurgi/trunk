@@ -4,6 +4,8 @@
 #include<core/PartialEngine.hpp>
 #include<pkg/dem/ScGeom.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 typedef Real (* KernelFunction)(const double & r, const double & h);
 
 enum KernFunctions {Lucy=1,BSpline1=2,BSpline2=3};
@@ -14,6 +16,7 @@ class SPHEngine: public PartialEngine{
   public:
     void calculateSPHRho(const shared_ptr<Body>& b);
     virtual void action();
+	// clang-format off
   YADE_CLASS_BASE_DOC_ATTRS(SPHEngine,PartialEngine,"Apply given torque (momentum) value at every subscribed particle, at every step. ",
     ((int, mask,-1,, "Bitmask for SPH-particles."))
     ((Real,k,-1,,    "Gas constant for SPH-interactions (only for SPH-model). See Mueller [Mueller2003]_ .")) // [Mueller2003], (11)
@@ -21,6 +24,7 @@ class SPHEngine: public PartialEngine{
     ((Real,h,-1,,    "Core radius. See Mueller [Mueller2003]_ ."))                                            // [Mueller2003], (1)
     ((int,KernFunctionDensity, Lucy,, "Kernel function for density calculation (by default - Lucy). The following kernel functions are available: Lucy=1 ([Lucy1977]_ (27)), BSpline1=2 ([Monaghan1985]_ (21)), BSpline2=3 ([Monaghan1985]_ (22))."))
   );
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(SPHEngine);
 Real smoothkernelLucy(const double & r, const double & h);         
@@ -37,5 +41,8 @@ KernelFunction returnKernelFunction(const int a, const int b, const typeKernFunc
 KernelFunction returnKernelFunction(const int a, const typeKernFunctions typeF);
 
 bool computeForceSPH(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I, Vector3r & force);
+
+} // namespace yade
+
 #endif
 

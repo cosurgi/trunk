@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                        *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -13,6 +13,8 @@
 #include<boost/iostreams/filtering_stream.hpp>
 #include<boost/iostreams/filter/bzip2.hpp>
 #include<boost/iostreams/device/file.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 namespace CGT {
 
@@ -122,7 +124,6 @@ TriaxialState::Tesselation& TriaxialState::Tesselate (void)
 			//vh->->info() = git->translation; FIXME : this could define displacements in the triangulation itself
 //			cerr << "Tes.insert(git->sphere.x(), git->sphere.y(), git->sphere.z(), git->sphere.weight(), git->id);" << endl;
 		}
-		Tes.redirected = true;//vertexHandle has been filled here, no need to do it again
 		tesselated = true;
 		cerr << "Triangulated Grains : " << Tes.Triangulation().number_of_vertices() << endl;
 	}
@@ -226,7 +227,7 @@ bool TriaxialState::from_file(const char* filename, bool bz2)
 	Statefile >> Nc;
 	contacts.resize(Nc);
 
-	for (long i=0 ; i < Nc ; ++i) {
+	for (long j=0 ; j < Nc ; ++j) {
 		Contact* c = new Contact;
 		Statefile >> id1 >> id2 >> normal >> c_pos >> old_fn >> old_fs >> fn >> fs >> frictional_work >> stat;
 		
@@ -244,8 +245,8 @@ bool TriaxialState::from_file(const char* filename, bool bz2)
 		c->fs = fs;
 		c->frictional_work = frictional_work;
 		c->status = (Contact::Status) stat;
-		if (contacts[i]) delete contacts[i];
-		contacts[i] = c;
+		if (contacts[j]) delete contacts[j];
+		contacts[j] = c;
 	}
 
 	//cout << "c_pos=" << contacts[10]->position << " old_fn=" << contacts[10]->old_fn << " normal=" << contacts[10]->normal << endl;
@@ -321,3 +322,6 @@ bool TriaxialState::to_file(const char* filename, bool bz2)
 }
 
 } // namespace CGT
+
+} // namespace yade
+

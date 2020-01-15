@@ -9,6 +9,8 @@
 #include <pkg/common/PeriodicEngines.hpp>
 
 
+namespace yade { // Cannot have #include directive inside.
+
 //*********************************************************************************
 /* Polyhedra Splitter */
 class PolyhedraSplitter : public PeriodicEngine{
@@ -17,6 +19,7 @@ class PolyhedraSplitter : public PeriodicEngine{
 		double getStrength(const double & volume, const double & strength) const;
 		void Symmetrize(Matrix3r & bStress);
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 		PolyhedraSplitter,PeriodicEngine,"Engine that splits polyhedras.\n\n.. warning:: PolyhedraSplitter returns different results depending on CGAL version! For details see https://gitlab.com/yade-dev/trunk/issues/45"
 		,
@@ -24,6 +27,7 @@ class PolyhedraSplitter : public PeriodicEngine{
 		/*ctor*/
 		,/*py*/
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(PolyhedraSplitter);
@@ -32,6 +36,7 @@ class SplitPolyTauMax : public PolyhedraSplitter{
 	public:
 		virtual void action();
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 		SplitPolyTauMax,PolyhedraSplitter,"Split polyhedra along TauMax."
 		,
@@ -39,6 +44,7 @@ class SplitPolyTauMax : public PolyhedraSplitter{
 		/*ctor*/
 		,/*py*/
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(SplitPolyTauMax);
@@ -47,6 +53,7 @@ class SplitPolyMohrCoulomb : public PolyhedraSplitter{
 	public:
 		virtual void action();
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 		SplitPolyMohrCoulomb,PolyhedraSplitter,"Split polyhedra according to Mohr-Coulomb criterion."
 		,
@@ -55,8 +62,11 @@ class SplitPolyMohrCoulomb : public PolyhedraSplitter{
 		/*ctor*/
 		,/*py*/
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(SplitPolyMohrCoulomb);
+
+} // namespace yade
 
 #endif // YADE_CGAL

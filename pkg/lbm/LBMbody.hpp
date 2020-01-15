@@ -12,6 +12,8 @@
 #include<lib/serialization/Serializable.hpp>
 #include<lib/multimethods/Indexable.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class LBMbody:  public Serializable{
     public:
         virtual ~LBMbody() {};
@@ -21,6 +23,7 @@ class LBMbody:  public Serializable{
         void setAsPtc(){type=2;}
         void setAsBox(){type=1;}
 
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS_CTOR(LBMbody,Serializable,
         "Body class for Lattice Boltzmann Method ",
         ((Vector3r,force,Vector3r::Zero(),,"Hydrodynamic force, need to be reinitialized (LB unit)"))
@@ -40,7 +43,10 @@ class LBMbody:  public Serializable{
         ((short int,type,-1,," "))
         ,
         );
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(LBMbody);
+
+} // namespace yade
 
 #endif //LBM_ENGINE

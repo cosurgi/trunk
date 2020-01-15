@@ -1,4 +1,9 @@
-/* lucScholtes2010 */
+/* Luc Scholtes 2010, jointed cohesive frictional model:
+Scholtès, L., and Donzé F., "Modelling progressive failure in fractured rock masses using a 3D discrete element method." International Journal of Rock Mechanics and Mining Sciences 52 (2012): 18-30. */
+
+/* Robert Caulk 2018, acoustic emissions and heterogeneity models:
+Caulk, R. (2018) Stochastic Augmentation of the Discrete Element Method for the Investigation of Tensile Rupture in Heterogeneous Rock.
+Yade Technical Archive. DOI: 10.5281/zenodo.1202039 */
 
 #pragma once
 
@@ -6,11 +11,13 @@
 #include<pkg/common/Dispatching.hpp>
 #include<pkg/common/NormShearPhys.hpp>
 #include<pkg/dem/ScGeom.hpp>
-#include <boost/thread/mutex.hpp>
 #include <random>
+
+namespace yade { // Cannot have #include directive inside.
 
 /** This class holds information associated with each body state*/
 class JCFpmState: public State {
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(JCFpmState,State,"JCFpm state information about each body.",
 		((int,nbInitBonds,0,,"Number of initial bonds. [-]"))
 		((int,nbBrokenBonds,0,,"Number of broken bonds. [-]"))
@@ -23,6 +30,7 @@ class JCFpmState: public State {
 		,
 		createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(JCFpmState,State);
 };
 REGISTER_SERIALIZABLE(JCFpmState);
@@ -33,6 +41,7 @@ class JCFpmMat: public FrictMat {
 		virtual shared_ptr<State> newAssocState() const { return shared_ptr<State>(new JCFpmState); }
 		virtual bool stateTypeOk(State* s) const { return (bool)dynamic_cast<JCFpmState*>(s); }
 		
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(JCFpmMat,FrictMat,"Possibly jointed, cohesive frictional material, for use with other JCFpm classes",
 		((int,type,0,,"If particles of two different types interact, it will be with friction only (no cohesion).[-]"))
 		((Real,tensileStrength,0.,,"Defines the maximum admissible normal force in traction in the matrix (:yref:`FnMax<JCFpmPhys.FnMax>` = tensileStrength * :yref:`crossSection<JCFpmPhys.crossSection>`). [Pa]"))
@@ -47,6 +56,7 @@ class JCFpmMat: public FrictMat {
 		,
 		createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(JCFpmMat,FrictMat);
 };
 REGISTER_SERIALIZABLE(JCFpmMat);
@@ -56,6 +66,7 @@ class JCFpmPhys: public NormShearPhys {
 	public:
 		virtual ~JCFpmPhys();
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(JCFpmPhys,NormShearPhys,"Representation of a single interaction of the JCFpm type, storage for relevant parameters",
 			((Real,initD,0.,,"equilibrium distance for interacting particles. Computed as the interparticular distance at first contact detection."))
 			((bool,isBroken,false,,"flag for broken interactions"))
@@ -76,9 +87,9 @@ class JCFpmPhys: public NormShearPhys {
 			((Real,momentEnergy,0,,"reference strain (or kinetic) energy of surrounding interactions (particles)"))
 			((Real,momentEnergyChange,0,,"storage of the maximum strain (or kinetic) energy change for surrounding interactions (particles)"))
 			((Real,momentMagnitude,0,,"Moment magnitude of a failed interaction"))
-			((bool,firstMomentCalc,true,,"Flag for moment calculation"))
+			((bool,firstMomentCalc,true,,"Flag for moment calculation |yupdate|"))
 			((Real,elapsedIter,0,,"number of elapsed iterations for moment calculation"))
-			((bool,momentCalculated,false,,"Flag for moment calculation"))
+			((bool,momentCalculated,false,,"Flag for moment calculation to avoid repeating twice the operations |yupdate|"))
 			((bool,computedCentroid,false,,"Flag for moment calculation"))
 			((bool,checkedForCluster,false,,"Have we checked if this int belongs in cluster?"))
 			((bool,originalClusterEvent,false,,"the original AE event for a cluster"))
@@ -90,15 +101,16 @@ class JCFpmPhys: public NormShearPhys {
 			((int,eventNumber,0,,"cluster event number"))
 			((int,temporalWindow,0,,"temporal window for the clustering algorithm"))
 			((Vector3r,momentCentroid,Vector3r::Zero(),,"centroid of the AE event (avg location of clustered breaks)"))
-			((vector<Interaction*>,clusterInts,,,"vector of pointers to the broken interactions nearby constituting a cluster"))		
-			((Interaction*,originalEvent,,,"pointer to the original interaction of a cluster"))
-			((vector<Interaction*>,nearbyInts,,,"vector of pointers to the nearby ints used for moment calc"))
+			((vector<shared_ptr<Interaction>>,clusterInts,,Attr::readonly,"vector of pointers to the broken interactions nearby constituting a cluster"))
+			((shared_ptr<Interaction>,originalEvent,,Attr::readonly,"pointer to the original interaction of a cluster"))
+			((vector<shared_ptr<Interaction>>,nearbyInts,,Attr::readonly,"vector of pointers to the nearby ints used for moment calc"))
 			((Real,strainEnergy,0,,"strain energy of interaction"))
 			((Real,kineticEnergy,0,,"kinetic energy of the two spheres participating in the interaction (easiest to store this value with interaction instead of spheres since we are using this information for moment magnitude estimations and associated interaction searches)"))
 			,
 			createIndex();
 			,
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 		REGISTER_CLASS_INDEX(JCFpmPhys,NormShearPhys);
 };
@@ -111,6 +123,7 @@ class Ip2_JCFpmMat_JCFpmMat_JCFpmPhys: public IPhysFunctor{
 		void distributeCrossSectionsWeibull(shared_ptr<JCFpmPhys> contactPhysics, Real R1, Real R2);
 		FUNCTOR2D(JCFpmMat,JCFpmMat);
 		DECLARE_LOGGER;
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_JCFpmMat_JCFpmMat_JCFpmPhys,IPhysFunctor,"Converts 2 :yref:`JCFpmMat` instances to one :yref:`JCFpmPhys` instance, with corresponding parameters. See :yref:`JCFpmMat` and [Duriez2016]_ for details",                   
 			((int,cohesiveTresholdIteration,1,,"should new contacts be cohesive? If strictly negativ, they will in any case. If positiv, they will before this iter, they won't afterward."))
 			((Real,xSectionWeibullShapeParameter,0,,"Shape parameter used to generate interaction radii for the crossSectional areas (changing strength criteria only) according to Weibull distribution. Activated for any value other than 0. Needs to be combined with a :yref:`scale parameter<Ip2_JCFpmMat_JCFpmPhys.xSectionScaleParameter>`)"))
@@ -118,6 +131,7 @@ class Ip2_JCFpmMat_JCFpmMat_JCFpmPhys: public IPhysFunctor{
 			((Real,weibullCutOffMin,0.,,"Factor that cuts off the smallest values of the weibull distributed interaction areas."))
 			((Real,weibullCutOffMax,10,,"Factor that cuts off the largest values of the weibull distributed interaction areas."))
 	);
+	// clang-format on
 		
 };
 REGISTER_SERIALIZABLE(Ip2_JCFpmMat_JCFpmMat_JCFpmPhys);
@@ -135,6 +149,7 @@ class Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM: public LawFunctor{
 		void computeKineticEnergy(JCFpmPhys* phys, Body* b1, Body* b2);
 		void computeTemporalWindow(JCFpmPhys* phys, Body* b1, Body* b2);
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM,LawFunctor,"Interaction law for cohesive frictional material, e.g. rock, possibly presenting joint surfaces, that can be mechanically described with a smooth contact logic [Ivars2011]_ (implemented in Yade in [Scholtes2012]_). See examples/jointedCohesiveFrictionalPM for script examples. Joint surface definitions (through stl meshes or direct definition with gts module) are illustrated there.",
 			((bool,smoothJoint,false,,"if true, interactions of particles belonging to joint surface (:yref:`JCFpmPhys.isOnJoint`) are handled according to a smooth contact logic [Ivars2011]_, [Scholtes2012]_."))
 			((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene"))
@@ -158,6 +173,10 @@ class Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM: public LawFunctor{
 // 			((int,nbSlips,0,,"number of slips."))
 //			((Real,totalSlipE,0.,,"calculate the overall energy dissipated by interparticle friction."))
 		);
+	// clang-format on
 		DECLARE_LOGGER;	
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM);
+
+} // namespace yade
+

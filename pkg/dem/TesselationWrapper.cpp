@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -15,11 +15,14 @@
 
 // https://codeyarns.com/2014/03/11/how-to-selectively-ignore-a-gcc-warning/
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunused-function"
 // Code that generates this warning, Note: we cannot do this trick in yade. If we have a warning in yade, we have to fix it! See also https://gitlab.com/yade-dev/trunk/merge_requests/73
 // This method will work once g++ bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431#c34 is fixed.
 #include <lib/pyutil/numpy_boost.hpp>
 #pragma GCC diagnostic pop
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((TesselationWrapper));
 CREATE_LOGGER(TesselationWrapper);
@@ -69,10 +72,8 @@ void build_triangulation_with_ids(const shared_ptr<BodyContainer>& bodies, Tesse
 	std::vector<std::pair<const CGT::Sphere*,Body::id_t> > pointsPtrs;
 	spheres.reserve(bodies->size());
 	pointsPtrs.reserve(bodies->size());
-
-	BodyContainer::iterator biBegin    = bodies->begin();
-	BodyContainer::iterator biEnd = bodies->end();
-	BodyContainer::iterator bi = biBegin;
+	Tes.vertexHandles.clear();
+	Tes.vertexHandles.resize(bodies->size()+6,NULL);//+6 extra slots in case boundaries will be added latter as additional vertices
 
 	Body::id_t Ng = 0;
 	Body::id_t& MaxId=Tes.maxId;
@@ -81,27 +82,25 @@ void build_triangulation_with_ids(const shared_ptr<BodyContainer>& bodies, Tesse
 	shared_ptr<Sphere> sph (new Sphere);
 	int Sph_Index = sph->getClassIndexStatic();
 	Scene* scene = Omega::instance().getScene().get();
-	for (; bi!=biEnd ; ++bi) {
-		if ( (*bi)->shape->getClassIndex() ==  Sph_Index ) {
-			const Sphere* s = YADE_CAST<Sphere*> ((*bi)->shape.get());
-//FIXME: is the scene periodicity verification useful in the next line ? Tesselation seems to work in both periodic and non-periodic conditions with "scene->cell->wrapShearedPt((*bi)->state->pos)". I keep the verification to be consistent with all other uses of "wrapShearedPt" function.
-			const Vector3r& pos = scene->isPeriodic	? scene->cell->wrapShearedPt((*bi)->state->pos)
-								: (*bi)->state->pos;
+	for ( const auto & bi : *bodies) {
+		if ( bi->shape->getClassIndex() ==  Sph_Index ) {
+			const Sphere* s = YADE_CAST<Sphere*> (bi->shape.get());
+//FIXME: is the scene periodicity verification useful in the next line ? Tesselation seems to work in both periodic and non-periodic conditions with "scene->cell->wrapShearedPt(bi->state->pos)". I keep the verification to be consistent with all other uses of "wrapShearedPt" function.
+			const Vector3r& pos = scene->isPeriodic	? scene->cell->wrapShearedPt(bi->state->pos)
+								: bi->state->pos;
 			const Real rad = s->radius;
 			CGT::Sphere sp(CGT::Point(pos[0],pos[1],pos[2]),rad*rad);
 			spheres.push_back(sp);
-			pointsPtrs.push_back(std::make_pair(&(spheres[Ng]/*.point()*/),(*bi)->getId()));
+			pointsPtrs.push_back(std::make_pair(&(spheres[Ng]/*.point()*/),bi->getId()));
 			TW.Pmin = CGT::Point(min(TW.Pmin.x(),pos.x()-rad),min(TW.Pmin.y(), pos.y()-rad),min(TW.Pmin.z(), pos.z()-rad));
 			TW.Pmax = CGT::Point(max(TW.Pmax.x(),pos.x()+rad),max(TW.Pmax.y(),pos.y()+rad),max(TW.Pmax.z(),pos.z()+rad));
 			Ng++; TW.mean_radius += rad;
-			MaxId = max(MaxId,(*bi)->getId());
+			MaxId = max(MaxId,bi->getId());
 		} else ++nonSpheres;
 	}
 	TW.mean_radius /= Ng; TW.rad_divided = true;
 	spheres.resize(Ng);
 	pointsPtrs.resize(Ng);
-	Tes.vertexHandles.resize(MaxId+1+max(0,6-nonSpheres),NULL);//+6 extra slots max for adding boundaries latter
-	Tes.redirected = 1;
 	std::random_shuffle(pointsPtrs.begin(), pointsPtrs.end());
 	spatial_sort(pointsPtrs.begin(),pointsPtrs.end(), RTraits_for_spatial_sort()/*, CGT::RTriangulation::Weighted_point*/);
 
@@ -118,7 +117,7 @@ void build_triangulation_with_ids(const shared_ptr<BodyContainer>& bodies, Tesse
 		if (v==RTriangulation::Vertex_handle())
 			hint=c;
 		else {
-			v->info().setId((const unsigned int) p->second);
+			v->info().setId((unsigned int) p->second);
 			//Vh->info().isFictious = false;//false is the default
 			Tes.maxId = std::max(Tes.maxId,(int) p->second);
 			Tes.vertexHandles[p->second]=v;
@@ -142,6 +141,7 @@ void TesselationWrapper::clear(void)
 	n_spheres = 0;
 	rad_divided = false;
 	bounded = false;
+	Tes->vertexHandles.clear();
 	facet_it = Tes->Triangulation().finite_edges_end();
 }
 
@@ -199,6 +199,7 @@ bool TesselationWrapper::move(double x, double y, double z, double rad, unsigned
 
 void TesselationWrapper::computeTesselation(void)
 {
+	if (not (Tes->vertexHandles.size()>0)) insertSceneSpheres();
 	if (!rad_divided) {
 		mean_radius /= n_spheres;
 		rad_divided = true;
@@ -208,12 +209,14 @@ void TesselationWrapper::computeTesselation(void)
 
 void TesselationWrapper::computeTesselation(double pminx, double pmaxx, double pminy, double pmaxy, double pminz, double pmaxz)
 {
+	if (not (Tes->vertexHandles.size()>0)) insertSceneSpheres();
 	addBoundingPlanes(pminx, pmaxx,  pminy,  pmaxy, pminz, pmaxz);
 	computeTesselation();
 }
 
 void TesselationWrapper::computeVolumes(void)
 {
+	if (not (Tes->vertexHandles.size()>0)) insertSceneSpheres();
 	if (!bounded) addBoundingPlanes();
 	computeTesselation();
 	Tes->computeVolumes();
@@ -268,38 +271,6 @@ void TesselationWrapper::addBoundingPlanes(double pminx, double pmaxx, double pm
 }
 
 void  TesselationWrapper::addBoundingPlanes(void) {addBoundingPlanes(Pmin.x(),Pmax.x(),Pmin.y(),Pmax.y(),Pmin.z(),Pmax.z());}
-// {
-// 	if (!bounded) {
-// 		if (!rad_divided) {
-// 			mean_radius /= n_spheres;
-// 			rad_divided = true;
-// 		}
-// 		double FAR = 10000;
-// 		//Add big bounding spheres with isFictious=true
-// 		Tes->vertexHandles[0]=Tes->insert(0.5*(Pmin.x()+Pmax.x()),Pmin.y()-FAR*(Pmax.x()-Pmin.x()),0.5*(Pmax.z()+Pmin.z()),FAR*(Pmax.x()-Pmin.x()), 0, true);
-// 		Tes->vertexHandles[1]=Tes->insert(0.5*(Pmin.x()+Pmax.x()),Pmax.y()+FAR*(Pmax.x()-Pmin.x()),0.5*(Pmax.z()+Pmin.z()),FAR*(Pmax.x()-Pmin.x()), 1, true);
-// 		Tes->vertexHandles[2]=Tes->insert(Pmin.x()-FAR*(Pmax.y()-Pmin.y()),0.5*(Pmax.y()+Pmin.y()),0.5*(Pmax.z()+Pmin.z()),FAR*(Pmax.y()-Pmin.y()),2, true);
-// 		Tes->vertexHandles[3]=Tes->insert(Pmax.x()+FAR*(Pmax.y()-Pmin.y()),0.5*(Pmax.y()+Pmin.y()),0.5*(Pmax.z()+Pmin.z()),FAR*(Pmax.y()-Pmin.y()),3,true);
-// 		Tes->vertexHandles[4]=Tes->insert(0.5*(Pmin.x()+Pmax.x()),0.5*(Pmax.y()+Pmin.y()),Pmin.z()-FAR*(Pmax.y()-Pmin.y()),FAR*(Pmax.y()-Pmin.y()),4,true);
-// 		Tes->vertexHandles[5]=Tes->insert(0.5*(Pmin.x()+Pmax.x()),0.5*(Pmax.y()+Pmin.y()),Pmax.z()+FAR*(Pmax.y()-Pmin.y()),FAR*(Pmax.y()-Pmin.y()),5, true);
-// 		bounded = true;
-// 	}
-// }
-
-void  TesselationWrapper::RemoveBoundingPlanes(void)
-{
-	Tes->remove(0);
-	Tes->remove(1);
-	Tes->remove(2);
-	Tes->remove(3);
-	Tes->remove(4);
-	Tes->remove(5);
-	Pmin = CGT::Point(inf, inf, inf);
-	Pmax = CGT::Point(-inf, -inf, -inf);
-	mean_radius = 0;
-	rad_divided = false;
-	bounded = false;
-}
 
 void TesselationWrapper::setState (bool state){ mma.setState(state ? 2 : 1);}
 
@@ -317,7 +288,7 @@ void TesselationWrapper::defToVtkFromStates (string inputFile1, string inputFile
 	mma.analyser->DefToFile(inputFile1.c_str(),inputFile2.c_str(),outputFile.c_str(),bz2);
 }
 
-void createSphere(shared_ptr<Body>& body, Vector3r position, Real radius, bool big, bool dynamic )
+void createSphere(shared_ptr<Body>& body, Vector3r position, Real radius, bool /*big*/, bool /*dynamic*/ )
 {
 	body = shared_ptr<Body>(new Body); body->groupMask=2;
 	shared_ptr<Sphere> iSphere(new Sphere);
@@ -327,7 +298,7 @@ void createSphere(shared_ptr<Body>& body, Vector3r position, Real radius, bool b
 	body->shape	= iSphere;
 }
 
-void TesselationWrapper::defToVtkFromPositions (string inputFile1, string inputFile2, string outputFile, bool bz2){
+void TesselationWrapper::defToVtkFromPositions (string inputFile1, string inputFile2, string outputFile, bool /*bz2*/){
 	SpherePack sp1, sp2;
 	sp1.fromFile(inputFile1);
 	sp2.fromFile(inputFile2);
@@ -381,7 +352,7 @@ boost::python::dict TesselationWrapper::getVolPoroDef(bool deformation)
  		numpy_boost<double,1> vol(dim1);
  		numpy_boost<double,1> poro(dim1);
  		numpy_boost<double,2> def(dim2);
- 		//FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+ 		//for(const auto & b :  *scene->bodies){
  		for (RTriangulation::Finite_vertices_iterator  V_it = Tri.finite_vertices_begin(); V_it !=  Tri.finite_vertices_end(); V_it++) {
  			//id[]=V_it->info().id()
  			//if(!b) continue;
@@ -399,7 +370,7 @@ boost::python::dict TesselationWrapper::getVolPoroDef(bool deformation)
  		return ret;
 }
 
-
+#ifdef ALPHASHAPE
 boost::python::list TesselationWrapper::getAlphaFaces(double alpha)
 {
 	vector<AlphaFace> faces;
@@ -447,5 +418,8 @@ boost::python::list TesselationWrapper::getAlphaVertices(double alpha)
 		ret.append(*f);
 	return ret;
 }
+#endif //ALPHASHAPE
+
+} // namespace yade
 
 #endif /* YADE_CGAL */

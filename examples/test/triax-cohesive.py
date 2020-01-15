@@ -1,5 +1,5 @@
 # encoding: utf-8
-# 2012 ©Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+# 2012 ©Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 # This variant of triax-basic.py shows the usage of cohesive contact laws and moments at contacts
 
 from __future__ import print_function

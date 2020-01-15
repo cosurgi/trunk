@@ -3,6 +3,8 @@
 
 #include<lib/opengl/OpenGLWrapper.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 // bool Gl1_PFacet::normals=false;
 bool Gl1_PFacet::wire=true;
 void Gl1_PFacet::go(const shared_ptr<Shape>& cm, const shared_ptr<State>& st,bool wire2,const GLViewInfo&)
@@ -55,5 +57,7 @@ void Gl1_PFacet::go(const shared_ptr<Shape>& cm, const shared_ptr<State>& st,boo
 }
 
 YADE_PLUGIN((Gl1_PFacet));
+
+} // namespace yade
 
 #endif

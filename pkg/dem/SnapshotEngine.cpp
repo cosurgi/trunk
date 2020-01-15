@@ -2,6 +2,8 @@
 
 #include"SnapshotEngine.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((SnapshotEngine));
 CREATE_LOGGER(SnapshotEngine);
 
@@ -37,5 +39,6 @@ void SnapshotEngine::action(){
 	//if(!plot.empty()){ pyRunString("import yade.plot; yade.plot.addImgData("+plot+"='"+fss.str()+"')"); }
 }
 
+} // namespace yade
 
 #endif /* YADE_OPENGL */

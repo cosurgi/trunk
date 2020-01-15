@@ -12,6 +12,8 @@
 
 #include<lib/factory/Factorable.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class FrontEnd : public Factorable
 {	
 	public :
@@ -26,4 +28,5 @@ class FrontEnd : public Factorable
 };
 REGISTER_FACTORABLE(FrontEnd);
 
+} // namespace yade
 

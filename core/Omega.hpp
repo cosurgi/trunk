@@ -10,23 +10,21 @@
 
 #pragma once
 
-#include <Python.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
+// XXX never do #include<Python.h>, see https://www.boost.org/doc/libs/1_71_0/libs/python/doc/html/building/include_issues.html
+#include <boost/python/detail/wrap_python.hpp>
 #include <fstream>
 #include <time.h>
-#include <boost/thread/thread.hpp>
 #include <iostream>
+#include <mutex>
 
 #include <lib/base/Math.hpp>
 #include <lib/factory/ClassFactory.hpp>
 
 #include <lib/base/Singleton.hpp>
+#include <boost/thread/mutex.hpp>
 #include "SimulationFlow.hpp"
 
-
-#ifndef FOREACH
-# define FOREACH BOOST_FOREACH
-#endif
+namespace yade { // Cannot have #include directive inside.
 
 class Scene;
 class ThreadRunner;
@@ -41,7 +39,7 @@ class Omega: public Singleton<Omega>{
 	SimulationFlow simulationFlow_;
 	map<string,DynlibDescriptor> dynlibs; // FIXME : should store that in ClassFactory ?
 	void buildDynlibDatabase(const vector<string>& dynlibsList); // FIXME - maybe in ClassFactory ?
-	
+
 	vector<shared_ptr<Scene> > scenes;
 	int currentSceneNb;
 	shared_ptr<Scene> sceneAnother; // used for temporarily running different simulation, in Omega().switchscene()
@@ -51,8 +49,7 @@ class Omega: public Singleton<Omega>{
 	map<string,string> memSavedSimulations;
 
 	// to avoid accessing simulation when it is being loaded (should avoid crashes with the UI)
-	boost::mutex loadingSimulationMutex;
-	boost::mutex tmpFileCounterMutex;
+	std::mutex tmpFileCounterMutex;
 	long tmpFileCounter;
 	std::string tmpFileDir;
 
@@ -91,6 +88,7 @@ class Omega: public Singleton<Omega>{
 		void resetCurrentScene();
 		void resetAllScenes();
 		const shared_ptr<Scene>& getScene();
+		void setScene(const shared_ptr<Scene>& source) {scenes[currentSceneNb]=source;}
 		int addScene();
 		void switchToScene(int i);
 		//! Return unique temporary filename. May be deleted by the user; if not, will be deleted at shutdown.
@@ -110,4 +108,5 @@ class Omega: public Singleton<Omega>{
 	friend class pyOmega;
 };
 
+} // namespace yade
 

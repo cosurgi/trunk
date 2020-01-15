@@ -1,13 +1,16 @@
 /*************************************************************************
 *  Copyright (C) 2012 by François Kneib   francois.kneib@gmail.com       *
-*  Copyright (C) 2012 by Bruno Chareyre   bruno.chareyre@hmg.inpg.fr     *
+*  Copyright (C) 2012 by Bruno Chareyre   bruno.chareyre@grenoble-inp.fr     *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 
-#include "Grid.hpp"
 #ifdef YADE_OPENGL
-	#include<lib/opengl/OpenGLWrapper.hpp>
+
+#include "Grid.hpp"
+#include<lib/opengl/OpenGLWrapper.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 //!##################	Rendering   #####################
 
@@ -47,19 +50,19 @@ void Gl1_GridConnection::go(const shared_ptr<Shape>& cm, const shared_ptr<State>
 	return;
 }
 
-void Gl1_GridConnection::drawCylinder(bool wire, Real radius, Real length, const Quaternionr& shift)
+void Gl1_GridConnection::drawCylinder(bool wireNonMember, Real radius, Real length, const Quaternionr& shift)
 {
    glPushMatrix();
    GLUquadricObj *quadObj = gluNewQuadric();
-   gluQuadricDrawStyle(quadObj, (GLenum) (wire ? GLU_SILHOUETTE : GLU_FILL));
+   gluQuadricDrawStyle(quadObj, (GLenum) (wireNonMember ? GLU_SILHOUETTE : GLU_FILL));
    gluQuadricNormals(quadObj, (GLenum) GLU_SMOOTH);
    gluQuadricOrientation(quadObj, (GLenum) GLU_OUTSIDE);
    AngleAxisr aa(shift);
-   glRotatef(aa.angle()*180.0/Mathr::PI,aa.axis()[0],aa.axis()[1],aa.axis()[2]);
+   glRotate(aa.angle()*180.0/Mathr::PI,aa.axis()[0],aa.axis()[1],aa.axis()[2]);
    gluCylinder(quadObj, radius, radius, length, glutSlices,glutStacks);
    gluQuadricOrientation(quadObj, (GLenum) GLU_INSIDE);
    //glutSolidSphere(radius,glutSlices,glutStacks);
-   glTranslatef(0.0,0.0,length);
+   glTranslate(0.0,0.0,length);
 
    //glutSolidSphere(radius,glutSlices,glutStacks);
 //    gluDisk(quadObj,0.0,radius,glutSlices,_loops);
@@ -67,4 +70,7 @@ void Gl1_GridConnection::drawCylinder(bool wire, Real radius, Real length, const
    glPopMatrix();
 }
 YADE_PLUGIN((Gl1_GridConnection));
+
+} // namespace yade
+
 #endif

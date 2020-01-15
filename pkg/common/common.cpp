@@ -18,6 +18,8 @@
 #include <pkg/common/Sphere.hpp>
 #include <pkg/common/Aabb.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((IntrCallback)
 	#ifdef YADE_BODY_CALLBACK
 		(BodyCallback)
@@ -29,3 +31,6 @@ YADE_PLUGIN((ForceResetter)(TorqueEngine)(FieldApplier)(BoundaryController)
             (StepDisplacer)(GenericSpheresContact)
             (PeriodicEngine)(Sphere)(Aabb)(ElastMat)(FrictMat)(PyRunner)
             );
+
+} // namespace yade
+

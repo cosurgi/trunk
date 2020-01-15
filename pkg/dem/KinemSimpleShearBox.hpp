@@ -13,8 +13,7 @@
 #include<lib/base/Math.hpp>
 #include <core/Scene.hpp>
 
-
-
+namespace yade { // Cannot have #include directive inside.
 
 class KinemSimpleShearBox : public BoundaryController
 {
@@ -43,6 +42,7 @@ class KinemSimpleShearBox : public BoundaryController
 			,getBoxes_Dt()
 			;
 	
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(KinemSimpleShearBox,BoundaryController,
 			 "This class is supposed to be a mother class for all Engines performing loadings on the simple shear box of :yref:`SimpleShear`. It is not intended to be used by itself, but its declaration and implentation will thus contain all what is useful for all these Engines. The script simpleShear.py illustrates the use of the various corresponding Engines.",
 			((Real,alpha,Mathr::PI/2.0,,"the angle from the lower box to the left box (trigo wise). Measured by this Engine. Has to be saved, but not to be changed by the user."))
@@ -72,8 +72,10 @@ class KinemSimpleShearBox : public BoundaryController
 			dalpha=0.0;
 			deltaH=0.0;
 					 );
+	// clang-format on
 };
 
 REGISTER_SERIALIZABLE(KinemSimpleShearBox);
 
+} // namespace yade
 

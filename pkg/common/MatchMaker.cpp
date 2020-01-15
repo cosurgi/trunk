@@ -2,6 +2,8 @@
 
 #include <pkg/common/MatchMaker.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((MatchMaker));
 
 Real MatchMaker::operator()(int id1, int id2, Real val1, Real val2) const {
@@ -41,3 +43,6 @@ void MatchMaker::postLoad(MatchMaker&){
 }
 
 Real MatchMaker::computeFallback(Real v1, Real v2) const { return (this->*MatchMaker::fbPtr)(v1,v2); }
+
+} // namespace yade
+

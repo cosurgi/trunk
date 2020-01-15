@@ -2,10 +2,16 @@
 #include<pkg/common/PeriodicEngines.hpp>
 #include<core/PartialEngine.hpp>
 #include<pkg/common/Sphere.hpp>
+#ifdef YADE_OPENGL
+#include<pkg/common/OpenGLRenderer.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
 
 class DomainLimiter: public PeriodicEngine{
 	public:
 		virtual void action();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(DomainLimiter,PeriodicEngine,"Delete particles that are out of axis-aligned box given by *lo* and *hi*.",
 		((Vector3r,lo,Vector3r(0,0,0),,"Lower corner of the domain."))
 		((Vector3r,hi,Vector3r(0,0,0),,"Upper corner of the domain."))
@@ -14,6 +20,7 @@ class DomainLimiter: public PeriodicEngine{
 		((Real,vDeleted,0,,"Volume of deleted spheres (clumps not counted, in that case check :yref:`mDeleted<DomainLimiter.mDeleted>`)"))
 		((int,mask,-1,,"If mask is defined, only particles with corresponding groupMask will be deleted."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(DomainLimiter);
 
@@ -27,6 +34,7 @@ class LawTester: public PartialEngine{
 		Vector3r get_ptOurs(){ warnDeprec("ptOurs","uTest.head()"); return uTest.head<3>(); } Vector3r get_ptGeom(){ warnDeprec("ptGeom","uGeom.head()"); return uGeom.head<3>(); }
 		Vector3r get_rotOurs(){ warnDeprec("rotOurs","uTest.tail()"); return uTest.tail<3>(); }  Vector3r get_rotGeom(){ warnDeprec("rotGeom","uGeom.tail()"); return uGeom.tail<3>(); }
 	DECLARE_LOGGER;
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(LawTester,PartialEngine,"Prescribe and apply deformations of an interaction in terms of local normal and shear displacements and rotations (using either :yref:`disPpath<LawTester.disPath>` and :yref:`rotPath<LawTester.rotPath>` [or :yref:`path<LawTester.path>` in the future]). Supported :yref:`IGeom` types are :yref:`ScGeom`, :yref:`L3Geom` and :yref:`L6Geom`. \n\nSee :ysrc:`scripts/test/law-test.py` for an example.",
 		((vector<Vector3r>,disPath,,Attr::triggerPostLoad,"Loading path, where each Vector3 contains desired normal displacement and two components of the shear displacement (in local coordinate system, which is being tracked automatically. If shorter than :yref:`rotPath<LawTester.rotPath>`, the last value is repeated."))
 		((vector<Vector3r>,rotPath,,Attr::triggerPostLoad,"Rotational components of the loading path, where each item contains torsion and two bending rotations in local coordinates. If shorter than :yref:`path<LawTester.path>`, the last value is repeated."))
@@ -62,19 +70,21 @@ class LawTester: public PartialEngine{
 		, /* ctor */
 		, /* py */ .add_property("ptOurs",&LawTester::get_ptOurs,"first 3 components of uTest |ydeprecated|") .add_property("ptGeom",&LawTester::get_ptGeom,"first 3 components of uGeom |ydeprecated|") .add_property("rotOurs",&LawTester::get_rotOurs,"last 3 components of uTest |ydeprecated|") .add_property("rotGeom",&LawTester::get_rotGeom,"last 3 components of uGeom |ydeprecated|")
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(LawTester);
 
 #ifdef YADE_OPENGL
-#include<pkg/common/OpenGLRenderer.hpp>
 
 class GlExtra_LawTester: public GlExtraDrawer{
 	public:
 	DECLARE_LOGGER;
 	virtual void render();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(GlExtra_LawTester,GlExtraDrawer,"Find an instance of :yref:`LawTester` and show visually its data.",
 		((shared_ptr<LawTester>,tester,,,"Associated :yref:`LawTester` object."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(GlExtra_LawTester);
 
@@ -84,6 +94,7 @@ class GlExtra_OctreeCubes: public GlExtraDrawer{
 	std::vector<OctreeBox> boxes;
 	void postLoad(GlExtra_OctreeCubes&);
 	virtual void render();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(GlExtra_OctreeCubes,GlExtraDrawer,"Render boxed read from file",
 		((string,boxesFile,,Attr::triggerPostLoad,"File to read boxes from; ascii files with ``x0 y0 z0 x1 y1 z1 c`` records, where ``c`` is an integer specifying fill (0 for wire, 1 for filled)."))
 		((Vector2i,fillRangeFill,Vector2i(2,2),,"Range of fill indices that will be filled."))
@@ -91,7 +102,10 @@ class GlExtra_OctreeCubes: public GlExtraDrawer{
 		((Vector2i,levelRangeDraw,Vector2i(-2,2),,"Range of levels that will be rendered."))
 		((bool,noFillZero,true,,"Do not fill 0-fill boxed (those that are further subdivided)"))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(GlExtra_OctreeCubes);
 #endif
+
+} // namespace yade
 

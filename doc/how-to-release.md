@@ -4,7 +4,7 @@
   "git checkout -b YYYY.MM"
 * Tag release "git tag -as YYYY.MMa -m"YYYY.MMa"
 * Return to master branch and remove RELEASE file
-* Push master, new branch and tags to github
+* Push master, new branch and tags to gitlab
 * Download tar.gz
 * Create asc-file (signature): gpg --armor --sign --detach-sig tarball.tar.gz 
 * Upload new tarball on Launchpad

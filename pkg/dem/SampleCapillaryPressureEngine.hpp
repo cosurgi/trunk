@@ -15,6 +15,8 @@
 #include<pkg/dem/TriaxialStressController.hpp>
 #include <string>
 
+namespace yade { // Cannot have #include directive inside.
+
 /*! \brief Isotropic compression + suction variation test */
 
 class Law2_ScGeom_CapillaryPhys_Capillarity;
@@ -35,6 +37,7 @@ class SampleCapillaryPressureEngine : public TriaxialStressController
 		void updateParameters();
 		virtual void action();
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(SampleCapillaryPressureEngine,TriaxialStressController,"It produces the isotropic compaction of an assembly and allows one to controlled the capillary pressure inside (uses Law2_ScGeom_CapillaryPhys_Capillarity).",
 		((Real,Pressure,0,,"Value of the capillary pressure Uc=Ugas-Uliquid (see Law2_ScGeom_CapillaryPhys_Capillarity). [Pa]"))
 		((bool,pressureVariationActivated,1,,"Is the capillary pressure varying?"))
@@ -48,9 +51,12 @@ class SampleCapillaryPressureEngine : public TriaxialStressController
 		Phase1End = "Compacted";
 		firstRun=true;
 		,)
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(SampleCapillaryPressureEngine);
+
+} // namespace yade
 
 #endif //  SAMPLECAPILLARYPRESSUREENGINE_HPP
 

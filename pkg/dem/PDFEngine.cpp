@@ -1,5 +1,7 @@
 #include "PDFEngine.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 void PDFEngine::getSpectrums(vector<PDFEngine::PDF> & pdfs)
 {
 	const shared_ptr<Scene>& scene=Omega::instance().getScene();
@@ -21,7 +23,7 @@ void PDFEngine::getSpectrums(vector<PDFEngine::PDF> & pdfs)
 		nTheta.push_back(pdfs[i].shape()[0]);
 		nPhi.push_back(pdfs[i].shape()[1]);
 		dTheta.push_back(Mathr::PI / nTheta[i]);
-		dPhi.push_back(2.*Mathr::PI / nPhi[i]);
+		dPhi.push_back(Mathr::PI / nPhi[i]);
 	}
 	
 	FOREACH(const shared_ptr<Interaction>& I, *scene->interactions) {
@@ -31,20 +33,24 @@ void PDFEngine::getSpectrums(vector<PDFEngine::PDF> & pdfs)
 		if(geom)
 		{
 			Real theta 	= acos(geom->normal.y()); //[0;pi]
- 			Real phi 	= atan2(geom->normal.z(), geom->normal.x()) + Mathr::PI; //[-pi;pi] => [0; 2pi] for index calculation
+ 			Real phi 	= atan2(geom->normal.x(),geom->normal.z()); //[-pi;pi]
+			
+            bool inversed = false;
+			if(phi < 0) { // Everything has central-symmetry. Let's take only positive angles.
+                theta = Mathr::PI - theta;
+                phi += Mathr::PI;
+                inversed = true;
+            }
  			
  			for(uint i(0);i<pdfs.size();i++)
 			{
-				Real dS = sin(theta) * dTheta[i] * dPhi[i];
-				
 				// Calculate indexes
-				int idT1 = ((int)round((theta) / dTheta[i])) % nTheta[i];
-				int idP1 = ((int)round((phi) / dPhi[i])) % nPhi[i];
-				int idT2 = ((int)round((Mathr::PI - theta) / dTheta[i])) % nTheta[i];
-				int idP2 = ((int)round((Mathr::PI + phi) / dPhi[i])) % nPhi[i];
+				int idT1 = ((int)floor((theta) / dTheta[i])) % nTheta[i];
+				int idP1 = ((int)floor((phi) / dPhi[i])) % nPhi[i];
+                
+                Real dS = sin(((double)idT1 + 0.5)*dTheta[i])*dTheta[i]*dPhi[i];
 				
-				if(pdfs[i][idT1][idP1]) pdfs[i][idT1][idP1]->addData(I, dS, V, N);
-				if(pdfs[i][idT2][idP2]) pdfs[i][idT2][idP2]->addData(I, dS, V, N);
+				if(pdfs[i][idT1][idP1]) pdfs[i][idT1][idP1]->addData(I, dS, V, N, inversed);
 			}
 		}
 	}
@@ -57,26 +63,28 @@ void PDFEngine::writeToFile(vector<PDFEngine::PDF> const& pdfs)
 	if(fid) {
 		if(firstRun) {
 			
-			fprintf(fid, "# ");
+			fprintf(fid, "# time\t");
 			for(uint i(0);i<pdfs.size();i++) {
 				uint nTheta = pdfs[i].shape()[0];
 				uint nPhi = pdfs[i].shape()[1];
 				Real dTheta = (Mathr::PI / nTheta);
-				Real dPhi = (2.*Mathr::PI / nPhi);
+				Real dPhi = (Mathr::PI / nPhi);
 				
 				for(uint t(0);t<nTheta;t++) for(uint p(0);p<nPhi;p++) if(pdfs[i][t][p]) {
 					vector<string> ss = pdfs[i][t][p]->getSuffixes();
 					
 					if(ss.size() > 1)
 						for(uint j(0);j<ss.size();j++)
-							fprintf(fid, "%s_%s(%f,%f)\t",pdfs[i][t][p]->name.c_str(),  ss[j].c_str(), t*dTheta, p*dPhi - Mathr::PI);
+							fprintf(fid, "%s_%s(%f,%f)\t",pdfs[i][t][p]->name.c_str(),  ss[j].c_str(), ((double)t + 0.5)*dTheta, ((double)p + 0.5)*dPhi);
 					else
-						fprintf(fid, "%s(%f,%f)\t", pdfs[i][t][p]->name.c_str(), t*dTheta, p*dPhi - Mathr::PI);
+						fprintf(fid, "%s(%f,%f)\t", pdfs[i][t][p]->name.c_str(), ((double)t+0.5)*dTheta, ((double)p+0.5)*dPhi);
 				}
 			}
 			firstRun = false;
 			fprintf(fid, "\n");
 		}
+		
+		fprintf(fid, "%f\t",scene->time);
 		
 		for(uint i(0);i<pdfs.size();i++) for(uint t(0);t<pdfs[i].shape()[0];t++) for(uint p(0);p<pdfs[i].shape()[1];p++)
 			if(pdfs[i][t][p]) {
@@ -138,7 +146,7 @@ void PDFSpheresDistanceCalculator::cleanData()
 	m_N = 0;
 }
 
-bool PDFSpheresDistanceCalculator::addData(const shared_ptr<Interaction>& I, Real const& dS ,Real const& V, int const& N)
+bool PDFSpheresDistanceCalculator::addData(const shared_ptr<Interaction>& I, Real const&  ,Real const& , int const& , bool)
 {
 	if(!I->isReal()) return false;
 	ScGeom* geom=dynamic_cast<ScGeom*>(I->geom.get());
@@ -179,17 +187,20 @@ void PDFSpheresVelocityCalculator::cleanData()
 	m_N = 0;
 }
 
-bool PDFSpheresVelocityCalculator::addData(const shared_ptr<Interaction>& I, Real const& dS ,Real const& V, int const& N)
+
+bool PDFSpheresVelocityCalculator::addData(const shared_ptr<Interaction>& I, Real const& ,Real const& , int const& , bool inversed)
 {
 	if(!I->isReal()) return false;
 	
 	// Geometry
-    ScGeom* geom=static_cast<ScGeom*>(I->geom.get());
+    ScGeom* geom=dynamic_cast<ScGeom*>(I->geom.get());
 	if(!geom) return false;
 
     // geometric parameters
    // Real a((geom->radius1+geom->radius2)/2.);
     Vector3r relV = geom->getIncidentVel_py(I, false);
+    
+    if(inversed) relV *=-1;
 	
 	m_N++;
 	m_vel += relV;
@@ -197,9 +208,10 @@ bool PDFSpheresVelocityCalculator::addData(const shared_ptr<Interaction>& I, Rea
 	return true;
 }
 
-PDFSpheresIntrsCalculator::PDFSpheresIntrsCalculator(string name) :
+PDFSpheresIntrsCalculator::PDFSpheresIntrsCalculator(string name, bool (*fp)(shared_ptr<Interaction> const&)) :
 	PDFEngine::PDFCalculator(name),
-	m_P(0.)
+	m_P(0.),
+	m_accepter(fp)
 {
 	
 }
@@ -214,11 +226,15 @@ void PDFSpheresIntrsCalculator::cleanData()
 	m_P = 0.;
 }
 
-bool PDFSpheresIntrsCalculator::addData(const shared_ptr<Interaction>& I, Real const& dS ,Real const& V, int const& N)
+bool PDFSpheresIntrsCalculator::addData(const shared_ptr<Interaction>& I, Real const& dS ,Real const& , int const& N, bool)
 {
 	if(!I->isReal()) return false;
 	
-	m_P += 1./(dS*N);
+    if(m_accepter(I))
+        m_P += 1./(dS*N);
 	
 	return true;
 }
+
+} // namespace yade
+

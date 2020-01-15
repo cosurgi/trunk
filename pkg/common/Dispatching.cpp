@@ -1,4 +1,9 @@
 #include<pkg/common/Dispatching.hpp>
+#ifdef YADE_MPI
+#include<core/Subdomain.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((StateFunctor)(BoundFunctor)(IGeomFunctor)(IPhysFunctor)(LawFunctor)(StateDispatcher)(BoundDispatcher)(IGeomDispatcher)(IPhysDispatcher)(LawDispatcher));
 StateFunctor::~StateFunctor(){};
@@ -48,33 +53,34 @@ void BoundDispatcher::action()
 {
 	updateScenePtr();
 	shared_ptr<BodyContainer>& bodies = scene->bodies;
-	const long numBodies=(long)bodies->size();
+	const bool redirect = bodies->useRedirection;
+	if (redirect) bodies->updateShortLists();
+	const long numBodies= redirect ? (long)bodies->realBodies.size() : (long)bodies->size();
+	#ifdef YADE_MPI
+	Body::id_t subdomainId=0;
+	#endif
 	#ifdef YADE_OPENMP
 	#pragma omp parallel for num_threads(ompThreads>0 ? min(ompThreads,omp_get_max_threads()) : omp_get_max_threads())
 	#endif
 	for(int id=0; id<numBodies; id++){
-		if(!bodies->exists(id)) continue; // don't delete this check  - Janek
-		const shared_ptr<Body>& b=(*bodies)[id];
+		if(not redirect and not bodies->exists(id)) continue; // don't delete this check  - Janek
+		const shared_ptr<Body>& b=(*bodies)[redirect? bodies->realBodies[id] : id];
 		processBody(b);
+	#ifndef YADE_MPI
 	}
+	#else //when all ordinary bodies have been processed, we will evaluate subdomain's min and max
+		if(b->getIsSubdomain() and b->subdomain==scene->subdomain) subdomainId=b->getId();//subdomain bounds need all other bodies to have updated bounds, hence we keep it for after this loop
+	}
+	if (subdomainId!=0) {
+		YADE_PTR_CAST<Subdomain>((*bodies)[subdomainId]->shape)->setMinMax();
+		processBody((*bodies)[subdomainId]);}
+	#endif
 }
 
 void BoundDispatcher::processBody(const shared_ptr<Body>& b)
 {
 		shared_ptr<Shape>& shape=b->shape;
 		if(!b->isBounded() || !shape) return;
-		if(b->bound) {
-			Real& sweepLength = b->bound->sweepLength;
-			if (targetInterv>=0) {
-				Vector3r disp = b->state->pos-b->bound->refPos;
-				Real dist = max(std::abs(disp[0]),max(std::abs(disp[1]),std::abs(disp[2])));
-				if (dist){
-					Real newLength = dist*targetInterv/(scene->iter-b->bound->lastUpdateIter);
-					newLength = max(0.9*sweepLength,newLength);//don't decrease size too fast to prevent time consuming oscillations
-					sweepLength=max(minSweepDistFactor*sweepDist,min(newLength,sweepDist));}
-				else sweepLength=0;
-			} else sweepLength=sweepDist;
-		} 
 		#ifdef BV_FUNCTOR_CACHE
 		if(!shape->boundFunctor){ shape->boundFunctor=this->getFunctor1D(shape); if(!shape->boundFunctor) return; }
 		shape->boundFunctor->go(shape,b->bound,b->state->se3,b.get());
@@ -82,9 +88,23 @@ void BoundDispatcher::processBody(const shared_ptr<Body>& b)
 		operator()(shape,b->bound,b->state->se3,b.get());
 		#endif
 		if(!b->bound) return; // the functor did not create new bound
+		Real& sweepLength = b->bound->sweepLength;
+		if (targetInterv>0 and scene->iter>b->bound->lastUpdateIter) {//at iteration zero checking displacement makes no sense
+			Vector3r disp = b->state->pos-b->bound->refPos;
+			Real dist = max(std::abs(disp[0]),max(std::abs(disp[1]),std::abs(disp[2])));
+			if (dist){
+				Real newLength = dist*targetInterv/(scene->iter-b->bound->lastUpdateIter);
+				newLength = max(0.9*sweepLength,newLength);//don't decrease size too fast to prevent time consuming oscillations
+				sweepLength=max(minSweepDistFactor*sweepDist,min(newLength,sweepDist));}
+			else sweepLength=0;
+		} else sweepLength=sweepDist;
+		#ifdef YADE_MPI
+		if (b->getIsSubdomain()) sweepLength=0;
+		// skip fluid mesh bounding box from being extended
+		if (b->getIsFluidDomainBbox()) sweepLength = 0; 
+		#endif
 		b->bound->refPos=b->state->pos;
 		b->bound->lastUpdateIter=scene->iter;
-		const Real& sweepLength = b->bound->sweepLength;
 		if(sweepLength>0){			
 			Aabb* aabb=YADE_CAST<Aabb*>(b->bound.get());
 			aabb->min-=Vector3r(sweepLength,sweepLength,sweepLength);
@@ -107,7 +127,7 @@ shared_ptr<Interaction> IGeomDispatcher::explicitAction(const shared_ptr<Body>& 
 	}
 	Vector3r shift2=scene->cell->hSize*cellDist.cast<Real>();
 	updateScenePtr();
-	if(force){
+
 		assert(b1->shape && b2->shape);
 		shared_ptr<Interaction> I(new Interaction(b1->getId(),b2->getId()));
 		I->cellDist=cellDist;
@@ -116,17 +136,11 @@ shared_ptr<Interaction> IGeomDispatcher::explicitAction(const shared_ptr<Body>& 
 		I->functorCache.geom=getFunctor2D(b1->shape,b2->shape,swap);
 		if(!I->functorCache.geom) throw invalid_argument("IGeomDispatcher::explicitAction could not dispatch for given types ("+b1->shape->getClassName()+","+b2->shape->getClassName()+").");
 		if(swap){I->swapOrder();}
-		const shared_ptr<Body>& b1=Body::byId(I->getId1(),scene);
-		const shared_ptr<Body>& b2=Body::byId(I->getId2(),scene);
-		bool succ=I->functorCache.geom->go(b1->shape,b2->shape,*b1->state,*b2->state,shift2,/*force*/true,I);
-		if(!succ) throw logic_error("Functor "+I->functorCache.geom->getClassName()+"::go returned false, even if asked to force IGeom creation. Please report bug.");
+		const shared_ptr<Body>& b1Swp=Body::byId(I->getId1(),scene);
+		const shared_ptr<Body>& b2Swp=Body::byId(I->getId2(),scene);
+		bool succ=I->functorCache.geom->go(b1Swp->shape,b2Swp->shape,*b1Swp->state,*b2Swp->state,shift2,/*force*/true,I);
+		if(!succ and force) throw logic_error("Functor "+I->functorCache.geom->getClassName()+"::go returned false, even if asked to force IGeom creation. Please report bug.");
 		return I;
-	} else {
-		shared_ptr<Interaction> I(new Interaction(b1->getId(),b2->getId()));
-		I->cellDist=cellDist;
-		b1->shape && b2->shape && I->functorCache.geom->go(b1->shape,b2->shape,*b1->state,*b2->state,shift2,/*force*/true,I);
-		return I;
-	}
 }
 
 void IGeomDispatcher::action(){
@@ -235,4 +249,6 @@ void LawDispatcher::action(){
 		}
 	}
 }
+
+} // namespace yade
 

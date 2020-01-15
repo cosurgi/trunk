@@ -10,6 +10,8 @@
 #include<pkg/common/ElastMat.hpp>
 #include<pkg/common/Dispatching.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class CapillaryPhys : public FrictPhys
 {
 	public :
@@ -17,6 +19,7 @@ class CapillaryPhys : public FrictPhys
 		
 		virtual ~CapillaryPhys() {};
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(CapillaryPhys,FrictPhys,"Physics (of interaction) for :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`.",
 				 ((bool,meniscus,false,Attr::readonly,"True when a meniscus with a non-zero liquid volume (:yref:`vMeniscus<CapillaryPhys.vMeniscus>`) has been computed for this interaction"))
 				 ((bool,isBroken,false,,"Might be set to true by the user to make liquid bridge inactive (capillary force is zero)"))
@@ -32,6 +35,7 @@ class CapillaryPhys : public FrictPhys
 				 createIndex();currentIndexes[0]=currentIndexes[1]=currentIndexes[2]=currentIndexes[3]=0;
 				 ,
 				 );
+	// clang-format on
 	REGISTER_CLASS_INDEX(CapillaryPhys,FrictPhys);
 };
 REGISTER_SERIALIZABLE(CapillaryPhys);
@@ -45,8 +49,12 @@ class Ip2_FrictMat_FrictMat_CapillaryPhys : public IPhysFunctor
 					const shared_ptr<Interaction>& interaction);
 
 	FUNCTOR2D(FrictMat,FrictMat);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(Ip2_FrictMat_FrictMat_CapillaryPhys,IPhysFunctor, "RelationShips to use with :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`.\n\n In these RelationShips all the interaction attributes are computed. \n\n.. warning::\n\tas in the others :yref:`Ip2 functors<IPhysFunctor>`, most of the attributes are computed only once, when the interaction is new.",,;);
+	// clang-format on
 	
 };
 REGISTER_SERIALIZABLE(Ip2_FrictMat_FrictMat_CapillaryPhys);
+
+} // namespace yade
 

@@ -22,10 +22,13 @@ The DMT formulation is also considered (for adhesive particles, rigid and small 
 #include<lib/base/openmp-accu.hpp>
 
 
+namespace yade { // Cannot have #include directive inside.
+
 /******************** MindlinPhys *********************************/
 class MindlinPhys: public FrictPhys{
 	public:
 	virtual ~MindlinPhys() {};
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(MindlinPhys,FrictPhys,"Representation of an interaction of the Hertz-Mindlin type.",
 			((Real,kno,0.0,,"Constant value in the formulation of the normal stiffness"))
 			((Real,kso,0.0,,"Constant value in the formulation of the tangential stiffness"))
@@ -63,6 +66,7 @@ class MindlinPhys: public FrictPhys{
 			((Vector2r,Fs,Vector2r::Zero(),,"Shear force in local axes (computed incrementally)"))
 			,
 			createIndex());
+	// clang-format on
 	REGISTER_CLASS_INDEX(MindlinPhys,FrictPhys);
 	DECLARE_LOGGER;
 };
@@ -75,6 +79,7 @@ class Ip2_FrictMat_FrictMat_MindlinPhys: public IPhysFunctor{
 	public :
 	virtual void go(const shared_ptr<Material>& b1,	const shared_ptr<Material>& b2,	const shared_ptr<Interaction>& interaction);
 	FUNCTOR2D(FrictMat,FrictMat);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(
 			Ip2_FrictMat_FrictMat_MindlinPhys,IPhysFunctor,"Calculate some physical parameters needed to obtain \
 the normal and shear stiffnesses according to the Hertz-Mindlin formulation (as implemented in PFC).\n\n\
@@ -99,6 +104,7 @@ $e_n$ based on combination of parameters.",
 			((shared_ptr<MatchMaker>,betas,,,"Shear viscous damping ratio $\\beta_s$."))
 			((shared_ptr<MatchMaker>,frictAngle,,,"Instance of :yref:`MatchMaker` determining how to compute the friction angle of an interaction. If ``None``, minimum value is used."))
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Ip2_FrictMat_FrictMat_MindlinPhys);
@@ -108,10 +114,12 @@ class Law2_ScGeom_MindlinPhys_MindlinDeresiewitz: public LawFunctor{
 	public:
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
 		FUNCTOR2D(ScGeom,MindlinPhys);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Law2_ScGeom_MindlinPhys_MindlinDeresiewitz,LawFunctor,
 			"Hertz-Mindlin contact law with partial slip solution, as described in [Thornton1991]_.",
 			((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
 		);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_MindlinPhys_MindlinDeresiewitz);
 
@@ -119,11 +127,13 @@ class Law2_ScGeom_MindlinPhys_HertzWithLinearShear: public LawFunctor{
 	public:
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
 		FUNCTOR2D(ScGeom,MindlinPhys);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Law2_ScGeom_MindlinPhys_HertzWithLinearShear,LawFunctor,
 			"Constitutive law for the Hertz formulation (using :yref:`MindlinPhys.kno`) and linear beahvior in shear (using :yref:`MindlinPhys.kso` for stiffness and :yref:`FrictPhys.tangensOfFrictionAngle`). \n\n.. note:: No viscosity or damping. If you need those, look at  :yref:`Law2_ScGeom_MindlinPhys_Mindlin`, which also includes non-linear Mindlin shear.",
 				((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
 				((int,nonLin,0,,"Shear force nonlinearity (the value determines how many features of the non-linearity are taken in account). 1: ks as in HM 2: shearElastic increment computed as in HM 3. granular ratcheting disabled."))
 		);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_MindlinPhys_HertzWithLinearShear);
 
@@ -144,6 +154,7 @@ class Law2_ScGeom_MindlinPhys_Mindlin: public LawFunctor{
 		Real ratioSlidingContacts();
 
 		FUNCTOR2D(ScGeom,MindlinPhys);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(Law2_ScGeom_MindlinPhys_Mindlin,LawFunctor,"Constitutive law for the Hertz-Mindlin formulation. It includes non linear elasticity in the normal direction as predicted by Hertz for two non-conforming elastic contact bodies. In the shear direction, instead, it reseambles the simplified case without slip discussed in Mindlin's paper, where a linear relationship between shear force and tangential displacement is provided. Finally, the Mohr-Coulomb criterion is employed to established the maximum friction force which can be developed at the contact. Moreover, it is also possible to include the effect of linear viscous damping through the definition of the parameters $\\beta_{n}$ and $\\beta_{s}$.",
 			((bool,preventGranularRatcheting,true,,"bool to avoid granular ratcheting"))
 			((bool,includeAdhesion,false,,"bool to include the adhesion force following the DMT formulation. If true, also the normal elastic energy takes into account the adhesion effect."))
@@ -163,6 +174,7 @@ class Law2_ScGeom_MindlinPhys_Mindlin: public LawFunctor{
 			.def("ratioSlidingContacts",&Law2_ScGeom_MindlinPhys_Mindlin::ratioSlidingContacts,"Return the ratio between the number of contacts sliding to the total number at a given time.")
 			.def("normElastEnergy",&Law2_ScGeom_MindlinPhys_Mindlin::normElastEnergy,"Compute normal elastic potential energy. It handles the DMT formulation if :yref:`Law2_ScGeom_MindlinPhys_Mindlin::includeAdhesion` is set to true.")	
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_MindlinPhys_Mindlin);
@@ -176,6 +188,7 @@ class MindlinCapillaryPhys : public MindlinPhys
 		
 		virtual ~MindlinCapillaryPhys() {};
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(MindlinCapillaryPhys,MindlinPhys,"Adds capillary physics to Mindlin's interaction physics.",
 				((bool,meniscus,false,Attr::readonly,"True when a meniscus with a non-zero liquid volume (:yref:`vMeniscus<MindlinPhys.vMeniscus>`) has been computed for this interaction"))
 				((bool,isBroken,false,,"Might be set to true by the user to make liquid bridge inactive (capillary force is zero)"))
@@ -188,6 +201,7 @@ class MindlinCapillaryPhys : public MindlinPhys
 				,,createIndex();currentIndexes[0]=currentIndexes[1]=currentIndexes[2]=currentIndexes[3]=0;
 				,
 				);
+	// clang-format on
 	REGISTER_CLASS_INDEX(MindlinCapillaryPhys,MindlinPhys);
 };
 REGISTER_SERIALIZABLE(MindlinCapillaryPhys);
@@ -201,6 +215,7 @@ class Ip2_FrictMat_FrictMat_MindlinCapillaryPhys : public IPhysFunctor
 					const shared_ptr<Interaction>& interaction);
 
 	FUNCTOR2D(FrictMat,FrictMat);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Ip2_FrictMat_FrictMat_MindlinCapillaryPhys,IPhysFunctor, "RelationShips to use with Law2_ScGeom_CapillaryPhys_Capillarity\n\n In these RelationShips all the interaction attributes are computed. \n\n.. warning::\n\tas in the others :yref:`Ip2 functors<IPhysFunctor>`, most of the attributes are computed only once, when the interaction is new.",
 	            ((Real,gamma,0.0,,"Surface energy parameter [J/m^2] per each unit contact surface, to derive DMT formulation from HM"))
 				((Real,eta,0.0,,"Coefficient to determine the plastic bending moment"))
@@ -211,6 +226,10 @@ class Ip2_FrictMat_FrictMat_MindlinCapillaryPhys : public IPhysFunctor
 				((shared_ptr<MatchMaker>,betan,,,"Normal viscous damping ratio $\\beta_n$."))
 				((shared_ptr<MatchMaker>,betas,,,"Shear viscous damping ratio $\\beta_s$."))
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Ip2_FrictMat_FrictMat_MindlinCapillaryPhys);
+
+} // namespace yade
+

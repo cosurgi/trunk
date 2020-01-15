@@ -11,6 +11,9 @@
 
 #ifdef FLOW_ENGINE
 
+namespace yade { // Cannot have #include directive inside.
+
+
 namespace CGT {
 
 template<class _Tesselation>
@@ -43,5 +46,8 @@ public:
 };
 
 } //namespace CGTF
+
+}; // namespace yade
+
 #include "PeriodicFlowLinSolv.ipp"
 #endif //FLOW_ENGINE

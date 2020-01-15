@@ -1,4 +1,4 @@
-// 2011 © Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+// 2011 © Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 // 2012 © Kneib Francois <francois.kneib@irstea.fr>
 
 #pragma once
@@ -13,10 +13,13 @@
 #include<pkg/dem/CohesiveFrictionalContactLaw.hpp>
 #include<pkg/common/CylScGeom6D.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class Cylinder: public Sphere{
 	public:
 // 		Cylinder(Real _radius, Real _length): length(_length) { /*segment=Vector3r(0,0,1)*_length;*/ radius=_radius; createIndex(); }
 		virtual ~Cylinder ();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(Cylinder,Sphere,"Geometry of a cylinder, as Minkowski sum of line and sphere.",
 // 		((Real,radius,NaN,,"Radius [m]"))
 		((Real,length,NaN,,"Length [m]"))
@@ -26,6 +29,7 @@ class Cylinder: public Sphere{
 		/*ctor*/
 		segment=Vector3r(0,0,1)*length;
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(Cylinder,Sphere);
 };
 REGISTER_SERIALIZABLE(Cylinder);
@@ -39,6 +43,7 @@ class ChainedCylinder: public Cylinder{
 // 		ChainedState st1, st2;
 
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ChainedCylinder,Cylinder,"Geometry of a deformable chained cylinder, using geometry :yref:`Cylinder`.",
   		((Real,initLength,0,,"tensile-free length, used as reference for tensile strain"))
   		((Quaternionr,chainedOrientation,Quaternionr::Identity(),,"Deviation of node1 orientation from node-to-node vector"))
@@ -46,6 +51,7 @@ class ChainedCylinder: public Cylinder{
 // 		state=shared_ptr<ChainedState>(new ChainedState);
 
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ChainedCylinder,Cylinder);
 };
 REGISTER_SERIALIZABLE(ChainedCylinder);
@@ -76,6 +82,7 @@ class ChainedState: public State{
 // 			if (rank>0) statePrev = Body::byId(chains[chainNumber][rank-1],scene)->state;
 		}
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(ChainedState,State,"State of a chained bodies, containing information on connectivity in order to track contacts jumping over contiguous elements. Chains are 1D lists from which id of chained bodies are retrieved via :yref:`rank<ChainedState::rank>` and :yref:`chainNumber<ChainedState::chainNumber>`.",
  		((unsigned int,rank,0,,"rank in the chain."))
  		((unsigned int,chainNumber,0,,"chain id."))
@@ -91,6 +98,7 @@ class ChainedState: public State{
 		.def_readwrite("currentChain",&ChainedState::currentChain,"Current active chain (where newly created chained bodies will be appended).")
 		.def("addToChain",&ChainedState::addToChain,(boost::python::arg("bodyId")),"Add body to current active chain")
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ChainedState,State);
 };
 REGISTER_SERIALIZABLE(ChainedState);
@@ -101,9 +109,11 @@ class Ig2_Sphere_ChainedCylinder_CylScGeom: public IGeomFunctor{
 // 		virtual ~Ig2_Sphere_ChainedCylinder_CylScGeom ();
 		virtual bool go(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
 		virtual bool goReverse(	const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Ig2_Sphere_ChainedCylinder_CylScGeom,IGeomFunctor,"Create/update a :yref:`ScGeom` instance representing intersection of two :yref:`Spheres<Sphere>`.",
 		((Real,interactionDetectionFactor,1,,"Enlarge both radii by this factor (if >1), to permit creation of distant interactions."))
 	);
+	// clang-format on
 	FUNCTOR2D(Sphere,ChainedCylinder);
 	DEFINE_FUNCTOR_ORDER_2D(Sphere,ChainedCylinder);
 };
@@ -114,11 +124,13 @@ public:
     virtual bool go(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
     virtual bool goReverse(	const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
 
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS(Ig2_Sphere_ChainedCylinder_CylScGeom6D,Ig2_Sphere_ChainedCylinder_CylScGeom,"Create/update a :yref:`ScGeom6D` instance representing the geometry of a contact point between two :yref:`Spheres<Sphere>`, including relative rotations.",
                               ((bool,updateRotations,false,,"Precompute relative rotations. Turning this false can speed up simulations when rotations are not needed in constitutive laws (e.g. when spheres are compressed without cohesion and moment in early stage of a triaxial test), but is not foolproof. Change this value only if you know what you are doing."))
                               ((bool,creep,false,,"Substract rotational creep from relative rotation. The rotational creep :yref:`ScGeom6D::twistCreep` is a quaternion and has to be updated inside a constitutive law, see for instance :yref:`Law2_ScGeom6D_CohFrictPhys_CohesionMoment`."
                                ))
                              );
+	// clang-format on
     FUNCTOR2D(Sphere,ChainedCylinder);
     // needed for the dispatcher, even if it is symmetric
     DEFINE_FUNCTOR_ORDER_2D(Sphere,ChainedCylinder);
@@ -130,10 +142,12 @@ class Ig2_ChainedCylinder_ChainedCylinder_ScGeom6D: public IGeomFunctor{
 // 		virtual ~Ig2_ChainedCylinder_ChainedCylinder_ScGeom6D ()  {};
 		virtual bool go(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
 		virtual bool goReverse(	const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Ig2_ChainedCylinder_ChainedCylinder_ScGeom6D,IGeomFunctor,"Create/update a :yref:`ScGeom` instance representing connexion between :yref:`chained cylinders<ChainedCylinder>`.",
 		((Real,interactionDetectionFactor,1,,"Enlarge both radii by this factor (if >1), to permit creation of distant interactions."))
 		((bool,halfLengthContacts,true,,"If True, Cylinders nodes interact like spheres of radius 0.5*length, else one node has size length while the other has size 0. The difference is mainly the locus of rotation definition."))
 	);
+	// clang-format on
 	FUNCTOR2D(ChainedCylinder,ChainedCylinder);
 	// needed for the dispatcher, even if it is symmetric
 	DEFINE_FUNCTOR_ORDER_2D(ChainedCylinder,ChainedCylinder);
@@ -151,12 +165,14 @@ class Gl1_Cylinder : public GlShapeFunctor{
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
 		void out( Quaternionr q );
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_Cylinder,GlShapeFunctor,"Renders :yref:`Cylinder` object",
 		((bool,wire,false,,"Only show wireframe (controlled by ``glutSlices`` and ``glutStacks``."))
 		((bool,glutNormalize,true,,"Fix normals for non-wire rendering"))
 		((int,glutSlices,8,,"Number of sphere slices."))
 		((int,glutStacks,4,,"Number of sphere stacks."))
 	);
+	// clang-format on
 	RENDERS(Cylinder);
 	friend class Gl1_ChainedCylinder;
 };
@@ -165,8 +181,10 @@ class Gl1_Cylinder : public GlShapeFunctor{
 class Gl1_ChainedCylinder : public Gl1_Cylinder{
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>& state, bool,const GLViewInfo&);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Gl1_ChainedCylinder,Gl1_Cylinder,"Renders :yref:`ChainedCylinder` object including a shift for compensating flexion."
 	);
+	// clang-format on
 	RENDERS(ChainedCylinder);
 };
 
@@ -180,7 +198,9 @@ class Gl1_ChainedCylinder : public GlShapeFunctor{
 		void initGlLists(void);
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_ChainedCylinder,GlShapeFunctor,"Renders :yref:`ChainedCylinder` object including a shift for compensating flexion.",
+	// clang-format on
 		((bool,wire,false,,"Only show wireframe (controlled by ``glutSlices`` and ``glutStacks``."))
 		((bool,glutNormalize,true,,"Fix normals for non-wire rendering"))
 		((int,glutSlices,8,,"Number of sphere slices."))
@@ -197,9 +217,11 @@ class Bo1_Cylinder_Aabb : public BoundFunctor
 	public :
 		void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
 	FUNCTOR1D(Cylinder);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Bo1_Cylinder_Aabb,BoundFunctor,"Functor creating :yref:`Aabb` from :yref:`Cylinder`.",
 		((Real,aabbEnlargeFactor,((void)"deactivated",-1),,"Relative enlargement of the bounding box; deactivated if negative.\n\n.. note::\n\tThis attribute is used to create distant interaction, but is only meaningful with an :yref:`IGeomFunctor` which will not simply discard such interactions:  :yref:`Ig2_Cylinder_Cylinder_ScGeom::interactionDetectionFactor` should have the same value as :yref:`aabbEnlargeFactor<Bo1_Cylinder_Aabb::aabbEnlargeFactor>`."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Bo1_Cylinder_Aabb);
 
@@ -208,9 +230,11 @@ class Bo1_ChainedCylinder_Aabb : public BoundFunctor
 	public :
 		void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
 	FUNCTOR1D(ChainedCylinder);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Bo1_ChainedCylinder_Aabb,BoundFunctor,"Functor creating :yref:`Aabb` from :yref:`ChainedCylinder`.",
 		((Real,aabbEnlargeFactor,((void)"deactivated",-1),,"Relative enlargement of the bounding box; deactivated if negative.\n\n.. note::\n\tThis attribute is used to create distant interaction, but is only meaningful with an :yref:`IGeomFunctor` which will not simply discard such interactions:  :yref:`Ig2_Cylinder_Cylinder_ScGeom::interactionDetectionFactor` should have the same value as :yref:`aabbEnlargeFactor<Bo1_Cylinder_Aabb::aabbEnlargeFactor>`."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Bo1_ChainedCylinder_Aabb);
 
@@ -222,6 +246,7 @@ class Law2_CylScGeom_FrictPhys_CundallStrack: public LawFunctor{
 		//Real elasticEnergy ();
 		//Real getPlasticDissipation();
 		//void initPlasticDissipation(Real initVal=0);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_CylScGeom_FrictPhys_CundallStrack,LawFunctor,"Law for linear compression, and Mohr-Coulomb plasticity surface without cohesion.\nThis law implements the classical linear elastic-plastic law from [CundallStrack1979]_ (see also [Pfc3dManual30]_). The normal force is (with the convention of positive tensile forces) $F_n=\\min(k_n u_n, 0)$. The shear force is $F_s=k_s u_s$, the plasticity condition defines the maximum value of the shear force : $F_s^{\\max}=F_n\\tan(\\phi)$, with $\\phi$ the friction angle.\n\n.. note::\n This law uses :yref:`ScGeom`.\n\n.. note::\n This law is well tested in the context of triaxial simulation, and has been used for a number of published results (see e.g. [Scholtes2009b]_ and other papers from the same authors). It is generalised by :yref:`Law2_ScGeom6D_CohFrictPhys_CohesionMoment`, which adds cohesion and moments at contact.",
 		((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
 		((bool,traceEnergy,false,Attr::hidden,"Define the total energy dissipated in plastic slips at all contacts."))
@@ -232,6 +257,7 @@ class Law2_CylScGeom_FrictPhys_CundallStrack: public LawFunctor{
 		//.def("plasticDissipation",&Law2_ScGeom_FrictPhys_CundallStrack::getPlasticDissipation,"Total energy dissipated in plastic slips at all FrictPhys contacts. Computed only if :yref:`Law2_ScGeom_FrictPhys_CundallStrack::traceEnergy` is true.")
 		//.def("initPlasticDissipation",&Law2_ScGeom_FrictPhys_CundallStrack::initPlasticDissipation,"Initialize cummulated plastic dissipation to a value (0 by default).")
 	);
+	// clang-format on
 	FUNCTOR2D(CylScGeom,FrictPhys);
 };
 REGISTER_SERIALIZABLE(Law2_CylScGeom_FrictPhys_CundallStrack);
@@ -243,6 +269,7 @@ public:
     //Real elasticEnergy ();
     //Real getPlasticDissipation();
     //void initPlasticDissipation(Real initVal=0);
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_CylScGeom6D_CohFrictPhys_CohesionMoment,LawFunctor,"This law generalises :yref:`Law2_CylScGeom_FrictPhys_CundallStrack` by adding cohesion and moments at contact.",
                                       ((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
                                       ((bool,traceEnergy,false,Attr::hidden,"Define the total energy dissipated in plastic slips at all contacts."))
@@ -255,6 +282,7 @@ public:
                                       ((Real,creep_viscosity,1,,"creep viscosity [Pa.s/m]. probably should be moved to Ip2_CohFrictMat_CohFrictMat_CohFrictPhys..."))
                                       ,,
                                      );
+	// clang-format on
     FUNCTOR2D(CylScGeom6D,CohFrictPhys);
     DECLARE_LOGGER;
 
@@ -266,6 +294,7 @@ class Law2_ChCylGeom6D_CohFrictPhys_CohesionMoment: public LawFunctor {
 public:
     //OpenMPAccumulator<Real> plasticDissipation;
     virtual bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_ChCylGeom6D_CohFrictPhys_CohesionMoment,LawFunctor,"Law for linear compression, and Mohr-Coulomb plasticity surface without cohesion.\nThis law implements the classical linear elastic-plastic law from [CundallStrack1979]_ (see also [Pfc3dManual30]_). The normal force is (with the convention of positive tensile forces) $F_n=\\min(k_n u_n, 0)$. The shear force is $F_s=k_s u_s$, the plasticity condition defines the maximum value of the shear force : $F_s^{\\max}=F_n\\tan(\\phi)$, with $\\phi$ the friction angle.\n\n.. note::\n This law is well tested in the context of triaxial simulation, and has been used for a number of published results (see e.g. [Scholtes2009b]_ and other papers from the same authors). It is generalised by :yref:`Law2_ScGeom6D_CohFrictPhys_CohesionMoment`, which adds cohesion and moments at contact.",
                                       ((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
                                       ((bool,traceEnergy,false,Attr::hidden,"Define the total energy dissipated in plastic slips at all contacts."))
@@ -278,6 +307,7 @@ public:
                                       ((Real,creep_viscosity,1,,"creep viscosity [Pa.s/m]. probably should be moved to Ip2_CohFrictMat_CohFrictMat_CohFrictPhys..."))
                                       ,,
                                      );
+	// clang-format on
     FUNCTOR2D(ChCylGeom6D,CohFrictPhys);
     DECLARE_LOGGER;
 
@@ -291,12 +321,17 @@ REGISTER_SERIALIZABLE(Law2_ChCylGeom6D_CohFrictPhys_CohesionMoment);
 // 	public :
 // 		void go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r&, const Body*);
 // 	FUNCTOR1D(ChainedCylinder);
+	// clang-format off
 // 	YADE_CLASS_BASE_DOC_ATTRS(Bo1_ChainedCylinder_Aabb,Bo1_Cylinder_Aabb,"Functor creating :yref:`Aabb` from :yref:`Cylinder`.",
 // 		((Real,aabbEnlargeFactor,((void)"deactivated",-1),,"Relative enlargement of the bounding box; deactivated if negative.\n\n.. note::\n\tThis attribute is used to create distant interaction, but is only meaningful with an :yref:`IGeomFunctor` which will not simply discard such interactions: :yref:`Ig2_Cylinder_Cylinder_Dem3DofGeom::distFactor` / :yref:`Ig2_Cylinder_Cylinder_ScGeom::interactionDetectionFactor` should have the same value as :yref:`aabbEnlargeFactor<Bo1_Cylinder_Aabb::aabbEnlargeFactor>`."))
 // 	);
+	// clang-format on
 // };
 
 #ifdef YADE_OPENGL
 REGISTER_SERIALIZABLE(Gl1_Cylinder);
 REGISTER_SERIALIZABLE(Gl1_ChainedCylinder);
 #endif
+
+} // namespace yade
+

@@ -1,11 +1,13 @@
 /*************************************************************************
 *  Copyright (C) 2012 by François Kneib   francois.kneib@gmail.com       *
-*  Copyright (C) 2012 by Bruno Chareyre   bruno.chareyre@hmg.inpg.fr     *
+*  Copyright (C) 2012 by Bruno Chareyre   bruno.chareyre@grenoble-inp.fr     *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 
 #include "Grid.hpp"
+
+namespace yade { // Cannot have #include directive inside.
 
 //!##################	SHAPES   #####################
 
@@ -89,7 +91,7 @@ bool Ig2_GridNode_GridNode_GridNodeGeom6D::goReverse( const shared_ptr<Shape>& c
 YADE_PLUGIN((Ig2_GridNode_GridNode_GridNodeGeom6D));
 
 //!			\\//
-bool Ig2_GridConnection_GridConnection_GridCoGridCoGeom::go( const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c)
+bool Ig2_GridConnection_GridConnection_GridCoGridCoGeom::go( const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& /*state1*/, const State& /*state2*/, const Vector3r& shift2, const bool& /*force*/, const shared_ptr<Interaction>& c)
 {
 	/*FIXME : /!\ Note that this geometry doesn't take care of any unwished duplicated contact or shear force following. /!\*/
 	GridConnection* conn1 = YADE_CAST<GridConnection*>(cm1.get());
@@ -164,7 +166,7 @@ bool Ig2_GridConnection_GridConnection_GridCoGridCoGeom::go( const shared_ptr<Sh
 	/*NEW VERSION END*/
 	
 	//Compute the geometry if "penetrationDepth" is positive.
-	double penetrationDepth = conn1->radius + conn2->radius - (A+k*a - (B+m*b)).norm();
+	Real penetrationDepth = conn1->radius + conn2->radius - (A+k*a - (B+m*b)).norm();
 	shared_ptr<GridCoGridCoGeom> scm;
 	if(isNew){
 		if(penetrationDepth<0)return false;
@@ -202,7 +204,7 @@ YADE_PLUGIN((Ig2_GridConnection_GridConnection_GridCoGridCoGeom));
 //!			O/
 bool Ig2_Sphere_GridConnection_ScGridCoGeom::go(	const shared_ptr<Shape>& cm1,
 						const shared_ptr<Shape>& cm2,
-						const State& state1, const State& state2, const Vector3r& shift2, const bool& force,
+						const State& state1, const State& /*state2*/, const Vector3r& shift2, const bool& /*force*/,
 						const shared_ptr<Interaction>& c)
 {	// Useful variables :
 	const State*    sphereSt  = YADE_CAST<const State*>(&state1);
@@ -505,8 +507,8 @@ bool Law2_ScGridCoGeom_CohFrictPhys_CundallStrack::go(shared_ptr<IGeom>& ig, sha
 		}
 	}
 	
-	Vector3r& shearForce    = phys->shearForce;
-	if (contact->isFresh(scene) && geom->isDuplicate!=2) shearForce = Vector3r::Zero();
+	Vector3r& shearForceFirst    = phys->shearForce;
+	if (contact->isFresh(scene) && geom->isDuplicate!=2) shearForceFirst = Vector3r::Zero();
 	Real un     = geom->penetrationDepth;
 	Real Fn    = phys->kn*(un-phys->unp);
 	
@@ -617,7 +619,7 @@ bool Law2_GridCoGridCoGeom_FrictPhys_CundallStrack::go(shared_ptr<IGeom>& ig, sh
 YADE_PLUGIN((Law2_GridCoGridCoGeom_FrictPhys_CundallStrack));
 //!##################	Bounds   #####################
 
-void Bo1_GridConnection_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& se3, const Body* b){
+void Bo1_GridConnection_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& /*se3*/, const Body* /*b*/){
 	GridConnection* GC = static_cast<GridConnection*>(cm.get());
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bv.get());
@@ -642,3 +644,6 @@ void Bo1_GridConnection_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>&
 }
 
 YADE_PLUGIN((Bo1_GridConnection_Aabb));
+
+} // namespace yade
+

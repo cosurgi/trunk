@@ -9,6 +9,8 @@
 #include<core/Omega.hpp>
 #include<core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 CapillaryPhys1::~CapillaryPhys1()
 {
 }
@@ -53,6 +55,8 @@ void Ip2_FrictMat_FrictMat_CapillaryPhys1::go( const shared_ptr<Material>& b1 //
 		}
 	}
 };
+
+} // namespace yade
 
 #endif //CAPILLARYPHYS1
  

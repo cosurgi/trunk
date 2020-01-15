@@ -3,13 +3,17 @@
 #include<pkg/common/Callbacks.hpp>
 #include<lib/base/openmp-accu.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class SumIntrForcesCb: public IntrCallback{
 	public:
 		OpenMPAccumulator<int> numIntr;
 		OpenMPAccumulator<Real> force;
 		static void go(IntrCallback*,Interaction*);
 		virtual IntrCallback::FuncPtr stepInit();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(SumIntrForcesCb,IntrCallback,"Callback summing magnitudes of forces over all interactions. :yref:`IPhys` of interactions must derive from :yref:`NormShearPhys` (responsability fo the user).");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(SumIntrForcesCb);
 
@@ -21,7 +25,12 @@ class SumBodyForcesCb: public BodyCallback{
 		OpenMPAccumulator<Real> force;
 		static void go(BodyCallback*,Body*);
 		virtual BodyCallback::FuncPtr stepInit();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(SumBodyForcesCb,BodyCallback,"Callback summing magnitudes of resultant forces over :yref:`dynamic<Body::dynamic>` bodies.");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(SumBodyForcesCb);
 #endif
+
+} // namespace yade
+

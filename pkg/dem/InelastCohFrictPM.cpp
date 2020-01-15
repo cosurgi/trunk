@@ -1,5 +1,7 @@
 #include "InelastCohFrictPM.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((InelastCohFrictMat)(InelastCohFrictPhys)(Ip2_2xInelastCohFrictMat_InelastCohFrictPhys)(Law2_ScGeom6D_InelastCohFrictPhys_CohesionMoment));
 
 
@@ -269,3 +271,6 @@ bool Law2_ScGeom6D_InelastCohFrictPhys_CohesionMoment::go(shared_ptr<IGeom>& ig,
 	scene->forces.addTorque(id2,phys->moment_bending+phys->moment_twist);
 	return true;
 }
+
+} // namespace yade
+

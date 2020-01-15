@@ -1,5 +1,8 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz> 
 #include<pkg/common/Collider.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 class NewtonIntegrator;
 class FlatGridCollider: public Collider{
 	struct Grid{
@@ -8,7 +11,7 @@ class FlatGridCollider: public Collider{
 		Vector3r mn, mx;
 		Real step;
 		// convert point into its integral coordinates (can be outside grid, use fitGrid to coords inside)
-		Vector3i pt2int(const Vector3r& pt){ Vector3i ret; for(int i=0;i<3;i++)ret[i]=floor((pt[i]-mn[1])/step); return ret; }
+		Vector3i pt2int(const Vector3r& pt){ Vector3i ret; for(int i=0;i<3;i++)ret[i]=int(std::floor((pt[i]-mn[1])/step)); return ret; }
 		std::vector<idVector> data;
 		// force integral coordinate inside (0,sz-1)
 		int fit(int i, int sz) const { return max(0,min(i,sz-1)); }
@@ -34,6 +37,7 @@ class FlatGridCollider: public Collider{
 	virtual bool isActivated();
 	DECLARE_LOGGER;
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(FlatGridCollider,Collider,"Non-optimized grid collider, storing grid as dense flat array. Each body is assigned to (possibly multiple) cells, which are arranged in regular grid between *aabbMin* and *aabbMax*, with cell size *step* (same in all directions). Bodies outsize (*aabbMin*, *aabbMax*) are handled gracefully, assigned to closest cells (this will create spurious potential interactions). *verletDist* determines how much is each body enlarged to avoid collision detection at every step.\n\n.. note::\n\tThis collider keeps all cells in linear memory array, therefore will be memory-inefficient for sparse simulations.\n\n.. warning::\n\tobjects :yref:`Body::bound` are not used, :yref:`BoundFunctors<BoundFunctor>` are not used either: assigning cells to bodies is hard-coded internally. Currently handles :yref:`Shapes<Shape>` are: :yref:`Sphere`.\n\n.. note::\n\tPeriodic boundary is not handled (yet).\n\n",
 		((Real,verletDist,0,,"Length by which enlarge space occupied by each particle; avoids running collision detection at every step."))
 		((Vector3r,aabbMin,Vector3r::Zero(),,"Lower corner of grid."))
@@ -41,5 +45,9 @@ class FlatGridCollider: public Collider{
 		((Real,step,0,,"Step in the grid (cell size)")),
 		initIndices();
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(FlatGridCollider);
+
+} // namespace yade
+

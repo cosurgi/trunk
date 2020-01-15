@@ -9,11 +9,13 @@
 #include<iomanip>
 #include<string>
 
+namespace yade { // Cannot have #include directive inside.
+
 struct GLUtils{
 	// code copied from qglviewer
 	struct QGLViewer{
-		static void drawArrow(float length=1.0f, float radius=-1.0f, int nbSubdivisions=12);
-		static void drawArrow(const Vector3r& from, const Vector3r& to, float radius=-1.0f, int nbSubdivisions=12);
+		static void drawArrow(double length=1.0f, double radius=-1.0f, int nbSubdivisions=12);
+		static void drawArrow(const Vector3r& from, const Vector3r& to, double radius=-1.0f, int nbSubdivisions=12);
 	};
 	// render wire of parallelepiped with sides given by vectors a,b,c; zero corner is at origin
 	static void Parallelepiped(const Vector3r& a, const Vector3r& b, const Vector3r& c);
@@ -44,3 +46,6 @@ struct GLUtils{
 		glPopMatrix();
 	}
 };
+
+} // namespace yade
+

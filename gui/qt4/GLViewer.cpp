@@ -14,7 +14,6 @@
 #include<lib/opengl/OpenGLWrapper.hpp>
 #include<core/Body.hpp>
 #include<core/Scene.hpp>
-#include<core/Bound.hpp>
 #include<core/Interaction.hpp>
 #include<core/DisplayParameters.hpp>
 #include<boost/algorithm/string.hpp>
@@ -30,6 +29,8 @@
 #ifdef YADE_GL2PS
 	#include<gl2ps.h>
 #endif
+
+namespace yade { // Cannot have #include directive inside.
 
 static unsigned initBlocked(State::DOF_NONE);
 
@@ -58,18 +59,12 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	timeDispMask=TIME_REAL|TIME_VIRT|TIME_ITER;
 	cut_plane = 0;
 	cut_plane_delta = -2;
-	gridSubdivide = true;
-	displayGridNumbers = true;
-	autoGrid=true;
-	prevGridStep=1;
+	gridSubdivide = false;
 	resize(550,550);
 	last=-1;
 	if(viewId==0) setWindowTitle("Primary view");
 	else setWindowTitle(("Secondary view #"+boost::lexical_cast<string>(viewId)).c_str());
 
-	show();
-	
-	mouseMovesCamera();
 	manipulatedClipPlane=-1;
 
 	if(manipulatedFrame()==0) setManipulatedFrame(new qglviewer::ManipulatedFrame());
@@ -83,15 +78,12 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	setKeyDescription(Qt::Key_C & Qt::AltModifier,"Set scene center to median body position (same as space)");
 	setKeyDescription(Qt::Key_D,"Toggle time display mask");
 	setKeyDescription(Qt::Key_G,"Toggle grid visibility; g turns on and cycles");
-	setKeyDescription(Qt::Key_Minus,"Make grid less dense 10 times and disable automatic grid change");
-	setKeyDescription(Qt::Key_Plus, "Make grid more dense 10 times and disable automatic grid change");
-	setKeyDescription(Qt::Key_Period,"Toggle grid subdivision by 10");
-	setKeyDescription(Qt::Key_Comma,"Toggle display coordinates on grid");
 	setKeyDescription(Qt::Key_G & Qt::ShiftModifier ,"Hide grid.");
 	setKeyDescription(Qt::Key_M, "Move selected object.");
 	setKeyDescription(Qt::Key_X,"Show the xz [shift: xy] (up-right) plane (clip plane: align normal with +x)");
 	setKeyDescription(Qt::Key_Y,"Show the yx [shift: yz] (up-right) plane (clip plane: align normal with +y)");
 	setKeyDescription(Qt::Key_Z,"Show the zy [shift: zx] (up-right) plane (clip plane: align normal with +z)");
+	setKeyDescription(Qt::Key_Period,"Toggle grid subdivision by 10");
 	setKeyDescription(Qt::Key_S,"Save QGLViewer state to /tmp/qglviewerState.xml");
 	setKeyDescription(Qt::Key_T,"Switch orthographic / perspective camera");
 	setKeyDescription(Qt::Key_O,"Set narrower field of view");
@@ -115,8 +107,10 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	setKeyDescription(Qt::Key_8,"Load [Alt: save] view configuration #1");
 	setKeyDescription(Qt::Key_9,"Load [Alt: save] view configuration #2");
 	setKeyDescription(Qt::Key_Space,"Center scene (same as Alt-C); clip plane: activate/deactivate");
-
-	centerScene(-1);
+	
+	mouseMovesCamera();
+	centerScene();
+	show();
 }
 
 bool GLViewer::isManipulating(){
@@ -210,7 +204,7 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		// center around selected body
 		if(selectedName() >= 0 && (*(Omega::instance().getScene()->bodies)).exists(selectedName())) setSceneCenter(manipulatedFrame()->position());
 		// make all bodies visible
-		else centerScene(-1);
+		else centerScene();
 	}
 	else if(e->key()==Qt::Key_D &&(e->modifiers() & Qt::AltModifier)){ Body::id_t id; if((id=Omega::instance().getScene()->selectedBody)>=0){ const shared_ptr<Body>& b=Body::byId(id); b->setDynamic(!b->isDynamic()); LOG_INFO("Body #"<<id<<" now "<<(b->isDynamic()?"":"NOT")<<" dynamic"); } }
 	else if(e->key()==Qt::Key_D) {timeDispMask+=1; if(timeDispMask>(TIME_REAL|TIME_VIRT|TIME_ITER))timeDispMask=0; }
@@ -256,7 +250,7 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		int axisIdx=(e->key()==Qt::Key_X?0:(e->key()==Qt::Key_Y?1:2));
 		if(manipulatedClipPlane<0){
 			qglviewer::Vec up(0,0,0), vDir(0,0,0);
-			bool alt=(e->modifiers() && Qt::ShiftModifier);
+			bool alt=(e->modifiers() & Qt::ShiftModifier);
 			up[axisIdx]=1; vDir[(axisIdx+(alt?2:1))%3]=alt?1:-1;
 			camera()->setViewDirection(vDir);
 			camera()->setUpVector(up);
@@ -269,9 +263,6 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		}
 	}
 	else if(e->key()==Qt::Key_Period) gridSubdivide = !gridSubdivide;
-	else if(e->key()==Qt::Key_Comma) displayGridNumbers = !displayGridNumbers;
-	else if(e->key()==Qt::Key_Plus)  {autoGrid=false;prevGridStep/=10;}
-	else if(e->key()==Qt::Key_Minus) {autoGrid=false;prevGridStep*=10;}
 	else if(e->key()==Qt::Key_Return){
 		if (Omega::instance().isRunning()) Omega::instance().pause();
 		else Omega::instance().run();
@@ -313,7 +304,7 @@ void GLViewer::centerPeriodic(){
 	assert(scene->isPeriodic);
 	Vector3r center=.5*scene->cell->getSize();
 	Vector3r halfSize=.5*scene->cell->getSize();
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2]));
+	Real radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2]));
 	LOG_DEBUG("Periodic scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	setSceneRadius(radius*1.5);
@@ -333,7 +324,7 @@ void GLViewer::centerMedianQuartile(){
 	long nBodies=scene->bodies->size();
 	if(nBodies<4) {
 		LOG_DEBUG("Less than 4 bodies, median makes no sense; calling centerScene() instead.");
-		return centerScene(-1);
+		return centerScene();
 	}
 	std::vector<Real> coords[3];
 	for(int i=0;i<3;i++)coords[i].reserve(nBodies);
@@ -353,7 +344,7 @@ void GLViewer::centerMedianQuartile(){
 	showEntireScene();
 }
 
-void GLViewer::centerScene(Real suggestedRadius){
+void GLViewer::centerScene(){
 	Scene* rb=Omega::instance().getScene().get();
 	if (!rb) return;
 	if(rb->isPeriodic){ centerPeriodic(); return; }
@@ -373,11 +364,6 @@ void GLViewer::centerScene(Real suggestedRadius){
 			if(!b) continue;
 			max=max.cwiseMax(b->state->pos);
 			min=min.cwiseMin(b->state->pos);
-			Bound* aabb=dynamic_cast<Bound*>(b->bound.get());
-			if(aabb){
-				max=max.cwiseMax(b->state->pos+aabb->max);
-				min=min.cwiseMin(b->state->pos+aabb->min);
-			}
 		}
 		if(std::isinf(min[0])||std::isinf(min[1])||std::isinf(min[2])||std::isinf(max[0])||std::isinf(max[1])||std::isinf(max[2])){ LOG_DEBUG("No min/max computed from bodies either, setting cube (-1,-1,-1)×(1,1,1)"); min=-Vector3r::Ones(); max=Vector3r::Ones(); }
 	} else {LOG_DEBUG("Using scene's Aabb");}
@@ -385,16 +371,16 @@ void GLViewer::centerScene(Real suggestedRadius){
 	LOG_DEBUG("Got scene box min="<<min<<" and max="<<max);
 	Vector3r center = (max+min)*0.5;
 	Vector3r halfSize = (max-min)*0.5;
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=suggestedRadius) radius=(suggestedRadius>0)?suggestedRadius:1;
+	Real radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=1;
 	LOG_DEBUG("Scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
-	setSceneRadius(radius*3.0);
+	setSceneRadius(radius*1.5);
 	showEntireScene();
 }
 
 // new object selected.
 // set frame coordinates, and isDynamic=false;
-void GLViewer::postSelection(const QPoint& point) 
+void GLViewer::postSelection(const QPoint& /*point*/)
 {
 	LOG_DEBUG("Selection is "<<selectedName());
 	int selection = selectedName();
@@ -488,17 +474,17 @@ qreal YadeCamera::zNear() const
 float YadeCamera::zNear() const
 #endif
 {
-  float z = distanceToSceneCenter() - zClippingCoefficient()*sceneRadius()*(1.f-2*cuttingDistance);
+  double z = distanceToSceneCenter() - zClippingCoefficient()*sceneRadius()*(1.f-2*cuttingDistance);
 
   // Prevents negative or null zNear values.
-  const float zMin = zNearCoefficient() * zClippingCoefficient() * sceneRadius();
+  const double zMin = zNearCoefficient() * zClippingCoefficient() * sceneRadius();
   if (z < zMin)
 /*    switch (type())
       {
       case Camera::PERSPECTIVE  :*/ z = zMin; /*break;
       case Camera::ORTHOGRAPHIC : z = 0.0;  break;
       }*/
-  return qreal(z);
+  return z;
 }
 
 QString GLViewer::helpString() const
@@ -509,4 +495,6 @@ QString GLViewer::helpString() const
 	//text += "Visit <a href=\"https://yade-dem.org/\">https://yade-dem.org</a> for complete documentation.";
 	return text;
 }
+
+} // namespace yade
 

@@ -4,9 +4,12 @@
 #include<pkg/dem/Shop.hpp>
 #include<lib/smoothing/LinearInterpolate.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((KinematicEngine)(CombinedKinematicEngine)(TranslationEngine)(HarmonicMotionEngine)(RotationEngine)(HelixEngine)(InterpolatingHelixEngine)(HarmonicRotationEngine)(ServoPIDController)(BicyclePedalEngine));
 
 CREATE_LOGGER(KinematicEngine);
+CREATE_LOGGER(ServoPIDController);
 
 void KinematicEngine::action(){
 	if (ids.size()>0) {
@@ -213,3 +216,6 @@ void BicyclePedalEngine::apply(const vector<Body::id_t>& ids){
 		LOG_WARN("The list of ids is empty! Can't move any body.");
 	}
 }
+
+} // namespace yade
+

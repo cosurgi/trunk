@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -16,13 +16,20 @@
 #include<pkg/common/Sphere.hpp>
 #include<pkg/dem/Shop.hpp>
 #include<pkg/dem/ViscoelasticPM.hpp>
+#ifdef YADE_MPI 
+	#include <mpi.h> 
+	#include <core/Subdomain.hpp>
+#endif
+
+
+namespace yade { // Cannot have #include directive inside.
 
 CREATE_LOGGER(GlobalStiffnessTimeStepper);
 YADE_PLUGIN((GlobalStiffnessTimeStepper));
 
 GlobalStiffnessTimeStepper::~GlobalStiffnessTimeStepper() {}
 
-void GlobalStiffnessTimeStepper::findTimeStepFromBody(const shared_ptr<Body>& body, Scene * ncb)
+void GlobalStiffnessTimeStepper::findTimeStepFromBody(const shared_ptr<Body>& body, Scene * /*ncb*/)
 {
 	State* sdec=body->state.get();
 	Vector3r&  stiffness= stiffnesses[body->getId()];
@@ -112,7 +119,8 @@ void GlobalStiffnessTimeStepper::findTimeStepFromBody(const shared_ptr<Body>& bo
 
 bool GlobalStiffnessTimeStepper::isActivated()
 {
-	return (active && ((!computedOnce) || (scene->iter % timeStepUpdateInterval == 0) || (scene->iter < (long int) 2) ));
+      return  (active && ((!computedOnce) || (scene->iter % timeStepUpdateInterval == 0) || (scene->iter < (long int) 2) ));
+	
 }
 
 void GlobalStiffnessTimeStepper::computeTimeStep(Scene* ncb)
@@ -126,12 +134,9 @@ void GlobalStiffnessTimeStepper::computeTimeStep(Scene* ncb)
 	shared_ptr<BodyContainer>& bodies = ncb->bodies;
 	newDt = Mathr::MAX_REAL;
 	computedSomething=false;
-	BodyContainer::iterator bi    = bodies->begin();
-	BodyContainer::iterator biEnd = bodies->end();
-	for(  ; bi!=biEnd ; ++bi ){
-		shared_ptr<Body> b = *bi;
+	for (const auto &b : *bodies) {
+		if (!b) {continue; } 
 		if (b->isDynamic() && !b->isClumpMember()) findTimeStepFromBody(b, ncb);
-		
 	}
 	if(densityScaling) (newDt=targetDt);
 	if(computedSomething || densityScaling){
@@ -139,6 +144,17 @@ void GlobalStiffnessTimeStepper::computeTimeStep(Scene* ncb)
 		scene->dt=previousDt;
 		computedOnce = true;}
 	else if (!computedOnce) scene->dt=defaultDt;
+	
+#ifdef YADE_MPI
+	if (parallelMode){
+		if (scene->iter % timeStepUpdateInterval == 0){
+			Real recvDt; Real myDt = scene->dt; 
+			MPI_Allreduce(&myDt,&recvDt,1, MPI_DOUBLE,MPI_MIN,scene->getComm()); 
+			scene->dt = recvDt;  
+		}
+	}
+#endif 
+ 
 // 	LOG_INFO("computed timestep " << newDt <<
 // 			(scene->dt==newDt ? string(", applied") :
 // 			string(", BUT timestep is ")+boost::lexical_cast<string>(scene->dt))<<".");
@@ -154,6 +170,10 @@ void GlobalStiffnessTimeStepper::computeStiffnesses(Scene* rb){
 			viscosities.resize(size); Rviscosities.resize(size);
 			}
 	}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+// this is to remove warning about manipulating raw memory
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
 	/* reset stored values */
 	memset(& stiffnesses[0],0,sizeof(Vector3r)*size);
 	memset(&Rstiffnesses[0],0,sizeof(Vector3r)*size);
@@ -161,6 +181,7 @@ void GlobalStiffnessTimeStepper::computeStiffnesses(Scene* rb){
 		memset(& viscosities[0],0,sizeof(Vector3r)*size);
 		memset(&Rviscosities[0],0,sizeof(Vector3r)*size);
 	}
+#pragma GCC diagnostic pop
 
 	FOREACH(const shared_ptr<Interaction>& contact, *rb->interactions){
 		if(!contact->isReal()) continue;
@@ -221,3 +242,6 @@ void GlobalStiffnessTimeStepper::computeStiffnesses(Scene* rb){
 
 	}
 }
+
+} // namespace yade
+

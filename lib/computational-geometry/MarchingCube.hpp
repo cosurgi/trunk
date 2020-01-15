@@ -13,6 +13,9 @@
 #include <vector>
 #include <lib/base/Math.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
+
 class MarchingCube
 {
 
@@ -69,3 +72,6 @@ class MarchingCube
 
 	public  : void resizeScalarField(vector<vector<vector<Real> > >& scalarField, int sx, int sy, int sz);
 };
+
+}; // namespace yade
+

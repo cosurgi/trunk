@@ -32,11 +32,13 @@
 #define PYGTS_DEBUG 1
 #endif /* PYGTS_DEBUG */
 
+// XXX never do #include<Python.h>, see https://www.boost.org/doc/libs/1_71_0/libs/python/doc/html/building/include_issues.html
+#include <boost/python/detail/wrap_python.hpp>
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#include <Python.h>
 #include <structmember.h>
 
 /* Defined for arrayobject.h which is only included where needed */
@@ -48,6 +50,7 @@
 // https://codeyarns.com/2014/03/11/how-to-selectively-ignore-a-gcc-warning/
 // https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 // Code that generates this warning, Note: we cannot do this trick in yade. If we have a warning in yade, we have to fix it! See also https://gitlab.com/yade-dev/trunk/merge_requests/73

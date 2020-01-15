@@ -8,9 +8,11 @@
  
 #include <pkg/common/Bo1_Aabb.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Bo1_Sphere_Aabb)(Bo1_Facet_Aabb)(Bo1_Box_Aabb));
 
-void Bo1_Sphere_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& se3, const Body* b){
+void Bo1_Sphere_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& se3, const Body* /*b*/){
 	Sphere* sphere = static_cast<Sphere*>(cm.get());
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bv.get());
@@ -38,7 +40,7 @@ void Bo1_Sphere_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, con
 void Bo1_Facet_Aabb::go(	  const shared_ptr<Shape>& cm
 				, shared_ptr<Bound>& bv
 				, const Se3r& se3
-				, const Body* b)
+				, const Body* /*b*/)
 {
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bv.get());
@@ -68,7 +70,7 @@ void Bo1_Facet_Aabb::go(	  const shared_ptr<Shape>& cm
 void Bo1_Box_Aabb::go(	const shared_ptr<Shape>& cm,
 				shared_ptr<Bound>& bv,
 				const Se3r& se3,
-				const Body*	b)
+				const Body*	/*b*/)
 {
 	Box* box = static_cast<Box*>(cm.get());
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
@@ -88,3 +90,6 @@ void Bo1_Box_Aabb::go(	const shared_ptr<Shape>& cm,
 	aabb->min = se3.position-halfSize;
 	aabb->max = se3.position+halfSize;
 }
+
+} // namespace yade
+

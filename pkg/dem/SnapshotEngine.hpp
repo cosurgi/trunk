@@ -10,9 +10,12 @@
 #include<gui/qt5/OpenGLManager.hpp>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 class SnapshotEngine: public PeriodicEngine {
 	public:
 	virtual void action();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(SnapshotEngine,PeriodicEngine,"Periodically save snapshots of GLView(s) as .png files. Files are named *fileBase* + *counter* + '.png' (counter is left-padded by 0s, i.e. snap00004.png).",
 		((string,format,"PNG",,"Format of snapshots (one of JPEG, PNG, EPS, PS, PPM, BMP) `QGLViewer documentation <http://www.libqglviewer.com/refManual/classQGLViewer.html#abbb1add55632dced395e2f1b78ef491c>`_. File extension will be lowercased *format*. Validity of format is not checked."))
 		((string,fileBase,"",,"Basename for snapshots"))
@@ -23,7 +26,11 @@ class SnapshotEngine: public PeriodicEngine {
 		((Real,deadTimeout,3,,"Timeout for 3d operations (opening new view, saving snapshot); after timing out, throw exception (or only report error if *ignoreErrors*) and make myself :yref:`dead<Engine.dead>`. [s]"))
 		((string,plot,,,"Name of field in :yref:`yade.plot.imgData` to which taken snapshots will be appended automatically."))
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(SnapshotEngine);
+
+} // namespace yade
+

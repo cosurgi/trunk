@@ -13,9 +13,7 @@
 #include<QGLViewer/manipulatedFrame.h>
 #include<QGLViewer/constraint.h>
 
-using std::setw;
-using std::setfill;
-using std::setprecision;
+namespace yade { // Cannot have #include directive inside.
 
 /*! Class handling user interaction with the openGL rendering of simulation.
  *
@@ -104,7 +102,7 @@ class GLViewer : public QGLViewer
 		//! Save display parameters (QGOViewer and OpenGLRenderer) to Scene::dispParams[n]
 		void saveDisplayParameters(size_t n);
 		//! Get radius of the part of scene that fits the current view
-		float displayedSceneRadius();
+		double displayedSceneRadius();
 		//! Get center of the part of scene that fits the current view
 		qglviewer::Vec displayedSceneCenter();
 
@@ -169,5 +167,5 @@ class YadeCamera : public qglviewer::Camera
 		virtual void setCuttingDistance(float s){cuttingDistance=s;};
 };
 
-
+} // namespace yade
 

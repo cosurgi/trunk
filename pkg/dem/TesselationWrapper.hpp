@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -14,6 +14,8 @@
 #include<core/Scene.hpp>
 #include<lib/triangulation/Tesselation.h>
 #include<pkg/dem/MicroMacroAnalyser.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 /*! \class TesselationWrapper
  * \brief Handle the triangulation of spheres in a scene, build tesselation on request, and give access to computed quantities : currently volume and porosity of each Voronoï sphere.
@@ -40,10 +42,10 @@ public:
 	typedef Tesselation::VertexInfo							VertexInfo;
 	typedef Tesselation::CellInfo							CellInfo;
 	typedef RTriangulation::Finite_edges_iterator					FiniteEdgesIterator;
+	#ifdef ALPHASHAPE
 	typedef Tesselation::AlphaFace							AlphaFace;
 	typedef Tesselation::AlphaCap                                                   AlphaCap;
-	
-	
+	#endif	
 	
 	Tesselation* Tes;
 	double mean_radius, inf;
@@ -70,18 +72,19 @@ public:
   	void 	addBoundingPlanes (void);
 	/// Force boudaries at positions not equal to precomputed ones
  	void	addBoundingPlanes(double pminx, double pmaxx, double pminy, double pmaxy, double pminz, double pmaxz);
-	void 	RemoveBoundingPlanes (void);
 	///compute voronoi centers then stop (don't compute anything else)
  	void	computeTesselation (void);
  	void	computeTesselation( double pminx, double pmaxx, double pminy, double pmaxy, double pminz, double pmaxz);
 	
+	#ifdef ALPHASHAPE
 	void	testAlphaShape(double alpha) {Tes->testAlphaShape(alpha);}
 	boost::python::list getAlphaFaces(double alpha);
 	boost::python::list getAlphaCaps(double alpha, double shrinkedAlpha, bool fixedAlpha);
 	boost::python::list getAlphaVertices(double alpha);
         boost::python::list getAlphaGraph(double alpha, double shrinkedAlpha, bool fixedAlpha);
 	void applyAlphaForces(Matrix3r stress, double alpha, double shrinkedAlpha, bool fixedAlpha);
-
+	#endif
+	
 	///compute Voronoi vertices + volumes of all cells
 	///use computeTesselation to force update, e.g. after spheres positions have been updated
 	void	computeVolumes	(void);
@@ -121,6 +124,7 @@ public:
 	FiniteEdgesIterator facet_it;
 	MicroMacroAnalyser mma;
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(TesselationWrapper,GlobalEngine,"Handle the triangulation of spheres in a scene, build tesselation on request, and give access to computed quantities (see also the :ref:`dedicated section in user manual <MicroStressAndMicroStrain>`). The calculation of microstrain is explained in [Catalano2014a]_ \n\nSee example usage in script example/tesselationWrapper/tesselationWrapper.py.\n\nBelow is an output of the :yref:`defToVtk<TesselationWrapper::defToVtk>` function visualized with paraview (in this case Yade's TesselationWrapper was used to process experimental data obtained on sand by Edward Ando at Grenoble University, 3SR lab.)\n\n.. figure:: fig/localstrain.*\n\t:width: 9cm",
 	((unsigned int,n_spheres,0,,"|ycomp|"))
 	((Real,far,10000.,,"Defines the radius of the large virtual spheres used to define nearly flat boundaries around the assembly. The radius will be the (scene's) bounding box size multiplied by 'far'. Higher values will minimize the error theoretically (since the infinite sphere really defines a plane), but it may increase numerical errors at some point. The default should give a resonable compromize."))
@@ -145,16 +149,21 @@ public:
 	.def("getVolPoroDef",&TesselationWrapper::getVolPoroDef,(boost::python::arg("deformation")=false),"Return a table with per-sphere computed quantities. Include deformations on the increment defined by states 0 and 1 if deformation=True (make sure to define states 0 and 1 consistently).")
 	.def("computeDeformations",&TesselationWrapper::computeDeformations,"compute per-particle deformation. Get it with :yref:`TesselationWrapper::deformation` (id,i,j).")
 	.def("deformation",&TesselationWrapper::deformation,(boost::python::arg("id"),boost::python::arg("i"),boost::python::arg("j")),"Get particle deformation")
+	#ifdef ALPHASHAPE
 	.def("testAlphaShape",&TesselationWrapper::testAlphaShape,(boost::python::arg("alpha")=0),"transitory function, testing AlphaShape feature")
 	.def("getAlphaFaces",&TesselationWrapper::getAlphaFaces,(boost::python::arg("alpha")=0),"Get the list of alpha faces for a given alpha. If alpha is not specified or null the minimum alpha resulting in a unique connected domain is used")
         .def("getAlphaCaps",&TesselationWrapper::getAlphaCaps,(boost::python::arg("alpha")=0,boost::python::arg("shrinkedAlpha")=0,boost::python::arg("fixedAlpha")=false),"Get the list of area vectors for the polyhedral caps associated to boundary particles ('extended' alpha-contour). If alpha is not specified or null the minimum alpha resulting in a unique connected domain is used. Taking a smaller 'shrinked' alpha for placing the virtual spheres moves the enveloppe outside the packing, It should be ~(alpha-refRad) typically.")
 	.def("applyAlphaForces",&TesselationWrapper::applyAlphaForces,(boost::python::arg("stress"),boost::python::arg("alpha")=0,boost::python::arg("shrinkedAlpha")=0,boost::python::arg("fixedAlpha")=false),"set permanent forces based on stress using an alpha shape")
         .def("getAlphaGraph",&TesselationWrapper::getAlphaGraph,(boost::python::arg("alpha")=0,boost::python::arg("shrinkedAlpha")=0,boost::python::arg("fixedAlpha")=false),"Get the list of area vectors for the polyhedral caps associated to boundary particles ('extended' alpha-contour). If alpha is not specified or null the minimum alpha resulting in a unique connected domain is used")
 	.def("getAlphaVertices",&TesselationWrapper::getAlphaVertices,(boost::python::arg("alpha")=0),"Get the list of 'alpha' bounding spheres for a given alpha. If alpha is not specified or null the minimum alpha resulting in a unique connected domain is used. This function is generating a new alpha shape for each call, not to be used intensively.")
+	#endif
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(TesselationWrapper);
 //} // namespace CGT
+
+} // namespace yade
 
 #endif /* YADE_CGAL */

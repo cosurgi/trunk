@@ -5,7 +5,7 @@ from __future__ import print_function
 from yade import pack,qt,plot
 
 O.periodic=True
-O.cell.Hsize=Matrix3(0.1,0,0, 0,0.1,0, 0,0,0.1)
+O.cell.hSize=Matrix3(0.1,0,0, 0,0.1,0, 0,0,0.1)
 sp=pack.SpherePack()
 radius=5e-3
 num=sp.makeCloud((0,0,0),(.1,.1,.1),radius,.2,100,periodic=True)

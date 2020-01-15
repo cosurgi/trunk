@@ -9,7 +9,7 @@ Accelerating Yade's FlowEngine with GPU
 Summary
 =======
 
-This document contains instructions for adding Suite Sparse's GPU acceleration to Yade's Pore Finite Volume (PFV) scheme. The guide is intended for intermediate to advanced Yade users. As such, the guide assumes the reader knows how to modify and compile Yade's source files. Readers will find that this guide introduces system requirements, installation of necessary prerequisites, and installation of the modified Yade. Lastly, the document shows the performance enhancement expected by acceleration of the factorization of various model sizes.
+This document contains instructions for adding Suite Sparse's GPU acceleration to Yade's Pore Finite Volume (PFV) scheme as demonstrated in [Caulk2019]_. The guide is intended for intermediate to advanced Yade users. As such, the guide assumes the reader knows how to modify and compile Yade's source files. Readers will find that this guide introduces system requirements, installation of necessary prerequisites, and installation of the modified Yade. Lastly, the document shows the performance enhancement expected by acceleration of the factorization of various model sizes.
 
 Hardware, Software, and Model Requirements
 ==========================================
@@ -52,14 +52,8 @@ The following instructions to install CUDA are a boiled down version of `these i
 
 Restart your computer.
 
-Verify your CUDA installation by navigating to ``/usr/local/cuda/samples`` and executing the ``make`` command. You may need to edit the findglib.mk file with the following command:
+Verify your CUDA installation by navigating to ``/usr/local/cuda/samples`` and executing the ``make`` command. Now you can navigate to ``/usr/local/cuda/samples/1_Utilities/deviceQuery/`` and execute ``./deviceQuery`` . Verify the ``Result = PASS``. 
 
-::
-
-	sed -i "s/nvidia-367/nvidia-375/g" 'grep "nvidia-367" -r ./ -l'
-
-
-Now you can navigate to ``/usr/local/cuda/samples/1_Utilities/deviceQuery/`` and execute ``./deviceQuery`` . Verify the ``Result = PASS``. 
 
 Install OpenBlas, and Lapack
 ============================
@@ -81,7 +75,7 @@ Test CHOLMOD's GPU functionality by navigating to ``SuiteSparse/CHOLMOD/Demo`` a
 Compile Yade
 ============
 
-Following the instructions outlined `here <https://yade-dem.org/doc/installation.html>`__, run ``cmake`` with ``-DCHOLMOD_GPU=ON`` among other flags. Check the output to verify the paths to CHOLMOD (and dependencies such as AMD), SuiteSparse, CuBlas, and Metis are all identified as the paths we created when we installed these packages. Here is an example of the output you need to inspect:
+Following the instructions outlined `here <https://yade-dem.org/doc/installation.html>`__, run ``cmake`` with ``-DCHOLMOD_GPU=ON`` and ``-DSUITESPARSEPATH=/usr/local/SuiteSparse`` (or your other custom path). Check the output to verify the paths to CHOLMOD (and dependencies such as AMD), SuiteSparse, CuBlas, and Metis are all identified as the paths we created when we installed these packages. Here is an example of the output you need to inspect:
 
 ::
 
@@ -92,14 +86,14 @@ Following the instructions outlined `here <https://yade-dem.org/doc/installation
 -- Found Lapack in /usr/lib/liblapack.so
 
 
-If you have multiple versions of any of these packages, the system may find the wrong one. In this case, you will need to either uninstall the old libraries (e.g. ``sudo apt-get remove libcholmod`` if the other library was installed with apt-get) or edit the paths within ``cMake/Find_____.cmake``. If you installed a version of Cuda other than 8.0 in a different location than ``/usr/local``, you will need to edit ``cMake/FindCublas.cmake`` to reflect these changes before compilation.
+If you have multiple versions of any of these packages, it is possible the system finds the wrong one. In this case, you will need to either uninstall the old libraries (e.g. ``sudo apt-get remove libcholmod`` if the other library was installed with apt-get) or edit the paths within ``cMake/Find_____.cmake``. If you installed a version of Cuda in a different location than ``/usr/local``, you will need to edit ``cMake/FindCublas.cmake`` to reflect these changes before compilation.
 
-Metis is compiled with SuiteSparse, so the Metis library and Metis include should link to files within ``usr/local/SuiteSparse/``. 
+Metis is compiled with SuiteSparse, so the Metis library and Metis include should link to files within ``usr/local/SuiteSparse/``. When ready, complete installation with ``make -jX install``. Keep in mind that adding ``CHOLMOD_GPU`` alters ``useSolver=4`` so to work with the GPU and not the CPU. If you wish to ``useSolver=4`` with the CPU without unintended side effects (possible memory leaks), it is recommended to recompile with ``CHOLMOD_GPU=OFF``. Of course, ``useSolver=3`` should always work on the CPU. 
 
 Controlling the GPU
 ===================
 
-The GPU accelerated solver can be activated within Yade by setting ``flow.useSolver=4`` and ``flow.multithread=True``. There are several environment variables that control the allowable memory, allowable GPU matrix size, etc. These are highlighted within the CHOLMOD User Guide, which can be found in ``SuiteSparse/CHOLMOD/Doc``. At the minimum, the user needs to set the environment variable by executing ``export CHOLMOD_USE_GPU=1``. We also recommend you designate half of your available GPU memory with ``export CHOLMOD_GPU_MEM_BYTES=3000000000`` (for a 6GB graphics card), since the multithreaded solver will keep 2 solvers running at a time to improve efficiency. If you have a multi-gpu setup, you can tell Yade to use one (or both GPUs with SuiteSparse-4.6.0-beta) by executing ``export CUDA_VISIBLE_DEVICES=1``, where 1 is the GPU you wish to use. 
+The GPU accelerated solver can be activated within Yade by setting ``flow.useSolver=4```. There are several environment variables that control the allowable memory, allowable GPU matrix size, etc. These are highlighted within the CHOLMOD User Guide, which can be found in ``SuiteSparse/CHOLMOD/Doc``. At the minimum, the user needs to set the environment variable by executing ``export CHOLMOD_USE_GPU=1``. It is also recommended that you designate half of your available GPU memory with ``export CHOLMOD_GPU_MEM_BYTES=3000000000`` (for a 6GB graphics card), if you wish to use the ``multithread=True`` functionality. If you have a multi-gpu setup, you can tell Yade to use one (or both GPUs with SuiteSparse-4.6.0-beta) by executing ``export CUDA_VISIBLE_DEVICES=1``, where 1 is the GPU you wish to use. 
 
 Performance increase
 ====================
@@ -108,9 +102,9 @@ Performance increase
 
 .. _fig-cpuvsgpu:
 .. figure:: fig/particleVsFactortime.*
-	:width: 17 cm
+	:width: 16.2 cm
 	:align: center
 
-	Time required to factorize and analyze various sized matrices for 10-core CPU, 1050Ti GPU, and Tesla K20 GPU.
+	Time required to factorize and analyze various sized matrices for 10-core CPU, 1050Ti GPU, and Tesla K20 GPU [Caulk2019]_.
 
 Note: Tesla K20 5GB CPU + 10-core Xeon E5 2.8 GHz CPU

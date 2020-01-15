@@ -5,6 +5,8 @@
 #include<core/Scene.hpp>
 #include<pkg/common/Sphere.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((LudingMat)(LudingPhys)(Ip2_LudingMat_LudingMat_LudingPhys)(Law2_ScGeom_LudingPhys_Basic));
 
 LudingMat::~LudingMat(){}
@@ -220,3 +222,6 @@ bool Law2_ScGeom_LudingPhys_Basic::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys
   return true;
   
 }
+
+} // namespace yade
+

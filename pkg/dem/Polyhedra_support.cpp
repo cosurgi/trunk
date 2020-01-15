@@ -9,6 +9,13 @@
 
 #include "Polyhedra.hpp"
 
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+
+namespace yade { // Cannot have #include directive inside.
+
+CREATE_CPP_LOCAL_LOGGER("Polyhedra_support.cpp");
+
 //EMPRIRICAL CONSTANTS - ADJUST IF SEGMENTATION FAULT OCCUR, IT IS A PROBLEM OF CGAL. THESE ARE USED TO CHECK CGAL IMPUTS
 //DISTANCE_LIMIT controls numerical issues in calculating intersection. It should be small enough to neglect only extremely
 //small overlaps, but large enough to prevent errors during computation of convex hull
@@ -598,7 +605,7 @@ Polyhedron Polyhedron_Polyhedron_intersection(Polyhedron A, Polyhedron B, CGALpo
 
 	vector<Plane> planes1, planes2;
 	vector<CGALpoint> dual_planes;
-	Polyhedron::Plane_iterator pi;
+	//Polyhedron::Plane_iterator pi;
 	CGALpoint inside(0,0,0);
 	
 	bool intersection_found = false;
@@ -807,5 +814,7 @@ shared_ptr<Body> SplitPolyhedra(const shared_ptr<Body>& body, const Vector3r dir
 	BP->state->angVel = OrigAngVel;
 	return BP;
 }
+
+} // namespace yade
 
 #endif // YADE_CGAL

@@ -12,6 +12,8 @@
 #include<core/Scene.hpp>
 #include<boost/regex.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((GravityEngine)(CentralGravityEngine)(AxialGravityEngine)(HdapsGravityEngine));
 CREATE_LOGGER(GravityEngine);
 
@@ -31,7 +33,7 @@ void GravityEngine::action(){
 
 void CentralGravityEngine::action(){
 	const Vector3r& centralPos=Body::byId(centralBody)->state->pos;
-	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		if(b->isClump() || b->getId()==centralBody) continue; // skip clumps and central body
 		if(mask!=0 && !b->maskCompatible(mask)) continue;
 		Real F=accel*b->state->mass;
@@ -84,3 +86,6 @@ void HdapsGravityEngine::action(){
 	}
 	GravityEngine::action();
 }
+
+} // namespace yade
+

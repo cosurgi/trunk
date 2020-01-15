@@ -1,6 +1,7 @@
 // 2008 © Václav Šmilauer <eudoxos@arcig.cz>
 #pragma once
 
+#include<lib/base/Math.hpp>
 #include<vector>
 #include<iostream>
 #include<cassert>

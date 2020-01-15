@@ -21,6 +21,7 @@ The same data structure is used with different template parameters for periodic 
 Two triangulations are in fact contained in the network, so that a simulation can switch between them and pass data from one to the other. Otherwise, some info would be lost when the problem is retriangulated.
 */
 
+namespace yade { // Cannot have #include directive inside.
 namespace CGT {
 /// Representation of a boundary condition along an axis aligned plane.
 struct Boundary
@@ -64,6 +65,7 @@ class Network
 		int nOfSpheres;
 		int xMinId, xMaxId, yMinId, yMaxId, zMinId, zMaxId;
 		int* boundsIds [6];
+		
 		vector<CellHandle> boundingCells [6];
 		vector<CellHandle> thermalBoundingCells [6];
 		vector<CellHandle> conductionBoundingCells [6];
@@ -71,19 +73,22 @@ class Network
 		Point cornerMax;
 		Real VSolidTot, Vtotalissimo, vPoral, sSolidTot, vPoralPorosity, vTotalPorosity;
 		Boundary boundaries [6];
+		
 		ThermalBoundary thermalBoundaries [6];
 		ThermalBoundary conductionBoundaries [6];
 		Boundary& boundary (int b) {return boundaries[b-idOffset];}
 		ThermalBoundary& thermalBoundary (int b) {return thermalBoundaries[b-idOffset];}
 		ThermalBoundary& conductionBoundary (int b) {return conductionBoundaries[b-idOffset];}
 		short idOffset;
+		short alphaIdOffset;
 		int vtkInfiniteVertices, vtkInfiniteCells, num_particles;
 
 		void addBoundingPlanes();
 		void addBoundingPlane (CVector Normal, int id_wall);
 		void addBoundingPlane (Real center[3], double thickness, CVector Normal, int id_wall );
+		void setAlphaBoundary(double alpha,bool fixed);
 
-		void defineFictiousCells( );
+		void defineFictiousCells();
 		int detectFacetFictiousVertices (CellHandle& cell, int& j);
 		double volumeSolidPore (const CellHandle& cell);
 		double volumeSingleFictiousPore(const VertexHandle& SV1, const VertexHandle& SV2, const VertexHandle& SV3, const Point& PV1,  const Point& PV2, CVector& facetSurface);
@@ -117,6 +122,9 @@ class Network
 };
 
 } //namespaceCGT
+
+}; // namespace yade
+
 
 #include "Network.ipp"
 

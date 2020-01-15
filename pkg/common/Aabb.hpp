@@ -10,6 +10,8 @@
 
 #include<core/Bound.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /*! Representation of bound by min and max points.
 
 This class is redundant, since it has no data members; don't delete it, though,
@@ -20,7 +22,12 @@ class Aabb : public Bound{
 	public :
 		virtual ~Aabb() {};
 	
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(Aabb,Bound,"Axis-aligned bounding box, for use with :yref:`InsertionSortCollider`. (This class is quasi-redundant since min,max are already contained in :yref:`Bound` itself. That might change at some point, though.)",/*attrs*/,/*ctor*/createIndex(););
+	// clang-format on
 	REGISTER_CLASS_INDEX(Aabb,Bound);
 };
 REGISTER_SERIALIZABLE(Aabb);
+
+} // namespace yade
+

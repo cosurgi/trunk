@@ -19,11 +19,17 @@
 #include <core/ForceContainer.hpp>
 #include <core/InteractionContainer.hpp>
 #include <core/EnergyTracker.hpp>
+#ifdef YADE_MPI 
+	#include<mpi.h>
+#endif
 
 #ifdef YADE_OPENMP
 	#include<omp.h>
 #endif
 
+
+namespace yade { // Cannot have #include directive inside.
+class Shape; 
 class Bound;
 #ifdef YADE_OPENGL
 	class OpenGLRenderer;
@@ -68,11 +74,16 @@ class Scene: public Serializable{
 		#ifdef YADE_OPENGL
 			shared_ptr<OpenGLRenderer> renderer;
 		#endif
-
+			
+		#ifdef YADE_MPI
+			MPI_Comm getComm(); 
+		#endif 
+		
 		void postLoad(Scene&);
-
+		
 		boost::posix_time::ptime prevTime; //Time value on the previous step
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Scene,Serializable,"Object comprising the whole simulation.",
 		((Real,dt,1e-8,,"Current timestep for integration."))
 		((long,iter,0,Attr::readonly,"Current iteration (computational step) number"))
@@ -87,8 +98,11 @@ class Scene: public Serializable{
 		((bool,doSort,false,Attr::readonly,"Used, when new body is added to the scene."))
 		((bool,runInternalConsistencyChecks,true,Attr::hidden,"Run internal consistency check, right before the very first simulation step."))
 		((Body::id_t,selectedBody,-1,,"Id of body that is selected by the user"))
-
-		((list<string>,tags,,,"Arbitrary key=value associations (tags like mp3 tags: author, date, version, description etc.)"))
+	#ifdef YADE_MPI
+		((int,subdomain,0,,"the subdomain this scene is assigned in MPI/domain decomposition."))
+		((shared_ptr<Shape>,subD,boost::make_shared<Shape>(),,"subdomain (shape) attached to this proc."))
+	#endif
+		((vector<string>,tags,,,"Arbitrary key=value associations (tags like mp3 tags: author, date, version, description etc.)"))
 		((vector<shared_ptr<Engine> >,engines,,Attr::hidden,"Engines sequence in the simulation."))
 		((vector<shared_ptr<Engine> >,_nextEngines,,Attr::hidden,"Engines to be used from the next step on; is returned transparently by O.engines if in the middle of the loop (controlled by subStep>=0)."))
 		// NOTE: bodies must come before interactions, since InteractionContainer is initialized with a reference to BodyContainer::body
@@ -109,7 +123,11 @@ class Scene: public Serializable{
 		,
 		/* py */
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Scene);
+
+} // namespace yade
+
 

@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -11,6 +11,8 @@
 
 #include<core/GlobalEngine.hpp>
 #include<lib/triangulation/KinematicLocalisationAnalyser.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 /*! \brief compute fabric tensor, local porosity, local deformation, and other micromechanicaly defined quantities based on triangulation/tesselation of the packing.
 	
@@ -42,6 +44,7 @@ class MicroMacroAnalyser : public GlobalEngine
 		void postLoad(MicroMacroAnalyser&);
 
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(MicroMacroAnalyser,GlobalEngine,"compute fabric tensor, local porosity, local deformation, and other micromechanicaly defined quantities based on triangulation/tesselation of the packing.",
 		((unsigned int,stateNumber,0,,"A number incremented and appended at the end of output files to reflect increment number."))
 		((unsigned int,incrtNumber,1,,""))
@@ -59,10 +62,13 @@ class MicroMacroAnalyser : public GlobalEngine
 		initialized = false;
 		,/*py*/
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 		//REGISTER_ATTRIBUTES(GlobalEngine,(stateNumber)(incrtNumber)(outputFile)(stateFileName)(interval)(compDeformation)(compIncrt));
 };
 
 REGISTER_SERIALIZABLE(MicroMacroAnalyser);
+
+} // namespace yade
 
 #endif /* YADE_CGAL */

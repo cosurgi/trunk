@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2012 by Chao Yuan <chao.yuan@3sr-grenoble.fr>           *
-*  Copyright (C) 2012 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2012 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -13,6 +13,7 @@
 #ifdef TWOPHASEFLOW
 
 
+namespace yade { // Cannot have #include directive inside.
 
 
 class UnsaturatedEngine : public TwoPhaseFlowEngine
@@ -229,7 +230,7 @@ void UnsaturatedEngine::printSomething()
 {
 
     RTriangulation& Tri = solver->T[solver->currentTes].Triangulation();
-    FiniteEdgesIterator ed_it;
+//    FiniteEdgesIterator ed_it;
     for ( FiniteEdgesIterator ed_it = Tri.finite_edges_begin(); ed_it!=Tri.finite_edges_end();ed_it++ )
     {
       const VertexInfo& vi1=(ed_it->first)->vertex(ed_it->second)->info();
@@ -352,6 +353,8 @@ double UnsaturatedEngine::getSphericalSubdomainSaturation(Vector3r pos, double r
 }
 
 //--------------end of comparison with experiment----------------------------
+
+} // namespace yade
 
 #endif //TWOPHASEFLOW
 #endif //FLOW_ENGINE

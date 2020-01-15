@@ -1,4 +1,7 @@
 #include<lib/base/Math.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 template<> const Real Math<Real>::EPSILON = DBL_EPSILON;
 template<> const Real Math<Real>::ZERO_TOLERANCE = 1e-20;
 template<> const Real Math<Real>::MAX_REAL = DBL_MAX;
@@ -33,3 +36,6 @@ bool operator||(bool b, const mask_t& g) { return g || b; }
 bool operator&&(const mask_t& g, bool b) { return (g != 0) && b; }
 bool operator&&(bool b, const mask_t& g) { return g && b; }
 #endif
+
+}; // namespace yade
+

@@ -2,6 +2,8 @@
 #pragma once
 #include<time.h>
 
+namespace yade { // Cannot have #include directive inside.
+
 struct TimingInfo{
 	typedef unsigned long long delta;
 	long nExec;
@@ -48,3 +50,6 @@ class TimingDeltas{
 			return ret;
 		}
 };
+
+} // namespace yade
+

@@ -1,5 +1,5 @@
 # coding: utf-8
-# 2011 ©Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+# 2011 ©Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 "Demonstrate the compression of a periodic cell with non-trivial initial geometry."
 from __future__ import print_function
 from yade import pack,qt

@@ -15,10 +15,10 @@
 #include<core/Timing.hpp>
 #include<lib/base/Logging.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class Body;
 class Scene;
-
-CREATE_LOGGER(Engine);
 
 class Engine: public Serializable{
 	public:
@@ -45,6 +45,7 @@ class Engine: public Serializable{
 
 	DECLARE_LOGGER;
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Engine,Serializable,"Basic execution unit of simulation, called from the simulation loop (O.engines)",
 		((bool,dead,false,,"If true, this engine will not run at all; can be used for making an engine temporarily deactivated and only resurrect it at a later point."))
 		((int, ompThreads, -1,,"Number of threads to be used in the engine. If ompThreads<0 (default), the number will be typically OMP_NUM_THREADS or the number N defined by 'yade -jN' (this behavior can depend on the engine though). This attribute will only affect engines whose code includes openMP parallel regions (e.g. :yref:`InteractionLoop`). This attribute is mostly useful for experiments or when combining :yref:`ParallelEngine` with engines that run parallel regions, resulting in nested OMP loops with different number of threads at each level."))
@@ -55,13 +56,15 @@ class Engine: public Serializable{
 		#endif
 		,
 		/* py */
-		.add_property("execTime",&Engine::timingInfo_nsec_get,&Engine::timingInfo_nsec_set,"Cummulative time this Engine took to run (only used if :yref:`O.timingEnabled<Omega.timingEnabled>`\\ ==\\ ``True``).")
-		.add_property("execCount",&Engine::timingInfo_nExec_get,&Engine::timingInfo_nExec_set,"Cummulative count this engine was run (only used if :yref:`O.timingEnabled<Omega.timingEnabled>`\\ ==\\ ``True``).")
+		.add_property("execTime",&Engine::timingInfo_nsec_get,&Engine::timingInfo_nsec_set,"Cumulative time in nanoseconds this Engine took to run (only used if :yref:`O.timingEnabled<Omega.timingEnabled>`\\ ==\\ ``True``).")
+		.add_property("execCount",&Engine::timingInfo_nExec_get,&Engine::timingInfo_nExec_set,"Cumulative count this engine was run (only used if :yref:`O.timingEnabled<Omega.timingEnabled>`\\ ==\\ ``True``).")
 		.def_readonly("timingDeltas",&Engine::timingDeltas,"Detailed information about timing inside the Engine itself. Empty unless enabled in the source code and :yref:`O.timingEnabled<Omega.timingEnabled>`\\ ==\\ ``True``.")
 		.def("__call__",&Engine::explicitAction)
 	);
+	// clang-format on
 };
+
 REGISTER_SERIALIZABLE(Engine);
 
-
+} // namespace yade
 

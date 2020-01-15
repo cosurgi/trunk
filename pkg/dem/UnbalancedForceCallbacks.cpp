@@ -4,6 +4,8 @@
 #include<core/Body.hpp>
 #include<core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((SumIntrForcesCb)
 #ifdef YADE_BODY_CALLBACK
 	(SumBodyForcesCb)
@@ -49,3 +51,6 @@ void SumIntrForcesCb::go(IntrCallback* _self, Interaction* i){
 		self->force+=self->scene->forces.getForce(b->id).norm();
 	}
 #endif
+
+} // namespace yade
+

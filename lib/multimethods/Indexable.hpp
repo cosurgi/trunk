@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace yade { // Cannot have #include directive inside.
+
+
 /*! \brief Abstract interface for all Indexable class.
 	An indexable class is a class that will be managed by a MultiMethodManager.
 	The index the function getClassIndex() returns, corresponds to the index in the matrix where the class will be handled.
@@ -99,4 +102,6 @@ class Indexable
 // macro that should be passed in the 4th argument of YADE_CLASS_BASE_ATTR_PY in the top-level indexable
 #define YADE_PY_TOPINDEXABLE(className) .add_property("dispIndex",&Indexable_getClassIndex<className>,"Return class index of this instance.").def("dispHierarchy",&Indexable_getClassIndices<className>,(boost::python::arg("names")=true),"Return list of dispatch classes (from down upwards), starting with the class instance itself, top-level indexable at last. If names is true (default), return class names rather than numerical indices.")
 
+
+}; // namespace yade
 

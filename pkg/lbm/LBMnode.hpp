@@ -12,6 +12,8 @@
 #include<lib/serialization/Serializable.hpp>
 #include<lib/multimethods/Indexable.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class LBMnode: public Serializable{
     public:
         int
@@ -60,8 +62,12 @@ class LBMnode: public Serializable{
         void setAsFluid(){isObstacle=false;}
 
     virtual ~LBMnode();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(LBMnode,Serializable,"Node class for Lattice Boltzmann Method ");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(LBMnode);
+
+} // namespace yade
 
 #endif //LBM_ENGINE

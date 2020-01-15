@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre		                         *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -39,15 +39,13 @@
 
 #include <boost/numeric/conversion/bounds.hpp>
 #include <boost/limits.hpp>
-// random
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/normal_distribution.hpp>
 #include<pkg/dem/SpherePack.hpp>
 //#include<pkg/dem/MicroMacroAnalyser.hpp>
 
 #include "TriaxialTest.hpp"
+
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(TriaxialTest);
 YADE_PLUGIN((TriaxialTest));
 
@@ -81,7 +79,7 @@ bool TriaxialTest::generate(string& message)
 			LOG_INFO("Mean radius value of "<<radiusMean<<" requested, scaling "<<nScaled<<" dimensions by "<<boxScaleFactor);
 			dimensions[0]*=fixedDims[0]?1.:boxScaleFactor; dimensions[1]*=fixedDims[1]?1.:boxScaleFactor; dimensions[2]*=fixedDims[2]?1.:boxScaleFactor;
 			upperCorner=lowerCorner+dimensions;
-			num=sphere_pack.makeCloud(lowerCorner,upperCorner,radiusMean,radiusStdDev,numberOfGrains);
+			num=sphere_pack.makeCloud(lowerCorner,upperCorner,radiusMean,radiusStdDev,numberOfGrains,false,-1,vector<Real>(),vector<Real>(),false,seed);
 		}
 		message+="Generated a sample with " + boost::lexical_cast<string>(num) + " spheres inside box of dimensions: ("
 			+ boost::lexical_cast<string>(upperCorner[0]-lowerCorner[0]) + ","
@@ -178,7 +176,7 @@ bool TriaxialTest::generate(string& message)
 	return true;
 }
 
-void TriaxialTest::createSphere(shared_ptr<Body>& body, Vector3r position, Real radius, bool big, bool dynamic )
+void TriaxialTest::createSphere(shared_ptr<Body>& body, Vector3r position, Real radius, bool /*big*/, bool /*dynamic*/ )
 {
 	body = shared_ptr<Body>(new Body); body->groupMask=2;
 	shared_ptr<Aabb> aabb(new Aabb);
@@ -319,6 +317,9 @@ void TriaxialTest::createActors(shared_ptr<Scene>& scene)
 	scene->engines.push_back(newton);
 }
 
-void TriaxialTest::positionRootBody(shared_ptr<Scene>& scene)
+void TriaxialTest::positionRootBody(shared_ptr<Scene>& /*scene*/)
 {
 }
+
+} // namespace yade
+

@@ -14,6 +14,8 @@
 #include<lib/base/Logging.hpp>
 #include<lib/base/Math.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class DynLibManager 
 {
 	private :
@@ -40,3 +42,6 @@ class DynLibManager
 		bool error();
     std::string lastError_;
 };
+
+} // namespace yade
+

@@ -2,7 +2,7 @@
 *  Copyright (C) 2006 by luc Scholtes                                    *
 *  luc.scholtes@hmg.inpg.fr                                              *
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -12,6 +12,8 @@
 #pragma once
 
 #include <pkg/common/Recorder.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 /*! \brief Record the stress-strain state of a sample in simulations using TriaxialCompressionEngine
 
@@ -31,10 +33,15 @@ class TriaxialStateRecorder : public Recorder
 		virtual ~TriaxialStateRecorder ();
 		virtual void action();
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(TriaxialStateRecorder,Recorder,"Engine recording triaxial variables (see the variables list in the first line of the output file). This recorder needs :yref:`TriaxialCompressionEngine` or :yref:`ThreeDTriaxialEngine` present in the simulation).",
 		((Real,porosity,1,,"porosity of the packing [-]")), //Is it really needed to have this value as a serializable?
 		initRun=true;
 		);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(TriaxialStateRecorder);
+
+} // namespace yade
+

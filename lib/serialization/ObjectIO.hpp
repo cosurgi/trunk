@@ -9,11 +9,13 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/device/file.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include <boost/archive/basic_archive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <string>
 #include <boost/math/special_functions/nonfinite_num_facets.hpp>
-
-
-
 
 namespace yade{
 /* Utility template functions for (de)serializing objects using boost::serialization from/to streams or files.
@@ -27,7 +29,7 @@ struct ObjectIO{
 	}
 	// save to given stream and archive format
 	template<class T, class oarchive>
-	static void save(std::ostream& ofs, const string& objectTag, T& object){
+	static void save(std::ostream& ofs, const std::string& objectTag, T& object){
 		std::locale default_locale(std::locale::classic(), new boost::archive::codecvt_null<char>);
 		std::locale locale2(default_locale, new boost::math::nonfinite_num_put<char>);
 		ofs.imbue(locale2);
@@ -37,7 +39,7 @@ struct ObjectIO{
 	}
 	// load from given stream and archive format
 	template<class T, class iarchive>
-	static void load(std::istream& ifs, const string& objectTag, T& object){
+	static void load(std::istream& ifs, const std::string& objectTag, T& object){
 		std::locale default_locale(std::locale::classic(), new boost::archive::codecvt_null<char>);
 		std::locale locale2(default_locale, new boost::math::nonfinite_num_get<char>);
 		ifs.imbue(locale2);
@@ -46,7 +48,7 @@ struct ObjectIO{
 	}
 	// save to given file, guessing compression and XML/binary from extension
 	template<class T>
-	static void save(const string fileName, const string& objectTag, T& object){
+	static void save(const std::string fileName, const std::string& objectTag, T& object){
 		boost::iostreams::filtering_ostream out;
 		if(boost::algorithm::ends_with(fileName,".bz2")) out.push(boost::iostreams::bzip2_compressor());
 		if(boost::algorithm::ends_with(fileName,".gz")) out.push(boost::iostreams::gzip_compressor());
@@ -57,7 +59,7 @@ struct ObjectIO{
 	}
 	// load from given file, guessing compression and XML/binary from extension
 	template<class T>
-	static void load(const string& fileName, const string& objectTag, T& object){
+	static void load(const std::string& fileName, const std::string& objectTag, T& object){
 		boost::iostreams::filtering_istream in;
 		if(boost::algorithm::ends_with(fileName,".bz2")) in.push(boost::iostreams::bzip2_decompressor());
 		if(boost::algorithm::ends_with(fileName,".gz")) in.push(boost::iostreams::gzip_decompressor());
@@ -68,4 +70,5 @@ struct ObjectIO{
 	}
 };
 
-}
+} // namespace yade
+

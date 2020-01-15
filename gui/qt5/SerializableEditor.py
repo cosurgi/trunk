@@ -449,7 +449,7 @@ class SerializableEditor(QFrame):
 			match=re.search(':yattrflags:`\s*([0-9]+)\s*`',doc) # non-empty attribute
 			flags=int(match.group(1)) if match else 0
 			#logging.debug('Attr %s is of type %s'%(attr,((t[0].__name__,) if isinstance(t,tuple) else t.__name__)))
-			self.entries.append(self.EntryData(name=attr,T=t))
+			self.entries.append(self.EntryData(name=attr,T=t,flags=flags))
 			#print("name: "+str(attr)+"\tflag: "+str(flags))
 	def getDocstring(self,attr=None):
 		"If attr is *None*, return docstring of the Serializable itself"
@@ -495,9 +495,11 @@ class SerializableEditor(QFrame):
 			T=entry.T[0]
 			if (issubclass(T,Serializable) or T==Serializable):
 				widget=SeqSerializable(self,getter,setter,T,path=(self.path+'.'+entry.name if self.path else None),shrink=True)
+				if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 				return widget
 			if (T in _fundamentalEditorMap):
 				widget=SeqFundamentalEditor(self,getter,setter,T)
+				if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 				return widget
 			return None
 		# a serializable
@@ -508,6 +510,7 @@ class SerializableEditor(QFrame):
 			else: path=None
 			widget=SerializableEditor(getattr(self.ser,entry.name),parent=self,showType=self.showType,path=(self.path+'.'+entry.name if self.path else None))
 			widget.setFrameShape(QFrame.Box); widget.setFrameShadow(QFrame.Raised); widget.setLineWidth(1)
+			if (entry.flags & AttrFlags.readonly): widget.setEnabled(False)
 			return widget
 		return None
 	def mkWidgets(self):
@@ -515,7 +518,7 @@ class SerializableEditor(QFrame):
 		grid=QFormLayout()
 		grid.setContentsMargins(2,2,2,2)
 		grid.setVerticalSpacing(0)
-		grid.setLabelAlignment(Qt.AlignRight)
+		grid.setLabelAlignment(Qt.AlignLeft)
 		if self.showType:
 			lab=SerQLabel(self,makeSerializableLabel(self.ser,addr=True,href=True),tooltip=self.getDocstring(),path=self.path)
 			lab.setFrameShape(QFrame.Box); lab.setFrameShadow(QFrame.Sunken); lab.setLineWidth(2); lab.setAlignment(Qt.AlignHCenter); lab.linkActivated.connect(yade.qt.openUrl)

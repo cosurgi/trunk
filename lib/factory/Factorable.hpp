@@ -15,6 +15,7 @@
 #include <string>
 #include <sstream>
 
+namespace yade { // Cannot have #include directive inside.
 
 //! macro for registering both class and its base
 #define REGISTER_CLASS_AND_BASE(cn,bcn) REGISTER_CLASS_NAME(cn); REGISTER_BASE_CLASS_NAME(bcn);
@@ -62,15 +63,12 @@ class Factorable
 		Factorable() {}
 		virtual ~Factorable() {}
 
-		virtual string getBaseClassName(unsigned int i=0) const { return "";}	// FIXME[1]
-		virtual int getBaseClassNumber() { return 0;}				// FIXME[1]
+		virtual string getBaseClassName(unsigned int = 0) const { return "";}
+		virtual int getBaseClassNumber() { return 0;}
 
 	REGISTER_CLASS_NAME(Factorable);
 
-// FIXME - virtual function to return version, long and short description, OR
-//         maybe just a file with the same name as class with description inside
-//	public    : virtual std::string getVersion();					// FIXME[1] -	we can make a class Plugin for all that extra stuff: 
-											//		shortDescription(), longDescription(),  baseClassName(), baseClassNumber()
 };
 
+} // namespace yade
 

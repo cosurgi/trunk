@@ -30,13 +30,17 @@ Features of the interaction law:
 #include<pkg/dem/FrictPhys.hpp>
 #include<pkg/dem/ScGeom.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /** This class holds information associated with each body state*/
 class WireState: public State {
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(WireState,State,"Wire state information of each body.\n\nNone of that is used for computation (at least not now), only for post-processing.",
 		((int,numBrokenLinks,0,,"Number of broken links (e.g. number of wires connected to the body which are broken). [-]"))
 		,
 		createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(WireState,State);
 };
 REGISTER_SERIALIZABLE(WireState);
@@ -47,6 +51,7 @@ class WireMat: public FrictMat {
 		virtual shared_ptr<State> newAssocState() const { return shared_ptr<State>(new WireState); }
 		virtual bool stateTypeOk(State* s) const { return (bool)dynamic_cast<WireState*>(s); }
 		void postLoad(WireMat&);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(WireMat,FrictMat,"Material for use with the Wire classes. In conjunction with the corresponding functors it can be used to model steel wire meshes [Thoeni2014]_, geotextiles [Cheng2016]_ and more.",
 			((Real,diameter,0.0027,,"Diameter of the single wire in [m] (the diameter is used to compute the cross-section area of the wire)."))
 			((unsigned int,type,0,,"Three different types are considered:\n\n"
@@ -69,6 +74,7 @@ class WireMat: public FrictMat {
 		,
 		createIndex();
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(WireMat,FrictMat);
 };
@@ -80,6 +86,7 @@ class WirePhys: public FrictPhys {
 	public:
 		virtual ~WirePhys();
 	
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(WirePhys,FrictPhys,"Representation of a single interaction of the WirePM type, storage for relevant parameters",
 			((Real,initD,0.,,"Equilibrium distance for particles. Computed as the initial inter-particular distance when particle are linked."))
 			((bool,isLinked,false,,"If true particles are linked and will interact. Interactions are linked automatically by the definition of the corresponding interaction radius. The value is false if the wire breaks (no more interaction)."))
@@ -94,6 +101,7 @@ class WirePhys: public FrictPhys {
 			createIndex();
 			,
 		);
+	// clang-format on
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(WirePhys,FrictPhys);
 };
@@ -106,9 +114,11 @@ class Ip2_WireMat_WireMat_WirePhys: public IPhysFunctor{
 		
 		FUNCTOR2D(WireMat,WireMat);
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_WireMat_WireMat_WirePhys,IPhysFunctor,"Converts 2 :yref:`WireMat` instances to :yref:`WirePhys` with corresponding parameters.",
 			((int,linkThresholdIteration,1,,"Iteration to create the link."))
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Ip2_WireMat_WireMat_WirePhys);
@@ -120,9 +130,14 @@ class Law2_ScGeom_WirePhys_WirePM: public LawFunctor{
 		
 		FUNCTOR2D(ScGeom,WirePhys);
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Law2_ScGeom_WirePhys_WirePM,LawFunctor,"Constitutive law for the wire model.",
 			((int,linkThresholdIteration,1,,"Iteration to create the link."))
 		);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_WirePhys_WirePM);
+
+} // namespace yade
+

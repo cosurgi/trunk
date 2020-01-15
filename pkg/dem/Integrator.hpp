@@ -2,8 +2,9 @@
 
 #include<core/TimeStepper.hpp>
 
-class Integrator;
+namespace yade { // Cannot have #include directive inside.
 
+class Integrator;
 
 typedef std::vector<Real> stateVector;// Currently, we are unable to use Eigen library within odeint
 
@@ -92,6 +93,7 @@ class Integrator: public TimeStepper {
 		#endif
 
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Integrator,TimeStepper,"Integration Engine Interface.",
 		((slaveContainer,slaves,,,"[will be overridden]"))
 		((Real,integrationsteps,,,"all integrationsteps count as all succesfull substeps"))
@@ -106,7 +108,9 @@ class Integrator: public TimeStepper {
 
 		.add_property("slaves",&Integrator::slaves_get,&Integrator::slaves_set,"List of lists of Engines to calculate the force acting on the particles;  to obtain the derivatives of the states, engines inside will be run sequentially.");
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Integrator);
 
+} // namespace yade
 

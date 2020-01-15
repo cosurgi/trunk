@@ -4,7 +4,9 @@
 #include<lib/multimethods/Indexable.hpp>
 #include<core/Dispatcher.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 class StateFunctor;
+
 class State: public Serializable, public Indexable{
 	public:
 		/// linear motion (references to inside se3)
@@ -15,7 +17,7 @@ class State: public Serializable, public Indexable{
 		//! mutex for updating the parameters from within the interaction loop (only used rarely)
 		boost::mutex updateMutex;
 		shared_ptr<StateFunctor> stateFunctor;
-		
+
 		// bits for blockedDOFs
 		enum {DOF_NONE=0,DOF_X=1,DOF_Y=2,DOF_Z=4,DOF_RX=8,DOF_RY=16,DOF_RZ=32};
 		//! shorthand for all DOFs blocked
@@ -23,10 +25,10 @@ class State: public Serializable, public Indexable{
 		//! shorthand for all displacements blocked
 		static const unsigned DOF_XYZ=DOF_X|DOF_Y|DOF_Z;
 		//! shorthand for all rotations blocked
-		static const unsigned DOF_RXRYRZ=DOF_RX|DOF_RY|DOF_RZ; 
+		static const unsigned DOF_RXRYRZ=DOF_RX|DOF_RY|DOF_RZ;
 
 		//! Return DOF_* constant for given axis∈{0,1,2} and rotationalDOF∈{false(default),true}; e.g. axisDOF(0,true)==DOF_RX
-		static unsigned axisDOF(int axis, bool rotationalDOF=false){return 1<<(axis+(rotationalDOF?3:0));}		
+		static unsigned axisDOF(int axis, bool rotationalDOF=false){return 1<<(axis+(rotationalDOF?3:0));}
 		//! set DOFs according to two Vector3r arguments (blocked is when disp[i]==1.0 or rot[i]==1.0)
 		void setDOFfromVector3r(Vector3r disp,Vector3r rot=Vector3r::Zero());
 		//! Getter of blockedDOFs for list of strings (e.g. DOF_X | DOR_RX | DOF_RZ → 'xXZ')
@@ -45,6 +47,7 @@ class State: public Serializable, public Indexable{
 		const Quaternionr ori_get() const {return ori; }
 		void ori_set(const Quaternionr o){ori=o;}
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(State,Serializable,"State of a body (spatial configuration, internal variables).",
 		((Se3r,se3,Se3r(Vector3r::Zero(),Quaternionr::Identity()),,"Position and orientation as one object."))
 		((Vector3r,vel,Vector3r::Zero(),,"Current linear velocity."))
@@ -58,9 +61,9 @@ class State: public Serializable, public Indexable{
 		((bool,isDamped,true,,"Damping in :yref:`NewtonIntegrator` can be deactivated for individual particles by setting this variable to FALSE. E.g. damping is inappropriate for particles in free flight under gravity but it might still be applicable to other particles in the same simulation."))
 		((Real,densityScaling,-1,,"|yupdate| see :yref:`GlobalStiffnessTimeStepper::targetDt`."))
 #ifdef YADE_SPH
-		((Real,rho, -1.0,, "Current density (only for SPH-model)"))      // [Mueller2003], (12)
-		((Real,rho0,-1.0,, "Rest density (only for SPH-model)"))         // [Mueller2003], (12)
-		((Real,press,0.0,, "Pressure (only for SPH-model)"))             // [Mueller2003], (12)
+		((Real,rho, -1.0,/*Attr::readonly*/, "Current density (only for SPH-model)"))      // [Mueller2003], (12)
+		((Real,rho0,-1.0,/*Attr::readonly*/, "Rest density (only for SPH-model)"))         // [Mueller2003], (12)
+		((Real,press,0.0,/*Attr::readonly*/, "Pressure (only for SPH-model)"))             // [Mueller2003], (12)
 #endif
 #ifdef YADE_LIQMIGRATION
 		((Real,Vf, 0.0,,   "Individual amount of liquid"))
@@ -71,19 +74,16 @@ class State: public Serializable, public Indexable{
 #endif
 #ifdef THERMAL
 		((Real,temp,0,,"temperature of the body"))
-		((bool,oldTempSet,false,,"flag to determine which integration method to use"))
-		((Real,tempHold,0,,"holds temperature for 2nd order difference"))
 		((Real,oldTemp,0,,"change of temp (for thermal expansion)"))
 		((Real,stepFlux,0,,"flux during current step"))
-		((Real,capVol,0,,"total overlapping volume"))
-		((Real,U,0,,"internal energy of the body"))
-		((Real,Cp,0,,"internal energy of the body"))
+		((Real,Cp,0,,"Heat capacity of the body"))
 		((Real,k,0,,"thermal conductivity of the body"))
 		((Real,alpha,0,,"coefficient of thermal expansion"))
 		((bool,Tcondition,false,,"indicates if particle is assigned dirichlet (constant temp) condition"))
 		((int,boundaryId,-1,,"identifies if a particle is associated with constant temperature thrermal boundary condition"))
-		((Real,stabilityCoefficient,0,,"sum of solid and fluid thermal resistivities for use in automatic timestep estimation"))
-		((Real,delRadius,0,,"radius change due to thermal expansion"))
+        	((Real,stabilityCoefficient,0,,"sum of solid and fluid thermal resistivities for use in automatic timestep estimation"))
+        	((Real,delRadius,0,,"radius change due to thermal expansion"))
+		((bool,isCavity,false,,"flag used for unbounding cavity bodies"))
 #endif
 		,
 		/* additional initializers */
@@ -98,13 +98,11 @@ class State: public Serializable, public Indexable{
 		.add_property("ori",&State::ori_get,&State::ori_set,"Current orientation.")
 		.def("displ",&State::displ,"Displacement from :yref:`reference position<State.refPos>` (:yref:`pos<State.pos>` - :yref:`refPos<State.refPos>`)")
 		.def("rot",&State::rot,"Rotation from :yref:`reference orientation<State.refOri>` (as rotation vector)")
-#ifdef YADE_SPH
-		.add_property("rho",  &State::rho, "Returns the current density (only for SPH-model).")
-		.add_property("rho0", &State::rho0,"Returns the rest density (only for SPH-model).")
-		.add_property("press",&State::press,"Returns the pressure (only for SPH-model).")
-#endif
 	);
+	// clang-format on
 	REGISTER_INDEX_COUNTER(State);
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(State);
+
+} // namespace yade

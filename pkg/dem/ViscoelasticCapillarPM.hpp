@@ -4,9 +4,12 @@
 #include <core/PartialEngine.hpp>
 #include <functional>
 
+namespace yade { // Cannot have #include directive inside.
+
 class ViscElCapMat : public ViscElMat {
 	public:
 		virtual ~ViscElCapMat();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ViscElCapMat,ViscElMat,"Material for extended viscoelastic model of contact with capillary parameters.",
 		((bool,Capillar,false,,"True, if capillar forces need to be added."))
 #ifdef YADE_LIQMIGRATION
@@ -19,6 +22,7 @@ class ViscElCapMat : public ViscElMat {
 		((std::string,CapillarType,"",,"Different types of capillar interaction: Willett_numeric, Willett_analytic [Willett2000]_ , Weigert [Weigert1999]_ , Rabinovich [Rabinov2005]_ , Lambert (simplified, corrected Rabinovich model) [Lambert2008]_ ")),
 		createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ViscElCapMat,ViscElMat);
 };
 REGISTER_SERIALIZABLE(ViscElCapMat);
@@ -30,6 +34,7 @@ class ViscElCapPhys : public ViscElPhys{
 	public:
 		virtual ~ViscElCapPhys();
 		Real R;
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ViscElCapPhys,ViscElPhys,"IPhys created from :yref:`ViscElCapMat`, for use with :yref:`Law2_ScGeom_ViscElCapPhys_Basic`.",
 		((bool,Capillar,false,,"True, if capillar forces need to be added."))
 		((bool,liqBridgeCreated,false,,"Whether liquid bridge was created, only after a normal contact of spheres"))
@@ -49,6 +54,7 @@ class ViscElCapPhys : public ViscElPhys{
 		,
 		createIndex();
 	)
+	// clang-format on
 	REGISTER_CLASS_INDEX(ViscElCapPhys,ViscElPhys);
 };
 REGISTER_SERIALIZABLE(ViscElCapPhys);
@@ -59,7 +65,9 @@ class Ip2_ViscElCapMat_ViscElCapMat_ViscElCapPhys: public Ip2_ViscElMat_ViscElMa
 		virtual void go(const shared_ptr<Material>& b1,
 					const shared_ptr<Material>& b2,
 					const shared_ptr<Interaction>& interaction);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Ip2_ViscElCapMat_ViscElCapMat_ViscElCapPhys,Ip2_ViscElMat_ViscElMat_ViscElPhys,"Convert 2 instances of :yref:`ViscElCapMat` to :yref:`ViscElCapPhys` using the rule of consecutive connection.");
+	// clang-format on
 	FUNCTOR2D(ViscElCapMat,ViscElCapMat);
 };
 REGISTER_SERIALIZABLE(Ip2_ViscElCapMat_ViscElCapMat_ViscElCapPhys);
@@ -78,6 +86,7 @@ class Law2_ScGeom_ViscElCapPhys_Basic: public LawFunctor {
 		std::deque<std::function<Real(const ScGeom& geom, ViscElCapPhys& phys)> > CapFunctionsPool;
 		Real critDist(const Real& Vb, const Real& R, const Real& Theta);
 	FUNCTOR2D(ScGeom,ViscElCapPhys);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_ScGeom_ViscElCapPhys_Basic,LawFunctor,"Extended version of Linear viscoelastic model with capillary parameters.",
 		((OpenMPAccumulator<Real>,VLiqBridg,,Attr::noSave,"The total volume of liquid bridges"))
 		((OpenMPAccumulator<int>, NLiqBridg,,Attr::noSave,"The total number of liquid bridges"))
@@ -95,6 +104,7 @@ class Law2_ScGeom_ViscElCapPhys_Basic: public LawFunctor {
 		,/* py */
 		;
 	)
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_ViscElCapPhys_Basic);
@@ -112,6 +122,7 @@ class LiqControl: public PartialEngine{
 		Real liqVolBody(id_t id) const;
 		bool addLiqInter(id_t id1, id_t id2, Real liq);
 		void updateLiquid(shared_ptr<Body> b);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(LiqControl,PartialEngine,"This engine implements liquid migration model, introduced here [Mani2013]_ . ",
 		((int,mask,0,, "Bitmask for liquid  creation."))
 		((Real,liqVolRup,0.,, "Liquid volume (integral value), which has been freed after rupture occured, [m^3]."))
@@ -124,8 +135,12 @@ class LiqControl: public PartialEngine{
 		.def("liqBody",&LiqControl::liqVolBody,(boost::python::arg("id")=-1),"Return total volume of water in body.")
 		.def("addLiqInter",&LiqControl::addLiqInter,(boost::python::arg("id1")=-1, boost::python::arg("id2")=-1, boost::python::arg("liq")=-1),"Add liquid into the interaction.")
   );
+	// clang-format on
 };
 
 Real liqVolIterBody (shared_ptr<Body> b);
 REGISTER_SERIALIZABLE(LiqControl);
 #endif
+
+} // namespace yade
+

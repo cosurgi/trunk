@@ -7,12 +7,21 @@
 *************************************************************************/
 #include<pkg/common/Collider.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Collider));
 
-int Collider::avoidSelfInteractionMask = 0 ;
 
-bool Collider::mayCollide(const Body* b1, const Body* b2){
+bool Collider::mayCollide(const Body* b1, const Body* b2
+		#ifdef YADE_MPI
+		,Body::id_t subdomain
+		#endif 
+		) {
 	return 
+		#ifdef YADE_MPI //skip interactions outside subdomain, and between the subdomain and its own bodies
+		((subdomain==b1->subdomain or subdomain==b2->subdomain) and not (b1->subdomain==b2->subdomain and (b1->getIsSubdomain() or b2->getIsSubdomain()))) &&
+		handleFluidDomainCollision(b1,b2) &&  
+		#endif 
 		// might be called with deleted bodies, i.e. NULL pointers
 		(b1!=NULL && b2!=NULL) &&
 		// only collide if at least one particle is standalone or they belong to different clumps
@@ -32,7 +41,7 @@ bool Collider::mayCollide(const Body* b1, const Body* b2){
 	;
 }
 
-void Collider::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& d){
+void Collider::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& /*d*/){
 	if(boost::python::len(t)==0) return; // nothing to do
 	if(boost::python::len(t)!=1) throw invalid_argument(("Collider optionally takes exactly one list of BoundFunctor's as non-keyword argument for constructor ("+boost::lexical_cast<string>(boost::python::len(t))+" non-keyword ards given instead)").c_str());
 	typedef std::vector<shared_ptr<BoundFunctor> > vecBound;
@@ -40,3 +49,15 @@ void Collider::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::di
 	FOREACH(shared_ptr<BoundFunctor> bf, vb) this->boundDispatcher->add(bf);
 	t=boost::python::tuple(); // empty the args
 }
+
+#ifdef YADE_MPI
+bool Collider::handleFluidDomainCollision(const Body* b1, const Body*b2) const  {
+	if (b1 == NULL && b2 == NULL) {return false;} 
+	// skip interactions between the fluid solvers mesh bounds (openfoam coupling) and yade subdomains. 
+	else if  (b1->getIsFluidDomainBbox() && b2->getIsFluidDomainBbox()) {return false; } 
+	else {return true;} 
+}
+#endif
+  
+} // namespace yade
+

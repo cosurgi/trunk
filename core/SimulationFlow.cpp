@@ -11,6 +11,8 @@
 #include "Scene.hpp"
 #include "Omega.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(SimulationFlow);
 
 void SimulationFlow::singleAction()
@@ -25,4 +27,6 @@ void SimulationFlow::singleAction()
 	if(scene->stopAtIter>0 && scene->iter==scene->stopAtIter) setTerminate(true);
 	if(scene->stopAtTime>0 && scene->time==scene->stopAtTime) setTerminate(true);
 };
+
+} // namespace yade
 

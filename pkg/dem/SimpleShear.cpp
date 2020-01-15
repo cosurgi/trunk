@@ -6,9 +6,6 @@
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 
-
-
-
 #include "SimpleShear.hpp"
 
 #include<pkg/dem/GlobalStiffnessTimeStepper.hpp>
@@ -40,6 +37,8 @@
 
 #include <utility>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((SimpleShear))
 CREATE_LOGGER(SimpleShear);
 
@@ -51,7 +50,7 @@ SimpleShear::~SimpleShear ()
 
 
 
-bool SimpleShear::generate(std::string& message)
+bool SimpleShear::generate(std::string& /*message*/)
 {
 	scene = shared_ptr<Scene>(new Scene);
 	createActors(scene);
@@ -314,6 +313,5 @@ std::pair<string,bool> SimpleShear::ImportCloud(vector<BasicSphere>& sphere_list
 	}
 }
 
-
-
+} // namespace yade
 

@@ -18,6 +18,8 @@
 
 #include<core/Timing.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((WireMat)(WireState)(WirePhys)(Ip2_WireMat_WireMat_WirePhys)(Law2_ScGeom_WirePhys_WirePM));
 
 
@@ -344,4 +346,6 @@ void Ip2_WireMat_WireMat_WirePhys::go(const shared_ptr<Material>& b1, const shar
 }
 
 WirePhys::~WirePhys(){}
+
+} // namespace yade
 

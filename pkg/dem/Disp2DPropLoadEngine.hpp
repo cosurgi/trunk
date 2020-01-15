@@ -12,7 +12,7 @@
 #include<pkg/common/BoundaryController.hpp>
 #include<core/Body.hpp>
 
-
+namespace yade { // Cannot have #include directive inside.
 
 class Disp2DPropLoadEngine : public BoundaryController
 {
@@ -52,6 +52,7 @@ class Disp2DPropLoadEngine : public BoundaryController
 			;
 		void postLoad(Disp2DPropLoadEngine&);
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(Disp2DPropLoadEngine,BoundaryController,
 		"Disturbs a simple shear sample in a given displacement direction\n\nThis engine allows one to apply, on a simple shear sample, a loading controlled by du/dgamma = cste, which is equivalent to du + cste' * dgamma = 0 (proportionnal path loadings).\nTo do so, the upper plate of the simple shear box is moved in a given direction (corresponding to a given du/dgamma), whereas lateral plates are moved so that the box remains closed.\nThis engine can easily be used to perform directionnal probes, with a python script launching successivly the same .xml which contains this engine, after having modified the direction of loading (see *theta* attribute). That's why this Engine contains a *saveData* procedure which can save data on the state of the sample at the end of the loading (in case of successive loadings - for successive directions - through a python script, each line would correspond to one direction of loading).",
 		((Body::id_t,id_topbox,3,,"the id of the upper wall"))
@@ -68,6 +69,7 @@ class Disp2DPropLoadEngine : public BoundaryController
 		firstIt=true;
 		alpha=Mathr::PI/2.0;
 	)
+	// clang-format on
 
 
 
@@ -75,4 +77,6 @@ class Disp2DPropLoadEngine : public BoundaryController
 };
 
 REGISTER_SERIALIZABLE(Disp2DPropLoadEngine);
+
+} // namespace yade
 

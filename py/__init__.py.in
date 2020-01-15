@@ -16,7 +16,9 @@ from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
 import ctypes,sys,os
-print("Using python version:",sys.version)
+
+if os.getenv('OMPI_COMM_WORLD_RANK')==None: #else decrease verbosity
+	print("Using python version:",sys.version)
 
 if(sys.version_info[0]<3):
 	try:
@@ -66,13 +68,15 @@ for root,dirs,files in os.walk(config.libDir):
 		plugin=os.path.join(config.libDir,root,f)
 		plugins.append(plugin)
 if 'YADE_DEBUG' in os.environ:
-	print('The following plugins will be loaded:')
-	for p in plugins: print('\t'+p)
+     print('The following plugins will be loaded:')
+     for p in plugins: print('\t'+p)
 
 # c++ initialization code
 from yade import boot
 boot.initialize(plugins,config.confDir)
 from yade import system
+## ENABLE_LOGGER ## this was in git revision 014b11496 YADE_LOG4CXX → YADE_BOOST_LOG ##
+## ENABLE_LOGGER #? system.setExitHandlers() # avoid backtrace if crash at finalization (log4cxx)
 
 # create proxies for deprecated classes
 deprecatedTypes=system.cxxCtorsDict()

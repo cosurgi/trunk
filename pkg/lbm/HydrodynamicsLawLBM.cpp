@@ -29,9 +29,10 @@
 #include<pkg/common/Box.hpp>
 #include<pkg/common/Sphere.hpp>
 #include<pkg/dem/CohesiveFrictionalContactLaw.hpp>
-#include <boost/filesystem.hpp>
+#include<boost/filesystem.hpp>
+#include<lib/base/AliasNamespaces.hpp>
 
-namespace bfs=boost::filesystem;
+namespace yade { // Cannot have #include directive inside.
 
 inline Vector3i vect3rToVect3i(Vector3r vect){Vector3i newvect((int)vect[0],(int)vect[1],(int)vect[2]);return(newvect);}
 
@@ -73,7 +74,7 @@ void HydrodynamicsLawLBM::action()
         //NB_DYNWALLS=0;
         NB_DYNGRAINS=0;
         LBMbody tmpbody;
-        FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+        for(const auto & b :  *scene->bodies){
             if(!b) continue; // deleted bodies
             if (b->shape->getClassName()=="Box"){
                 Vector3r ext(YADE_PTR_CAST<Box> ( b->shape )->extents);
@@ -237,12 +238,12 @@ void HydrodynamicsLawLBM::action()
         invdx=1./dx;
 
         //Number of nodes (after-correction)
-        Ny = ceil(invdx*Ly1)+1;
+        Ny = int(std::ceil(invdx*Ly1))+1;
         dx =  Ly1 / (Real) (Ny-1);
         invdx=1./dx;
         dx2=dx*dx;
-        Nx = ceil(invdx*Lx1)+1;
-        Ny = ceil(invdx*Ly1)+1;
+        Nx = int(std::ceil(invdx*Lx1))+1;
+        Ny = int(std::ceil(invdx*Ly1))+1;
         Nz=1;
 
         cerr <<"LXYZ0= "<<Lx0<<" "<<Ly0<<" "<<Lz0<<endl;
@@ -287,8 +288,8 @@ void HydrodynamicsLawLBM::action()
             NbNodes++;
             for (int dndx=0; dndx<NbDir; dndx++){
                 nodes[nidx].links_id.push_back(-1);
-                I=nodes[nidx].i+eib[dndx].x();
-                J=nodes[nidx].j+eib[dndx].y();
+                I=nodes[nidx].i+int(std::round(eib[dndx].x())); // XXX: this is suspicious
+                J=nodes[nidx].j+int(std::round(eib[dndx].y()));
                 if(((I==i)&&(J==j)) || (I==-1) || (J==-1) || (I==Nx) || (J==Ny)  ){
                     nodes[nidx].neighbour_id.push_back(-1);
                 }
@@ -303,8 +304,8 @@ void HydrodynamicsLawLBM::action()
         LBMlink bb;
         int link_id=-1;
          for (int nidx=0; nidx<Nx*Ny; nidx++){
-            int I=nodes[nidx].i;
-            int J=nodes[nidx].j;
+            int Ia=nodes[nidx].i;
+            int Ja=nodes[nidx].j;
             for (int dndx=0; dndx<NbDir; dndx++){
                 if(dndx==0) continue;
                 bb.PointingOutside=false;
@@ -316,7 +317,7 @@ void HydrodynamicsLawLBM::action()
                     nodes[bb.nid1].links_id[dndx]=link_id;
                     if(bb.nid2!=-1) nodes[bb.nid2].links_id[opp[dndx]]=link_id;
                 }else if(!strcmp(model.c_str(), "d2q9" )){
-                    if((I==0)&&(J!=0)&&((dndx==3)||(dndx==7))){
+                    if((Ia==0)&&(Ja!=0)&&((dndx==3)||(dndx==7))){
                         link_id++;bb.i=dndx; bb.nid1=nidx;
                         bb.nid2=nodes[nidx].neighbour_id[dndx];
                         bb.PointingOutside=true;
@@ -324,7 +325,7 @@ void HydrodynamicsLawLBM::action()
                         links.push_back(bb);
                         nodes[bb.nid1].links_id[dndx]=link_id;
                         if(bb.nid2!=-1) nodes[bb.nid2].links_id[opp[dndx]]=link_id;
-                    } else if((J==0)&&(I!=0)&&((dndx==4)||(dndx==7)||(dndx==8))){
+                    } else if((Ja==0)&&(Ia!=0)&&((dndx==4)||(dndx==7)||(dndx==8))){
                         link_id++;bb.i=dndx; bb.nid1=nidx;
                         bb.nid2=nodes[nidx].neighbour_id[dndx];
                         bb.PointingOutside=true;
@@ -332,7 +333,7 @@ void HydrodynamicsLawLBM::action()
                         links.push_back(bb);
                         nodes[bb.nid1].links_id[dndx]=link_id;
                         if(bb.nid2!=-1) nodes[bb.nid2].links_id[opp[dndx]]=link_id;
-                    } else if((I==0)&&(J==0)&&((dndx==3)||(dndx==4)||(dndx==7)||(dndx==8))){
+                    } else if((Ia==0)&&(Ja==0)&&((dndx==3)||(dndx==4)||(dndx==7)||(dndx==8))){
                         link_id++;bb.i=dndx; bb.nid1=nidx;
                         bb.nid2=nodes[nidx].neighbour_id[dndx];
                         bb.PointingOutside=true;
@@ -347,7 +348,7 @@ void HydrodynamicsLawLBM::action()
         ////////////////////////////////////////////////////////////////////////////////////
 
         if((ConvergenceThreshold==-1)||(ConvergenceThreshold==0)) use_ConvergenceCriterion=false;
-        else {use_ConvergenceCriterion=true;ErrorCriterion=ConvergenceThreshold;}
+        else {use_ConvergenceCriterion=true;ErrorCriterion=int(std::round(ConvergenceThreshold));}
         /*------------------------------------------------------------------*/
         /*------------------------ LBM PARAMETERS --------------------------*/
         /*------------------------------------------------------------------*/
@@ -385,7 +386,9 @@ void HydrodynamicsLawLBM::action()
     State* sWallZm=Body::byId(WallZm_id,scene)->state.get();
 
     timingDeltas->checkpoint("Reinit:Nodes0");
+    #ifdef YADE_OPENMP
     #pragma omp parallel for
+    #endif
     for (int nidx=0; nidx<Nx*Ny; nidx++){
         /*------------------------------------------*/
         /* Reinitialization:                        */
@@ -442,7 +445,7 @@ void HydrodynamicsLawLBM::action()
     /*---------------------------------------------------------------*/
     NumberOfDynamicParticles=0;
     if(removingCriterion!=0) IdOfNextErodedPtc.clear();
-    FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+    for(const auto & b :  *scene->bodies){
         if(!b) continue; // deleted bodies
         State* state=b->state.get();
         const int id=b->getId();
@@ -462,8 +465,8 @@ void HydrodynamicsLawLBM::action()
             Vector3r posMin=LBbodies[id].pos- Vector3r(LBbodies[id].radius,LBbodies[id].radius,LBbodies[id].radius);
 
             Vector3r dist=Vector3r::Zero();
-            for(int ii=posMin[0]-1;ii<=posMax[0]+1;ii++)
-                for(int jj=posMin[1]-1;jj<=posMax[1]+1;jj++){
+            for(int ii=int(std::round(posMin[0]))-1;ii<=int(std::round(posMax[0]))+1;ii++)
+                for(int jj=int(std::round(posMin[1]))-1;jj<=int(std::round(posMax[1]))+1;jj++){
                     if((ii==-1)||(ii==Nx)||(jj==-1)||(jj==Ny)) continue;
                     if((ii<-1)||(ii>Nx)||(jj<-1)||(jj>Ny)) continue;
                     if (LBbodies[id].radius < Rmin) Rmin = LBbodies[id].radius;
@@ -511,7 +514,9 @@ void HydrodynamicsLawLBM::action()
     /*------------------------------------------------------------------*/
     /*------------------ detection of boundary nodes -------------------*/
     /*------------------------------------------------------------------*/
+    #ifdef YADE_OPENMP
     #pragma omp parallel for
+    #endif
     for (int nidx=0; nidx<Nx*Ny; nidx++)
         if(nodes[nidx].isObstacle){
             for(unsigned int n=0;n<nodes[nidx].neighbour_id.size();n++){
@@ -539,7 +544,9 @@ void HydrodynamicsLawLBM::action()
                 }
             }
         }
+     #ifdef YADE_OPENMP
      #pragma omp parallel for
+     #endif
      for (int nidx=0; nidx<Nx*Ny; nidx++)
         if((nodes[nidx].isObstacle)&&(!nodes[nidx].isObstacleBoundary)){
                 nodes[nidx].setAsFluid();
@@ -570,7 +577,7 @@ void HydrodynamicsLawLBM::action()
         }else{newDEMdt=dt/DemIterLbmIterRatio;}
         scene->dt=newDEMdt;
         if(SaveMode==2){
-            IterSave=TimeSave/(dt);
+            IterSave=int(std::round(TimeSave/(dt)));
             if(TimeSave<dt) {cerr <<"Warning SaveMode==2 and TimeSave<dt."<<endl; exit(-1);}
         }
         writelogfile();
@@ -607,7 +614,7 @@ void HydrodynamicsLawLBM::action()
         /*         REINITIALIZATION RELATIVE TO THE MODE 1                  */
         /*------------------------------------------------------------------*/
         if(MODE==1){
-            FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+            for(const auto & b :  *scene->bodies){
                 if(!b) continue;
                 const int id=b->getId();
                 LBbodies[id].force=Vector3r::Zero();
@@ -624,7 +631,9 @@ void HydrodynamicsLawLBM::action()
         /*------------------------------------------------------------------*/
         /*                          Loop on nodes                           */
         /*------------------------------------------------------------------*/
+	#ifdef YADE_OPENMP
         #pragma omp parallel for
+	#endif
         for (int nidx=0; nidx<Nx*Ny; nidx++){
             if(nodes[nidx].checkIsNewObstacle()) {newObstacleCells_couter++;}
             else{if(nodes[nidx].checkIsNewFluid()) {newFluidCells_couter++;}}
@@ -749,7 +758,9 @@ void HydrodynamicsLawLBM::action()
             if(!nodes[nidx].isObstacle)         VmeanFluidC+=c*nodes[nidx].velb.norm();
         }
 
+	#ifdef YADE_OPENMP
         #pragma omp parallel for
+	#endif
         for(unsigned int lid=0;lid<links.size();lid++){
             int nidx1 = links[lid].nid1;
             int nidx2 = links[lid].nid2;
@@ -776,8 +787,8 @@ void HydrodynamicsLawLBM::action()
             if(links[lid].PointingOutside){
                 /// Periodicity is currently disabled until it is implemented through the link list.
 ///FIXME
-                I=nodes[nidx1].i+eib[dndx1].x();
-                J=nodes[nidx1].j+eib[dndx1].y();
+                I=nodes[nidx1].i+int(std::round(eib[dndx1].x())); // XXX: this is suspicious. Anyway, you have to select the int(…) conversion policy: std::floor, std::ceil, std::round
+                J=nodes[nidx1].j+int(std::round(eib[dndx1].y())); //      It is quite frequent that you can have e.g. 11.99999999993 and it should be int==12. But it becomes 11.
                 if(Xperiodicity){ if (I==Nx) {I=0;} else {if (I==-1) { I=Nx-1;}} }
                 if(Yperiodicity){ if (J==Ny) {J=0;} else {if (J==-1) { J=Ny-1;}} }
             }else{
@@ -971,7 +982,7 @@ if(applyForcesAndTorques) CalculateAndApplyForcesAndTorquesOnBodies(true,true);
     }
 }
 
-void HydrodynamicsLawLBM::save(int iter_number, Real timestep)
+void HydrodynamicsLawLBM::save(int iter_number, Real /*timestep*/)
 {
     
     /*--------------------------------------------*/
@@ -1212,7 +1223,7 @@ void HydrodynamicsLawLBM::saveObservedPtc(int iter_number, Real timestep)
 
     return;
 }
-void HydrodynamicsLawLBM::saveObservedNode(int iter_number, Real timestep)
+void HydrodynamicsLawLBM::saveObservedNode(int /*iter_number*/, Real /*timestep*/)
 {
     return;
 }
@@ -1337,7 +1348,7 @@ void HydrodynamicsLawLBM::CalculateAndApplyForcesAndTorquesOnBodies(bool mean,bo
     /*---------------- APPLICATION OF HYDRODYNAMIC FORCES ON SPHERES -----------------*/
     /*--------------------------------------------------------------------------------*/
     if(mean) FhTotale=Vector3r::Zero();
-    FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+    for(const auto & b :  *scene->bodies){
         if(!b) continue;
         const int id=b->getId();
             //if ( ((b->isDynamic())&&(b->shape->getClassName()=="Sphere")) || (b->shape->getClassName()=="Box") ){  //ModLuc: remove the condition (b->isDynamic()) to be able to apply force and torque on non dynamic bodies, by this way hydrodynamic force and torque on bodies can be read through python even if bodies are non dynamic.
@@ -1362,6 +1373,8 @@ void HydrodynamicsLawLBM::CalculateAndApplyForcesAndTorquesOnBodies(bool mean,bo
     return;
 }
 YADE_PLUGIN((HydrodynamicsLawLBM));
+
+} // namespace yade
 
 #endif //LBM_ENGINE
 

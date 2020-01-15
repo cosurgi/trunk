@@ -1,7 +1,8 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
 #pragma once
-#include<Python.h>
-#include<string>
+// XXX never do #include<Python.h>, see https://www.boost.org/doc/libs/1_71_0/libs/python/doc/html/building/include_issues.html
+#include <boost/python/detail/wrap_python.hpp>
+#include <string>
 //! class (scoped lock) managing python's Global Interpreter Lock (gil)
 class gilLock{
 	PyGILState_STATE state;

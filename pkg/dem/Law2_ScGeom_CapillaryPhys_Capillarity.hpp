@@ -12,6 +12,8 @@
 
 #include <core/GlobalEngine.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /**
 This law allows one to take into account capillary forces/effects between spheres coming from the presence of interparticular liquid bridges (menisci).
 refs:
@@ -90,6 +92,7 @@ class Law2_ScGeom_CapillaryPhys_Capillarity : public GlobalEngine
 		bool hertzOn;
 		bool showError;
 		
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(Law2_ScGeom_CapillaryPhys_Capillarity,GlobalEngine,"This law allows one to take into account capillary forces/effects between spheres coming from the presence of interparticular liquid bridges (menisci).\n\nThe control parameter is the :yref:`capillary pressure<Law2_ScGeom_CapillaryPhys_Capillarity::capillaryPressure>` (or suction) Uc = Ugas - Uliquid. Liquid bridges properties (volume V, extent over interacting grains delta1 and delta2) are computed as a result of the defined capillary pressure and of the interacting geometry (spheres radii and interparticular distance).\n\nReferences: in english [Scholtes2009b]_; more detailed, but in french [Scholtes2009d]_.\n\nThe law needs ascii files M(r=i) with i=R1/R2 to work (see https://yade-dem.org/wiki/CapillaryTriaxialTest). These ASCII files contain a set of results from the resolution of the Laplace-Young equation for different configurations of the interacting geometry, assuming a null wetting angle.\n\nIn order to allow capillary forces between distant spheres, it is necessary to enlarge the bounding boxes using :yref:`Bo1_Sphere_Aabb::aabbEnlargeFactor` and make the Ig2 define define distant interactions via :yref:`interactionDetectionFactor<Ig2_Sphere_Sphere_ScGeom::interactionDetectionFactor>`. It is also necessary to disable interactions removal by the constitutive law (:yref:`Law2<Law2_ScGeom_FrictPhys_CundallStrack::neverErase>=True`). The only combinations of laws supported are currently capillary law + :yref:`Law2_ScGeom_FrictPhys_CundallStrack` and capillary law + :yref:`Law2_ScGeom_MindlinPhys_Mindlin` (and the other variants of Hertz-Mindlin).\n\nSee CapillaryPhys-example.py for an example script.",
 	((Real,capillaryPressure,0.,,"Value of the capillary pressure Uc defined as Uc=Ugas-Uliquid"))
 	((bool,fusionDetection,false,,"If true potential menisci overlaps are checked, computing :yref:`fusionNumber<CapillaryPhys.fusionNumber>` for each capillary interaction, and reducing :yref:`fCap<CapillaryPhys.fCap>` according to :yref:`binaryFusion<Law2_ScGeom_CapillaryPhys_Capillarity.binaryFusion>`"))
@@ -103,6 +106,7 @@ class Law2_ScGeom_CapillaryPhys_Capillarity : public GlobalEngine
 	showError = true;
 	,
 	 );
+	// clang-format on
 };
 
 class TableauD // Laplace solutions for a given r, and a given D (and a given contact angle): pieces of one capillary file
@@ -143,5 +147,5 @@ class capillarylaw // class for a whole set of capillary files M(r=..)
 
 REGISTER_SERIALIZABLE(Law2_ScGeom_CapillaryPhys_Capillarity);
 
-
+} // namespace yade
 

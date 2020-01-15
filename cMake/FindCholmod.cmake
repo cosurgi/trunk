@@ -9,24 +9,14 @@
 #  CCOLAMD_LIBRARY 	      - needed by CHOLMOD
 #  CAMD_LIBRARY 	        - needed by CHOLMOD
 
+FIND_LIBRARY(CHOLMOD_LIBRARIES NAMES cholmod libcholmod HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
+FIND_LIBRARY(AMD_LIBRARY NAMES amd libamd HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
+FIND_LIBRARY(CAMD_LIBRARY NAMES camd libcamd HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
+FIND_LIBRARY(COLAMD_LIBRARY NAMES colamd libcolamd HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
+FIND_LIBRARY(CCOLAMD_LIBRARY NAMES ccolamd libccolamd HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
+FIND_LIBRARY(SUITESPARSECONFIG_LIBRARY NAMES suitesparseconfig libsuitesparseconfig HINTS ${SUITESPARSE_PREFIX_PATH}/lib)
 
-FIND_LIBRARY(CHOLMOD_LIBRARIES NAMES cholmod libcholmod
-        PATHS
-        /usr/lib
-        /usr/local/lib
-        /usr/lib/CGAL
-        /usr/lib64
-        /usr/local/lib64
-        /usr/lib64/CGAL
-	/usr/local/SuiteSparse/lib
-    )
-
-FIND_LIBRARY(AMD_LIBRARY NAMES amd PATHS /usr/lib /usr/local/lib /usr/lib/CGAL /usr/lib64 /usr/local/lib64 /usr/lib64/CGAL /usr/local/SuiteSparse/lib)
-FIND_LIBRARY(CAMD_LIBRARY NAMES camd PATHS /usr/lib /usr/local/lib /usr/lib/CGAL /usr/lib64 /usr/local/lib64 /usr/lib64/CGAL /usr/local/SuiteSparse/lib)
-FIND_LIBRARY(COLAMD_LIBRARY NAMES colamd PATHS /usr/lib /usr/local/lib /usr/lib/CGAL /usr/lib64 /usr/local/lib64 /usr/lib64/CGAL /usr/local/SuiteSparse/lib)
-FIND_LIBRARY(CCOLAMD_LIBRARY NAMES ccolamd PATHS /usr/lib /usr/local/lib /usr/lib/CGAL /usr/lib64 /usr/local/lib64 /usr/lib64/CGAL /usr/local/SuiteSparse/lib)
-
-FIND_PATH(CHOLMOD_INCLUDE_DIR cholmod.h PATH /usr/include /usr/include/suitesparse /usr/local/SuiteSparse/include)
+FIND_PATH(CHOLMOD_INCLUDE_DIR cholmod.h HINTS ${SUITESPARSE_PREFIX_PATH}/include PATH /usr/include /usr/include/suitesparse)
 
 # Check the suitesparse library version and set #ifdefs accordingly
 if (CHOLMOD_INCLUDE_DIR AND CHOLMOD_LIBRARIES)
@@ -65,5 +55,6 @@ endif ((SUITESPARSE_MAIN_VERSION GREATER 4) OR (SUITESPARSE_MAIN_VERSION EQUAL 4
 
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cholmod DEFAULT_MSG CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIR AMD_LIBRARY CAMD_LIBRARY COLAMD_LIBRARY CCOLAMD_LIBRARY)
-MARK_AS_ADVANCED(CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIR AMD_LIBRARY CAMD_LIBRARY COLAMD_LIBRARY CCOLAMD_LIBRARY)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cholmod DEFAULT_MSG CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIR AMD_LIBRARY CAMD_LIBRARY COLAMD_LIBRARY CCOLAMD_LIBRARY SUITESPARSECONFIG_LIBRARY)
+MARK_AS_ADVANCED(CHOLMOD_LIBRARIES CHOLMOD_INCLUDE_DIR AMD_LIBRARY CAMD_LIBRARY COLAMD_LIBRARY CCOLAMD_LIBRARY SUITESPARSECONFIG_LIBRARY)
+

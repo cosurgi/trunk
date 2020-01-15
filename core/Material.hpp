@@ -5,6 +5,7 @@
 #include<core/State.hpp>
 #include<core/Dispatcher.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 class Scene;
 /*! Material properties associated with a body.
@@ -33,8 +34,9 @@ class Material: public Serializable, public Indexable{
 		static const shared_ptr<Material> byLabel(const std::string& label, Scene* scene=NULL);
 		static const shared_ptr<Material> byLabel(const std::string& label, shared_ptr<Scene> scene) {return byLabel(label,scene.get());}
 		// return index of material, given its label
-		static const int byLabelIndex(const std::string& label, Scene* scene=NULL);
+		static int byLabelIndex(const std::string& label, Scene* scene=NULL);
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Material,Serializable,"Material properties of a :yref:`body<Body>`.",
 		((int,id,((void)"not shared",-1),Attr::readonly,"Numeric id of this material; is non-negative only if this Material is shared (i.e. in O.materials), -1 otherwise. This value is set automatically when the material is inserted to the simulation via :yref:`O.materials.append<MaterialContainer.append>`. (This id was necessary since before boost::serialization was used, shared pointers were not tracked properly; it might disappear in the future)"))
 		((string,label,,,"Textual identifier for this material; can be used for shared materials lookup in :yref:`MaterialContainer`."))
@@ -44,6 +46,10 @@ class Material: public Serializable, public Indexable{
 		.def("newAssocState",&Material::newAssocState,"Return new :yref:`State` instance, which is associated with this :yref:`Material`. Some materials have special requirement on :yref:`Body::state` type and calling this function when the body is created will ensure that they match. (This is done automatically if you use utils.sphere, … functions from python).")
 		YADE_PY_TOPINDEXABLE(Material)
 	);
+	// clang-format on
 	REGISTER_INDEX_COUNTER(Material);
 };
 REGISTER_SERIALIZABLE(Material);
+
+} // namespace yade
+

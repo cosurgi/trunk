@@ -7,7 +7,7 @@
 *                                                                        *
 *  © 2008 Václav Šmilauer <eudoxos@arcig.cz>                             *
 *                                                                        *
-*  © 2008 Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>                    *
+*  © 2008 Bruno Chareyre <bruno.chareyre@grenoble-inp.fr                 *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -18,6 +18,8 @@
 #include "Gl1_Primitives.hpp"
 #include <lib/opengl/OpenGLWrapper.hpp>
 #include <core/Scene.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((Gl1_Aabb)(Gl1_Box)(Gl1_Facet));
 YADE_PLUGIN((GlBoundFunctor)(GlShapeFunctor)(GlIGeomFunctor)(GlIPhysFunctor)(GlStateFunctor)
@@ -43,7 +45,7 @@ void Gl1_Box::go(const shared_ptr<Shape>& cg, const shared_ptr<State>&,bool wire
 {
 	glColor3v(cg->color);
 	Vector3r &extents = (static_cast<Box*>(cg.get()))->extents;
-	glScalef(2*extents[0],2*extents[1],2*extents[2]);
+	glScale(2*extents[0],2*extents[1],2*extents[2]);
 	if (wire) glutWireCube(1);
 	else glutSolidCube(1);
 }
@@ -134,19 +136,29 @@ void Gl1_Sphere::go(const shared_ptr<Shape>& cm, const shared_ptr<State>& ,bool 
 					  case 'y':glRotatef(90,1,0,0);break;
 					  default:cerr<<"Error in Gl1_Sphere::go, circleAllowedRotationAxis should be \"x\", \"y\" or \"z\"."<<endl;
 				    }
-				    glutSolidTorus(0.5*circleRelThickness*r,r*(1.0-circleRelThickness/2.),quality*glutStacks,quality*glutSlices); //generate torus
+				    glutSolidTorus(0.5*circleRelThickness*r,r*(1.0-circleRelThickness/2.),int(std::round(quality*glutStacks)),int(std::round(quality*glutSlices))); //generate torus
 				  glEndList();
 			}
 			glCallList(glGlutSphereList);
-	}
-	else if (wire || wire2) glutWireSphere(r,quality*glutSlices,quality*glutStacks);
-	else {
-		//Check if quality has been modified or if previous lists are invalidated (e.g. by creating a new qt view), then regenerate lists
-		bool somethingChanged = (std::abs(quality-prevQuality)>0.001 || glIsList(glStripedSphereList)!=GL_TRUE || prevDisplayMode!="sphere");
-		if (somethingChanged) {initStripedGlList(); initGlutGlList(); prevQuality=quality;prevDisplayMode="sphere";}
-		glScalef(r,r,r);
-		if(stripes) glCallList(glStripedSphereList);
-		else glCallList(glGlutSphereList);
+	} else {
+		if (wire || wire2) {
+			glutWireSphere(r,int(std::round(quality*glutSlices)),int(std::round(quality*glutStacks)));
+		} else {
+			//Check if quality has been modified or if previous lists are invalidated (e.g. by creating a new qt view), then regenerate lists
+			bool somethingChanged = (std::abs(quality-prevQuality)>0.001 || glIsList(glStripedSphereList)!=GL_TRUE || prevDisplayMode!="sphere");
+			if (somethingChanged) {
+				initStripedGlList();
+				initGlutGlList();
+				prevQuality=quality;
+				prevDisplayMode="sphere";
+			}
+			glScale(r,r,r);
+			if(stripes) {
+				glCallList(glStripedSphereList);
+			} else {
+				glCallList(glGlutSphereList);
+			}
+		}
 	}
 	return;
 }
@@ -159,15 +171,15 @@ void Gl1_Sphere::subdivideTriangle(Vector3r& v1,Vector3r& v2,Vector3r& v3, int d
 		v = (v1+v2+v3)/3.0;
 		GLfloat matEmit[4];
 		if (v[1]*v[0]*v[2]>0){
-			matEmit[0] = 0.3;
-			matEmit[1] = 0.3;
-			matEmit[2] = 0.3;
+			matEmit[0] = 0.3f;
+			matEmit[1] = 0.3f;
+			matEmit[2] = 0.3f;
 			matEmit[3] = 1.f;
 		}else{
-			matEmit[0] = 0.15;
-			matEmit[1] = 0.15;
-			matEmit[2] = 0.15;
-			matEmit[3] = 0.2;
+			matEmit[0] = 0.15f;
+			matEmit[1] = 0.15f;
+			matEmit[2] = 0.15f;
+			matEmit[3] = 0.2f;
 		}
  		glMaterialfv(GL_FRONT, GL_EMISSION, matEmit);
 	}
@@ -245,7 +257,10 @@ void Gl1_Sphere::initGlutGlList(){
 	glNewList(glGlutSphereList,GL_COMPILE);
 		glEnable(GL_LIGHTING);
 		glShadeModel(GL_SMOOTH);
-		glutSolidSphere(1.0,max(quality*glutSlices,(Real)2.),max(quality*glutStacks,(Real)3.));
+		glutSolidSphere(1.0,int(std::round(std::max(quality*glutSlices,(Real)2.))),int(std::round(std::max(quality*glutStacks,(Real)3.))));
 	glEndList();
 }
+
+} // namespace yade
+
 #endif /* YADE_OPENGL */

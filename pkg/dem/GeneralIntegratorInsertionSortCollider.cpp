@@ -12,6 +12,8 @@
 #include<vector>
 #include<boost/static_assert.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((GeneralIntegratorInsertionSortCollider))
 CREATE_LOGGER(GeneralIntegratorInsertionSortCollider);
 
@@ -76,7 +78,7 @@ void GeneralIntegratorInsertionSortCollider::action(){
 
 		if(verletDist<0){
 			Real minR=std::numeric_limits<Real>::infinity();
-			FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+			for(const auto & b :  *scene->bodies){
 				if(!b || !b->shape) continue;
 				Sphere* s=dynamic_cast<Sphere*>(b->shape.get());
 				if(!s) continue;
@@ -220,3 +222,6 @@ void GeneralIntegratorInsertionSortCollider::action(){
 		}
 	ISC_CHECKPOINT("sort&collide");
 }
+
+} // namespace yade
+

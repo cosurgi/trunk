@@ -13,6 +13,12 @@ To obtain a list of all libraries use the function :yref:`yade.libVersions.print
 All libraries listed in :ref:`prerequisites<prerequisites>` are detected by this module.
 
 .. note:: If we need a version of some library not listed in :ref:`prerequisites<prerequisites>`, then it must also be added to :ysrc:`that list<doc/sphinx/installation.rst>`.
+
+When adding a new version please have a look at these three files: 
+
+1. :ysrc:`py/_libVersions.cpp`: detection of versions from ``#include`` files by C++.
+2. :ysrc:`py/libVersions.py.in`: python module which is constructed by cmake during compilation. All ``*.in`` files are processed by cmake.
+3. :ysrc:`cMake/FindMissingVersions.cmake`: forced detection of library with undetectable version.
 """
 
 # all C++ functions are accessible now:
@@ -54,7 +60,7 @@ def getVersion(libName):
 
 	:param string libName: the name of the library
 
-	:return: tuple in format ``(major, minor, patchlevel)``
+	:return: tuple in format ``(major, minor, patchlevel)`` if ``libName`` exists. Otherwise it returns ``None``.
 
 	.. note:: library openblas has no properly defined version in header files, this function will return ``(0,0,0)`` for openblas. Parsing the version string would be unreliable. The mpi version detected by cmake sometimes is different than version detected by C++, this needs further investigation.
 	"""
@@ -69,7 +75,8 @@ def getVersion(libName):
 		return cppVer[libName][0]
 	if((libName in cmakeVer) and (len(cmakeVer[libName])==2)):
 		return cmakeVer[libName][0]
-	raise RuntimeError("Could not find library version of ",libName)
+	#raise RuntimeError("Could not find library version of ",libName)
+	return None
 
 def getAllVersionsCmake():
 	"""
@@ -100,7 +107,7 @@ def getAllVersionsCmake():
 	addVer("cmake",'${CMAKE_MAJOR_VERSION}','${CMAKE_MINOR_VERSION}','${CMAKE_PATCH_VERSION}','${CMAKE_VERSION}')
 	# 1. compiler
 	try:
-		addVer("gcc"  ,'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[0],'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[1],'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[2],'${CMAKE_CXX_COMPILER_VERSION}')
+		addVer('compiler'  ,'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[0],'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[1],'${CMAKE_CXX_COMPILER_VERSION}'.split('.')[2],'${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_VERSION}')
 	except:
 		pass
 	addVer("clang",'${CLANG_VERSION_MAJOR}','${CLANG_VERSION_MINOR}','${CLANG_VERSION_PATCHLEVEL}','${CLANG_VERSION}')
@@ -108,7 +115,8 @@ def getAllVersionsCmake():
 	addVer("boost",'${Boost_MAJOR_VERSION}','${Boost_MINOR_VERSION}','${Boost_SUBMINOR_VERSION}','${Boost_VERSION}')
 	# 3. qt
 	addVer("qt"   ,'${Used_QT_VERSION_MAJOR}','${Used_QT_VERSION_MINOR}','${Used_QT_VERSION_PATCH}','${Used_QT_VERSION_MAJOR}.${Used_QT_VERSION_MINOR}.${Used_QT_VERSION_PATCH}')
-	# 4. freeglut   - I don't know how to detect it
+	# 4. freeglut
+	addVer("freeglut" ,'${FREEGLUT_VERSION_MAJOR}','${FREEGLUT_VERSION_MINOR}','${FREEGLUT_VERSION_PATCH}','${FREEGLUT_VERSION_STR}')
 	# 5. qglviewer  - I don't know how to detect it
 	# 6. python
 	addVer("python",'${PYTHON_VERSION_MAJOR}','${PYTHON_VERSION_MINOR}','${PYTHON_VERSION_PATCH}','${PYTHON_VERSION_STRING}')
@@ -130,6 +138,7 @@ def getAllVersionsCmake():
 	addVer("mpi"   ,'${MPI_CXX_VERSION_MAJOR}','${MPI_CXX_VERSION_MINOR}','0', '${MPI_CXX_VERSION}')
 	# 18. numpy
 	addVer("numpy" ,'${NUMPY_VERSION_MAJOR}','${NUMPY_VERSION_MINOR}','${NUMPY_VERSION_PATCH}', '${NUMPY_VERSION}')
+	# Note: these below are getting the version currently installed, not the one with which yade was compiled. Maybe this will need to be changed.
 	# 19. ipython
 	try:
 		import IPython
@@ -138,6 +147,25 @@ def getAllVersionsCmake():
 		addVer("ipython", ipvertab[0] , ipvertab[1] , ipvertab[2] , ipver )
 	except:
 		pass
+	# 20. sphinx, https://www.sphinx-doc.org/en/master/extdev/appapi.html#checking-the-sphinx-version
+	try:
+		import sphinx
+		spver=sphinx.version_info
+		addVer("sphinx", spver[0] , spver[1] , spver[2] , '%i.%i.%i-%s-%i'%spver )
+	except:
+		pass
+	# 21. clp
+	# Note: this can be fixed in the same way as forced detection of freeglut, with file cMake/FindMissingVersions.cmake
+	addVer("clp",'${CLP_VERSION_MAJOR}','${CLP_VERSION_MINOR}','${CLP_VERSION_RELEASE}','${CLP_VERSION}')
+	# 22. PyMPI
+	try:
+		import mpi4py
+		mpi4ver=mpi4py.__version__
+		mpi4vertab=mpi4py.__version__.split('.')
+		addVer("mpi4py", mpi4vertab[0] , mpi4vertab[1] , mpi4vertab[2] , mpi4ver )
+	except:
+		pass
+
 	return ret
 
 def printAllVersions(rstFormat=False):

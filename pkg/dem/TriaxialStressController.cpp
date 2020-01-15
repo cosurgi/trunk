@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre				 	 *
-*  bruno.chareyre@hmg.inpg.fr					  	 *
+*  bruno.chareyre@grenoble-inp.fr					  	 *
 *									 *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -21,6 +21,8 @@
 //#include<pkg/pfv/FlowEngine.hpp>
 #include "FlowEngine_FlowEngineT.hpp"
 #endif
+
+namespace yade { // Cannot have #include directive inside.
 
 CREATE_LOGGER(TriaxialStressController);
 YADE_PLUGIN((TriaxialStressController));
@@ -125,12 +127,9 @@ void TriaxialStressController::action()
 
 	boxVolume = height * width * depth;
 	if ( (first) || (updatePorosity) ) {
-		BodyContainer::iterator bi = scene->bodies->begin();
-		BodyContainer::iterator biEnd = scene->bodies->end();
 
 		particlesVolume = 0;
-		for ( ; bi!=biEnd; ++bi ) {
-			const shared_ptr<Body>& b = *bi;
+		for (const auto & b : *scene->bodies) {
 			if (b->isClump()) {
 				const shared_ptr<Clump>& clump = YADE_PTR_CAST<Clump>(b->shape);
 				const shared_ptr<Body>& member = Body::byId(clump->members.begin()->first,scene);
@@ -280,4 +279,5 @@ void TriaxialStressController::controlInternalStress ( Real multiplier )
  */
 Real TriaxialStressController::ComputeUnbalancedForce( bool maxUnbalanced) {return Shop::unbalancedForce(maxUnbalanced,scene);}
 
+} // namespace yade
 

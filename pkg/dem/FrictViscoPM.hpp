@@ -26,15 +26,19 @@ Remarks:
 #include<pkg/dem/ScGeom.hpp>
 #include<lib/base/openmp-accu.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /** This class holds information associated with each body */
 class FrictViscoMat: public FrictMat {
 	public:
 		virtual ~FrictViscoMat();
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(FrictViscoMat,FrictMat,"Material for use with the FrictViscoPM classes",
 			((Real,betan,0.,,"Fraction of the viscous damping coefficient in normal direction equal to $\\frac{c_{n}}{C_{n,crit}}$."))
 			,
 			createIndex();
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 		REGISTER_CLASS_INDEX(FrictViscoMat,FrictMat);
 };
@@ -45,6 +49,7 @@ REGISTER_SERIALIZABLE(FrictViscoMat);
 class FrictViscoPhys: public FrictPhys {
 	public:
 		virtual ~FrictViscoPhys();
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(FrictViscoPhys,FrictPhys,"Representation of a single interaction of the FrictViscoPM type, storage for relevant parameters",
 			((Real,cn_crit,NaN,,"Normal viscous constant for ctitical damping defined as $\\c_{n}=C_{n,crit}\\beta_n$."))
 			((Real,cn,NaN,,"Normal viscous constant defined as $\\c_{n}=c_{n,crit}\\beta_n$."))
@@ -53,6 +58,7 @@ class FrictViscoPhys: public FrictPhys {
 			createIndex();
 			,
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 		REGISTER_CLASS_INDEX(FrictViscoPhys,FrictPhys);
 };
@@ -65,11 +71,13 @@ class Ip2_FrictViscoMat_FrictViscoMat_FrictViscoPhys: public IPhysFunctor{
 		
 		FUNCTOR2D(FrictViscoMat,FrictViscoMat);
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_FrictViscoMat_FrictViscoMat_FrictViscoPhys,IPhysFunctor,"Converts 2 :yref:`FrictViscoMat` instances to :yref:`FrictViscoPhys` with corresponding parameters. Basically this functor corresponds to :yref:`Ip2_FrictMat_FrictMat_FrictPhys` with the only difference that damping in normal direction can be considered.",
 		((shared_ptr<MatchMaker>,kn,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's normal contact stiffnesses. If this value is not given the elastic properties (i.e. young) of the two colliding materials are used to calculate the stiffness."))
 		((shared_ptr<MatchMaker>,kRatio,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's shear contact stiffnesses. If this value is not given the elastic properties (i.e. poisson) of the two colliding materials are used to calculate the stiffness."))
 		((shared_ptr<MatchMaker>,frictAngle,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's friction angle. If ``None``, minimum value is used."))
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Ip2_FrictViscoMat_FrictViscoMat_FrictViscoPhys);
@@ -82,11 +90,13 @@ class Ip2_FrictMat_FrictViscoMat_FrictViscoPhys: public IPhysFunctor{
 		FUNCTOR2D(FrictMat,FrictViscoMat);
 		DEFINE_FUNCTOR_ORDER_2D(FrictMat,FrictViscoMat);
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_FrictMat_FrictViscoMat_FrictViscoPhys,IPhysFunctor,"Converts a :yref:`FrictMat` and :yref:`FrictViscoMat` instance to :yref:`FrictViscoPhys` with corresponding parameters. Basically this functor corresponds to :yref:`Ip2_FrictMat_FrictMat_FrictPhys` with the only difference that damping in normal direction can be considered.",
 		((shared_ptr<MatchMaker>,kn,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's normal contact stiffnesses. If this value is not given the elastic properties (i.e. young) of the two colliding materials are used to calculate the stiffness."))
 		((shared_ptr<MatchMaker>,kRatio,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's shear contact stiffnesses. If this value is not given the elastic properties (i.e. poisson) of the two colliding materials are used to calculate the stiffness."))
 		((shared_ptr<MatchMaker>,frictAngle,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's friction angle. If ``None``, minimum value is used."))
 		);
+	// clang-format on
 		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Ip2_FrictMat_FrictViscoMat_FrictViscoPhys);
@@ -99,6 +109,7 @@ class Law2_ScGeom_FrictViscoPhys_CundallStrackVisco: public LawFunctor{
 		Real elasticEnergy ();
 		Real getPlasticDissipation();
 		void initPlasticDissipation(Real initVal=0);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_ScGeom_FrictViscoPhys_CundallStrackVisco,LawFunctor,"Constitutive law for the FrictViscoPM. Corresponds to :yref:`Law2_ScGeom_FrictPhys_CundallStrack` with the only difference that viscous damping in normal direction can be considered.",
 		((bool,neverErase,false,,"Keep interactions even if particles go away from each other (only in case another constitutive law is in the scene, e.g. :yref:`Law2_ScGeom_CapillaryPhys_Capillarity`)"))
 		((bool,sphericalBodies,true,,"If true, compute branch vectors from radii (faster), else use contactPoint-position. Turning this flag true is safe for sphere-sphere contacts and a few other specific cases. It will give wrong values of torques on facets or boxes."))
@@ -110,9 +121,11 @@ class Law2_ScGeom_FrictViscoPhys_CundallStrackVisco: public LawFunctor{
 		.def("plasticDissipation",&Law2_ScGeom_FrictViscoPhys_CundallStrackVisco::getPlasticDissipation,"Total energy dissipated in plastic slips at all FrictPhys contacts. Computed only if :yref:Law2_ScGeom_FrictViscoPhys_CundallStrackVisco::traceEnergy` is true.")
 		.def("initPlasticDissipation",&Law2_ScGeom_FrictViscoPhys_CundallStrackVisco::initPlasticDissipation,"Initialize cummulated plastic dissipation to a value (0 by default).")
 		);
+	// clang-format on
 		FUNCTOR2D(ScGeom,FrictViscoPhys);
 		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_FrictViscoPhys_CundallStrackVisco);
 
+} // namespace yade
 

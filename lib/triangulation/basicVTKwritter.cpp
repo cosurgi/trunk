@@ -1,11 +1,13 @@
 #include "basicVTKwritter.hpp"
 
+using std::endl;
+
 bool basicVTKwritter::open(const char * filename, const char * comment)
 {
-  file.open(filename,ios_base::out);
+  file.open(filename,std::ios_base::out);
   if (!file)
   {
-	cerr << "Cannot open file [" << filename << "]" << endl;
+	std::cerr << "Cannot open file [" << filename << "]" << endl;
 	return false;
   }
 
@@ -33,9 +35,8 @@ void basicVTKwritter::begin_cells()
   file << "CELLS " << nbCells << " " << 5*nbCells << endl;
 }
 
-void basicVTKwritter::write_point(float x, float y, float z)
-{
-  file << x << " " << y << " " << z << endl;
+void basicVTKwritter::write_point(const WriteType& x, const WriteType& y, const WriteType& z) {
+	file << conv(x) << " " << conv(y) << " " << conv(z) << endl;
 }
 
 // Note that identifiers must be defined with 0-offset
@@ -85,36 +86,26 @@ switch (type)
 	  file << "LOOKUP_TABLE default" << endl;}
   else file << endl;
 }  
+
+void basicVTKwritter::write_data(const WriteType& value) {
+	file << conv(value) << endl;
+}
+
+void basicVTKwritter::write_data(const WriteType& x, const WriteType& y, const WriteType& z) {
+	file << conv(x) << " " << conv(y) << " " << conv(z) << endl;
+}
+
+void basicVTKwritter::write_data(const WriteType& t11, const WriteType& t12, const WriteType& t13,
+				 const WriteType& t21, const WriteType& t22, const WriteType& t23,
+				 const WriteType& t31, const WriteType& t32, const WriteType& t33) {
+	file << conv(t11) << " " << conv(t12) << " " << conv(t13) << endl;
+	file << conv(t21) << " " << conv(t22) << " " << conv(t23) << endl;
+	file << conv(t31) << " " << conv(t32) << " " << conv(t33) << endl;
+	file << endl;
+}
   
-
-
-void basicVTKwritter::write_data(float value)
-{
-  file << value << endl;
-}
-
-void basicVTKwritter::write_data(float x, float y, float z)
-{
-  file << x << " " << y << " " << z << endl;
-}
-
-void basicVTKwritter::write_data( float t11, float t12, float t13,
-								  float t21, float t22, float t23,
-								  float t31, float t32, float t33)
-{
-  file << t11 << " " << t12 << " " << t13 << endl;
-  file << t21 << " " << t22 << " " << t23 << endl;
-  file << t31 << " " << t32 << " " << t33 << endl;
-  file << endl;
-}
-
 void basicVTKwritter::end_data()
 {
   file << endl;
 }
-
-
-
-
-
 

@@ -7,7 +7,11 @@
 
 #ifdef YADE_OPENMP
 #include "omp.h"
+#endif
 
+namespace yade { // Cannot have #include directive inside.
+
+#ifdef YADE_OPENMP
 // O(1) access container which stores data in contiguous chunks of memory
 // each chunk belonging to one thread
 template<typename T>
@@ -189,13 +193,20 @@ public:
 template <typename T> using OpenMPVector=std::vector <T>;
 #endif
 
+}; // namespace yade
+
 // boost serialization
-	BOOST_SERIALIZATION_SPLIT_FREE(OpenMPAccumulator<int>);
-	template<class Archive> void save(Archive &ar, const OpenMPAccumulator<int>& a, unsigned int version){ int value=a.get(); ar & BOOST_SERIALIZATION_NVP(value); }
-	template<class Archive> void load(Archive &ar,       OpenMPAccumulator<int>& a, unsigned int version){ int value; ar & BOOST_SERIALIZATION_NVP(value); a.set(value); }
-	BOOST_SERIALIZATION_SPLIT_FREE(OpenMPAccumulator<Real>);
-	template<class Archive> void save(Archive &ar, const OpenMPAccumulator<Real>& a, unsigned int version){ Real value=a.get(); ar & BOOST_SERIALIZATION_NVP(value); }
-	template<class Archive> void load(Archive &ar,       OpenMPAccumulator<Real>& a, unsigned int version){ Real value; ar & BOOST_SERIALIZATION_NVP(value); a.set(value); }
-	BOOST_SERIALIZATION_SPLIT_FREE(OpenMPArrayAccumulator<Real>);
-	template<class Archive> void save(Archive &ar, const OpenMPArrayAccumulator<Real>& a, unsigned int version){ size_t size=a.size(); ar & BOOST_SERIALIZATION_NVP(size); for(size_t i=0; i<size; i++) { Real item(a.get(i)); ar & boost::serialization::make_nvp(("item"+boost::lexical_cast<std::string>(i)).c_str(),item); } }
-	template<class Archive> void load(Archive &ar,       OpenMPArrayAccumulator<Real>& a, unsigned int version){ size_t size; ar & BOOST_SERIALIZATION_NVP(size); a.resize(size); for(size_t i=0; i<size; i++){ Real item; ar & boost::serialization::make_nvp(("item"+boost::lexical_cast<std::string>(i)).c_str(),item); a.set(i,item); } }
+BOOST_SERIALIZATION_SPLIT_FREE(yade::OpenMPAccumulator<int>);
+BOOST_SERIALIZATION_SPLIT_FREE(yade::OpenMPAccumulator<Real>);
+BOOST_SERIALIZATION_SPLIT_FREE(yade::OpenMPArrayAccumulator<Real>);
+
+namespace boost {
+namespace serialization {
+	template<class Archive> void save(Archive &ar, const yade::OpenMPAccumulator<int>& a, unsigned int /*version*/){ int value=a.get(); ar & BOOST_SERIALIZATION_NVP(value); }
+	template<class Archive> void load(Archive &ar,       yade::OpenMPAccumulator<int>& a, unsigned int /*version*/){ int value; ar & BOOST_SERIALIZATION_NVP(value); a.set(value); }
+	template<class Archive> void save(Archive &ar, const yade::OpenMPAccumulator<Real>& a, unsigned int /*version*/){ Real value=a.get(); ar & BOOST_SERIALIZATION_NVP(value); }
+	template<class Archive> void load(Archive &ar,       yade::OpenMPAccumulator<Real>& a, unsigned int /*version*/){ Real value; ar & BOOST_SERIALIZATION_NVP(value); a.set(value); }
+	template<class Archive> void save(Archive &ar, const yade::OpenMPArrayAccumulator<Real>& a, unsigned int /*version*/){ size_t size=a.size(); ar & BOOST_SERIALIZATION_NVP(size); for(size_t i=0; i<size; i++) { Real item(a.get(i)); ar & boost::serialization::make_nvp(("item"+boost::lexical_cast<std::string>(i)).c_str(),item); } }
+	template<class Archive> void load(Archive &ar,       yade::OpenMPArrayAccumulator<Real>& a, unsigned int /*version*/){ size_t size; ar & BOOST_SERIALIZATION_NVP(size); a.resize(size); for(size_t i=0; i<size; i++){ Real item; ar & boost::serialization::make_nvp(("item"+boost::lexical_cast<std::string>(i)).c_str(),item); a.set(i,item); } }
+
+}}

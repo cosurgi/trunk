@@ -5,6 +5,8 @@
 #include <core/Scene.hpp>
 #include <pkg/common/Sphere.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((ViscElCapMat)(ViscElCapPhys)(Ip2_ViscElCapMat_ViscElCapMat_ViscElCapPhys)(Law2_ScGeom_ViscElCapPhys_Basic));
 
 /* ViscElCapMat */
@@ -401,7 +403,7 @@ Real Law2_ScGeom_ViscElCapPhys_Basic::Soulie_f(const ScGeom& geom, ViscElCapPhys
   return fC;
 }
 
-Real Law2_ScGeom_ViscElCapPhys_Basic::None_f(const ScGeom& geom, ViscElCapPhys& phys) {
+Real Law2_ScGeom_ViscElCapPhys_Basic::None_f(const ScGeom& /*geom*/, ViscElCapPhys& /*phys*/) {
   return 0;
 }
 
@@ -629,7 +631,7 @@ Real LiqControl::liqVolBody (id_t id) const {
 Real LiqControl::totalLiqVol(int mask=0) const{
   Scene* scene=Omega::instance().getScene().get();
   Real totalLiqVol = 0.0;
-  FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+  for(const auto & b :  *scene->bodies){
     if((mask>0 && (b->groupMask & mask)==0) or (!b)) continue;
     totalLiqVol += liqVolIterBody(b);
     if (b->state->Vf > 0) {totalLiqVol +=b->state->Vf;}
@@ -655,3 +657,6 @@ bool LiqControl::addLiqInter(id_t id1, id_t id2, Real liq) {
   return false;
 }
 #endif
+
+} // namespace yade
+

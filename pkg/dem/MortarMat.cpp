@@ -1,6 +1,8 @@
 // 2016 © Jan Stránský <jan.stransky@fsv.cvut.cz> 
 #include"MortarMat.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 
 YADE_PLUGIN((MortarMat)(Ip2_MortarMat_MortarMat_MortarPhys)(MortarPhys)(Law2_ScGeom_MortarPhys_Lourenco))
 
@@ -118,3 +120,6 @@ bool Law2_ScGeom_MortarPhys_Lourenco::go(shared_ptr<IGeom>& iGeom, shared_ptr<IP
 	}
 	return true;
 }
+
+} // namespace yade
+

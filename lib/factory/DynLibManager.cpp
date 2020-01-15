@@ -10,6 +10,8 @@
 #include "DynLibManager.hpp"
 #include "ClassFactory.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(DynLibManager);
 
 
@@ -85,4 +87,5 @@ bool DynLibManager::error()
 	return (error!=NULL);
 }
 
+} // namespace yade
 

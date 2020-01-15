@@ -15,6 +15,8 @@
 #include<pkg/dem/FrictPhys.hpp>
 #include<lib/base/Math.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((SampleCapillaryPressureEngine));
 CREATE_LOGGER(SampleCapillaryPressureEngine);
 
@@ -69,5 +71,7 @@ void SampleCapillaryPressureEngine::action()
 		capillaryCohesiveLaw->action();
 		UnbalancedForce = ComputeUnbalancedForce(scene);
 }
+
+} // namespace yade
 
 #endif //DEPREC CODE

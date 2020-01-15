@@ -1,5 +1,8 @@
 #include "FrictPhys.hpp"
 #include <pkg/dem/ScGeom.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((FrictPhys)(ViscoFrictPhys)(Ip2_FrictMat_FrictMat_ViscoFrictPhys)(Ip2_FrictMat_FrictMat_FrictPhys));
 
 // The following code was moved from Ip2_FrictMat_FrictMat_FrictPhys.hpp
@@ -71,3 +74,6 @@ void Ip2_FrictMat_FrictMat_ViscoFrictPhys::go( const shared_ptr<Material>& b1
 	contactPhysics->kn = Kn;
 	contactPhysics->ks = Ks;
 };
+
+} // namespace yade
+

@@ -1,6 +1,6 @@
  
 /*************************************************************************
-*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -18,6 +18,8 @@
 
 #ifdef DFNFLOW
 #include "FlowEngine_DFNFlowEngineT.hpp"
+
+namespace yade { // Cannot have #include directive inside.
 
 class DFNCellInfo : public FlowCellInfo_DFNFlowEngineT
 {
@@ -358,6 +360,8 @@ void DFNFlowEngine::trickPermeability(Solver* flow)
 // 		cout<< " The total fracture area computed from the Network is: " << totalFractureArea <<endl;
 // 	 }
 // }
+
+} // namespace yade
 
 #endif //DFNFLOW
 #endif //FLOWENGINE

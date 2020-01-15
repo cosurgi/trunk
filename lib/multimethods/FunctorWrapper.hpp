@@ -23,6 +23,8 @@
 
 #include <string>
 
+namespace yade { // Cannot have #include directive inside.
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// base template for classes that provide virtual functions for multiple dispatch,		///
@@ -149,4 +151,6 @@ class FunctorWrapper //: public Serializable // FIXME functor shouldn't be seria
 	}											\
 
 
+
+}; // namespace yade
 

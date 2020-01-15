@@ -19,6 +19,8 @@
 #include <core/PartialEngine.hpp>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 /* Simple viscoelastic model */
 
 /// Material
@@ -26,6 +28,7 @@
 class ViscElMat : public FrictMat {
 	public:
 		virtual ~ViscElMat();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ViscElMat,FrictMat,"Material for simple viscoelastic model of contact from analytical solution of a pair spheres interaction problem  [Pournin2001]_ .",
 		((Real,tc,NaN,,"Contact time"))
 		((Real,en,NaN,,"Restitution coefficient in normal direction"))
@@ -48,6 +51,7 @@ class ViscElMat : public FrictMat {
 		((unsigned int,mRtype,1,,"Rolling resistance type, see [Zhou1999536]_. mRtype=1 - equation (3) in [Zhou1999536]_; mRtype=2 - equation (4) in [Zhou1999536]_.")),
 		createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ViscElMat,FrictMat);
 };
 REGISTER_SERIALIZABLE(ViscElMat);
@@ -57,6 +61,7 @@ class ViscElPhys : public FrictPhys{
 	public:
 		virtual ~ViscElPhys();
 		Real R;
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ViscElPhys,FrictPhys,"IPhys created from :yref:`ViscElMat`, for use with :yref:`Law2_ScGeom_ViscElPhys_Basic`.",
 		((Real,cn,NaN,,"Normal viscous constant"))
 		((Real,cs,NaN,,"Shear viscous constant"))
@@ -74,6 +79,7 @@ class ViscElPhys : public FrictPhys{
 		((unsigned int,mRtype,1,,"Rolling resistance type, see [Zhou1999536]_. mRtype=1 - equation (3) in [Zhou1999536]_; mRtype=2 - equation (4) in [Zhou1999536]_")),
 		createIndex();
 	)
+	// clang-format on
 #ifdef YADE_SPH
 		KernelFunction kernelFunctionCurrentPressure;
 		KernelFunction kernelFunctionCurrentVisco;
@@ -90,12 +96,14 @@ class Ip2_ViscElMat_ViscElMat_ViscElPhys: public IPhysFunctor {
 		virtual void go(const shared_ptr<Material>& b1,
 					const shared_ptr<Material>& b2,
 					const shared_ptr<Interaction>& interaction);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Ip2_ViscElMat_ViscElMat_ViscElPhys,IPhysFunctor,"Convert 2 instances of :yref:`ViscElMat` to :yref:`ViscElPhys` using the rule of consecutive connection.",
  		((shared_ptr<MatchMaker>,tc,,,"Instance of :yref:`MatchMaker` determining contact time"))
 		((shared_ptr<MatchMaker>,en,,,"Instance of :yref:`MatchMaker` determining restitution coefficient in normal direction"))
 		((shared_ptr<MatchMaker>,et,,,"Instance of :yref:`MatchMaker` determining restitution coefficient in tangential direction"))
 		((shared_ptr<MatchMaker>,frictAngle,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's friction angle. If ``None``, minimum value is used."))
 		);
+	// clang-format on
 	virtual void Calculate_ViscElMat_ViscElMat_ViscElPhys(const shared_ptr<Material>& b1, const shared_ptr<Material>& b2, const shared_ptr<Interaction>& interaction, shared_ptr<ViscElPhys> phys);
 	FUNCTOR2D(ViscElMat,ViscElMat);
 };
@@ -108,6 +116,7 @@ class Law2_ScGeom_ViscElPhys_Basic: public LawFunctor {
 		virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
 	public :
 	FUNCTOR2D(ScGeom,ViscElPhys);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Law2_ScGeom_ViscElPhys_Basic,LawFunctor,"Linear viscoelastic model operating on ScGeom and ViscElPhys. "
       "The contact law is visco-elastic in the normal direction, and visco-elastic frictional in the tangential direction. "
       "The normal contact is modelled as a spring of equivalent stiffness $k_n$, placed in parallel with a viscous damper "
@@ -136,6 +145,7 @@ class Law2_ScGeom_ViscElPhys_Basic: public LawFunctor {
       "equation 18 to 19, so that there is a change in sign).  Be careful in this configuration the tangential "
       "restitution coefficient is set to 1 (no tangential damping). This formulation imposes directly the normal "
       "restitution coefficient of the collisions instead of the damping constant.");
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_ViscElPhys_Basic);
@@ -152,12 +162,17 @@ Real find_cn_from_en(const Real& en, const Real& m, const Real& kn, const shared
 class DeformControl: public PartialEngine{
 	public:
 		virtual void action();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(DeformControl,PartialEngine,"This engine implements particle deformation with const. volume, see [Haustein2017]_ . ",
 		// Attrs
 		,/* ctor */
 		,/* py */
   );
+	// clang-format on
 };
 
 REGISTER_SERIALIZABLE(DeformControl);
 #endif
+
+} // namespace yade
+

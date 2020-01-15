@@ -4,6 +4,8 @@
 
 #include <pkg/common/PeriodicEngines.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class MeasureCapStress : public PeriodicEngine {
   protected:
     Matrix3r matA_BodyGlob(Real, Real, Vector3r); // particle-scale matrix A (see (3.48) p.65 [Khosravani2014]) describing the orientation of wetted surface, expressed in global axis
@@ -14,6 +16,7 @@ class MeasureCapStress : public PeriodicEngine {
   
   public:
     void action();
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS(MeasureCapStress,PeriodicEngine,"Post-processing engine giving :yref:`the capillary stress tensor<MeasureCapStress.sigmaCap>` (the fluids mixture contribution to the total stress in unsaturated, i.e. triphasic, conditions) according to the $\\mu$UNSAT expression detailled in [Duriez2017c]_. Although this expression differs in nature from the one of utils.getCapillaryStress (consideration of distributed integrals herein, vs resultant capillary force therein), both are equivalent [Duriez2016b]_, [Duriez2017]_, [Duriez2017c]_. The REV volume $V$ entering the expression is automatically measured, from the :yref:`Cell` for periodic conditions, or from utils.aabbExtrema function otherwise.",
 			      ((Matrix3r,sigmaCap,Matrix3r::Zero(),Attr::readonly,"The capillary stress tensor $\\boldsymbol{\\sigma^{cap}}$ itself, expressed as $\\boldsymbol{\\sigma^{cap}} = 1/V \\, [ u_c (\\boldsymbol{\\mu_{Vw}} + \\boldsymbol{\\mu_{Ssw}}) + \\gamma_{nw} (\\boldsymbol{\\mu_{Snw}} + \\boldsymbol{\\mu_{\\Gamma}}) ]$ where the four microstructure tensors $\\boldsymbol{\\mu_{Vw}}, \\boldsymbol{\\mu_{Ssw}}, \\boldsymbol{\\mu_{Snw}}, \\boldsymbol{\\mu_{\\Gamma}}$ correspond to :yref:`muVw<MeasureCapStress.muVw>`, :yref:`muSsw<MeasureCapStress.muSsw>`, :yref:`muSnw<MeasureCapStress.muSnw>` and :yref:`muGamma<MeasureCapStress.muGamma>` attributes. |yupdate|"))
 			      ((Matrix3r,muVw,Matrix3r::Zero(),Attr::readonly,"Tensorial contribution (spherical i.e. isotropic) to :yref:`sigmaCap<MeasureCapStress.sigmaCap>` from the wetting fluid volume: $\\boldsymbol{\\mu_{Vw}} = V_w \\, \\boldsymbol{\\delta}$ with $V_w =$ :yref:`vW<MeasureCapStress.vW>` and $\\boldsymbol{\\delta}$ the identity tensor. |yupdate|"))
@@ -26,7 +29,11 @@ class MeasureCapStress : public PeriodicEngine {
 			      ((bool,debug,0,,"To output some debugging messages."))
 			      ((Real,vW,0,Attr::readonly,"Wetting fluid volume, summing :yref:`menisci volumes<CapillaryPhys.vMeniscus>` (faster here than through python loops). |yupdate|"))
     );
+	// clang-format on
   
 };
 
 REGISTER_SERIALIZABLE(MeasureCapStress);
+
+} // namespace yade
+

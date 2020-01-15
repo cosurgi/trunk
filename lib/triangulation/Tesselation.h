@@ -1,12 +1,14 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
 *************************************************************************/
 #pragma once
 #include "RegularTriangulation.h"
+
+namespace yade { // Cannot have #include directive inside.
 
 namespace CGT {
 	
@@ -76,6 +78,7 @@ public:
 	typedef typename TT::RTriangulation							RTriangulation;
 #ifdef ALPHASHAPES
 	typedef typename TT::AlphaShape						 		AlphaShape;
+	typedef typename TT::Alpha_iterator							Alpha_iterator;
 #endif
 	typedef typename TT::Vertex_Info							VertexInfo;
 	typedef typename TT::Cell_Info								CellInfo;
@@ -97,6 +100,7 @@ public:
 	
 	typedef std::vector<VertexHandle>							VectorVertex;
 	typedef std::vector<CellHandle>								VectorCell;
+	typedef std::vector<std::pair<CellHandle,int>>								VectorFacetPair;
 	typedef std::list<Point>								ListPoint;
 	typedef typename VectorCell::iterator							VCellIterator;
 	int maxId;
@@ -112,7 +116,8 @@ public:
 	Real TotalInternalVoronoiPorosity;
 	VectorVertex vertexHandles;//This is a redirection vector to get vertex pointers by spheres id
 	VectorCell cellHandles;//for speedup of global loops, iterating on this vector is faster than cellIterator++
-	bool redirected;//is vertexHandles filled with current vertex pointers? 
+	VectorFacetPair facetCells; //for speedup on global loops (can be parallelized)
+	VectorVertex alphaVertexHandles; // list of vertices added to make alpha shape boundary
 	bool computed;
 
 	_Tesselation(void);
@@ -123,10 +128,6 @@ public:
 	VertexHandle insert(Real x, Real y, Real z, Real rad, unsigned int id, bool isFictious = false);
 	/// move a spheres
 	VertexHandle move (Real x, Real y, Real z, Real rad, unsigned int id);
-	///Fill a vector with vertexHandles[i] = handle of vertex with id=i for fast access
-	bool redirect (void);
-	///Remove a sphere
-	bool remove (unsigned int id); 
 	int Max_id (void) {return maxId;}
 	
 	void	compute ();	//Calcule le centres de Voronoi pour chaque cellule
@@ -152,6 +153,7 @@ public:
 	inline const VertexHandle&	vertex (unsigned int id) const { return vertexHandles[id]; }
 
 	// Alpha Shapes
+	#ifdef ALPHASHAPE
 	void testAlphaShape(double alpha=0);
 	struct AlphaFace {unsigned int ids[3]; CVector normal;};
         struct AlphaCap {unsigned int id; CVector normal;};
@@ -162,13 +164,10 @@ public:
         CVector alphaVoronoiPartialCapArea (const Edge& ed_it, const AlphaShape& as,std::vector<Vector3r>& vEdges);
         CVector alphaVoronoiPartialCapArea (Facet facet, const AlphaShape& as, double shrinkedAlpha, std::vector<Vector3r>& vEdges);
 	std::vector<int> getAlphaVertices(double alpha=0);
-	
-// 	FiniteCellsIterator finite_cells_begin(void);// {return Tri->finite_cells_begin();}
-// 	FiniteCellsIterator finiteCellsEnd(void);// {return Tri->finite_cells_end();}
+	#endif
+
 	void voisins (VertexHandle v, VectorVertex& Output_vector);// {Tri->incident_vertices(v, back_inserter(Output_vector));}
 	RTriangulation& Triangulation (void);// {return *Tri;}
-
-// 	bool computed (void) {return computed;}
 
 	bool is_short ( FiniteFacetsIterator f_it );
 	inline bool is_internal ( FiniteFacetsIterator &facet );//
@@ -189,20 +188,22 @@ class PeriodicTesselation : public Tesselation
 	using Tesselation::Tri;
 	using Tesselation::vertexHandles;
 	using Tesselation::maxId;
-	using Tesselation::redirected;
 		
 	///Insert a sphere, which can be a duplicate one from the base period if duplicateOfId>=0
 	VertexHandle insert(Real x, Real y, Real z, Real rad, unsigned int id, bool isFictious = false, int duplicateOfId=-1);
 	///Fill a vector with vertexHandles[i] = handle of vertex with id=i for fast access, contains only spheres from the base period
-	bool redirect (void);
 };
 
 } // namespace CGT
 
+} // namespace yade
+
 #include "Tesselation.ipp"
+
+namespace yade { // Cannot have #include directive inside.
 
 //Explicit instanciation
 typedef CGT::_Tesselation<CGT::SimpleTriangulationTypes>		SimpleTesselation;
 
-
+} // namespace yade
 

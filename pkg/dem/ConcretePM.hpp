@@ -54,8 +54,14 @@ There are other classes, which are not strictly necessary:
 #include<pkg/dem/DemXDofGeom.hpp>
 #include<pkg/dem/ScGeom.hpp>
 #include<pkg/dem/FrictPhys.hpp>
+#include<lib/base/AliasNamespaces.hpp>
 
-namespace py=boost::python;
+#ifdef YADE_OPENGL
+	#include<pkg/common/GLDrawFunctors.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
+
 
 /*********************************************************************************
 *
@@ -67,6 +73,7 @@ namespace py=boost::python;
 None of that is used for computation (at least not now), only for post-processing.
 */
 class CpmState: public State {
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(CpmState,State,"State information about body use by :yref:`cpm-model<CpmMat>`.\n\nNone of that is used for computation (at least not now), only for post-processing.",
 		((Real,epsVolumetric,0,,"Volumetric strain around this body (unused for now)"))
 		((int,numBrokenCohesive,0,,"Number of (cohesive) contacts that damaged completely"))
@@ -78,6 +85,7 @@ class CpmState: public State {
 		((Matrix3r,damageTensor,Matrix3r::Zero(),,"Damage tensor computed with microplane theory averaging. state.damageTensor.trace() = state.normDmg")),
 		/*ctor*/ createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(CpmState,State);
 };
 REGISTER_SERIALIZABLE(CpmState);
@@ -99,6 +107,7 @@ class CpmMat: public FrictMat {
 		virtual shared_ptr<State> newAssocState() const { return shared_ptr<State>(new CpmState); }
 		virtual bool stateTypeOk(State* s) const { return (bool)dynamic_cast<CpmState*>(s); }
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(CpmMat,FrictMat,"Concrete material, for use with other Cpm classes. \n\n.. note::\n\n\t:yref:`Density<Material::density>` is initialized to 4800 kgm⁻³automatically, which gives approximate 2800 kgm⁻³ on 0.5 density packing.\n\nConcrete Particle Model (CPM)\n\n\n:yref:`CpmMat` is particle material, :yref:`Ip2_CpmMat_CpmMat_CpmPhys` averages two particles' materials, creating :yref:`CpmPhys`, which is then used in interaction resultion by :yref:`Law2_ScGeom_CpmPhys_Cpm`. :yref:`CpmState` is associated to :yref:`CpmMat` and keeps state defined on particles rather than interactions (such as number of completely damaged interactions).\n\nThe model is contained in externally defined macro CPM_MATERIAL_MODEL, which features damage in tension, plasticity in shear and compression and rate-dependence. For commercial reasons, rate-dependence and compression-plasticity is not present in reduced version of the model, used when CPM_MATERIAL_MODEL is not defined. The full model will be described in detail in my (Václav Šmilauer) thesis along with calibration procedures (rigidity, poisson's ratio, compressive/tensile strength ratio, fracture energy, behavior under confinement, rate-dependent behavior).\n\nEven the public model is useful enough to run simulation on concrete samples, such as :ysrc:`uniaxial tension-compression test<examples/concrete/uniax.py>`.",
 		((Real,sigmaT,NaN,,"Initial cohesion [Pa]"))
 		((bool,neverDamage,false,,"If true, no damage will occur (for testing only)."))
@@ -113,6 +122,7 @@ class CpmMat: public FrictMat {
 		((Real,isoPrestress,0,,"Isotropic prestress of the whole specimen. [Pa]")),
 		createIndex(); density=4800;
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(CpmMat,FrictMat);
 };
 REGISTER_SERIALIZABLE(CpmMat);
@@ -158,6 +168,7 @@ class CpmPhys: public NormShearPhys {
 
 		virtual ~CpmPhys();
 		#define _ZERO_VECTOR3R(v) v = Vector3r::Zero()
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(CpmPhys,NormShearPhys,"Representation of a single interaction of the Cpm type: storage for relevant parameters.\n\n Evolution of the contact is governed by :yref:`Law2_ScGeom_CpmPhys_Cpm`, that includes damage effects and chages of parameters inside CpmPhys. See :yref:`cpm-model<CpmMat>` for details.",
 			((Real,E,NaN,,"normal modulus (stiffness / crossSection) [Pa]"))
 			((Real,G,NaN,,"shear modulus [Pa]"))
@@ -206,6 +217,7 @@ class CpmPhys: public NormShearPhys {
 			.def("setDamage",&CpmPhys::setDamage,"TODO")
 			.def("setRelResidualStrength",&CpmPhys::setRelResidualStrength,"TODO")
 		);
+	// clang-format on
 		#undef _ZERO_VECTOR3R
 	DECLARE_LOGGER;
 	REGISTER_CLASS_INDEX(CpmPhys,NormShearPhys);
@@ -229,10 +241,12 @@ class Ip2_CpmMat_CpmMat_CpmPhys: public IPhysFunctor{
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
 		FUNCTOR2D(CpmMat,CpmMat);
 		DECLARE_LOGGER;
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_CpmMat_CpmMat_CpmPhys,IPhysFunctor,"Convert 2 :yref:`CpmMat` instances to :yref:`CpmPhys` with corresponding parameters. Uses simple (arithmetic) averages if material are different. Simple copy of parameters is performed if the :yref:`material<CpmMat>` is shared between both particles. See :yref:`cpm-model<CpmMat>` for detals.",
 			((long,cohesiveThresholdIter,10,,"Should new contacts be cohesive? They will before this iter#, they will not be afterwards. If 0, they will never be. If negative, they will always be created as cohesive (10 by default)."))
 			((shared_ptr<MatchMaker>,E,,,"Instance of :yref:`MatchMaker` determining how to compute interaction's normal modulus. If ``None``, average value is used."))
 		);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Ip2_CpmMat_CpmMat_CpmPhys);
 
@@ -243,9 +257,11 @@ class Ip2_FrictMat_CpmMat_FrictPhys: public IPhysFunctor{
 		virtual void go(const shared_ptr<Material>& pp1, const shared_ptr<Material>& pp2, const shared_ptr<Interaction>& interaction);
 		FUNCTOR2D(FrictMat,CpmMat);
 		DECLARE_LOGGER;
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS(Ip2_FrictMat_CpmMat_FrictPhys,IPhysFunctor,"Convert :yref:`CpmMat` instance and :yref:`FrictMat` instance to :yref:`FrictPhys` with corresponding parameters (young, poisson, frictionAngle). Uses simple (arithmetic) averages if material parameters are different.",
 			((shared_ptr<MatchMaker>,frictAngle,,,"See :yref:`Ip2_FrictMat_FrictMat_FrictPhys`."))
 		);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Ip2_FrictMat_CpmMat_FrictPhys);
 
@@ -262,7 +278,7 @@ class Law2_ScGeom_CpmPhys_Cpm: public LawFunctor{
 	virtual bool go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
 	Real elasticEnergy();
 
-	Real yieldSigmaTMagnitude(Real sigmaN, Real omega, Real undamagedCohesion, Real tanFrictionAngle) {
+	Real yieldSigmaTMagnitude(Real /*sigmaN*/, Real /*omega*/, Real /*undamagedCohesion*/, Real /*tanFrictionAngle*/) {
 #ifdef CPM_MATERIAL_MODEL
 		return CPM_YIELD_SIGMA_T_MAGNITUDE(sigmaN);
 #else
@@ -274,6 +290,7 @@ class Law2_ScGeom_CpmPhys_Cpm: public LawFunctor{
 	//void go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interaction* I);
 
 	FUNCTOR2D(GenericSpheresContact,CpmPhys);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_ScGeom_CpmPhys_Cpm,LawFunctor,"Constitutive law for the :yref:`cpm-model<CpmMat>`.",
 		((int,yieldSurfType,2,,"yield function: 0: mohr-coulomb (original); 1: parabolic; 2: logarithmic, 3: log+lin_tension, 4: elliptic, 5: elliptic+log"))
 		((Real,yieldLogSpeed,.1,,"scaling in the logarithmic yield surface (should be <1 for realistic results; >=0 for meaningful results)"))
@@ -285,6 +302,7 @@ class Law2_ScGeom_CpmPhys_Cpm: public LawFunctor{
 		.def("yieldSigmaTMagnitude",&Law2_ScGeom_CpmPhys_Cpm::yieldSigmaTMagnitude,(py::arg("sigmaN"),py::arg("omega"),py::arg("undamagedCohesion"),py::arg("tanFrictionAngle")),"Return radius of yield surface for given material and state parameters; uses attributes of the current instance (*yieldSurfType* etc), change them before calling if you need that.")
 		.def("elasticEnergy",&Law2_ScGeom_CpmPhys_Cpm::elasticEnergy,"Compute and return the total elastic energy in all \"CpmPhys\" contacts")
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(Law2_ScGeom_CpmPhys_Cpm);
@@ -306,12 +324,12 @@ REGISTER_SERIALIZABLE(Law2_ScGeom_CpmPhys_Cpm);
 *********************************************************************************/
 
 #ifdef YADE_OPENGL
-	#include<pkg/common/GLDrawFunctors.hpp>
 	class Gl1_CpmPhys: public GlIPhysFunctor {
 		public: virtual void go(const shared_ptr<IPhys>&,const shared_ptr<Interaction>&,const shared_ptr<Body>&,const shared_ptr<Body>&,bool wireFrame);
 		virtual ~Gl1_CpmPhys() {};
 		RENDERS(CpmPhys);
 		DECLARE_LOGGER;
+	// clang-format off
 		YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_CpmPhys,GlIPhysFunctor,"Render :yref:`CpmPhys` objects of interactions.",
 			((bool,contactLine,true,,"Show contact line"))
 			((bool,dmgLabel,true,,"Numerically show contact damage parameter"))
@@ -322,6 +340,7 @@ REGISTER_SERIALIZABLE(Law2_ScGeom_CpmPhys_Cpm);
 			((Real,colorStrainRatio,-1,,"If positive, set the interaction (wire) color based on $\\eps_N$ normalized by $\\eps_0$ x :yref:`colorStrainRatio<CpmPhys.colorStrainRatio>` ($\\eps_0$ = :yref:`CpmPhys.epsCrackOnset` ). Otherwise, color based on the residual strength."))
 			((bool,epsNLabel,false,,"Numerically show normal strain"))
 		);
+	// clang-format on
 	};
 	REGISTER_SERIALIZABLE(Gl1_CpmPhys);
 #endif
@@ -343,12 +362,16 @@ class CpmStateUpdater: public PeriodicEngine {
 	public:
 		virtual void action(){ update(scene); }
 		void update(Scene* rb=NULL);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(CpmStateUpdater,PeriodicEngine,"Update :yref:`CpmState` of bodies based on state variables in :yref:`CpmPhys` of interactions with this bod. In particular, bodies' colors and :yref:`CpmState::normDmg` depending on average :yref:`damage<CpmPhys::omega>` of their interactions and number of interactions that were already fully broken and have disappeared is updated. This engine contains its own loop (2 loops, more precisely) over all bodies and should be run periodically to update colors during the simulation, if desired.",
 		((Real,avgRelResidual,NaN,,"Average residual strength at last run."))
 		((Real,maxOmega,NaN,,"Globally maximum damage parameter at last run.")),
 		initRun=true;
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(CpmStateUpdater);
+
+} // namespace yade
 

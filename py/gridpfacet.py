@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# 2015 © Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+# 2015 © Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 # 2015 © Anna Effeindzourou <anna.effeindzourou@gmail.com>
 # 2015 © François Kneib <francois.kneib@gmail.com>
 # 2015 © Klaus Thoeni <klaus.thoeni@gmail.com>

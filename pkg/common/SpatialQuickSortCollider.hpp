@@ -11,6 +11,8 @@
 #include <core/InteractionContainer.hpp>
 #include <vector>
 
+namespace yade { // Cannot have #include directive inside.
+
 class SpatialQuickSortCollider : public Collider {
     protected:
 
@@ -31,9 +33,12 @@ class SpatialQuickSortCollider : public Collider {
 
    public:
 		virtual void action();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(SpatialQuickSortCollider,Collider,"Collider using quicksort along axes at each step, using :yref:`Aabb` bounds. \n\n Its performance is lower than that of :yref:`InsertionSortCollider` (see `Colliders' performance <https://yade-dem.org/wiki/Colliders_performace>`_), but the algorithm is simple enought to make it good for checking other collider's correctness.");
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(SpatialQuickSortCollider);
 
+} // namespace yade
 

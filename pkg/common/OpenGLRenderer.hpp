@@ -7,12 +7,16 @@
 #include <core/Body.hpp>
 #include <pkg/common/GLDrawFunctors.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 struct GlExtraDrawer: public Serializable{
 	Scene* scene;
 	virtual void render();
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(GlExtraDrawer,Serializable,"Performing arbitrary OpenGL drawing commands; called from :yref:`OpenGLRenderer` (see :yref:`OpenGLRenderer.extraDrawers`) once regular rendering routines will have finished.\n\nThis class itself does not render anything, derived classes should override the *render* method.",
 		((bool,dead,false,,"Deactivate the object (on error/exception)."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(GlExtraDrawer);
 
@@ -88,6 +92,7 @@ class OpenGLRenderer : public Serializable
 		void renderAllInteractionsWire();
 		template<class FunctorType, class DispatcherT> void setupDispatcher(const vector<string> & names, DispatcherT & dispatcher);
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(OpenGLRenderer,Serializable,"Class responsible for rendering scene on OpenGL devices.",
 		((Vector3r,dispScale,((void)"disable scaling",Vector3r::Ones()),,"Artificially enlarge (scale) dispalcements from bodies' :yref:`reference positions<State.refPos>` by this relative amount, so that they become better visible (independently in 3 dimensions). Disbled if (1,1,1)."))
 		((Real,rotScale,((void)"disable scaling",1.),,"Artificially enlarge (scale) rotations of bodies relative to their :yref:`reference orientation<State.refOri>`, so the they are better visible."))
@@ -122,8 +127,9 @@ class OpenGLRenderer : public Serializable
 		.def("hideBody",&OpenGLRenderer::hide,(boost::python::arg("id")),"Hide body from id (see :yref:`OpenGLRenderer::showBody`)")
 		.def("showBody",&OpenGLRenderer::show,(boost::python::arg("id")),"Make body visible (see :yref:`OpenGLRenderer::hideBody`)")
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(OpenGLRenderer);
 
-
+} // namespace yade
 

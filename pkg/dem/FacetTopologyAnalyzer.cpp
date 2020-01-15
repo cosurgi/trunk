@@ -3,6 +3,8 @@
 #include<core/Scene.hpp>
 #include<core/Body.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(FacetTopologyAnalyzer);
 YADE_PLUGIN((FacetTopologyAnalyzer));
 #ifndef FACET_TOPO
@@ -16,7 +18,7 @@ void FacetTopologyAnalyzer::action(){
 	vector<shared_ptr<VertexData> > vv;
 	// minimum facet edge length (tolerance scale)
 	Real minSqLen=numeric_limits<Real>::infinity();
-	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		shared_ptr<Facet> f=YADE_PTR_DYN_CAST<Facet>(b->shape);
 		if(!f) continue;
 		const Vector3r& pos=b->state->pos;
@@ -139,4 +141,5 @@ void FacetTopologyAnalyzer::action(){
 }
 #endif
 
+} // namespace yade
 

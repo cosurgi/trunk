@@ -2,6 +2,8 @@
 #include<pkg/dem/RungeKuttaCashKarp54Integrator.hpp>
 #include<core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((RungeKuttaCashKarp54Integrator));
 
 shared_ptr<Integrator> RungeKuttaCashKarp54Integrator_ctor_list(const boost::python::list& slaves){ shared_ptr<Integrator> instance(new RungeKuttaCashKarp54Integrator); instance->slaves_set(slaves); return instance; }
@@ -31,4 +33,8 @@ void RungeKuttaCashKarp54Integrator::action()
 
 	scene->time=scene->time-dt;//Scene move next time step function already increments the time so we have to decrement it just before it.
 }
+
+} // namespace yade
+
 #endif
+

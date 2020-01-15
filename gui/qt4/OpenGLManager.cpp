@@ -1,5 +1,7 @@
 #include"OpenGLManager.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(OpenGLManager);
 
 OpenGLManager* OpenGLManager::self=NULL;
@@ -15,9 +17,9 @@ OpenGLManager::OpenGLManager(QObject* parent): QObject(parent){
 	connect(this,SIGNAL(startTimerSignal()),this,SLOT(startTimerSlot()),Qt::QueuedConnection);
 }
 
-void OpenGLManager::timerEvent(QTimerEvent* event){
+void OpenGLManager::timerEvent(QTimerEvent* /*event*/){
 	//cerr<<".";
-	boost::mutex::scoped_lock lock(viewsMutex);
+	const std::lock_guard<std::mutex> lock(viewsMutex);
 	// when sharing the 0th view widget, it should be enough to update the primary view only
 	//if(views.size()>0) views[0]->updateGLViewer();
 	#if 1
@@ -26,7 +28,7 @@ void OpenGLManager::timerEvent(QTimerEvent* event){
 }
 
 void OpenGLManager::createViewSlot(){
-	boost::mutex::scoped_lock lock(viewsMutex);
+	const std::lock_guard<std::mutex> lock(viewsMutex);
 	if(views.size()==0){
 		views.push_back(shared_ptr<GLViewer>(new GLViewer(0,renderer,/*shareWidget*/(QGLWidget*)0)));
 	} else {
@@ -40,7 +42,7 @@ void OpenGLManager::resizeViewSlot(int id, int wd, int ht){
 }
 
 void OpenGLManager::closeViewSlot(int id){
-	boost::mutex::scoped_lock lock(viewsMutex);
+	const std::lock_guard<std::mutex> lock(viewsMutex);
 	for(size_t i=views.size()-1; (!views[i]); i--){ views.resize(i); } // delete empty views from the end
 	if(id<0){ // close the last one existing
 		assert(*views.rbegin()); // this should have been sanitized by the loop above
@@ -52,18 +54,18 @@ void OpenGLManager::closeViewSlot(int id){
 		else{ LOG_INFO("Cannot close primary view, secondary views still exist."); }
 	}
 }
-void OpenGLManager::centerAllViews(Real suggestedRadius){
-	boost::mutex::scoped_lock lock(viewsMutex);
-	FOREACH(const shared_ptr<GLViewer>& g, views){ if(!g) continue; g->centerScene(suggestedRadius); }
+void OpenGLManager::centerAllViews(){
+	const std::lock_guard<std::mutex> lock(viewsMutex);
+	FOREACH(const shared_ptr<GLViewer>& g, views){ if(!g) continue; g->centerScene(); }
 }
 void OpenGLManager::startTimerSlot(){
 	startTimer(50);
 }
 
-int OpenGLManager::waitForNewView(float timeout,bool center){
+int OpenGLManager::waitForNewView(double timeout,bool center){
 	size_t origViewCount=views.size();
 	emitCreateView();
-	float t=0;
+	double t=0;
 	while(views.size()!=origViewCount+1){
 		usleep(50000); t+=.05;
 		// wait at most 5 secs
@@ -74,3 +76,6 @@ int OpenGLManager::waitForNewView(float timeout,bool center){
 	if(center)(*views.rbegin())->centerScene(-1);
 	return (*views.rbegin())->viewId; 
 }
+
+} // namespace yade
+

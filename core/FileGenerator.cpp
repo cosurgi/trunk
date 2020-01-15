@@ -10,11 +10,11 @@
 
 #include"FileGenerator.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(FileGenerator);
 
-
-bool FileGenerator::generate(std::string& msg){ throw invalid_argument("Calling abstract FileGenerator::generate() does not make sense."); }
-
+bool FileGenerator::generate(std::string& /*msg*/){ throw invalid_argument("Calling abstract FileGenerator::generate() does not make sense."); }
 
 bool FileGenerator::generateAndSave(const string& outputFileName, string& message)
 {
@@ -68,3 +68,6 @@ void FileGenerator::pyLoad(){
 	//this is ugly hack, yes...
 	pyRunString("yade.wrapper.Omega().load('"+xml+"')");
 }
+
+} // namespace yade
+

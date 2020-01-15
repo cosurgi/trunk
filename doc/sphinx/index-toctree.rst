@@ -48,7 +48,7 @@ Yade for programmers
 
   prog.rst
 
-  github.rst
+  gitrepo.rst
 
 ######################################
 Theoretical background and extensions
@@ -69,6 +69,8 @@ Theoretical background and extensions
 
   HydroForceEngine.rst
 
+  potentialparticles.rst
+
 ######################################
 Performance enhancements
 ######################################
@@ -77,6 +79,8 @@ Performance enhancements
   :maxdepth: 2
 
   GPUacceleration.rst
+..  
+  mpy.rst
 
   amazonEC2.rst
 

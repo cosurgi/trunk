@@ -12,10 +12,13 @@
 #include<lib/computational-geometry/Hull2d.hpp>
 #include<lib/pyutil/doc_opts.hpp>
 #include<pkg/dem/ViscoelasticPM.hpp>
+#include<lib/base/AliasNamespaces.hpp>
 #ifdef YADE_MPI
 	#include <mpi.h>
 #endif 
 
+
+namespace yade { // Cannot have #include directive inside.
 
 #ifdef YADE_MPI
 
@@ -31,13 +34,11 @@
   MPI_Comm yadeComm; // dummy communicator; 
   MPI_Comm_split(MPI_COMM_WORLD,color,rank,&yadeComm); }
 
-  #else
+#else
 
-  	void initMPI() { return; }
+  void initMPI() { return; }
 
 #endif 
-
-namespace py = boost::python;
 
 py::tuple negPosExtremeIds(int axis, Real distFactor=1.1);
 
@@ -134,7 +135,7 @@ Vector3r forcesOnCoordPlane(Real coord, int axis);
 
 py::tuple spiralProject(const Vector3r& pt, Real dH_dTheta, int axis=2, Real periodStart=std::numeric_limits<Real>::quiet_NaN(), Real theta0=0);
 
-shared_ptr<Interaction> Shop__createExplicitInteraction(Body::id_t id1, Body::id_t id2);
+shared_ptr<Interaction> Shop__createExplicitInteraction(Body::id_t id1, Body::id_t id2, bool virtualI);
 
 Real Shop__unbalancedForce(bool useMaxForce /*false by default*/);
 py::tuple Shop__totalForceInVolume();
@@ -203,3 +204,6 @@ void setBodyAngularVelocity(int id, Vector3r newAngVel);
  *  @param newColor is the desired rgb color
 */
 void setBodyColor(int id, Vector3r newColor);
+
+} // namespace yade
+

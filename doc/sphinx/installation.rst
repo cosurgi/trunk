@@ -11,32 +11,74 @@ Installation
 Packages
 ----------
 
-Pre-built packages are provided for all currently supported Debian and Ubuntu
+**Stable packages**
+
+
+Since 2011, all Ubuntu (starting from 11.10, Oneiric) and Debian (starting from Wheezy) versions
+have Yade in their main repositories. There are only stable releases in place.
+To install Yade, run the following::
+
+	sudo apt-get install yade
+
+After that you can normally start Yade using the command ``yade`` or ``yade-batch``.
+
+To check which version of Yade is included in your specific distribution, visit
+`Ubuntu <https://launchpad.net/ubuntu/+source/yade>`_ or
+`Debian <http://packages.qa.debian.org/y/yade.html>`_.
+The `Debian-Backports <http://backports.debian.org/Instructions>`_
+repository is updated regularly to bring the newest Yade version to the users of stable
+Debians.
+
+**Daily packages**
+
+Pre-built packages updated more frequently than the stable versions are provided for all currently supported Debian and Ubuntu
 versions and available on `yade-dem.org/packages <http://yade-dem.org/packages/>`_ .
 
 These are "daily" versions of the packages which are being updated regularly and, hence, include
 all the newly added features.
 
 To install the daily-version you need to add the repository to your
-/etc/apt/sources.list, add the PGP-key AA915EEB as trusted and install ``yadedaily``::
+/etc/apt/sources.list.
 
-	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ xenial/" >> /etc/apt/sources.list'
+- Debian 9 **stretch**::
+
+	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ stretch main" >> /etc/apt/sources.list'
+
+
+- Debian 10 **buster**::
+
+	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ buster main" >> /etc/apt/sources.list'
+
+
+- Debian 11 **bullseye**::
+
+	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ bullseye main" >> /etc/apt/sources.list'
+
+
+- Ubuntu 16.04 **xenial**::
+
+	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ xenial main" >> /etc/apt/sources.list'
+
+
+- Ubuntu 18.04 **bionic**::
+
+	sudo bash -c 'echo "deb http://www.yade-dem.org/packages/ bionic main" >> /etc/apt/sources.list'
+
+
+Add the PGP-key AA915EEB as trusted and install ``yadedaily``::
+
 	wget -O - http://www.yade-dem.org/packages/yadedev_pub.gpg | sudo apt-key add -
 	sudo apt-get update
 	sudo apt-get install yadedaily
 
-Be sure to use the
-correct name of your Ubuntu/Debian distribution in the first line (xenial for Ubuntu 16.04 LTS, whereas stretch would be required for Debian 9, for instance). For the list
-of currently supported distributions, please visit `yade-dem.org/packages <http://yade-dem.org/packages/>`_.
 
 After that you can normally start Yade using the command ``yadedaily`` or ``yadedaily-batch``.
 ``yadedaily`` on older distributions can have some disabled features due to older library
 versions, shipped with particular distribution.
 
-The Git-repository for packaging stuff is available on `GitLab <https://gitlab.com/yade-dev/yadedaily/>`_.
-Each branch corresponds to one distribution, e.g., xenial, stretch etc.
-The scripts for building all of this stuff are `here <https://gitlab.com/yade-dev/trunk/tree/master/scripts/ppa>`__.
-It uses "pbuilder" to build packages, so all packages are built in a clean environment.
+
+The Git-repository for packaging stuff is available on `GitLab <https://gitlab.com/yade-dev/trunk/tree/master/scripts/ppa_ci>`_.
+
 
 If you do not need ``yadedaily``-package anymore, just remove the
 corresponding line in /etc/apt/sources.list and the package itself::
@@ -47,23 +89,10 @@ To remove our key from keyring, execute the following command::
 
 	sudo apt-key remove AA915EEB
 
-Since 2011, all Ubuntu (starting from 11.10, Oneiric) and Debian (starting from Wheezy) versions
-have Yade in their main repositories. There are only stable releases in place.
-To install Yade, run the following::
-
-	sudo apt-get install yade
-
-After that you can normally start Yade using the command ``yade`` or ``yade-batch``.
-
-To check, what version of Yade is included in your specific distribution, visit
-`Ubuntu <https://launchpad.net/ubuntu/+source/yade>`_ or
-`Debian <http://packages.qa.debian.org/y/yade.html>`_.
-The `Debian-Backports <http://backports.debian.org/Instructions>`_
-repository is updated regularly to bring the newest Yade version to the users of stable
-Debians.
-
 Daily and stable Yade versions can coexist without any conflicts, i.e., you can use ``yade`` and ``yadedaily``
 at the same time.
+
+.. _install-from-source-code:
 
 Source code
 ------------
@@ -92,7 +121,7 @@ management (install the ``git`` package on your system and create a `GitLab acco
 
 		git clone git@gitlab.com:yade-dev/trunk.git
 
-will download the whole code repository of the ``trunk``. Check out :ref:`yade-github-label`
+will download the whole code repository of the ``trunk``. Check out :ref:`yade-gitrepo-label`
 for more details on how to collaborate using ``git``.
 
 Alternatively, a read-only checkout is possible via https without a GitLab account (easier if you don't want to modify the trunk version)::
@@ -112,12 +141,12 @@ Yade relies on a number of external software to run; they are checked before the
 Some of them are only optional. The last ones are only relevant for using the fluid coupling module (:yref:`FlowEngine`).
 
 * `cmake <http://www.cmake.org/>`_ build system
-* `gcc <http://www.gcc.gnu.org>`_ compiler (g++); other compilers will not work; you need g++>=4.2 for openMP support
+* `gcc <https://gcc.gnu.org/>`_ compiler (g++); other compilers will not work; you need g++>=4.2 for openMP support
 * `boost <http://www.boost.org/>`_ 1.47 or later
 * `Qt <http://www.qt.io/>`_ library
 * `freeglut3 <http://freeglut.sourceforge.net>`_
 * `libQGLViewer <http://www.libqglviewer.com>`_
-* `python <http://www.python.org>`_, `numpy <http://numpy.scipy.org>`_, `ipython <http://ipython.scipy.org>`_
+* `python <http://www.python.org>`_, `numpy <https://www.numpy.org/>`_, `ipython <https://ipython.org/>`_, `sphinx <https://www.sphinx-doc.org/en/master/>`_, `mpi4py <https://mpi4py.readthedocs.io/en/stable/>`_
 * `matplotlib <http://matplotlib.sf.net>`_
 * `eigen <http://eigen.tuxfamily.org>`_ algebra library (minimal required version 3.2.1)
 * `gdb <http://www.gnu.org/software/gdb>`_ debugger
@@ -125,10 +154,12 @@ Some of them are only optional. The last ones are only relevant for using the fl
 * `Loki <http://loki-lib.sf.net>`_ library
 * `VTK <http://www.vtk.org/>`_ library (optional but recommended)
 * `CGAL <http://www.cgal.org/>`_ library (optional)
-* `SuiteSparse <http://www.cise.ufl.edu/research/sparse/SuiteSparse/>`_ sparse algebra library (fluid coupling, optional, requires eigen>=3.1)
+* `SuiteSparse <http://www.suitesparse.com>`_ sparse algebra library (fluid coupling, optional, requires eigen>=3.1)
 * `OpenBLAS <http://www.openblas.net/>`_ optimized and parallelized alternative to the standard blas+lapack (fluid coupling, optional)
 * `Metis <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview/>`_ matrix preconditioning (fluid coupling, optional)
 * `OpenMPI <https://www.open-mpi.org/software/>`_ library for parallel distributed computing (For MPI and OpenFOAM coupling, optional)
+* `python3-mpi4py <https://bitbucket.org/mpi4py/>`_ MPI for Python (For MPI, optional)
+* `coin-or <https://github.com/coin-or/Clp>`_ COIN-OR Linear Programming Solver (For :yref:`PotentialBlock`, optional)
 
 Most of the list above is very likely already packaged for your distribution. In case you are confronted
 with some errors concerning not available packages (e.g., package libmetis-dev is not available) it may be necessary
@@ -140,18 +171,18 @@ to add yade external ppa from https://launchpad.net/~yade-users/+archive/externa
 The following commands have to be executed in the command line of your corresponding
 distribution. Just copy&paste to the terminal. Note, to execute these commands you
 need root privileges.
- 
+
 * **Ubuntu 18.04, 18.10**, **Debian 9, 10** and their derivatives::
 
 		sudo apt install cmake git freeglut3-dev libloki-dev libboost-all-dev fakeroot \
 		dpkg-dev build-essential g++ python3-dev python3-ipython python3-matplotlib \
 		libsqlite3-dev python3-numpy python3-tk gnuplot libgts-dev python3-pygraphviz \
-		libvtk6-dev libeigen3-dev python3-xlib python3-pyqt5 pyqt5-dev-tools \
+		libvtk6-dev libeigen3-dev python3-xlib python3-pyqt5 pyqt5-dev-tools python3-mpi4py \
 		python3-pyqt5.qtwebkit gtk2-engines-pixbuf python3-pyqt5.qtsvg libqglviewer-dev-qt5 \
 		python3-pil libjs-jquery python3-sphinx python3-git libxmu-dev libxi-dev libcgal-dev \
 		help2man libbz2-dev zlib1g-dev python3-minieigen libopenblas-dev libsuitesparse-dev \
 		libmetis-dev python3-bibtexparser python3-future coinor-clp coinor-libclp-dev
-		
+
 * For **Ubuntu 16.04** ``libqglviewer-dev-qt5`` is to be replaced by ``libqglviewer-dev`` and ``python3-ipython`` by ``ipython3``.
 
 * For building documentation (the ``make doc`` invocation explained below) additional package ``texlive-xetex`` is required. On some multi-language systems an error ``Building format(s) --all. This may take some time... fmtutil failed.`` may occur, in that case a package ``locales-all`` is required.
@@ -215,12 +246,19 @@ Additional options can be configured in the same line with the following
 syntax::
 
 	cmake -DOPTION1=VALUE1 -DOPTION2=VALUE2
+	
+For example::
+    
+    cmake -DENABLE_POTENTIAL_BLOCKS=ON
 
 As of Yade version git-2315bd8 (or 2018.02b release), the following options are available: (see the `source code <https://gitlab.com/yade-dev/trunk/blob/master/CMakeLists.txt>`_ for a most up-to-date list)
 
 	* CMAKE_INSTALL_PREFIX: path where Yade should be installed (/usr/local by default)
 	* LIBRARY_OUTPUT_PATH: path to install libraries (lib by default)
 	* DEBUG: compile in debug-mode (OFF by default)
+	* ENABLE_LOGGER: use `boost::log <https://www.boost.org/doc/libs/release/libs/log/>`_ library for logging separately for each class (ON by default)
+	* MAX_LOG_LEVEL: :ref:`set maximum level <maximum-log-level>` for LOG_* macros compiled with ENABLE_LOGGER, (default is 5)
+	* ENABLE_USEFUL_ERRORS: enable useful compiler errors which help a lot in error-free development.
 	* CMAKE_VERBOSE_MAKEFILE: output additional information during compiling (OFF by default)
 	* SUFFIX: suffix, added after binary-names (version number by default)
 	* NOSUFFIX: do not add a suffix after binary-name (OFF by default)
@@ -229,7 +267,7 @@ As of Yade version git-2315bd8 (or 2018.02b release), the following options are 
 	* ENABLE_CGAL: enable CGAL option (ON by default)
 	* ENABLE_VTK: enable VTK-export option (ON by default)
 	* ENABLE_OPENMP: enable OpenMP-parallelizing option (ON by default)
-	* ENABLE_MPI: Enable MPI enviroment and communication, required for Yade-OpenFOAM coupling (OFF by default)
+	* ENABLE_MPI: Enable MPI enviroment and communication, required distributed memory and for Yade-OpenFOAM coupling (ON by default)
 	* ENABLE_GTS: enable GTS-option (ON by default)
 	* ENABLE_GL2PS: enable GL2PS-option (ON by default)
 	* ENABLE_LINSOLV: enable LINSOLV-option (ON by default)
@@ -240,7 +278,8 @@ As of Yade version git-2315bd8 (or 2018.02b release), the following options are 
 	* ENABLE_LIQMIGRATION: enable LIQMIGRATION-option, see [Mani2013]_ for details (OFF by default)
 	* ENABLE_MASK_ARBITRARY: enable MASK_ARBITRARY option (OFF by default)
 	* ENABLE_PROFILING: enable profiling, e.g., shows some more metrics, which can define bottlenecks of the code (OFF by default)
-	* ENABLE_POTENTIAL_PARTICLES: enable potential particles option (OFF by default)
+	* ENABLE_POTENTIAL_BLOCKS: enable potential blocks option (ON by default)
+	* ENABLE_POTENTIAL_PARTICLES: enable potential particles option (ON by default)
 	* ENABLE_DEFORM: enable constant volume deformation engine (OFF by default)
 	* ENABLE_OAR: generate a script for oar-based task scheduler (OFF by default)
 	* runtimePREFIX: used for packaging, when install directory is not the same as runtime directory (/usr/local by default)
@@ -248,6 +287,7 @@ As of Yade version git-2315bd8 (or 2018.02b release), the following options are 
 	* VECTORIZE: enables vectorization and alignment in Eigen3 library, experimental (OFF by default)
 	* USE_QT5: use QT5 for GUI (ON by default)
 	* CHOLMOD_GPU link Yade to custom SuiteSparse installation and activate GPU accelerated PFV (OFF by default)
+	* SUITESPARSEPATH: define this variable with the path to a custom suitesparse install
 	* PYTHON_VERSION: force python version to the given one, set -1 to automatically use the last version on the system (-1 by default)
 
 For using more extended parameters of cmake, please follow the corresponding
@@ -310,6 +350,38 @@ upon detecting the C and C++ compiler to use::
 Clang does not support OpenMP-parallelizing for the moment, that is why the
 feature will be disabled.
 
+Supported linux releases
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Currently supported <https://gitlab.com/yade-dev/trunk/pipelines?scope=branches>`_ [#buildLog]_ linux releases and their respective `docker <https://docs.docker.com/>`_ `files <https://docs.docker.com/engine/reference/builder/>`_ are:
+
+* `Ubuntu 16.04 xenial <https://gitlab.com/yade-dev/docker-yade/blob/ubuntu16-py3/Dockerfile>`_
+* `Ubuntu 18.04 bionic <https://gitlab.com/yade-dev/docker-yade/blob/ubuntu18.04/Dockerfile>`_
+* `Debian 9 stretch <https://gitlab.com/yade-dev/docker-yade/blob/debian-stretch/Dockerfile>`_
+* `Debian 10 buster <https://gitlab.com/yade-dev/docker-yade/blob/debian-buster/Dockerfile>`_
+* `openSUSE 15 <https://gitlab.com/yade-dev/docker-yade/blob/suse15/Dockerfile>`_
+
+These are the bash commands used to prepare the linux distribution and environment for installing and testing yade.
+These instructions are automatically performed using the `gitlab continuous integration <https://docs.gitlab.com/ee/ci/quick_start/>`_ service after
+each merge to master. This makes sure that yade always works correctly on these linux distributions.
+In fact yade can be installed manually by following step by step these instructions in following order:
+
+1. Bash commands in the respective Dockerfile to install necessary packages,
+
+2. do ``git clone https://gitlab.com/yade-dev/trunk.git``,
+
+3. then the ``cmake_*`` commands in the `.gitlab-ci.yml file <https://gitlab.com/yade-dev/trunk/blob/master/.gitlab-ci.yml>`_ for respective distribution,
+
+4. then the ``make_*`` commands to compile yade,
+
+5. and finally the ``--check`` and ``--test`` commands.
+
+6. Optionally documentation can be built with ``make doc`` command, however currently it is not guaranteed to work on all linux distributions due to frequent interface changes in `sphinx <http://www.sphinx-doc.org/en/master/>`_.
+
+These instructions use ``ccache`` and ``ld.gold`` to :ref:`speed-up compilation <speed-up>` as described below.
+
+.. [#buildLog] To see details of the latest build log click on the *master* branch.
+
 Python 2 backward compatibility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -318,7 +390,7 @@ Python 2 support ends at the beginning of 2020. However, Yade can be compiled an
 * On **Ubuntu 18.04, 18.10**, **Debian 9, 10** and their derivatives install the python 2 version of the packages (and other required packages)::
 
 		sudo apt install cmake git freeglut3-dev libloki-dev libboost-all-dev fakeroot \
-		dpkg-dev build-essential g++ python-dev ipython python-matplotlib \
+		dpkg-dev build-essential g++ python-dev ipython python-matplotlib python-mpi4py \
 		libsqlite3-dev python-numpy python-tk gnuplot libgts-dev python-pygraphviz \
 		libvtk6-dev python-numpy libeigen3-dev python-xlib python-pyqt5 pyqt5-dev-tools \
 		python-pyqt5.qtwebkit gtk2-engines-pixbuf python-argparse python-pyqt5.qtsvg \
@@ -339,6 +411,9 @@ Also see notes about :ref:`converting python 2 scripts into python 3<convert-pyt
 .. _speed-up:
 
 Speed-up compilation
+---------------------
+
+Compile time
 ^^^^^^^^^^^^^^^^^^^^^
 
 When spliting the compilation on many cores (``make -jN``), ``N`` is limited by the available cores and memory. It is possible to use more cores if remote computers are available, distributing the compilation with `distcc <https://wiki.archlinux.org/index.php/Distcc>`_  (see distcc documentation for configuring slaves and master)::
@@ -350,13 +425,25 @@ When spliting the compilation on many cores (``make -jN``), ``N`` is limited by 
 
 In addition, and independently of distcc, caching previous compilations with `ccache <https://ccache.samba.org/>`_ can speed up re-compilation::
 
-	export CC="ccache gcc"
-	export CXX="ccache g++"
-	cmake [options as usual]
+	cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache [options as usual]
 
 The two tools can be combined very simply, adding to the above exports::
 
 	export CCACHE_PREFIX="distcc"
+
+Link time
+^^^^^^^^^^^^^^^^^^^^^
+
+The link time can be reduced roughly 2 minutes by changing the default linker from ``ld`` to ``ld.gold``. They are both in the same package ``binutils`` (on opensuse15 it is package ``binutils-gold``). To perform the switch execute these commands as root::
+
+	ld --version
+	update-alternatives --install "/usr/bin/ld" "ld" "/usr/bin/ld.gold" 20
+	update-alternatives --install "/usr/bin/ld" "ld" "/usr/bin/ld.bfd" 10
+	ld --version
+
+To switch back run the commands above with reversed priorities ``10`` ↔ ``20``. Alternatively a manual selection can be performed by command: ``update-alternatives --config ld``.
+
+Note: ``ld.gold`` is incompatible with the compiler wrapper ``mpicxx`` in some distributions, which is manifested as an error in the ``cmake`` stage. We do not use ``mpicxx`` for our builds currently, if you want to use it then disable ``ld.gold``.
 
 Cloud Computing
 ----------------
@@ -368,9 +455,44 @@ GPU Acceleration
 
 The FlowEngine can be accelerated with CHOLMOD's GPU accelerated solver. The specific hardware and software requirements are outlined in the section :ref:`GPUacceleration`.
 
+Special builds
+------------
+
+The software can be compiled by a special way to find some specific bugs and problems in it: memory corruptions, data races, undefined behaviour etc.
+
+
+The listed sanitizers are runtime-detectors. They can only find the problems in the code, if the particular part of the code
+is executed. If you have written a new C++ class (constitutive law, engine etc.) try to run your python script with
+the sanitized software to check, whether the problem in your code exist.
+
+AddressSanitizer
+^^^^^^^^^^^^^^^^^^^^^
+
+`AddressSanitizer <https://clang.llvm.org/docs/AddressSanitizer.html>`_ is a memory error detector, which helps to find heap corruptions,
+out-of-bounds errors and many other memory errors, leading to crashes and even wrong results.
+
+To compile Yade with this type of sanitizer, use ENABLE_ASAN option::
+
+	cmake -DENABLE_ASAN=1
+
+The compilation time, memory consumption during build and the size of build-files are much higher than during the normall build.
+Monitor RAM and disk usage during compilation to prevent out-of-RAM problems.
+
+To find the proper libasan library in your particular distribution, use the "find" command.
+
+By default the leak detector is enabled in the asan build. Yade is producing a lot of leak warnings at the moment.
+To mute those warnings and concentrate on other memory errors, one can use detect_leaks=0 option. The full command
+to run tests with the AddressSanitized-Yade on Debian 10 Buster is::
+
+	ASAN_OPTIONS=detect_leaks=0:verify_asan_link_order=false yade --test
+
+If you add a new check script, it is being run automatically through the AddressSanitizer in the CI-pipeline.
+
 Yubuntu
 ------------
 
 If you are not running a Linux system there is a way to create an Ubuntu `live-usb <http://en.wikipedia.org/wiki/Live_USB>`_ on any usb mass-storage device (minimum size 10GB). It is a way to boot the computer on a linux system with Yadedaily pre-installed without affecting the original system. More informations about this alternative are available `here <http://people.3sr-grenoble.fr/users/bchareyre/pubs/yubuntu/>`_ (see the README file first).
 
 Alternatively, images of a linux virtual machine can be downloaded, `here again <http://people.3sr-grenoble.fr/users/bchareyre/pubs/yubuntu/>`_, and they should run on any system with a virtualization software (tested with VirtualBox and VMWare).
+
+

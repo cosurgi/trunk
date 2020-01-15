@@ -3,6 +3,8 @@
 #include <pkg/common/NormShearPhys.hpp>
 #include <pkg/dem/DemXDofGeom.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Ip2_ElastMat_ElastMat_NormPhys)(Ip2_ElastMat_ElastMat_NormShearPhys));
 
 
@@ -61,3 +63,6 @@ void Ip2_ElastMat_ElastMat_NormShearPhys::go( const shared_ptr<Material>& b1
 	phys->kn = Kn;
 	phys->ks = Ks;
 };
+
+} // namespace yade
+

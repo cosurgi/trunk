@@ -2,6 +2,9 @@
 #  CMAKE_INSTALL_PREFIX: path, where Yade will be installed (/usr/local by default)
 #  LIBRARY_OUTPUT_PATH: path to install libraries (lib by default)
 #  DEBUG: compile in debug-mode (OFF by default)
+#  ENABLE_LOGGER: use boost::log library for logging (ON by default)
+#  MAX_LOG_LEVEL: set maximum level for LOG_* macros compiled with ENABLE_LOGGER. For production build use MAX_LOG_LEVEL<=5, to avoid filter integer comparison on each call to LOG_TRACE(…)
+#  ENABLE_USEFUL_ERRORS: enable useful compiler errors which help a lot in error-free development.
 #  CMAKE_VERBOSE_MAKEFILE: output additional information during compiling (OFF by default)
 #  SUFFIX: suffix, added after binary-names (version number by default)
 #  NOSUFFIX: do not add a suffix after binary-name (OFF by default)
@@ -21,19 +24,33 @@
 #  ENABLE_LIQMIGRATION: enable LIQMIGRATION-option, see [Mani2013] for details (OFF by default)
 #  ENABLE_MASK_ARBITRARY: enable MASK_ARBITRARY option (OFF by default)
 #  ENABLE_PROFILING: enable profiling, e.g. shows some more metrics, which can define bottlenecks of the code (OFF by default)
-#  ENABLE_POTENTIAL_PARTICLES: enable potential particles option (OFF by default)
+#  ENABLE_POTENTIAL_BLOCKS: enable potential blocks option (ON by default)
+#  ENABLE_POTENTIAL_PARTICLES: enable potential particles option (ON by default)
 #  ENABLE_DEFORM: enable constant volume deformation engine (OFF by default)
+#  ENABLE_FEMLIKE: enable meshed solids (FEM-like)
 #  ENABLE_OAR: generate a script for oar-based task scheduler (OFF by default)
+#  ENABLE_ASAN: AddressSanitizer build, please see documentation (OFF by default)
 #  runtimePREFIX: used for packaging, when install directory is not the same is runtime directory (/usr/local by default)
 #  CHUNKSIZE: set >1, if you want several sources to be compiled at once. Increases compilation speed and RAM-consumption during it (1 by default)
 #  VECTORIZE: enables vectorization and alignment in Eigen3 library, experimental (OFF by default)
 #  USE_QT5: use QT5 for GUI (ON by default)
 #  CHOLMOD_GPU link Yade to custom SuiteSparse installation and activate GPU accelerated PFV (OFF by default)
+#  SUITESPARSEPATH: define this variable with the path to a custom suitesparse install
 #  ENABLE_PYTHON3: enable python 3 compilation instead of python2.7 (OFF by default)
 #  PYTHON_VERSION: force python version to the given one, set -1 to automatically use the last version on the system. (-1 by default)
 
 project(Yade C CXX)
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.5.0)
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# https://misc.flogisoft.com/bash/tip_colors_and_formatting
+# https://stackoverflow.com/questions/18968979/how-to-get-colorized-output-with-cmake , use ${Esc} for printing colors
+string(ASCII 27 Esc)
+# To have a cmake option with multiple values I used https://cmake.org/pipermail/cmake/2016-October/064342.html
+# set maximum level for LOG_* macros compiled with ENABLE_LOGGER. For production build use MAX_LOG_LEVEL below 5, to avoid filter integer comparison on each call to LOG_TRACE(…)
+set(MAX_LOG_LEVEL "5" CACHE STRING "default MAX_LOG_LEVEL")
+set_property(CACHE MAX_LOG_LEVEL PROPERTY STRINGS "0" "1" "2" "3" "4" "5" "6")  # define list of values GUI will offer for the variable
 
 
 #===========================================================
@@ -42,6 +59,8 @@ SET(LINKLIBS "")
 SET(CONFIGURED_FEATS "")
 SET(DISABLED_FEATS "")
 
+OPTION(ENABLE_LOGGER "use boost::log library for logging (ON by default)" ON)
+OPTION(ENABLE_USEFUL_ERRORS "enable useful compiler errors which help a lot in error-free development." ON)
 OPTION(ENABLE_VTK "Enable VTK" ${DEFAULT})
 OPTION(ENABLE_OPENMP "Enable OpenMP" ${DEFAULT})
 OPTION(ENABLE_MPI "Enable MPI environement and communications, required for coupling Yade with OpenFOAM  " ON)
@@ -62,8 +81,10 @@ OPTION(ENABLE_OAR "Generate script for oar-based task scheduler" OFF)
 OPTION(USE_QT5 "USE Qt5 for GUI" ON)
 OPTION(ENABLE_POTENTIAL_BLOCKS "Enable PotentialBlocks" ON)
 OPTION(ENABLE_DEFORM "Enable Deformation Engine" OFF)
+OPTION(ENABLE_FEMLIKE "Enable deformable solids" ON)
 OPTION(CHOLMOD_GPU "Enable GPU acceleration flow engine direct solver" OFF)
-OPTION(ENABLE_THERMAL "Enable thermal engine (experimental)" OFF)
+OPTION(ENABLE_THERMAL "Enable thermal engine (experimental)" ON)
+OPTION(ENABLE_ASAN "Enable AddressSanitizer build, please see documentation" OFF)
 #Set -DPYTHON_VERSION numeric option below:
 set(PYTHON_VERSION -1 CACHE STRING "Force python version to the given one. Defaults to -DPYTHON_VERSION=-1 which automatically uses the newest available python version on the system.")
 #===========================================================
@@ -87,11 +108,14 @@ INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 # this line was trying to get the g++ version. But it does not work with ccache.
 # But we already have CMAKE_CXX_COMPILER_VERSION, so we don't need this line!
 #EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.8)
-  MESSAGE(STATUS "GCC Version >= 4.8. Adding -ftrack-macro-expansion=0")
-  ADD_DEFINITIONS("-ftrack-macro-expansion=0")
-ELSE()
-  MESSAGE(STATUS "GCC Version < 4.8. will not use -ftrack-macro-expansion=0")
+
+IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")  # Check whether we compile with GCC
+  IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.8)
+    MESSAGE(STATUS "GCC Version >= 4.8. Adding -ftrack-macro-expansion=0")
+    ADD_DEFINITIONS("-ftrack-macro-expansion=0")
+  ELSE()
+    MESSAGE(STATUS "GCC Version < 4.8. will not use -ftrack-macro-expansion=0")
+  ENDIF()
 ENDIF()
 
 # -save-temps is not supported with ccache
@@ -118,33 +142,51 @@ ENDIF()
 
 #===========================================================
 
-## >>>>>>> Fast compilation -O0, Set -Og for debugging FIXME: should be an option for this somewhere
-## SET(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} " -fPIC -O0 --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++0x")
-# ====== FIXME 1. -frounding-math is only for CGAL < 4.2
-# ====== FIXME 2. -Ofast should be optional
-# ====== FIXME 3. -Og    should be used by default with -DDEBUG (oops, this flag isn't working?)
-# ====== FIXME 4. -O0    shoould be optional too (fast compiling)
-IF ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
-  ADD_DEFINITIONS("-ftemplate-depth-512 -fstack-protector ")
-ELSE()
-  IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.9)
-    MESSAGE(STATUS "GCC Version >= 4.9. Adding -fstack-protector-strong")
-    ADD_DEFINITIONS("-fstack-protector-strong")
-  ELSE()
-    ADD_DEFINITIONS("-fstack-protector")
-  ENDIF()
-ENDIF()
+FIND_PACKAGE(Eigen3 REQUIRED)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC -Ofast    --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -Wall -std=c++11")
+#===========================================================
+# AddressSanitizer build
+IF(ENABLE_ASAN)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -g -fsanitize=address -fno-omit-frame-pointer")
+  SET(CMAKE_BUILD_TYPE Debug)
+  SET(CMAKE_VERBOSE_MAKEFILE 1)
+ENDIF(ENABLE_ASAN)
+#===========================================================
 
-IF (DEBUG)
+IF(DEBUG)
   SET(CMAKE_VERBOSE_MAKEFILE 1)
   SET(CMAKE_BUILD_TYPE Debug)
-  ADD_DEFINITIONS("-DYADE_DEBUG -g")
+  ADD_DEFINITIONS("-DYADE_DEBUG")
 ELSE (DEBUG)
-  ADD_DEFINITIONS("-DNDEBUG")
+  IF (NOT(CMAKE_BUILD_TYPE))
+    # If no build_type set, we use Release profile
+    SET(CMAKE_BUILD_TYPE Release)
+  ENDIF (NOT(CMAKE_BUILD_TYPE))
 ENDIF (DEBUG)
 
+IF(ENABLE_LOGGER)
+  MESSAGE(STATUS "${Esc}[36mLog filtering: enabled${Esc}[0m")
+  SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} BoostLog")
+  ADD_DEFINITIONS("-DYADE_BOOST_LOG")
+  ADD_DEFINITIONS("-DBOOST_LOG_DYN_LINK")
+  IF (DEBUG)
+    MESSAGE(STATUS "Enabling boost::log library and DEBUG=ON. Files will be very large with full debug info inside.")
+    IF(${MAX_LOG_LEVEL} LESS 6)
+      MESSAGE(STATUS "${Esc}[33mWarning: using DEBUG=ON with MAX_LOG_LEVEL=${MAX_LOG_LEVEL} (less than 6, the maximum log level) rarely makes sense, use cmake option MAX_LOG_LEVEL=6 to fix this.${Esc}[0m")
+    ENDIF()
+  ELSE (DEBUG)
+    MESSAGE(STATUS "Enabling boost::log library and DEBUG=OFF. Logging will work nicely, backtraces will not have debug info, files will be small.")
+  ENDIF (DEBUG)
+ELSE(ENABLE_LOGGER)
+  MESSAGE(STATUS "${Esc}[36mLog filtering: disabled${Esc}[0m")
+  IF (DEBUG)
+    MESSAGE(STATUS "Disabling boost::log library (only rudimentary LOG_* macros will work) and DEBUG=ON. Files will be very large with full debug info inside.")
+  ELSE (DEBUG)
+    MESSAGE(STATUS "Disabling boost::log library (only rudimentary LOG_* macros will work, and only up to LOG_WARN) and DEBUG=OFF. Backtraces will not have debug info, files will be small.")
+  ENDIF (DEBUG)
+ENDIF(ENABLE_LOGGER)
+
+ADD_DEFINITIONS("-DMAX_LOG_LEVEL=${MAX_LOG_LEVEL}")
 
 #==================================
 #====== *** PYTHON/BOOST *** ======
@@ -153,6 +195,10 @@ INCLUDE(YadePythonHelpers)
 
 SET(PY3_VERSIONS 3.8 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0) #append newer python versions at the beginning here.
 SET(PY2_VERSIONS 2.7 2.6)
+
+IF (DEFINED PYTHON_EXECUTABLE)
+	SET(USER_DEFINED_PYTHON_EX ${PYTHON_EXECUTABLE})
+ENDIF()
 IF(${PYTHON_VERSION} EQUAL -1)
 	SET(PY_VERSIONS_CHECK "${PY3_VERSIONS};${PY2_VERSIONS}")
 ELSEIF(${PYTHON_VERSION} EQUAL 2)
@@ -165,9 +211,6 @@ ENDIF()
 
 MESSAGE("Loop on the following python versions and check available dependencies:${PY_VERSIONS_CHECK}" )
 FOREACH(py_version ${PY_VERSIONS_CHECK})
-	#Reset variables to be able to use finpythoninterp multiple times
-	unset(PYTHONINTERP_FOUND CACHE)
-	unset(PYTHON_EXECUTABLE CACHE)
 	#Set desired python version
 	set(Python_ADDITIONAL_VERSIONS ${py_version})
 	#Find python
@@ -175,9 +218,17 @@ FOREACH(py_version ${PY_VERSIONS_CHECK})
 	IF(NOT PythonInterp_FOUND)
 		MESSAGE(FATAL_ERROR "No python version could be found in your system.")
 	ENDIF()
+	IF (DEFINED USER_DEFINED_PYTHON_EX)
+        	MESSAGE("Using user defined PYTHON_EXECUTABLE: ${USER_DEFINED_PYTHON_EX}")
+        	SET(PYTHON_EXECUTABLE ${USER_DEFINED_PYTHON_EX} CACHE FILEPATH "user defined python executable" FORCE)
+	ENDIF()
+
 	#FindPythonInterp will try to fallback in older Python version, we have to check manually if it found the version we wish
 	PYTHON_VERSION_MATCHES(${py_version})
 	IF(NOT ${PYTHON_VERSION_MATCH})
+	    #Reset variables to be able to use finpythoninterp multiple times
+		unset(PYTHON_EXECUTABLE CACHE)
+		unset(PYTHONINTERP_FOUND CACHE)
 		CONTINUE()
 	ENDIF()
 	MESSAGE("Python version ${PYTHON_VERSION_STRING} found, try to import dependencies...")
@@ -185,6 +236,10 @@ FOREACH(py_version ${PY_VERSIONS_CHECK})
 	IF(ALL_PYTHON_DEPENDENCIES_FOUND)
 		MESSAGE("Found all python dependencies with version ${PYTHON_VERSION_STRING}, will compile yade with that.")
 		BREAK()
+	ELSE()
+	    #Reset variables to be able to use finpythoninterp multiple times
+		unset(PYTHON_EXECUTABLE CACHE)
+		unset(PYTHONINTERP_FOUND CACHE)
 	ENDIF()
 ENDFOREACH()
 
@@ -197,11 +252,83 @@ ENDIF()
 #====== *** END PYTHON/BOOST *** ======
 #======================================
 
+#======================================
+#====== **** Compiler flags **** ======
+#======================================
+if(ENABLE_USEFUL_ERRORS)
+  # Enable as many warnings as possible, and treat them as errors (using -Werror flag).
+  # Four warnings are impossible to fix, because they are in external libraries:
+  #   (1) libeigen: -Wmaybe-uninitialized, -Wcomment, -Wdeprecated-copy ; and only in g++ 7 or 8: -Wint-in-bool-context
+  #   (2) open mpi: -Wcast-function-type
+  # Three warnings are impossible to fix, because they are in older compiler, or in older library version
+  #   (1) libeigen ver. <=3.3.4 : -Wshadow=compatible-local -Wno-error=float-conversion
+  #   (2) numpy    ver. < 1.13  : -Wunused-function
+  # These impossible to fix warnings are in ${WORKAROUND_LIBRARY_WARNINGS}
+  # So depending on compiler version I need to turn these errors off.
+  # They will be still printed as warnings. But they will not be an error due to -Werror flag.
+
+  # Notes:
+  #  -Wfloat-conversion warning: you have to select the int(…) conversion policy: std::floor(…), std::ceil(…), std::round(…), e.g. with int(std::ceil(11.9999999999999993))
+
+  # g++ ver < 10 ; all workarounds are for g++ < ver.10; When version 10 appears I hope that there will be fewer warnigs to disable. This 'IF' is to trigger the re-evealuation when g++ v.10 appears.
+  IF (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0 )
+    SET(WORKAROUND_LIBRARY_WARNINGS " -Wno-error=maybe-uninitialized -Wno-comment")
+    # g++ ver >= 8
+    IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0)
+      SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wno-cast-function-type")
+      # g++ ver >= 9
+      IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0)
+        SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wno-deprecated-copy")
+      ENDIF()
+    ENDIF()
+    # g++ ver >= 7
+    IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0)
+      # g++ ver < 8
+      IF (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+        SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wno-int-in-bool-context")
+      ENDIF()
+      # g++ ver >= 7 and eigen > 3.3.4
+      IF(NOT ((${EIGEN3_MAJOR_VERSION} EQUAL 3) AND ( (${EIGEN3_MINOR_VERSION} LESS 4) OR (${EIGEN3_MINOR_VERSION} EQUAL 4))))
+        # eigen > 3.3.4, (newer than ubuntu 16.04 xenial or 18.04 bionic)
+        SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wshadow=compatible-local")
+      ENDIF()
+    ENDIF()
+  ENDIF()
+
+  IF((${EIGEN3_MAJOR_VERSION} LESS 2) OR (${EIGEN3_MAJOR_VERSION} EQUAL 2))
+    # eigen <= 3.2, ubuntu 16.04 xenial
+    SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wno-float-conversion")
+  ENDIF()
+  IF((${NUMPY_VERSION_MAJOR} EQUAL 1) AND (${NUMPY_VERSION_MINOR} LESS 13))
+    # numpy 1.11.0 has unused-function, 1.13 does not. So we have to print warning only when it appears.
+    SET(WORKAROUND_LIBRARY_WARNINGS "${WORKAROUND_LIBRARY_WARNINGS} -Wno-unused-function")
+  ENDIF()
+  SET(ALL_ENABLED_USEFUL_ERRORS " -Werror -Wformat -Wformat-security -Wformat-nonliteral -Wall -Wextra -Wnarrowing -Wreturn-type -Wuninitialized -Wfloat-conversion -Wcast-align -Wdisabled-optimization -Wtrampolines -Wpointer-arith -Wswitch-bool -Wwrite-strings -Wnon-virtual-dtor -Wreturn-local-addr")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ALL_ENABLED_USEFUL_ERRORS} ${WORKAROUND_LIBRARY_WARNINGS} -Wno-error=cpp -fdce -fstack-protector-strong")
+
+#  -Wcast-qual      is useful, but too many warnings in libeigen
+#  -Wlogical-op     (1 unfixable warning in /usr/include/vtk-6.3/vtkVariantInlineOperators.h: logical ‘or’ of equal expressions )
+#  -Wswitch-default (1 unfixable warning in /usr/include/coin/CoinHelperFunctions.hpp )
+#  -Wswitch-enum    is not useful.
+# Also see: https://stackoverflow.com/questions/5088460/flags-to-enable-thorough-and-verbose-g-warnings
+# Below is the list of all still not fixed warnings `| sort | uniq`, maybe some of them are not much useful:
+# -Weffc++              (4465) -Wsign-conversion  (4176) -Wpedantic    (1744) -Wconversion         ( 755) -Wshadow         ( 527)
+# -Wfloat-equal         ( 486) -Wvla              ( 119) -Wswitch-enum (  36) -Wcast-qual          (  34) -Wswitch-default (  16)
+# -Wmaybe-uninitialized (  10) -Wcomment          (   3) -Wcpp         (   2) -Wcast-function-type (   2) -Wlogical-op     (   1)
+
+ELSE(ENABLE_USEFUL_ERRORS)
+  SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security -Werror=format-security -Wall -fstack-protector-strong")
+ENDIF(ENABLE_USEFUL_ERRORS)
+#===========================================================
+MESSAGE(STATUS   "${Esc}[36mChosen compiler flags are: CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS} ${Esc}[0m")
+#======================================
+#====== ** END Compiler flags ** ======
+#======================================
+
 #===========================================================
 FIND_PACKAGE(Loki REQUIRED)
 INCLUDE_DIRECTORIES(${LOKI_INCLUDE_DIR})
 
-FIND_PACKAGE(Eigen3 REQUIRED)
 FIND_PACKAGE(BZip2 REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 #===========================================================
@@ -241,7 +368,7 @@ ENDIF((Boost_MAJOR_VERSION EQUAL 1) OR (Boost_MAJOR_VERSION GREATER 1) AND
      ((Boost_MINOR_VERSION EQUAL 53) OR (Boost_MINOR_VERSION GREATER 53)))
 #===========================================================
 IF(ENABLE_VTK)
-  FIND_PACKAGE(VTK COMPONENTS vtkCommonCore vtkIOImage vtkIOXML vtkFiltersCore vtkImagingCore vtkRenderingCore vtkImagingGeneral vtkImagingHybrid)
+  FIND_PACKAGE(VTK COMPONENTS vtkIOParallelXML vtkCommonCore vtkIOImage vtkIOXML vtkFiltersCore vtkImagingCore vtkRenderingCore vtkImagingGeneral vtkImagingHybrid)
   IF(VTK_FOUND)
     INCLUDE_DIRECTORIES(${VTK_INCLUDE_DIRS})
     LINK_DIRECTORIES( ${VTK_LIBRARY_DIRS} )
@@ -300,7 +427,6 @@ IF(ENABLE_GUI)
     MESSAGE(STATUS "USE QT5")
     FIND_PACKAGE(QGLVIEWER-qt5 REQUIRED)
     FIND_PACKAGE(Qt5 CONFIG REQUIRED Widgets Xml OpenGL)
-    SET(CMAKE_AUTOMOC ON)
     FIND_PACKAGE(Qt5Widgets)
     IF(Qt5Widgets_FOUND AND OPENGL_FOUND AND GLUT_FOUND AND GLIB2_FOUND AND QGLVIEWER_FOUND)
       SET(GUI_LIBS ${GLUT_LIBRARY} ${QGLVIEWER_LIBRARIES})
@@ -342,13 +468,10 @@ ELSE(ENABLE_GUI)
   SET(DISABLED_FEATS "${DISABLED_FEATS} GUI")
 ENDIF(ENABLE_GUI)
 #===========================================================
-# This one will automatically enable CGAL
-IF(ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW)
-  IF (NOT ENABLE_CGAL)
-    MESSAGE(STATUS "PFVFLOW and TWOPHASEFLOW depends on CGAL, attempting to turn ENABLE_CGAL ON")
-    SET(ENABLE_CGAL ON)
-  ENDIF (NOT ENABLE_CGAL)
-ENDIF(ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW)
+# This one will cry on attempts to build CGAL-based packages without cgal
+IF(NOT ENABLE_CGAL AND (ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW OR ENABLE_THERMAL))
+  MESSAGE(STATUS "PFVFLOW, TWOPHASEFLOW and THERMAL depends on CGAL, but CGAL is disabled (not found or turned OFF)")
+ENDIF(NOT ENABLE_CGAL AND (ENABLE_PFVFLOW OR ENABLE_TWOPHASEFLOW OR ENABLE_THERMAL))
 #===========================================================
 IF(ENABLE_CGAL)
   INCLUDE(FindGMP)
@@ -358,7 +481,11 @@ IF(ENABLE_CGAL)
 
     FILE(GLOB CGAL_SRC_LIB "lib/triangulation/*.cpp")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CGAL_DEFINITIONS} -DYADE_CGAL")
-    SET(LINKLIBS  "${LINKLIBS};${CGAL_LIBRARIES};${GMP_LIBRARIES};${GMPXX_LIBRARIES};")
+    IF(NOT (${CGAL_LIBRARIES} STREQUAL "CGAL_LIBRARIES-NOTFOUND"))
+      SET(LINKLIBS  "${LINKLIBS};${CGAL_LIBRARIES};${GMP_LIBRARIES};${GMPXX_LIBRARIES};")
+    ELSE()
+      SET(LINKLIBS  "${LINKLIBS};${GMP_LIBRARIES};${GMPXX_LIBRARIES};")
+    ENDIF()
     MESSAGE(STATUS "Found CGAL")
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} CGAL")
 
@@ -384,16 +511,37 @@ IF(ENABLE_CGAL)
 ELSE(ENABLE_CGAL)
   SET(DISABLED_FEATS "${DISABLED_FEATS} CGAL")
 ENDIF(ENABLE_CGAL)
+
 #===========================================================
-IF(ENABLE_LINSOLV)
+IF(ENABLE_PFVFLOW)
+	IF(ENABLE_CGAL)
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFLOW_ENGINE")
+		SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} PFVFLOW")
+	ELSE(ENABLE_CGAL)
+		SET(DISABLED_FEATS "${DISABLED_FEATS} PFVFLOW")
+		SET(ENABLE_PFVFLOW OFF)
+	ENDIF(ENABLE_CGAL)
+ELSE(ENABLE_PFVFLOW)
+	SET(DISABLED_FEATS "${DISABLED_FEATS} PFVFLOW")
+ENDIF(ENABLE_PFVFLOW)
+
+#===========================================================
+IF(ENABLE_PFVFLOW AND ENABLE_LINSOLV)
+  IF(DEFINED SUITESPARSEPATH) 
+    set(SUITESPARSE_PREFIX_PATH ${SUITESPARSEPATH})
+    MESSAGE(STATUS "Using custom suitsparse path " ${SUITESPARSE_PREFIX_PATH})
+  ELSE(DEFINED SUITESPARSEPATH)
+    set(SUITESPARSE_PREFIX_PATH /usr)
+    MESSAGE(STATUS "Using typical suitesparse path " ${SUITESPARSE_PREFIX_PATH})
+  ENDIF(DEFINED SUITESPARSEPATH)
   FIND_PACKAGE(Cholmod)
   FIND_PACKAGE(OpenBlas)
   FIND_PACKAGE(Metis)
 
   IF(CHOLMOD_FOUND AND OPENBLAS_FOUND AND METIS_FOUND AND CGAL_FOUND)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CGAL_DEFINITIONS} -DLINSOLV -DFLOW_ENGINE")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CGAL_DEFINITIONS} -DLINSOLV")
 
-    SET(LINKLIBS  "${LINKLIBS};${CHOLMOD_LIBRARIES};${AMD_LIBRARY};${CAMD_LIBRARY};${COLAMD_LIBRARY};${CCOLAMD_LIBRARY};${OPENBLAS_LIBRARY};${METIS_LIBRARY};${SUITESPARSE_LIBRARY}")
+    SET(LINKLIBS  "${LINKLIBS};${CHOLMOD_LIBRARIES};${AMD_LIBRARY};${CAMD_LIBRARY};${COLAMD_LIBRARY};${CCOLAMD_LIBRARY};${OPENBLAS_LIBRARY};${METIS_LIBRARY};${SUITESPARSE_LIBRARY};${SUITESPARSECONFIG_LIBRARY}")
     INCLUDE_DIRECTORIES(${METIS_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR} ${BLAS_INCLUDE_DIR})
     MESSAGE(STATUS "Found Cholmod in " ${CHOLMOD_LIBRARIES})
     MESSAGE(STATUS "Found OpenBlas in " ${OPENBLAS_LIBRARY})
@@ -423,33 +571,55 @@ IF(ENABLE_LINSOLV)
     SET(DISABLED_FEATS "${DISABLED_FEATS} LINSOLV")
     SET(ENABLE_LINSOLV OFF)
   ENDIF(CHOLMOD_FOUND AND OPENBLAS_FOUND AND METIS_FOUND AND CGAL_FOUND)
-ELSE(ENABLE_LINSOLV)
+ELSE(ENABLE_PFVFLOW AND ENABLE_LINSOLV)
   SET(DISABLED_FEATS "${DISABLED_FEATS} LINSOLV")
       IF(ENABLE_TWOPHASEFLOW)
          MESSAGE(STATUS "TWOPHASEFLOW was disabled automatically because LINSOLV is disabled")
          SET(ENABLE_TWOPHASEFLOW OFF)
       ENDIF(ENABLE_TWOPHASEFLOW)
-ENDIF(ENABLE_LINSOLV)
+ENDIF(ENABLE_PFVFLOW AND ENABLE_LINSOLV)
 #===============================================
 IF(ENABLE_MPI)
-  FIND_PACKAGE(MPI)
-  IF (MPI_FOUND)
-    INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DYADE_MPI")
-    SET (LINKLIBS "${LINKLIBS};${MPI_CXX_LIBRARIES};")
+  FIND_PACKAGE(MPI REQUIRED)
+  FIND_PACKAGE(MPI4PY REQUIRED)
+  IF (MPI_FOUND AND MPI4PY_FOUND)
+    INCLUDE_DIRECTORIES(${MPI_CXX_INCLUDE_PATH} ${MPI4PY_INCLUDE_DIR})
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS} -DYADE_MPI")
+    string (STRIP "${MPI_CXX_LIBRARIES}" MPI_LIBRARIES)
+    string (STRIP "${MPI_CXX_LINK_FLAGS}" MPI_LINK_FLAGS)
+    SET (LINKLIBS "${LINKLIBS};${MPI_LIBRARIES};${MPI_LINK_FLAGS}")
     MESSAGE(STATUS "MPI found")
     SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} MPI")
-  ELSE(MPI_FOUND)
+    # sometimes mpi.h is not found. cmake should find it, but didn't. I'm not sure why. Here I put all directotries where it can be found.
+    # it is an OR operation from ubuntu, debian and opensuse of this: https://packages.debian.org/search?suite=sid&arch=any&mode=path&searchon=contents&keywords=include%2Fmpi.h
+#     find_path(MPI_H_INCLUDE_DIR mpi.h /usr/include/openmpi /usr/lib/openmpi /usr/lib/openmpi/include /usr/lib/x86_64-linux-gnu /usr/lib64/mpi/gcc/openmpi 
+#     /usr/include/aarch64-linux-gnu /usr/include/arm-linux-gnueabihf /usr/include/i386-kfreebsd-gnu /usr/include/i386-linux-gnu
+#     /usr/include/mips64el-linux-gnuabi64 /usr/include/openblas /usr/include/powerpc64-linux-gnu /usr/include/powerpc64le-linux-gnu
+#     /usr/include/s390x-linux-gnu /usr/include/sparc64-linux-gnu /usr/include/x86_64-kfreebsd-gnu /usr/include/x86_64-linux-gnu
+#     /usr/lib/aarch64-linux-gnu /usr/lib/alpha-linux-gnu /usr/lib/arm-linux-gnueabi /usr/lib/arm-linux-gnueabihf
+#     /usr/lib/hppa-linux-gnu /usr/lib/i386-gnu /usr/lib/i386-kfreebsd-gnu /usr/lib/i386-linux-gnu
+#     /usr/lib/m68k-linux-gnu /usr/lib/mips-linux-gnu /usr/lib/mips64el-linux-gnuabi64 /usr/lib/mipsel-linux-gnu
+#     /usr/lib/powerpc-linux-gnu /usr/lib/powerpc-linux-gnuspe /usr/lib/powerpc64-linux-gnu /usr/lib/powerpc64le-linux-gnu
+#     /usr/lib/riscv64-linux-gnu /usr/lib/s390x-linux-gnu /usr/lib/sh4-linux-gnu /usr/lib/sparc64-linux-gnu
+#     /usr/lib/x86_64-kfreebsd-gnu /usr/lib/x86_64-linux-gnux32
+#     )
+#     INCLUDE_DIRECTORIES(${MPI_H_INCLUDE_DIR})
+  ELSE(MPI_FOUND AND MPI4PY_FOUND)
     MESSAGE(STATUS "MPI NOT FOUND, YADE-OpenFOAM coupling disabled")
     SET (DISABLED_FEATS "${DISABLED_FEATS} MPI")
-  ENDIF(MPI_FOUND)
+  ENDIF(MPI_FOUND AND MPI4PY_FOUND)
 ELSE(ENABLE_MPI)
     SET (DISABLED_FEATS "${DISABLED_FEATS} MPI")
 ENDIF(ENABLE_MPI)
 #===============================================
 IF(ENABLE_TWOPHASEFLOW)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTWOPHASEFLOW")
-	SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} TWOPHASEFLOW")
+	IF(ENABLE_PFVFLOW)
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTWOPHASEFLOW")
+		SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} TWOPHASEFLOW")
+	ELSE(ENABLE_PFVFLOW)
+		SET(DISABLED_FEATS "${DISABLED_FEATS} TWOPHASEFLOW")
+		MESSAGE(STATUS "PFVFLOW disabled, TWOPHASEFLOW will not be compiled")
+	ENDIF(ENABLE_PFVFLOW)
 ELSE(ENABLE_TWOPHASEFLOW)
 	SET(DISABLED_FEATS "${DISABLED_FEATS} TWOPHASEFLOW")
 ENDIF(ENABLE_TWOPHASEFLOW)
@@ -467,6 +637,13 @@ IF(ENABLE_DEFORM)
 ELSE(ENABLE_DEFORM)
   SET(DISABLED_FEATS "${DISABLED_FEATS} DEFORM")
 ENDIF(ENABLE_DEFORM)
+#===============================================
+IF(ENABLE_FEMLIKE)
+  ADD_DEFINITIONS("-DYADE_FEM")
+  SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} FEMLIKE")
+ELSE(ENABLE_FEMLIKE)
+  SET(DISABLED_FEATS "${DISABLED_FEATS} FEMLIKE")
+ENDIF(ENABLE_FEMLIKE)
 #===============================================
 IF(ENABLE_LIQMIGRATION)
   ADD_DEFINITIONS("-DYADE_LIQMIGRATION")
@@ -550,12 +727,12 @@ ELSE(ENABLE_FFTW3)
 ENDIF(ENABLE_FFTW3)
 #===========================================================
 
-IF(ENABLE_THERMAL)
+IF(ENABLE_THERMAL AND ENABLE_PFVFLOW)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTHERMAL")
   SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} THERMAL")
-ELSE(ENABLE_THERMAL)
+ELSE(ENABLE_THERMAL AND ENABLE_PFVFLOW)
   SET(DISABLED_FEATS "${DISABLED_FEATS} THERMAL")
-ENDIF(ENABLE_THERMAL)
+ENDIF(ENABLE_THERMAL AND ENABLE_PFVFLOW)
 
 IF(ENABLE_PROFILING)
   SET(CONFIGURED_FEATS "${CONFIGURED_FEATS} PROFILING")
@@ -607,8 +784,10 @@ ELSE(ENABLE_POTENTIAL_BLOCKS)
   SET(DISABLED_FEATS "${DISABLED_FEATS} PotentialBlocks")
 ENDIF(ENABLE_POTENTIAL_BLOCKS)
 #===========================================================
-
-
+#= Forced detection of library versions for libVersions ====
+#===========================================================
+INCLUDE(FindMissingVersions)
+#===========================================================
 
 IF (INSTALL_PREFIX)
   SET(CMAKE_INSTALL_PREFIX ${INSTALL_PREFIX})
@@ -665,11 +844,11 @@ FILE(GLOB SRC_CORE "core/*.cpp")
 FILE(GLOB_RECURSE SRC_PKG  "pkg/*.cpp")
 FILE(GLOB SRC_LIB  "lib/*.cpp")
 
-SET(SRC_LIB "${SRC_LIB};lib/base/Math.cpp;lib/factory/ClassFactory.cpp;lib/factory/DynLibManager.cpp")
+SET(SRC_LIB "${SRC_LIB};lib/base/Math.cpp;lib/factory/ClassFactory.cpp;lib/factory/DynLibManager.cpp;lib/base/Logging.cpp")
 SET(SRC_LIB "${SRC_LIB};lib/serialization/Serializable.cpp;lib/pyutil/gil.cpp;core/main/pyboot.cpp;${GUI_SRC_LIB};${CGAL_SRC_LIB}")
-IF(ENABLE_POTENTIAL_PARTICLES)
+IF(ENABLE_POTENTIAL_PARTICLES OR ENABLE_POTENTIAL_BLOCKS)
   SET(SRC_LIB "${SRC_LIB};lib/computational-geometry/MarchingCube.cpp")
-ENDIF(ENABLE_POTENTIAL_PARTICLES)
+ENDIF(ENABLE_POTENTIAL_PARTICLES OR ENABLE_POTENTIAL_BLOCKS)
 
 #===========================================================
 
@@ -749,11 +928,16 @@ IF(ENABLE_OAR)
   INSTALL(PROGRAMS "${CMAKE_BINARY_DIR}/bins/yade${SUFFIX}-oar" DESTINATION ${YADE_EXEC_PATH}/)
 ENDIF(ENABLE_OAR)
 INSTALL(PROGRAMS "${CMAKE_BINARY_DIR}/bins/yade${SUFFIX}" DESTINATION ${YADE_EXEC_PATH}/)
+INSTALL(CODE "execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${YADE_EXEC_PATH}/yade${SUFFIX} ${YADE_EXEC_PATH}/yade${SUFFIX}.py)")
 INSTALL(FILES "${CMAKE_BINARY_DIR}/config.py" DESTINATION ${YADE_PY_PATH}/yade/)
 INSTALL(FILES "${CMAKE_BINARY_DIR}/libVersions.py" DESTINATION ${YADE_PY_PATH}/yade/)
 INSTALL(FILES "${CMAKE_BINARY_DIR}/__init__.py" DESTINATION ${YADE_PY_PATH}/yade/)
 FILE(GLOB filesPYChecks "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/checks/*.py")
 INSTALL(FILES ${filesPYChecks} DESTINATION ${YADE_PY_PATH}/yade/tests/checks)
+FILE(GLOB filesGUIChecks "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/gui/*.py" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/gui/*.sh")
+INSTALL(FILES ${filesGUIChecks} DESTINATION ${YADE_PY_PATH}/yade/tests/gui)
+FILE(GLOB filesGUItestHelper "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/gui/helper/*.py")
+INSTALL(FILES ${filesGUItestHelper} DESTINATION ${YADE_PY_PATH}/yade)
 FILE(GLOB filesPYChecksData "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checks-and-tests/checks/data/*")
 INSTALL(FILES ${filesPYChecksData} DESTINATION ${YADE_PY_PATH}/yade/tests/checks/data)
 INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/doc/yade-logo-note.png" DESTINATION "${YADE_DOC_PATH}/img")
@@ -763,17 +947,27 @@ INSTALL(TARGETS yade DESTINATION ${YADE_LIB_PATH})
 
 #===========================================================
 MESSAGE(STATUS "===========================================================")
-MESSAGE(STATUS "Yade configured with following features:${CONFIGURED_FEATS}")
-MESSAGE(STATUS "Disabled features:${DISABLED_FEATS}")
+MESSAGE(STATUS "Yade configured with following features:${Esc}[36m${CONFIGURED_FEATS}${Esc}[0m")
+MESSAGE(STATUS "Disabled features:${Esc}[33m${DISABLED_FEATS}${Esc}[0m")
+IF(ENABLE_LOGGER)
+  MESSAGE(STATUS "${Esc}[36mUsing MAX_LOG_LEVEL=${MAX_LOG_LEVEL}, ENABLE_LOGGER=ON${Esc}[0m")
+ELSE(ENABLE_LOGGER)
+  MESSAGE(STATUS "${Esc}[36mUsing MAX_LOG_LEVEL=${MAX_LOG_LEVEL}, ENABLE_LOGGER=OFF${Esc}[0m")
+ENDIF(ENABLE_LOGGER)
 IF (DEBUG)
-  MESSAGE(STATUS "Debug build")
+  MESSAGE(STATUS "${Esc}[33mDebug build${Esc}[0m")
   SET (debugbuild " (debug build)")
 ELSE (DEBUG)
-  MESSAGE(STATUS "Optimized build")
+  IF (ENABLE_ASAN)
+    MESSAGE(STATUS "${Esc}[33mAddressSanitizer build! Check documentation how to run${Esc}[0m")
+  ELSE (ENABLE_ASAN)
+    MESSAGE(STATUS "${Esc}[32mOptimized build${Esc}[0m")
+  ENDIF (ENABLE_ASAN)
 ENDIF (DEBUG)
 IF (CHUNKSIZE)
   MESSAGE(STATUS "CHUNKSIZE is set to " ${CHUNKSIZE})
 ENDIF (CHUNKSIZE)
+
 MESSAGE(STATUS "===========================================================")
 #===========================================================
 #Building doc

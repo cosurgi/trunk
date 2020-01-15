@@ -30,6 +30,8 @@
 	#include<gl2ps.h>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 void GLViewer::mouseMovesCamera(){
   setWheelBinding(Qt::ShiftModifier , FRAME, ZOOM);
   setWheelBinding(Qt::NoModifier, CAMERA, ZOOM);
@@ -101,8 +103,8 @@ void GLViewer::wheelEvent(QWheelEvent* event){
 
 	if(manipulatedClipPlane<0){ QGLViewer::wheelEvent(event); return; }
 	assert(manipulatedClipPlane<renderer->numClipPlanes);
-	float distStep=1e-3*sceneRadius();
-	float dist=event->delta()*manipulatedFrame()->wheelSensitivity()*distStep;
+	Real distStep=1e-3*sceneRadius();
+	Real dist=event->delta()*manipulatedFrame()->wheelSensitivity()*distStep;
 	Vector3r normal=renderer->clipPlaneSe3[manipulatedClipPlane].orientation*Vector3r(0,0,1);
 	qglviewer::Vec newPos=manipulatedFrame()->position()+qglviewer::Vec(normal[0],normal[1],normal[2])*dist;
 	manipulatedFrame()->setPosition(newPos);
@@ -110,4 +112,6 @@ void GLViewer::wheelEvent(QWheelEvent* event){
 	updateGLViewer();
 	/* in draw, bound cutting planes will be moved as well */
 }
+
+} // namespace yade
 

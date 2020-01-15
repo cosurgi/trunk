@@ -125,7 +125,7 @@ Consideration of rock heterogeneity
 
 .. math::
 	
-	A_{int} = \alpha_w \times \text{min}(R_a,R_b)^2\pi
+	A_{int} = \pi(\alpha_w \times \text{min}(R_a,R_b))^2
 
 where :math:`\alpha_w` is the Weibull correction factor, which is distributed as shown in `fig-weibullDist`_.
 The corresponding tensile strength distributions for various Weibull shape parameters are shown in  `fig-strengthDist`_. Note: a Weibull shape factor of :math:`\infty` is equivalent to the unaugmented JCFpm model.

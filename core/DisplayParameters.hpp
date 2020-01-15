@@ -10,6 +10,8 @@
  *
  */
 
+namespace yade { // Cannot have #include directive inside.
+
 class DisplayParameters: public Serializable{
 	private:
 		std::vector<std::string> values;
@@ -25,3 +27,6 @@ class DisplayParameters: public Serializable{
 	REGISTER_CLASS_AND_BASE(DisplayParameters,Serializable);
 };
 REGISTER_SERIALIZABLE(DisplayParameters);
+
+} // namespace yade
+

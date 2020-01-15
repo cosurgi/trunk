@@ -8,6 +8,8 @@
 
 #include "MarchingCube.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 
 MarchingCube::MarchingCube( )
 {
@@ -555,3 +557,6 @@ const int MarchingCube::triTable[256][16] = {
 	{ 0,  3,  8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 };
+
+}; // namespace yade
+

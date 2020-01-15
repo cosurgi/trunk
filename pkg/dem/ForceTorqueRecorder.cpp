@@ -1,5 +1,7 @@
 #include"ForceTorqueRecorder.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((ForceRecorder)(TorqueRecorder));
 
 CREATE_LOGGER(ForceRecorder);
@@ -34,3 +36,6 @@ void TorqueRecorder::action(){
 	out<<scene->iter<<" "<<totalTorque<<"\n";
 	out.close();
 }
+
+} // namespace yade
+

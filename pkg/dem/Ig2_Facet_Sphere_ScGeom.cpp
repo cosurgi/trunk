@@ -15,6 +15,8 @@
 #include<lib/base/Math.hpp>
 #include<pkg/common/InteractionLoop.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Ig2_Facet_Sphere_ScGeom)(Ig2_Facet_Sphere_ScGeom6D)(Ig2_Wall_Sphere_ScGeom));
 
 CREATE_LOGGER(Ig2_Facet_Sphere_ScGeom);
@@ -200,4 +202,6 @@ bool Ig2_Wall_Sphere_ScGeom::go(const shared_ptr<Shape>& cm1, const shared_ptr<S
 	ws->precompute(state1,state2,scene,c,normal,isNew,shift2,noRatch);
 	return true;
 }
+
+} // namespace yade
 

@@ -12,6 +12,8 @@
 #include<pkg/dem/FrictPhys.hpp>
 #include<pkg/common/Box.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((KinemSimpleShearBox))
 
 
@@ -188,5 +190,5 @@ void KinemSimpleShearBox::computeDY(Real KnC)
 
 }
 
-
+} // namespace yade
 

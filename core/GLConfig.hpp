@@ -3,6 +3,9 @@
 
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
 #include<core/Serializable.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 /*! Storage for general 3d view settings.
 
 Is saved along with simulation and passed to every call to render(...).
@@ -36,3 +39,6 @@ class GLConfig: public Serializable{
 
 	REGISTER_ATTRIBUTES(Serializable,(dof)(id)(bbox)(geom)(wire)(intrGeom)(intrPhys)(mask)(scaleDisplacements)(scaleRotations)(displacementScale)(rotationScale)(clipPlaneSe3)(clipPlaneActive));
 };
+
+} // namespace yade
+

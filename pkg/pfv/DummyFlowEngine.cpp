@@ -1,6 +1,6 @@
  
 /*************************************************************************
-*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -15,6 +15,8 @@
 #ifdef DUMMYFLOW
 
 #include "FlowEngine_DummyFlowEngineT.hpp"
+
+namespace yade { // Cannot have #include directive inside.
 
 /// We can add data to the Info types by inheritance
 class DummyCellInfo : public FlowCellInfo_DummyFlowEngineT
@@ -56,4 +58,7 @@ REGISTER_SERIALIZABLE(DummyFlowEngine);
 YADE_PLUGIN((DummyFlowEngine));
 
 void DummyFlowEngine::fancyFunction(Real what) {std::cerr<<"yes, I'm a new function"<<std::endl;}
+
+} // namespace yade
+
 #endif //DummyFLOW

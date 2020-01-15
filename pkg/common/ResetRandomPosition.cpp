@@ -19,6 +19,8 @@
 //#include<pkg/dem/BodyMacroParameters.hpp>
 #include"ResetRandomPosition.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((ResetRandomPosition));
 CREATE_LOGGER(ResetRandomPosition);
 
@@ -99,8 +101,8 @@ void ResetRandomPosition::action()
 
 				// Test overlap with other bodies
 				vector<Body::id_t> probedBodies=bI->probeBoundingVolume(bv);
-				FOREACH(Body::id_t id, probedBodies){
-					if (iGME->explicitAction(b,Body::byId(id),/*force*/false)->geom){
+				FOREACH(Body::id_t id2, probedBodies){
+					if (iGME->explicitAction(b,Body::byId(id2),/*force*/false)->geom){
 						is_overlap=true;
 						break;
 					}
@@ -150,4 +152,6 @@ Vector3r ResetRandomPosition::generatePositionInVolume()
     return p1+t*(p2-p1);
     
 }
+
+} // namespace yade
 

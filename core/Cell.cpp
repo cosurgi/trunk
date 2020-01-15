@@ -1,6 +1,8 @@
 
 #include<core/Cell.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(Cell);
 
 void Cell::integrateAndUpdate(Real dt){
@@ -37,10 +39,12 @@ void Cell::integrateAndUpdate(Real dt){
 }
 
 void Cell::fillGlShearTrsfMatrix(double m[16]){
-	m[0]=_shearTrsf(0,0); m[4]=_shearTrsf(0,1); m[8]=_shearTrsf(0,2); m[12]=0;
-	m[1]=_shearTrsf(1,0); m[5]=_shearTrsf(1,1); m[9]=_shearTrsf(1,2); m[13]=0;
-	m[2]=_shearTrsf(2,0); m[6]=_shearTrsf(2,1); m[10]=_shearTrsf(2,2);m[14]=0;
-	m[3]=0;               m[7]=0;               m[11]=0;              m[15]=1;
+	// it is for display only, assume conversion from Real to double.
+	m[0]=double(_shearTrsf(0,0)); m[4]=double(_shearTrsf(0,1)); m[8 ]=double(_shearTrsf(0,2)); m[12]=0;
+	m[1]=double(_shearTrsf(1,0)); m[5]=double(_shearTrsf(1,1)); m[9 ]=double(_shearTrsf(1,2)); m[13]=0;
+	m[2]=double(_shearTrsf(2,0)); m[6]=double(_shearTrsf(2,1)); m[10]=double(_shearTrsf(2,2)); m[14]=0;
+	m[3]=0;                       m[7]=0;                       m[11]=0;                        m[15]=1;
 }
 
+} // namespace yade
 

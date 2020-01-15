@@ -14,6 +14,8 @@
 // #endif
 
 
+namespace yade { // Cannot have #include directive inside.
+
 /* TODO:
 - remove computePermeability(), mostly a duplicate of the non-periodic version
 
@@ -485,7 +487,9 @@ void PeriodicFlow<_Tesselation>::displayStatistics()
 	num_particles = real;
 }
 	
-} //END NAMESPACE
+} //END NAMESPACE CGT
+
+} // namespace yade
 
 #ifdef LINSOLV
 #include "PeriodicFlowLinSolv.hpp"

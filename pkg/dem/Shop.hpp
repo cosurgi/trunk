@@ -9,7 +9,9 @@
 #include "core/Body.hpp"
 
 #include<boost/function.hpp>
+#include<lib/base/AliasNamespaces.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 class Scene;
 class Body;
@@ -17,9 +19,6 @@ class SimpleViscoelasticBodyParameters;
 class ViscElMat;
 class FrictMat;
 class Interaction;
-
-using boost::shared_ptr;
-namespace py = boost::python;
 
 /*! Miscillaneous utility functions which are believed to be generally useful.
  *
@@ -89,7 +88,7 @@ class Shop{
 
 
 		//! create transientInteraction between 2 bodies, using existing Dispatcher in Omega
-		static shared_ptr<Interaction> createExplicitInteraction(Body::id_t id1, Body::id_t id2, bool force);
+		static shared_ptr<Interaction> createExplicitInteraction(Body::id_t id1, Body::id_t id2, bool force, bool virtualI);
 
 		//! apply force on contact point on both bodies (reversed on body 2)
 		static void applyForceAtContactPoint(const Vector3r& force, const Vector3r& contPt, Body::id_t id1, const Vector3r& pos1, Body::id_t id2, const Vector3r& pos2, Scene* scene);
@@ -173,4 +172,6 @@ class Shop{
 		//! tests whether p lies in the (bbMin,bbMax) axis-aligned bounding box
 		static bool isInBB(Vector3r p, Vector3r bbMin, Vector3r bbMax);
 };
+
+} // namespace yade
 

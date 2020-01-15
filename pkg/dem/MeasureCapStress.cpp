@@ -6,6 +6,8 @@
 #include <pkg/dem/Shop.hpp> // for direct use of aabbExtrema
 
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((MeasureCapStress));
 
 void MeasureCapStress::action() {
@@ -138,3 +140,6 @@ Matrix3r MeasureCapStress::matGlobToLoc(Vector3r vecN){
                  - sin(theta)    ,     0    ,     cos(theta);
     return globToLoc;
 }
+
+} // namespace yade
+

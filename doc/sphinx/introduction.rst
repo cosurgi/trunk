@@ -43,7 +43,7 @@ These initial lines give you some information about
 
 Type ``quit()``, ``exit()`` or simply press ``^D`` (``^`` is a commonly used written shortcut for pressing the ``Ctrl`` key, so here ``^D`` means ``Ctrl D``) to quit Yade.
 
-The command-line is `ipython <http://ipython.scipy.org>`_, python shell with enhanced interactive capabilities; it features persistent history (remembers commands from your last sessions), searching and so on. See ipython's documentation for more details.
+The command-line is `ipython <https://ipython.org/>`_, python shell with enhanced interactive capabilities; it features persistent history (remembers commands from your last sessions), searching and so on. See ipython's documentation for more details.
 
 Typically, you will not type Yade commands by hand, but use *scripts*, python programs describing and running your simulations. Let us take the most simple script that will just print "Hello world!"::
 
@@ -67,7 +67,7 @@ Yade will run the script and then drop to the command-line again. [#f2]_ If you 
 There is more command-line options than just ``-x``, run ``yade -h`` to see all of them.
 
 	Options:
-	  --version             show program's version number and exit
+	  -v, --version         show program's version number and exit
 	  -h, --help            show this help message and exit
 	  -j THREADS, --threads=THREADS
 	                        Number of OpenMP threads to run; defaults to 1.
@@ -82,6 +82,8 @@ There is more command-line options than just ``-x``, run ``yade -h`` to see all 
 	  --nice=NICE           Increase nice level (i.e. decrease priority) by given
 	                        number.
 	  -x                    Exit when the script finishes
+	  -f                    Set :ref:`logging verbosity <logging>`, default
+	                        is -f3 (yade.log.WARN) for all classes
 	  -n                    Run without graphical interface (equivalent to
 	                        unsetting the DISPLAY environment variable)
 	  --test                Run regression test suite and exit; the exists status
@@ -109,12 +111,12 @@ There is more command-line options than just ``-x``, run ``yade -h`` to see all 
 
 .. [#f2] Plain Python interpreter exits once it finishes running the script. The reason why Yade does the contrary is that most of the time script only sets up simulation and lets it run; since computation typically runs in background thread, the script is technically finished, but the computation is running.
 
-.. [#fdbg] On some linux systems stack trace will not be shown and a message ``ptrace: Operation not permitted`` will appear instead. To enable stack trace issue command: ``sudo echo 0 > /proc/sys/kernel/yama/ptrace_scope``. To disable stack trace issue command ``sudo echo 1 > /proc/sys/kernel/yama/ptrace_scope``.
+.. [#fdbg] On some linux systems stack trace will produce ``Operation not permitted`` error. See :ref:`debugging section <debugging>` for solution.
 
 
 Quick inline help
 --------------------
-All of functions callable from `ipython <http://ipython.scipy.org>`_ shell have a quickly accessible help by appending ``?`` to the function name, or calling ``help(…)`` command on them:
+All of functions callable from `ipython <https://ipython.org/>`_ shell have a quickly accessible help by appending ``?`` to the function name, or calling ``help(…)`` command on them:
 
 .. ipython::
 	:okexcept:
@@ -143,7 +145,7 @@ To create simulation, one can either use a specialized class of type :yref:`File
 	In [1]: TriaxialTest(numberOfGrains=200).load()
 
 	In [1]: len(O.bodies)
-	1006
+	206
 
 Generators are regular yade objects that support attribute access.
 
@@ -161,7 +163,7 @@ Since this topic is more involved, it is explained in the *User's manual*.
 Running simulation
 ------------------
 
-As explained below, the loop consists in running defined sequence of engines. Step number can be queried by ``O.iter`` and advancing by one step is done by ``O.step()``. Every step advances *virtual time* by current timestep, ``O.dt``:
+As explained below, the loop consists in running defined sequence of engines. Step number can be queried by ``O.iter`` and advancing by one step is done by ``O.step()``. Every step advances *virtual time* by current timestep, ``O.dt`` that can be directly assigned or, which is usually better, automatically determined by a :yref:`GlobalStiffnessTimeStepper`, if present:
 
 .. ipython::
 
@@ -170,6 +172,8 @@ As explained below, the loop consists in running defined sequence of engines. St
 	In [1]: O.time
 
 	In [1]: O.dt=1e-4
+	
+	In [1]: O.dynDt=False #else it would be adjusted automaticaly during first iteration
 
 	In [1]: O.step()
 
@@ -488,7 +492,7 @@ Each of these actions is represented by an :yref:`Engine<Engine>`, functional el
 Engines
 """""""""
 
-Simulation loop, shown at fig. img-yade-iter-loop_, can be described as follows in Python (details will be explained later); each of the ``O.engine`` items is instance of a type deriving from :yref:`Engine`:
+Simulation loop, shown at fig. img-yade-iter-loop_, can be described as follows in Python (details will be explained later); each of the ``O.engines`` items is instance of a type deriving from :yref:`Engine`:
 
 .. code-block:: python
  
@@ -610,4 +614,4 @@ There is chain of types produced by earlier functors and accepted by later ones;
 	Chain of functors producing and accepting certain types. In the case shown, the ``Ig2`` functors produce :yref:`ScGeom` instances from all handled :ref:`Shapes<inheritanceGraphShape>` combinations; the ``Ig2`` functor produces :yref:`FrictMat`. The constitutive law functor ``Law2`` accepts the combination of types produced. Note that the types are stated in the functor's class names.
 
 .. note::
-	When Yade starts, O.engines is filled with a reasonable :ysrc:`default list<py/__init__.py.in#L94>`, so that it is not strictly necessary to redefine it when trying simple things. The default scene will handle spheres, boxes, and facets with :yref:`frictional<FrictMat>` properties correctly, and adjusts the timestep dynamically. You can find an example in :ysrc:`examples/simple-scene/simple-scene-default-engines.py`.
+	When Yade starts, O.engines is filled with a reasonable :ysrccommit:`default list<775ae7436/py/__init__.py.in#L112>`, so that it is not strictly necessary to redefine it when trying simple things. The default scene will handle spheres, boxes, and facets with :yref:`frictional<FrictMat>` properties correctly, and adjusts the timestep dynamically. You can find an example in :ysrc:`examples/simple-scene/simple-scene-default-engines.py`.

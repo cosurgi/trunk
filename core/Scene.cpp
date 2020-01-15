@@ -17,6 +17,7 @@
 #include <core/BodyContainer.hpp>
 #include <core/InteractionContainer.hpp>
 #include <core/TimeStepper.hpp>
+#include <lib/base/AliasNamespaces.hpp>
 
 // FIXME - core cannot include common.
 #include <pkg/common/InteractionLoop.hpp>
@@ -25,12 +26,21 @@
 #include <unistd.h>
 #include <time.h>
 
-namespace py=boost::python;
+#ifdef YADE_MPI
+#include <core/Subdomain.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((Scene));
 CREATE_LOGGER(Scene);
 // should be elsewhere, probably
 bool TimingInfo::enabled=false;
+
+
+#ifdef YADE_MPI
+MPI_Comm Scene::getComm() {return YADE_PTR_CAST<Subdomain>(subD)->selfComm();}
+#endif
 
 void Scene::fillDefaultTags(){
 	// fill default tags
@@ -65,7 +75,7 @@ void Scene::postLoad(Scene&){
 	interactions->postLoad__calledFromScene(bodies);
 
 	// this might be removed at some point, since it is checked by regression tests now
-	FOREACH(const shared_ptr<Body>& b, *bodies){
+	for (const auto & b : *bodies){
 		if(!b || !b->material || b->material->id<0) continue; // not a shared material
 		if(b->material!=materials[b->material->id]) throw std::logic_error("Scene::postLoad: Internal inconsistency, shared materials not preserved when loaded; please report bug.");
 	}
@@ -104,7 +114,7 @@ void Scene::moveToNextTimeStep(){
 		const bool TimingInfo_enabled=TimingInfo::enabled; // cache the value, so that when it is changed inside the step, the engine that was just running doesn't get bogus values
 		TimingInfo::delta last=TimingInfo::getNow(); // actually does something only if TimingInfo::enabled, no need to put the condition here
 		// ** 2. ** engines
-		FOREACH(const shared_ptr<Engine>& e, engines){
+		for (const auto & e : engines){
 			e->scene=this;
 			if(e->dead || !e->isActivated()) continue;
 			e->action();
@@ -152,7 +162,7 @@ void Scene::moveToNextTimeStep(){
 }
 
 shared_ptr<Engine> Scene::engineByName(const string& s){
-	FOREACH(shared_ptr<Engine> e, engines){
+	for (const auto & e : engines){
 		if(e->getClassName()==s) return e;
 	}
 	return shared_ptr<Engine>();
@@ -160,14 +170,14 @@ shared_ptr<Engine> Scene::engineByName(const string& s){
 
 bool Scene::timeStepperPresent(){
 	int n=0;
-	FOREACH(const shared_ptr<Engine>&e, engines){ if(dynamic_cast<TimeStepper*>(e.get())) n++; }
+	for(const auto &e : engines){ if(dynamic_cast<TimeStepper*>(e.get())) n++; }
 	if(n>1) throw std::runtime_error(string("Multiple ("+boost::lexical_cast<string>(n)+") TimeSteppers in the simulation?!").c_str());
 	return n>0;
 }
 
 bool Scene::timeStepperActive(){
 	int n=0; bool ret=false;
-	FOREACH(const shared_ptr<Engine>&e, engines){
+	for(const auto &e : engines){
 		TimeStepper* ts=dynamic_cast<TimeStepper*>(e.get()); if(ts) { ret=ts->active; n++; }
 	}
 	if(n>1) throw std::runtime_error(string("Multiple ("+boost::lexical_cast<string>(n)+") TimeSteppers in the simulation?!").c_str());
@@ -176,7 +186,7 @@ bool Scene::timeStepperActive(){
 
 bool Scene::timeStepperActivate(bool a){
 	int n=0;
-	FOREACH(const shared_ptr<Engine> e, engines){
+	for (const auto & e : engines){
 		TimeStepper* ts=dynamic_cast<TimeStepper*>(e.get());
 		if(ts) { ts->setActive(a); n++; }
 	}
@@ -185,7 +195,7 @@ bool Scene::timeStepperActivate(bool a){
 }
 
 void Scene::checkStateTypes(){
-	FOREACH(const shared_ptr<Body>& b, *bodies){
+	for (const auto & b : *bodies){
 		if(!b || !b->material) continue;
 		if(b->material && !b->state) throw std::runtime_error("Body #"+boost::lexical_cast<string>(b->getId())+": has Body::material, but NULL Body::state.");
 		if(!b->material->stateTypeOk(b->state.get())){
@@ -199,7 +209,7 @@ void Scene::updateBound(){
 	const Real& inf=std::numeric_limits<Real>::infinity();
 	Vector3r mx(-inf,-inf,-inf);
 	Vector3r mn(inf,inf,inf);
-	FOREACH(const shared_ptr<Body>& b, *bodies){
+	for (const auto & b : *bodies){
 		if(!b) continue;
 		if(b->bound){
 			for(int i=0; i<3; i++){
@@ -214,3 +224,6 @@ void Scene::updateBound(){
 	bound->min=mn; 
 	bound->max=mx;
 }
+
+} // namespace yade
+

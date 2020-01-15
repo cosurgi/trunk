@@ -1,5 +1,5 @@
 /*************************************************************************
-*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *  Copyright (C) 2013 by Thomas. Sweijen <T.sweijen@uu.nl>               *
 *  Copyright (C) 2012 by Chao Yuan <chao.yuan@3sr-grenoble.fr>           *
 *                                                                        *
@@ -20,9 +20,11 @@
 #include "FlowEngine_TwoPhaseFlowEngineT.hpp"
 #include<Eigen/SparseLU>
 
-#ifdef CHOLMOD_LIBS
+#ifdef LINSOLV
       #include <cholmod.h>
 #endif
+
+namespace yade { // Cannot have #include directive inside.
 
 /// We can add data to the Info types by inheritance
 class TwoPhaseCellInfo : public FlowCellInfo_TwoPhaseFlowEngineT
@@ -160,7 +162,7 @@ class PhaseCluster : public Serializable
 		vector<CellHandle> pores;
 		vector<Interface> interfaces;
 // 		TwoPhaseFlowEngineT::RTriangulation* tri;
-		#ifdef CHOLMOD_LIBS
+		#ifdef LINSOLV
 		cholmod_common comC;
 		cholmod_factor* LC;
 		cholmod_dense* ex;//the pressure field
@@ -189,10 +191,10 @@ class PhaseCluster : public Serializable
 			for (vector<CellHandle>::iterator it =  pores.begin(); it!=pores.end(); it++) res.push_back((*it)->info().id);
 			return res;}
 			
-		boost::python::list getInterfaces(){
+		boost::python::list getInterfaces(int cellId=-1){
 			boost::python::list ints;
 			for (vector<Interface>::iterator it =  interfaces.begin(); it!=interfaces.end(); it++)
-				ints.append(boost::python::make_tuple(it->first.first,it->first.second,it->second));
+				if (cellId==-1 or unsigned(cellId)==it->first.first) ints.append(boost::python::make_tuple(it->first.first,it->first.second,it->second, it-interfaces.begin()));
 			return ints;
 		}
 		Real getFlux(unsigned nf) {
@@ -215,6 +217,7 @@ class PhaseCluster : public Serializable
 			        interfaces[it].volume+=dt*getFlux(it);
 		}
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(PhaseCluster,Serializable,"Preliminary.",
 		((int,label,-1,,"Unique label of this cluster, should be reflected in pores of this cluster."))
 		((double,volume,0,,"cumulated volume of all pores."))
@@ -222,13 +225,13 @@ class PhaseCluster : public Serializable
 		((int,entryPore,-1,,"the pore of the cluster incident to the throat with smallest entry Pc."))
 		((double,interfacialArea,0,,"interfacial area of the cluster"))
 		,((LC,NULL))((ex,NULL))((pComC,&comC)),
-		#ifdef CHOLMOD_LIBS
+		#ifdef LINSOLV
 		cholmod_l_start(pComC);//initialize cholmod solver
 		factorized=false;
 		#endif
 		,
 		.def("getPores",&PhaseCluster::getPores,"get the list of pores by index")
-		.def("getInterfaces",&PhaseCluster::getInterfaces,"get the list of interfacial pore-throats associated to a cluster, listed as [id1,id2,area] where id2 is the neighbor pore outside the cluster.")
+		.def("getInterfaces",&PhaseCluster::getInterfaces,(boost::python::arg("CellId")=-1),"get the list of interfacial pore-throats associated to a cluster, listed as [id1,id2,area,index] where id2 is the neighbor pore outside the cluster and index is the position in the global cluster's list of interfaces. If CellId>=0 only the interfaces adjacent to the corresponding inner cell are returned.")
 		.def("getFlux",&PhaseCluster::getFlux,(boost::python::arg("interface")),"get flux at an interface (i.e. velocity of the menicus), the index to be used is the rank of the interface in the same order as in getInterfaces().")
 		.def("setCapPressure",&PhaseCluster::setCapPressure,(boost::python::arg("numf"),boost::python::arg("pCap")),"set local capillary pressure")
 		.def("getCapPressure",&PhaseCluster::getCapPressure,(boost::python::arg("numf")),"get local capillary pressure")
@@ -239,6 +242,9 @@ class PhaseCluster : public Serializable
 		.def("updateCapVolList",&PhaseCluster::updateCapVolList,(boost::python::arg("dt")),"increments throat's volume of all interfaces by flux*dt")
 		.def("solvePressure",&PhaseCluster::solvePressure,"Solve 1-phase flow in one single cluster defined by its id.")
 		)
+	// clang-format on
+
+	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(PhaseCluster);
 
@@ -437,20 +443,21 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	void savePoreNetwork(const char* folder);
 // 	void saveVtk(const char* folder, bool withBoundaries) {bool initT=solver->noCache; solver->noCache=false; solver->saveVtk(folder,withBoundaries); solver->noCache=initT;}
 		
-	boost::python::list cellporeThroatRadius(unsigned int id){ // Temporary function to allow for simulations in Python, can be easily accessed in c++
+	boost::python::list cellporeThroatRadius(unsigned int id){ 
 	  boost::python::list ids;
 	  if (id>=solver->T[solver->currentTes].cellHandles.size()) {LOG_ERROR("id out of range, max value is "<<solver->T[solver->currentTes].cellHandles.size()); return ids;}
 	  for (unsigned int i=0;i<4;i++) ids.append(solver->T[solver->currentTes].cellHandles[id]->info().poreThroatRadius[i]);
 	return ids;
 	}
 
-	boost::python::list getNeighbors(unsigned int id){ // Temporary function to allow for simulations in Python, can be easily accessed in c++
+	boost::python::list getNeighbors(unsigned int id, bool withInfCell){ 
 		boost::python::list ids;
 		const RTriangulation& Tri = solver->tesselation().Triangulation();
 		if (id>=solver->tesselation().cellHandles.size()) {LOG_ERROR("id out of range, max value is "<<solver->T[solver->currentTes].cellHandles.size()); return ids;}
 		for (unsigned int i=0;i<4;i++) {
 			const CellHandle& neighbourCell = solver->tesselation().cellHandles[id]->neighbor(i);
-			if (!Tri.is_infinite(neighbourCell)) ids.append(neighbourCell->info().id);}
+			if (withInfCell==true) ids.append(neighbourCell->info().id);
+			else if (!Tri.is_infinite(neighbourCell)) ids.append(neighbourCell->info().id);}
 		return ids;}
 
 	//TODO
@@ -461,9 +468,6 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	  for (unsigned int i=0;i<4;i++) ids.append(solver->T[solver->currentTes].cellHandles[id]->info().entrySaturation[i]);
 	return ids;
 	}
-
-
-	
 	
 	//FIXME, needs to trigger initSolver() Somewhere, else changing flow.debug or other similar things after first calculation has no effect
 	//FIXME, I removed indexing cells from inside UnsatEngine (SoluteEngine shouldl be ok (?)) in order to get pressure computed, problem is they are not indexed at all if flow is not calculated
@@ -501,6 +505,7 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	CELL_SCALAR_GETTER(Real,.mergedID,cellMergedID) //Temporary function to allow for simulations in Python	
 
 	
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(TwoPhaseFlowEngine,TwoPhaseFlowEngineT,"documentation here",
 	((double,surfaceTension,0.0728,,"Water Surface Tension in contact with air at 20 Degrees Celsius is: 0.0728(N/m)"))
 	((bool,recursiveInvasion,true,,"If true the invasion stops only when no entry pc is less than current capillary pressure, implying simultaneous invasion of many pores. Else only one pore invasion per invasion step."))
@@ -578,7 +583,7 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	.def("initialization",&TwoPhaseFlowEngine::initialization,"Initialize invasion setup. Build network, compute pore geometry info and initialize reservoir boundary conditions. ")
 	.def("updatePressure",&TwoPhaseFlowEngine::updatePressure,"Apply the values of :yref:`FlowEngine::bndCondValue` to the boundary cells. Note: boundary pressure will be updated automatically in many cases, this function is for some low-level manipulations.")
 	.def("getPoreThroatRadiusList",&TwoPhaseFlowEngine::cellporeThroatRadius,(boost::python::arg("cell_ID")),"get 4 pore throat radii of a cell.")
-	.def("getNeighbors",&TwoPhaseFlowEngine::getNeighbors,"get 4 neigboring cells")
+	.def("getNeighbors",&TwoPhaseFlowEngine::getNeighbors,(boost::python::arg("id"),boost::python::arg("withInfCell")=true),"get 4 neigboring cells, optionally exclude the infinite cells if withInfCell is False")
 	.def("getCellHasInterface",&TwoPhaseFlowEngine::cellHasInterface,"indicates whether a NW-W interface is present within the cell")
 	.def("getCellInSphereRadius",&TwoPhaseFlowEngine::cellInSphereRadius,"get the radius of the inscribed sphere in a pore unit")
 	.def("setPoreBodyRadius",&TwoPhaseFlowEngine::setPoreBodyRadius,"set the entry pore body radius.")
@@ -625,9 +630,13 @@ class TwoPhaseFlowEngine : public TwoPhaseFlowEngineT
 	.def("getEffRcByPosRadius",&TwoPhaseFlowEngine::computeEffRcByPosRadius, (boost::python::arg("position1"),boost::python::arg("radius1"),boost::python::arg("position2"),boost::python::arg("radius2"),boost::python::arg("position3"),boost::python::arg("radius3")), "get effective radius by three spheres position and radius.(inscribed sphere)")
 	.def("getMSPRcByPosRadius",&TwoPhaseFlowEngine::computeMSPRcByPosRadius, (boost::python::arg("position1"),boost::python::arg("radius1"),boost::python::arg("position2"),boost::python::arg("radius2"),boost::python::arg("position3"),boost::python::arg("radius3")), "get entry radius wrt MSP method by three spheres position and radius.")
 	)
+	// clang-format on
+
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(TwoPhaseFlowEngine);
+
+} // namespace yade
 
 #endif //TwoPhaseFLOW
 

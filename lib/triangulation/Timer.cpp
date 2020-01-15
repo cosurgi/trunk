@@ -52,7 +52,7 @@ double Real_timer::time() const {
     return T2;
 }
 
-void	Real_timer::top(string Texte)
+void	Real_timer::top(std::string Texte)
 {
 	clock_t  T3 = clock();
 	double r = (double) (T3 - T1)/ CLOCKS_PER_SEC;

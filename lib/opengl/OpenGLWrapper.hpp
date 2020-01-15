@@ -8,61 +8,70 @@
 
 #pragma once
 
+// clang-format off
 #ifndef YADE_OPENGL
 #error "This build doesn't support openGL. Therefore, this header must not be used."
 #endif
 
 #include<lib/base/Math.hpp>
+#include<type_traits>
 
-
-// disable temporarily
-//#include<boost/static_assert.hpp>
-#define STATIC_ASSERT(arg) 
+// https://stackoverflow.com/questions/7064039/how-to-prevent-non-specialized-template-instantiation/7064062
+template<typename T> struct dontCallThis : std::false_type {};
 
 #include<GL/gl.h>
 #include<GL/glut.h>
 
+namespace forCtags {
 struct OpenGLWrapper {}; // for ctags
+}
+
+//namespace yade { // Does not work with ABI format of freeglut, possibly due to extern "C". OpenGLWrapper must be in top namespace.
+using yade::Vector3r; // FIXME - these casts from Vector3r to double will be wrong when boost::multiprecision and float128 support is added
+using yade::Vector3i;
 
 ///	Primary Templates
 
-template< typename Type > inline void glRotate		( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false);  };
-template< typename Type > inline void glScale		( Type, Type,  Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glScalev		( const Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTranslate	( Type, Type,  Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTranslatev	( const Type )			{	STATIC_ASSERT(false);  };
-template< typename Type > inline void glVertex2		( Type, Type  )			{	STATIC_ASSERT(false);  };
-template< typename Type > inline void glVertex3		( Type, Type,  Type  )		{	STATIC_ASSERT(false);  };
-template< typename Type > inline void glVertex4		( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false); };
-template< typename Type > inline void glVertex2v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glVertex3v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glVertex4v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glNormal3		( Type, Type, Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glNormal3v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glIndex		( Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glIndexv		( Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glColor3		( Type, Type, Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glColor4		( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false); };
-template< typename Type > inline void glColor3v		( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glColor4v		( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord1	( Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord2	( Type, Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord3	( Type, Type,  Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord4	( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord1v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord2v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord3v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glTexCoord4v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos2	( Type, Type  )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos3	( Type, Type,  Type  )		{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos4	( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos2v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos3v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRasterPos4v	( const Type )			{	STATIC_ASSERT(false); };
-template< typename Type > inline void glRect		( Type, Type, Type,  Type  )	{	STATIC_ASSERT(false); };
-template< typename Type > inline void glMaterial	( GLenum face, GLenum pname, Type param ){	STATIC_ASSERT(false); };
-template< typename Type > inline void glMaterialv	( GLenum face, GLenum pname, Type param ){	STATIC_ASSERT(false); };
-template< typename Type > inline void glMultMatrix	(const Type*){	STATIC_ASSERT(false); };
+template< typename Type > inline void glRotate		( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glScale		( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glScalev		( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTranslate	( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTranslatev	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex2		( Type, Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex3		( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex4		( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex2v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex3v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glVertex4v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glNormal3		( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glNormal3v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glIndex		( Type                                  )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glIndexv		( Type                                  )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glColor3		( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glColor4		( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glColor3v		( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glColor4v		( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord1	( Type                                  )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord2	( Type, Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord3	( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord4	( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord1v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord2v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord3v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glTexCoord4v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos2	( Type, Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos3	( Type, Type, Type                      )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos4	( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos2v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos3v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRasterPos4v	( const Type                            )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glRect		( Type, Type, Type, Type                )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glMaterial	( GLenum face, GLenum pname, Type param )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glMaterialv	( GLenum face, GLenum pname, Type param )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+template< typename Type > inline void glMultMatrix	( const Type*                           )		{	static_assert( dontCallThis<Type>::value , "Bad arg Type");			}
+
+inline void glClearColor      ( double a, double b, double c,  double d ) { glClearColor(GLclampf(a),GLclampf(b),GLclampf(c),GLclampf(d)); };
+inline void glLineWidth       ( double a                                ) { glLineWidth (GLfloat(a));  };
 
 #define LDOUBL long double
 
@@ -75,12 +84,12 @@ template< > inline void glRotate< LDOUBL >		(LDOUBL angle, LDOUBL x, LDOUBL y, L
 template< > inline void glRotate< float >			(float angle,float x,float y, float z )	{	glRotatef(angle,x,y,z);	};
 
 template< > inline void glScale< double >			( double x,double y, double z )		{	glScaled(x,y,z);	};
-template< > inline void glScale< LDOUBL >			( LDOUBL x,LDOUBL y, LDOUBL z )		{	glScaled(x,y,z);	};
+template< > inline void glScale< LDOUBL >			( LDOUBL x,LDOUBL y, LDOUBL z )		{	glScaled(double(x),double(y),double(z));	};
 template< > inline void glScale< float >			( float x,float y,float z )		{	glScalef(x,y,z);	};
 template< > inline void glScalev< Vector3r >		( const Vector3r v )		{	glScaled(v[0],v[1],v[2]);};
 
 template< > inline void glTranslate< double >			( double x,double y, double z )		{	glTranslated(x,y,z);	};
-template< > inline void glTranslate< LDOUBL >			( LDOUBL x, LDOUBL y, LDOUBL z )		{	glTranslated(x,y,z);	};
+template< > inline void glTranslate< LDOUBL >			( LDOUBL x, LDOUBL y, LDOUBL z )		{	glTranslated(double(x),double(y),double(z));	};
 template< > inline void glTranslate< float >			( float x,float y,float z )		{	glTranslatef(x,y,z);	};
 template< > inline void glTranslatev< Vector3r >		( const Vector3r v )		{	glTranslated(v[0],v[1],v[2]);};
 
@@ -209,7 +218,7 @@ template< > inline void glRect< float >			(float	x1,float  y1,float x2,float y2 
 template< > inline void glRect< int >				(int	x1,int	  y1,int x2, int y2 )		{	glRecti(x1,y1,x2,y2);	};
 
 template< > inline void glMaterial< float >			( GLenum face, GLenum pname, float param )			{	glMaterialf(face,pname,param);		};
-template< > inline void glMaterial< double >			( GLenum face, GLenum pname, double param )			{	glMaterialf(face,pname,param);		};
+template< > inline void glMaterial< double >			( GLenum face, GLenum pname, double param )			{	glMaterialf(face,pname,float(param));		};
 template< > inline void glMaterial< int >			( GLenum face, GLenum pname, int param )			{	glMateriali(face,pname,param);		};
 template< > inline void glMaterialv< Vector3r >	( GLenum face, GLenum pname, const Vector3r params )	{	const GLfloat _p[3]={(float) params[0], (float) params[1], (float) params[2]}; glMaterialfv(face,pname,_p);	};
 template< > inline void glMaterialv< Vector3i >		( GLenum face, GLenum pname, const Vector3i params )	{	glMaterialiv(face,pname,(int*)&params);	};
@@ -229,3 +238,7 @@ template< typename Type > inline void glOneFace(Type & t, unsigned int a, unsign
 }
 
 #undef LDOUBL
+// clang-format on
+
+//} // namespace yade
+

@@ -1,5 +1,5 @@
 /*************************************************************************
-*  Copyright (C) 2009 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2009 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *  Copyright (C) 2012 by Donia Marzougui <donia.marzougui@grenoble-inp.fr>*
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
@@ -15,8 +15,10 @@
 
 #include "FlowEngine_FlowEngine_PeriodicInfo.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 class PeriodicCellInfo : public FlowCellInfo_FlowEngine_PeriodicInfo
-{	
+{
 	public:
 	static CVector gradP;
 	//for real cell, baseIndex is the rank of the cell in cellHandles. For ghost cells, it is the baseIndex of the corresponding real cell.
@@ -34,8 +36,8 @@ class PeriodicCellInfo : public FlowCellInfo_FlowEngine_PeriodicInfo
 		volumeSign=0;}
 	~PeriodicCellInfo (void) {}
 
-	inline const double shiftedP (void) const {return isGhost? (*_pression)+pShift() :(*_pression) ;}
-	inline const double pShift (void) const {return deltaP[0]*period[0] + deltaP[1]*period[1] +deltaP[2]*period[2];}
+	inline double shiftedP (void) const {return isGhost? (*_pression)+pShift() :(*_pression) ;}
+	inline double pShift (void) const {return deltaP[0]*period[0] + deltaP[1]*period[1] +deltaP[2]*period[2];}
 // 	inline const double p (void) {return shiftedP();}
 	inline void setP (const Real& p) {pression=p;}
 	bool isReal (void) {return !(isFictious || isGhost);}
@@ -90,7 +92,7 @@ class PeriodicFlowEngine : public FlowEngine_PeriodicInfo
 		virtual void action();
 		//Cache precomputed values for pressure shifts, based on current hSize and pGrad
 		void preparePShifts();
-		
+
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(PeriodicFlowEngine,FlowEngine_PeriodicInfo,"A variant of :yref:`FlowEngine` implementing periodic boundary conditions. The API is very similar.",
 		((Real,duplicateThreshold, 0.06,,"distance from cell borders that will triger periodic duplication in the triangulation |yupdate|"))
 		((Vector3r, gradP, Vector3r::Zero(),,"Macroscopic pressure gradient"))
@@ -132,13 +134,13 @@ void PeriodicFlowEngine:: action()
 		if (solver->errorCode>0) {LOG_INFO("triangulation error, pausing"); Omega::instance().pause(); return;}
 		initializeVolumes(*solver); backgroundSolver=solver; backgroundCompleted=true;}
 //         if ( first ) {buildTriangulation ( pZero ); updateTriangulation = false; initializeVolumes();}
-	
+
 	timingDeltas->checkpoint("Triangulating");
         updateVolumes (*solver);
         epsVolCumulative += epsVolMax;
 	retriangulationLastIter++;
 	if (!updateTriangulation) updateTriangulation = // If not already set true by another function of by the user, check conditions
-		(defTolerance>0 && epsVolCumulative > defTolerance) || (meshUpdateInterval>0  && retriangulationLastIter>meshUpdateInterval);
+		(defTolerance>0 && epsVolCumulative > defTolerance) || (meshUpdateInterval>0  && retriangulationLastIter>=meshUpdateInterval);
 
 	timingDeltas->checkpoint("Update_Volumes");
 
@@ -169,7 +171,7 @@ void PeriodicFlowEngine:: action()
 			if (twistTorque)
 				torque = torque +solver->twistLubricationTorques[v_info.id()];
 		}
-		
+
 		if (normalLubrication)
 			force = force + solver->normalLubricationForce[v_info.id()];
 		scene->forces.addForce ( v_info.id(), force);
@@ -178,7 +180,7 @@ void PeriodicFlowEngine:: action()
         ///End Compute flow and forces
 	timingDeltas->checkpoint("Applying Forces");
 	if (multithread && !first) {
-		while (updateTriangulation && !backgroundCompleted) { /*cout<<"sleeping..."<<sleeping++<<endl;*/ 	boost::this_thread::sleep(boost::posix_time::microseconds(1000));}
+		while (updateTriangulation && !backgroundCompleted) { /*cout<<"sleeping..."<<sleeping++<<endl;*/  boost::this_thread::sleep(boost::posix_time::microseconds(1000));}
 		if (updateTriangulation || (meshUpdateInterval>0 && ellapsedIter>(0.5*meshUpdateInterval))) {
 			if (useSolver==0) LOG_ERROR("background calculations not available for Gauss-Seidel");
 			if (fluidBulkModulus>0 || doInterpolate) solver->interpolate (solver->T[solver->currentTes], backgroundSolver->T[backgroundSolver->currentTes]);
@@ -273,7 +275,6 @@ void PeriodicFlowEngine::triangulate( FlowSolver& flow )
 		//re-assign the original vertex pointer since duplicates may have overwrite it
 		Tes.vertexHandles[id]=vh0;
         }
-        Tes.redirected=true;//By inserting one-by-one, we already redirected
         flow.shearLubricationForces.resize ( Tes.maxId+1 );
 	flow.shearLubricationTorques.resize ( Tes.maxId+1 );
 	flow.pumpLubricationTorques.resize ( Tes.maxId+1 );
@@ -286,7 +287,7 @@ void PeriodicFlowEngine::triangulate( FlowSolver& flow )
 
 Real PeriodicFlowEngine::volumeCell ( CellHandle cell )
 {
-	static const Real inv6 = 1/6.;	
+	static const Real inv6 = 1/6.;
 	const Vector3r p0 = positionBufferCurrent[cell->vertex(0)->info().id()].pos + makeVector3r(cell->vertex(0)->info().ghostShift());
 	const Vector3r p1 = positionBufferCurrent[cell->vertex(1)->info().id()].pos + makeVector3r(cell->vertex(1)->info().ghostShift());
 	const Vector3r p2 = positionBufferCurrent[cell->vertex(2)->info().id()].pos + makeVector3r(cell->vertex(2)->info().ghostShift());
@@ -337,7 +338,7 @@ void PeriodicFlowEngine::locateCell ( CellHandle baseCell, unsigned int& index, 
 	if (baseCell->info().fictious()==0)
 		for ( int k=0;k<4;k++ ) center+= 0.25*makeVector3r (baseCell->vertex(k)->point().point());
 	else {
-		
+
 		Real boundPos=0; int coord=0;
 		for ( int k=0;k<4;k++ ) {
 			if ( !baseCell->vertex ( k )->info().isFictious ) center+= 0.3333333333*makeVector3r ( baseCell->vertex ( k )->point().point() );
@@ -459,7 +460,7 @@ void PeriodicFlowEngine::initializeVolumes (FlowSolver& flow)
 			default:  cell->info().volume() = 0; break;
 		}
 		//FIXME: the void volume is negative sometimes, hence crashing...
-		if (flow.fluidBulkModulus>0 || iniVoidVolumes) { cell->info().invVoidVolume() = 1. / (max(0.1*cell->info().volume(),std::abs(cell->info().volume()) - flow.volumeSolidPore(cell)) ); }
+		if (flow.fluidBulkModulus>0 || iniVoidVolumes) { cell->info().invVoidVolume() = 1. / (max(minimumPorosity*cell->info().volume(),std::abs(cell->info().volume()) - flow.volumeSolidPore(cell)) ); }
 	}
         if ( debug ) cout << "Volumes initialised." << endl;
 }
@@ -504,12 +505,12 @@ void PeriodicFlowEngine::buildTriangulation ( double pZero, FlowSolver& flow)
         flow.computePermeability ( );
         porosity = flow.vPoralPorosity/flow.vTotalPorosity;
         flow.tolerance=tolerance;flow.relax=relax;
-	
+
         flow.displayStatistics ();
         //FIXME: check interpolate() for the periodic case, at least use the mean pressure from previous step.
 	if ( !first && !multithread && (useSolver==0 || fluidBulkModulus>0 || doInterpolate)) flow.interpolate ( flow.T[!flow.currentTes], Tes );
 // 	if ( !first && (useSolver==0 || fluidBulkModulus>0)) flow.interpolate ( flow.T[!flow.currentTes], flow.tesselation() );
-	
+
         if ( waveAction ) flow.applySinusoidalPressure ( Tes.Triangulation(), sineMagnitude, sineAverage, 30 );
 
         if (normalLubrication || shearLubrication || viscousShear) flow.computeEdgesSurfaces();
@@ -530,6 +531,9 @@ void PeriodicFlowEngine::preparePShifts()
 
 
 YADE_PLUGIN((PeriodicFlowEngine));
+
+} // namespace yade
+
 #endif //FLOW_ENGINE
 
 #endif /* YADE_CGAL */

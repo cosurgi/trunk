@@ -7,6 +7,7 @@
 #include<pkg/dem/DemXDofGeom.hpp>
 #include<pkg/dem/Shop.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 	YADE_PLUGIN((Gl1_NormPhys));
 
@@ -22,7 +23,7 @@
 	int Gl1_NormPhys::weakFilter;
 	Real Gl1_NormPhys::weakScale;
 
-	void Gl1_NormPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame){
+	void Gl1_NormPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool /*wireFrame*/){
 		if(!gluQuadric){ gluQuadric=gluNewQuadric(); if(!gluQuadric) throw runtime_error("Gl1_NormPhys::go unable to allocate new GLUquadric object (out of memory?)."); }
 		NormPhys* np=static_cast<NormPhys*>(ip.get());
 		shared_ptr<IGeom> ig(i->geom); if(!ig) return; // changed meanwhile?
@@ -84,7 +85,7 @@
 
 	glDisable(GL_CULL_FACE); 
 	glPushMatrix();
-		glTranslatef(p1[0],p1[1],p1[2]);
+		glTranslate(p1[0],p1[1],p1[2]);
 		Quaternionr q(Quaternionr().setFromTwoVectors(Vector3r(0,0,1),relPos/dist /* normalized */));
 		// using Transform with OpenGL: http://eigen.tuxfamily.org/dox/TutorialGeometry.html
 		//glMultMatrixd(Eigen::Affine3d(q).data());
@@ -93,5 +94,7 @@
 		gluCylinder(gluQuadric,radius,radius,dist,slices,stacks);
 	glPopMatrix();
 }
+
+} // namespace yade
 
 #endif /* YADE_OPENGL */

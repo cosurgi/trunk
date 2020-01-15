@@ -10,6 +10,7 @@
 
 #include "Serializable.hpp"
 
+namespace yade { // Cannot have #include directive inside.
 
 void Serializable::pyRegisterClass(boost::python::object _scope) {
 	checkPyClassRegistersItself("Serializable");
@@ -44,3 +45,6 @@ void Serializable::pyUpdateAttrs(const boost::python::dict& d){
 	}
 	callPostLoad();
 }
+
+} // namespace yade
+

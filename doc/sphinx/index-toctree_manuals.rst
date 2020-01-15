@@ -20,7 +20,7 @@ Welcome to Yade's documentation!
 
   installation.rst
 
-  github.rst
+  gitrepo.rst
 
   citing.rst
 

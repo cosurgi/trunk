@@ -9,6 +9,9 @@
 #pragma once
 
 #include "ThreadWorker.hpp"
+#include <lib/base/Logging.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 class SimulationFlow : public ThreadWorker
 {
@@ -17,5 +20,5 @@ class SimulationFlow : public ThreadWorker
 	DECLARE_LOGGER;
 };
 
-
+} // namespace yade
 

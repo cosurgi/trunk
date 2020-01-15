@@ -18,6 +18,8 @@ The transformation is split between "normal" part and "rotation/shear" part for 
 
 //#include<pkg/dem/Shop.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class Cell: public Serializable{
 	public:
 	//! Get/set sizes of cell base vectors
@@ -148,6 +150,7 @@ class Cell: public Serializable{
 	//Matrix3r getCauchyStress() { Matrix3r s=getStress(); return .5*(s+s.transpose()); }
 
 	enum { HOMO_NONE=0, HOMO_POS=1, HOMO_VEL=2, HOMO_VEL_2ND=3 };
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Cell,Serializable,"Parameters of periodic boundary conditions. Only applies if O.isPeriodic==True.",
 		/* overridden below to be modified by getters/setters because of intended side-effects */
 		((Matrix3r,trsf,Matrix3r::Identity(),,"[overridden]")) //"Current transformation matrix of the cell, which defines how far is the current cell geometry (:yref:`hSize<Cell.hSize>`) from the reference configuration. Changing trsf will not change :yref:`hSize<Cell.hSize>`, it serves only as accumulator for transformations applied via :yref:`velGrad<Cell.velGrad>`."))
@@ -168,7 +171,7 @@ class Cell: public Serializable{
 		.add_property("refSize",&Cell::getRefSize,&Cell::setRefSize,"Reference size of the cell (lengths of initial cell vectors, i.e. column norms of :yref:`hSize<Cell.hSize>`).\n\n.. note::\n\t Modifying this value is deprecated, use :yref:`setBox<Cell.setBox>` instead.")
 		// useful properties
 		.add_property("trsf",&Cell::getTrsf,&Cell::setTrsf,"Current transformation matrix of the cell, obtained from time integration of :yref:`Cell.velGrad`.")
-		.add_property("velGrad",&Cell::getVelGrad,&Cell::setVelGrad,"Velocity gradient of the transformation; used in :yref:`NewtonIntegrator`. Values of :yref:`velGrad<Cell.velGrad>` accumulate in :yref:`trsf<Cell.trsf>` at every step.\n\n NOTE: changing velGrad at the beginning of a simulation loop would lead to inacurate integration for one step, as it should normaly be changed after the contact laws (but before Newton). To avoid this problem, assignment is deferred automatically. The target value typed in terminal is actually stored in :yref:`Cell.nextVelGrad` and will be applied right in time by Newton integrator. \n\n.. note::\n\t Assigning individual components of velGrad is not possible (it will not return any error but it will have no effect). Instead, you can assign to :yref:`Cell.nextVelGrad`, as in O.cell.nextVelGrad[1,2]=1.")
+		.add_property("velGrad",&Cell::getVelGrad,&Cell::setVelGrad,"Velocity gradient of the transformation; used in :yref:`NewtonIntegrator`. Values of :yref:`velGrad<Cell.velGrad>` accumulate in :yref:`trsf<Cell.trsf>` at every step.\n\n NOTE: changing velGrad at the beginning of a simulation loop would lead to inaccurate integration for one step, as it should normally be changed after the contact laws (but before Newton). To avoid this problem, assignment is deferred automatically. The target value typed in terminal is actually stored in :yref:`Cell.nextVelGrad` and will be applied right in time by Newton integrator. \n\n.. note::\n\t Assigning individual components instead of the whole matrix is not possible through this velGrad attribute (it will not return any error but it will have no effect) but can be achieved, as a trick, through :yref:`nextVelGrad<Cell.nextVelGrad>`, as in O.cell.nextVelGrad[1,2]=1.")
 		.def_readonly("size",&Cell::getSize_copy,"Current size of the cell, i.e. lengths of the 3 cell lateral vectors contained in :yref:`Cell.hSize` columns. Updated automatically at every step.")
 		.add_property("volume",&Cell::getVolume,"Current volume of the cell.")
 		// functions
@@ -194,5 +197,9 @@ class Cell: public Serializable{
 		.def_readonly("unshearTrsf",&Cell::_unshearTrsf,"Inverse of the current skew+rot transformation (no resize)")
 		.add_property("hSize0",&Cell::getHSize0,"Value of untransformed hSize, with respect to current :yref:`trsf<Cell::trsf>` (computed as :yref:`trsf<Cell::trsf>` ⁻¹ × :yref:`hSize<Cell::hSize>`.")
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Cell);
+
+} // namespace yade
+

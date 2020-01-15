@@ -2,6 +2,12 @@
 #include<pkg/common/Wall.hpp>
 #include<pkg/common/Aabb.hpp>
 
+#ifdef YADE_OPENGL
+	#include<lib/opengl/OpenGLWrapper.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Wall)(Bo1_Wall_Aabb)
 	#ifdef YADE_OPENGL
 		(Gl1_Wall)
@@ -10,7 +16,7 @@ YADE_PLUGIN((Wall)(Bo1_Wall_Aabb)
 
 Wall::~Wall(){} // vtable
 
-void Bo1_Wall_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& se3, const Body* b){
+void Bo1_Wall_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const Se3r& se3, const Body* /*b*/){
 	Wall* wall=static_cast<Wall*>(cm.get());
 	if(!bv){ bv=shared_ptr<Bound>(new Aabb); }
 	Aabb* aabb=static_cast<Aabb*>(bv.get());
@@ -22,7 +28,6 @@ void Bo1_Wall_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const
 
 
 #ifdef YADE_OPENGL
-	#include<lib/opengl/OpenGLWrapper.hpp>
 	int  Gl1_Wall::div=20;
 
 	void Gl1_Wall::go(const shared_ptr<Shape>& cm, const shared_ptr<State>& pp, bool, const GLViewInfo& glinfo){   
@@ -49,4 +54,6 @@ void Bo1_Wall_Aabb::go(const shared_ptr<Shape>& cm, shared_ptr<Bound>& bv, const
 		glEnd();
 	}
 #endif
+
+} // namespace yade
 

@@ -15,6 +15,8 @@
 
 #include <Eigen/Sparse>
 
+namespace yade { // Cannot have #include directive inside.
+
 class SoluteCellInfo : public FlowCellInfo_SoluteFlowEngineT
 {	
 	public:
@@ -209,6 +211,8 @@ double SoluteFlowEngine::getAverageConcentration()
 
 
 YADE_PLUGIN ( ( SoluteFlowEngine ) );
+
+} // namespace yade
 
 #endif //SOLUTE_FLOW
 #endif //FLOW_ENGINE

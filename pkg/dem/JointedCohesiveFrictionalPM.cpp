@@ -1,4 +1,9 @@
-/* LucScholtes2010  */
+/* Luc Scholtes 2010, jointed cohesive frictional model:
+Scholtès, L., and Donzé F., "Modelling progressive failure in fractured rock masses using a 3D discrete element method." International Journal of Rock Mechanics and Mining Sciences 52 (2012): 18-30. */
+
+/* Robert Caulk 2018, acoustic emissions and heterogeneity models:
+Caulk, R. (2018) Stochastic Augmentation of the Discrete Element Method for the Investigation of Tensile Rupture in Heterogeneous Rock.
+Yade Technical Archive. DOI: 10.5281/zenodo.1202039 */
 
 #include"JointedCohesiveFrictionalPM.hpp"
 #include<core/Scene.hpp>
@@ -6,8 +11,9 @@
 #include<core/Omega.hpp>
 #include<pkg/common/Sphere.hpp>
 
-YADE_PLUGIN((JCFpmMat)(JCFpmState)(JCFpmPhys)(Ip2_JCFpmMat_JCFpmMat_JCFpmPhys)(Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM));
+namespace yade { // Cannot have #include directive inside.
 
+YADE_PLUGIN((JCFpmMat)(JCFpmState)(JCFpmPhys)(Ip2_JCFpmMat_JCFpmMat_JCFpmPhys)(Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM));
 
 /********************** Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM ****************************/
 CREATE_LOGGER(Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM);
@@ -134,8 +140,8 @@ bool Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::go(shared_ptr<IGeom>& ig
 	    }
         if (recordMoments && !phys->momentCalculated){
         	checkForCluster(phys, geom, b1, b2, contact);
-			clusterInteractions(phys, contact);
-			computeTemporalWindow(phys, b1, b2);
+		clusterInteractions(phys, contact);
+		computeTemporalWindow(phys, b1, b2);
         }
 	    cracksFileExist=true;
             
@@ -242,8 +248,8 @@ bool Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::go(shared_ptr<IGeom>& ig
 
         if (recordMoments && !phys->momentCalculated){
         	checkForCluster(phys, geom, b1, b2, contact);
-			clusterInteractions(phys, contact);
-			computeTemporalWindow(phys, b1, b2);
+		clusterInteractions(phys, contact);
+		computeTemporalWindow(phys, b1, b2);
         }
             
             // option 2: delete contact if in tension
@@ -339,7 +345,7 @@ void Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::clusterInteractions(JCFp
 	phys->momentMagnitude = 0; // dirty way to avoid recording these clustered events twice? maybe dont need this if proper recording is applied
 	originalPhys->computedCentroid=false;  // set flag to compute a new centroid since we added more ints
 	boost::mutex::scoped_lock lock(clusterInts_mutex);
-	originalPhys->clusterInts.push_back(contact);  // add this broken interaction to list of broken bonds in this event
+	originalPhys->clusterInts.push_back(scene->interactions->find(contact->getId1(),contact->getId2()));  // add this broken interaction to list of broken bonds in this event
 } 
 
 // function used to check if the newly broken bond belongs in a cluster or not, if so attach to proper cluster and set appropriate flags
@@ -373,7 +379,7 @@ void Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::checkForCluster(JCFpmPhy
 					if (nearbyPhys->originalClusterEvent && !nearbyPhys->momentCalculated && !phys->clusteredEvent && clusterMoments) {
 						phys->eventNumber = nearbyPhys->eventNumber; 
 						phys->clusteredEvent = true;
-						phys->originalEvent = I.get();
+						phys->originalEvent = I;
 					} else if (nearbyPhys->clusteredEvent && !phys->clusteredEvent && clusterMoments){
 						JCFpmPhys* originalPhys = YADE_CAST<JCFpmPhys*>(nearbyPhys->originalEvent->phys.get());
 						if (!originalPhys->momentCalculated){
@@ -384,7 +390,7 @@ void Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::checkForCluster(JCFpmPhy
 					} 
 
 					if (nearbyPhys->momentBroken) continue;
-					phys->nearbyInts.push_back(I.get());
+					phys->nearbyInts.push_back(I);
 				}
 			}
 		}
@@ -392,7 +398,7 @@ void Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::checkForCluster(JCFpmPhy
 	if (!phys->clusteredEvent) {
 		phys->originalClusterEvent = true; // if not clustered, its an original event. We use this interaction as the master for the cluster. Its list of nearbyInts will expand if other ints break nearby. 
 		phys->eventBeginTime=scene->time;
-		phys->originalEvent = contact;
+		phys->originalEvent = scene->interactions->find(contact->getId1(),contact->getId2());
 		eventNumber += 1;
 		phys->eventNumber = eventNumber;
 	}
@@ -442,7 +448,7 @@ void Law2_ScGeom_JCFpmPhys_JointedCohesiveFrictionalPM::computeTemporalWindow
 	const Real velocityP1 = sqrt(elasticMat1->young/elasticMat1->density);
 	const Real velocityP2 = sqrt(elasticMat2->young/elasticMat2->density);
 
-	phys->temporalWindow = floor(spatialWindow/(max(velocityP1, velocityP2)*scene->dt));
+	phys->temporalWindow = int(std::floor(spatialWindow/(max(velocityP1, velocityP2)*scene->dt)));
 }
 	
 	
@@ -604,8 +610,11 @@ void Ip2_JCFpmMat_JCFpmMat_JCFpmPhys::distributeCrossSectionsWeibull(shared_ptr<
 	Real correction = weibullDistribution(e2);
 	if (correction < weibullCutOffMin) correction = weibullCutOffMin;
 	else if (correction > weibullCutOffMax) correction = weibullCutOffMax;
-	Real interactingRadius = correction*min(R1, R2);  // correcting radius to account for grain interactions
+	Real interactingRadius = correction*min(R1, R2);  
 	contactPhysics->crossSection = Mathr::PI*pow(interactingRadius,2);
 }
 
 JCFpmPhys::~JCFpmPhys(){}
+
+} // namespace yade
+

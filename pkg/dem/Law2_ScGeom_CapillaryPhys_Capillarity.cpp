@@ -17,7 +17,11 @@
 #include <lib/base/Math.hpp>
 #include <pkg/common/Sphere.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Law2_ScGeom_CapillaryPhys_Capillarity));
+
+CREATE_CPP_LOCAL_LOGGER("Law2_ScGeom_CapillaryPhys_Capillarity.cpp");
 
 void Law2_ScGeom_CapillaryPhys_Capillarity::postLoad(Law2_ScGeom_CapillaryPhys_Capillarity&){
 
@@ -559,11 +563,10 @@ bool BodiesMenisciiList::prepare(Scene * scene, bool hertzOn)
 	shared_ptr<BodyContainer>& bodies = scene->bodies;
 
 	Body::id_t MaxId = -1;
-	BodyContainer::iterator bi    = bodies->begin();
-	BodyContainer::iterator biEnd = bodies->end();
-	for(  ; bi!=biEnd ; ++bi )
+	
+	for (const auto &b : *bodies)
 	{
-		MaxId=max(MaxId, (*bi)->getId());
+		MaxId=max(MaxId, b->getId());
 	}
 	interactionsOnBody.resize(MaxId+1);
 	for ( unsigned int i=0; i<interactionsOnBody.size(); ++i )
@@ -643,4 +646,6 @@ BodiesMenisciiList::BodiesMenisciiList()
 {
 	initialized=false;
 }
+
+} // namespace yade
 

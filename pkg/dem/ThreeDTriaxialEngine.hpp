@@ -13,6 +13,8 @@
 #include<lib/base/Math.hpp>
 #include<pkg/dem/TriaxialStressController.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /** \brief Class for controlling in stress or in strain with respect to each spatial direction a cubical assembly of particles.
  *
  * The engine perform a triaxial compression with a control in direction "i" in stress "if (stressControl_i)" else in strain.
@@ -42,6 +44,7 @@ class ThreeDTriaxialEngine : public TriaxialStressController
 		///Change physical properties of interactions and/or bodies in the middle of a simulation (change only friction for the moment, complete this function to set cohesion and others before compression test)
 		void setContactProperties(Real frictionDegree);
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 		ThreeDTriaxialEngine,TriaxialStressController,
 		"The engine perform a triaxial compression with a control in direction 'i' in stress (if stressControl_i) else in strain.\n\n"
@@ -73,10 +76,12 @@ class ThreeDTriaxialEngine : public TriaxialStressController
 		,
 		.def("setContactProperties",&ThreeDTriaxialEngine::setContactProperties,"Assign a new friction angle (degrees) to dynamic bodies and relative interactions")
 		)
+	// clang-format on
 
 	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(ThreeDTriaxialEngine);
 
+} // namespace yade
 

@@ -8,6 +8,12 @@
 #include<pkg/common/Wall.hpp>
 #include<pkg/common/Box.hpp>
 
+#ifdef YADE_OPENGL
+	#include<lib/opengl/OpenGLWrapper.hpp>
+	#include<lib/opengl/GLUtils.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((CpmState)(CpmMat)(Ip2_CpmMat_CpmMat_CpmPhys)(Ip2_FrictMat_CpmMat_FrictPhys)(CpmPhys)(Law2_ScGeom_CpmPhys_Cpm)
 	#ifdef YADE_OPENGL
@@ -166,7 +172,7 @@ Real CpmPhys::funcG(const Real& kappaD, const Real& epsCrackOnset, const Real& e
 	throw runtime_error("CpmPhys::funcG: wrong damLaw\n");
 }
 
-Real CpmPhys::funcGDKappa(const Real& kappaD, const Real& epsCrackOnset, const Real& epsFracture, const bool& neverDamage, const int& damLaw) {
+Real CpmPhys::funcGDKappa(const Real& kappaD, const Real& epsCrackOnset, const Real& epsFracture, const bool& /*neverDamage*/, const int& damLaw) {
 	switch (damLaw) {
 		case 0: // linear
 			return epsCrackOnset / ((1.-epsCrackOnset/epsFracture)*kappaD*kappaD);
@@ -461,8 +467,6 @@ bool Law2_ScGeom_CpmPhys_Cpm::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _p
 
 #ifdef YADE_OPENGL
 	/********************** Gl1_CpmPhys ****************************/
-	#include<lib/opengl/OpenGLWrapper.hpp>
-	#include<lib/opengl/GLUtils.hpp>
 
 	CREATE_LOGGER(Gl1_CpmPhys);
 
@@ -476,7 +480,7 @@ bool Law2_ScGeom_CpmPhys_Cpm::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _p
 	Real Gl1_CpmPhys::colorStrainRatio=-1;
 
 
-	void Gl1_CpmPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame){
+	void Gl1_CpmPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i, const shared_ptr<Body>& /*b1*/, const shared_ptr<Body>& /*b2*/, bool /*wireFrame*/){
 		const shared_ptr<CpmPhys>& phys = boost::static_pointer_cast<CpmPhys>(ip);
 		const shared_ptr<GenericSpheresContact>& geom = YADE_PTR_CAST<GenericSpheresContact>(i->geom);
 		// FIXME: get the scene for periodicity; ugly!
@@ -517,7 +521,7 @@ bool Law2_ScGeom_CpmPhys_Cpm::go(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _p
 				glTranslatev(midPt);
 				Quaternionr q; q.setFromTwoVectors(Vector3r::UnitZ(),geom->normal);
 				AngleAxisr aa(q);
-				glRotatef(aa.angle()*Mathr::RAD_TO_DEG,aa.axis()[0],aa.axis()[1],aa.axis()[2]);
+				glRotate(aa.angle()*Mathr::RAD_TO_DEG,aa.axis()[0],aa.axis()[1],aa.axis()[2]);
 				glBegin(GL_POLYGON);
 					glColor3v(lineColor); 
 					glVertex3d(halfSize,0.,0.);
@@ -642,3 +646,6 @@ void CpmStateUpdater::update(Scene* _scene){
 #undef YADE_VERIFY
 #undef NNAN
 #undef NNANV
+
+} // namespace yade
+

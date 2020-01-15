@@ -2,7 +2,7 @@
 *  Copyright (C) 2006 by luc Scholtes                                    *
 *  luc.scholtes@hmg.inpg.fr                                              *
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -17,6 +17,8 @@
 #include <pkg/dem/ScGeom.hpp>
 #include <pkg/dem/FrictPhys.hpp>
 #include <pkg/dem/Shop.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 CREATE_LOGGER(TriaxialStateRecorder);
 TriaxialStateRecorder::~TriaxialStateRecorder() {};
@@ -44,11 +46,9 @@ void TriaxialStateRecorder::action ()
 	/// Compute porosity :
 	Real Vs=0;
 	Real V = ( triaxialStressController->height ) * ( triaxialStressController->width ) * ( triaxialStressController->depth );
-	BodyContainer::iterator bi = scene->bodies->begin();
-	BodyContainer::iterator biEnd = scene->bodies->end();
-	for ( ; bi!=biEnd; ++bi ){
-		if(!(*bi) || (*bi)->isClump()) continue;
-		const shared_ptr<Body>& b = *bi;
+	
+	for (const auto & b : *scene->bodies) {
+		if(!(b) || b->isClump()) continue;
 		if ( b->isDynamic() ){
 			//Sorry, the next string was commented, because it gave a Warning "unused variable v". Anton Gladky
 			//const Vector3r& v = b->state->vel;
@@ -70,3 +70,6 @@ void TriaxialStateRecorder::action ()
 }
 
 YADE_PLUGIN((TriaxialStateRecorder));
+
+} // namespace yade
+

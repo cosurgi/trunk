@@ -5,6 +5,8 @@
 #include<core/InteractionContainer.hpp>
 #include<pkg/common/Aabb.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((UniaxialStrainer));
 /************************ UniaxialStrainer **********************/
 CREATE_LOGGER(UniaxialStrainer);
@@ -69,7 +71,7 @@ void UniaxialStrainer::init(){
 		}
 		assert(p1>p0);
 		// set speeds for particles on the boundary
-		FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+		for(const auto & b :  *scene->bodies){
 			// skip bodies on the boundary, since those will have their positions updated directly
 			if(std::find(posIds.begin(),posIds.end(),b->id)!=posIds.end() || std::find(negIds.begin(),negIds.end(),b->id)!=negIds.end()) { continue; }
 			Real p=axisCoord(b->id);
@@ -138,3 +140,6 @@ void UniaxialStrainer::computeAxialForce(){
 	FOREACH(Body::id_t id, negIds) sumNegForces+=scene->forces.getForce(id)[axis];
 	FOREACH(Body::id_t id, posIds) sumPosForces-=scene->forces.getForce(id)[axis];
 }
+
+} // namespace yade
+

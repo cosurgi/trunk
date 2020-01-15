@@ -11,6 +11,8 @@
 #include<core/Dispatcher.hpp>
 #include<pkg/common/Aabb.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /********
 	functors
 *********************/
@@ -32,7 +34,9 @@ class BoundFunctor: public Functor1D<
 	/*argument types*/ TYPELIST_4(const shared_ptr<Shape>&, shared_ptr<Bound>&, const Se3r&, const Body*)
 >{
 	public: virtual ~BoundFunctor();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(BoundFunctor,Functor,"Functor for creating/updating :yref:`Body::bound`.");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(BoundFunctor);
 
@@ -45,7 +49,9 @@ class IGeomFunctor: public Functor2D<
 	public: virtual ~IGeomFunctor();
 	// called before every step once, from InteractionLoop (used to set Scene::flags & Scene::LOCAL_COORDS) 
 	virtual void preStep(){};
+	// clang-format off
 	YADE_CLASS_BASE_DOC(IGeomFunctor,Functor,"Functor for creating/updating :yref:`Interaction::geom` objects.");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(IGeomFunctor);
 
@@ -56,7 +62,9 @@ class IPhysFunctor: public Functor2D<
 	/*argument types*/ TYPELIST_3(const shared_ptr<Material>&, const shared_ptr<Material>&, const shared_ptr<Interaction>&)
 >{
 	public: virtual ~IPhysFunctor();
+	// clang-format off
 	YADE_CLASS_BASE_DOC(IPhysFunctor,Functor,"Functor for creating/updating :yref:`Interaction::phys` objects from :yref:`bodies' material<Body::material>` properties.");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(IPhysFunctor);
 
@@ -75,7 +83,9 @@ class LawFunctor: public Functor2D<
 		addForce(id1, force,scene); addTorque(id1, (contactPoint-pos1).cross(force),scene);
 		addForce(id2,-force,scene); addTorque(id2,-(contactPoint-pos2).cross(force),scene);
 	}
+	// clang-format off
 	YADE_CLASS_BASE_DOC(LawFunctor,Functor,"Functor for applying constitutive laws on :yref:`interactions<Interaction>`.");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(LawFunctor);
 
@@ -152,4 +162,5 @@ class LawDispatcher: public Dispatcher2D<
 };
 REGISTER_SERIALIZABLE(LawDispatcher);
 
+} // namespace yade
 

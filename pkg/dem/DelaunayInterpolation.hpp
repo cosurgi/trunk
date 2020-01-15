@@ -1,5 +1,5 @@
 /*************************************************************************
-*  Copyright (C) 2013 by Bruno Chareyre    <bruno.chareyre@hmg.inpg.fr>  *
+*  Copyright (C) 2013 by Bruno Chareyre    <bruno.chareyre@grenoble-inp.fr>  *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -108,6 +108,10 @@ getIncidentVtxWeights(const Dt& dt,
 
 } //END NAMESPACE CGAL
 
+namespace yade { // Cannot have #include directive inside.
+
+// FIXME - consider moving these (maybe with Triangulation_vertex_base_with_id_3 ?) into lib/base/AliasCGAL.hpp, preferably put them inside another namespace
+//namespace CGsomeName{
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Delaunay_triangulation_3<K>::Geom_traits		Traits;
 typedef CGAL::Triangulation_vertex_base_with_id_3<Traits>	Vb;
@@ -115,6 +119,7 @@ typedef CGAL::Triangulation_cell_base_3<Traits>			Cb;
 typedef CGAL::Triangulation_data_structure_3<Vb, Cb>		Tds;
 typedef CGAL::Delaunay_triangulation_3<Traits,Tds>		DT;
 typedef std::vector< std::pair< DT::Vertex_handle, K::FT> >	Vertex_weight_vector;
+//}
 
 template <class Dt, class DataOwner>
 typename DataOwner::Data interpolate1 (const Dt& dt, const typename Dt::Geom_traits::Point_3& Q, DataOwner& owner, const std::vector<typename DataOwner::Data>& rawData, bool reset)
@@ -146,4 +151,6 @@ typename DataOwner::Data interpolate2 (const Dt& dt, const typename Dt::Geom_tra
     if (!data.ending) return data*(1./result.second);
     else return typename DataOwner::Data();
 }
+
+} // namespace yade
 

@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                        *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -29,6 +29,9 @@
 
 //This include from yade let us use Eigen types
 #include <lib/base/Math.hpp>
+#include <type_traits>
+
+namespace yade { // Cannot have #include directive inside.
 
 const unsigned facetVertices [4][3] = {{1,2,3},{0,2,3},{0,1,3},{0,1,2}};
 //return the opposite edge (e.g. the opposite of {0,2} is {1,3}) 
@@ -38,6 +41,7 @@ inline void revertEdge (unsigned &i,unsigned &j){
 	else {j=facetVertices[i][1]; i=facetVertices[i][0];}
 }
 
+// FIXME - consider moving these into lib/base/AliasCGAL.hpp
 namespace CGT {
 //Robust kernel
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -55,7 +59,7 @@ typedef Traits::Vector_3 								CVector;
 typedef Traits::Segment_3								Segment;
 #ifndef NO_REAL_CHECK
 /** compilation inside yade: check that Real in yade is the same as Real we will define; otherwise it might make things go wrong badly (perhaps) **/
-BOOST_STATIC_ASSERT(sizeof(Traits::RT)==sizeof(Real));
+BOOST_STATIC_ASSERT( std::is_same< Traits::RT , Real >::value == true );
 #endif
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,11,0)
 typedef Traits::RT									Real; //Dans cartesian, RT = FT
@@ -75,7 +79,8 @@ class SimpleCellInfo : public Point {
 	unsigned int id;
 	Real s;
 	bool isFictious;//true if the cell has at least one fictious bounding sphere as a vertex
-	SimpleCellInfo (void) {isFictious=false; s=0;Point::operator= (CGAL::ORIGIN);}
+	bool isAlpha;
+	SimpleCellInfo (void) {isAlpha=false,isFictious=false; s=0;Point::operator= (CGAL::ORIGIN);}
 	SimpleCellInfo& setPoint(const Point &p) { Point::operator= (p); return *this; }
 	SimpleCellInfo& setScalar(const Real &scalar) { s=scalar; return *this; }
 	inline Real x (void) {return Point::x();}
@@ -92,6 +97,7 @@ protected:
 	unsigned int i;
 	Real vol;
 public:
+	bool isAlpha;
 	bool isFictious;
 	SimpleVertexInfo& setVector(const CVector &u) { CVector::operator= (u); return *this; }
 	SimpleVertexInfo& setFloat(const float &scalar) { s=scalar; return *this; }
@@ -102,7 +108,7 @@ public:
 	inline Real& f (void) {return s;}
 	inline Real& v (void) {return vol;}
 	inline const unsigned int& id (void) const {return i;}
-	SimpleVertexInfo (void) {isFictious=false; s=0; i=0; vol=-1;}
+	SimpleVertexInfo (void) {isAlpha=false;isFictious=false; s=0; i=0; vol=-1;}
 	//virtual function that will be defined for all classes, allowing shared function (e.g. for display)
 	bool isReal (void) {return !isFictious;}
 };
@@ -135,6 +141,7 @@ typedef CGAL::Triangulation_3<K>						Triangulation;
 typedef CGAL::Regular_triangulation_3<Traits, Tds>				RTriangulation;
 #ifdef ALPHASHAPES
 typedef CGAL::Alpha_shape_3<RTriangulation>  					AlphaShape;
+typedef typename AlphaShape::Alpha_iterator								Alpha_iterator;
 #endif
 typedef typename RTriangulation::Vertex_iterator                    		VertexIterator;
 typedef typename RTriangulation::Vertex_handle                      		VertexHandle;
@@ -143,7 +150,6 @@ typedef typename RTriangulation::Cell_iterator					CellIterator;
 typedef typename RTriangulation::Finite_cells_iterator				FiniteCellsIterator;
 typedef typename RTriangulation::Cell_circulator				CellCirculator;
 typedef typename RTriangulation::Cell_handle					CellHandle;
-
 typedef typename RTriangulation::Facet						Facet;
 typedef typename RTriangulation::Facet_iterator					FacetIterator;
 typedef typename RTriangulation::Facet_circulator				FacetCirculator;
@@ -166,3 +172,6 @@ inline CVector makeCgVect ( const Vector3r& yv ) {return CVector ( yv[0],yv[1],y
 inline Point makeCgPoint ( const Vector3r& yv ) {return Point ( yv[0],yv[1],yv[2] );}
 inline Vector3r makeVector3r ( const Point& yv ) {return Vector3r ( yv[0],yv[1],yv[2] );}
 inline Vector3r makeVector3r ( const CVector& yv ) {return Vector3r ( yv[0],yv[1],yv[2] );}
+
+} // namespace yade
+

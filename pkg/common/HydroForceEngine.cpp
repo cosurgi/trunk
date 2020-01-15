@@ -15,6 +15,8 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/optional.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((HydroForceEngine));
 
 void HydroForceEngine::action(){
@@ -28,7 +30,7 @@ void HydroForceEngine::action(){
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere){
 			Vector3r posSphere = b->state->pos;//position vector of the sphere
-			int p = floor((posSphere[2]-zRef)/deltaZ); //cell number in which the particle is
+			int p = int(std::floor((posSphere[2]-zRef)/deltaZ)); //cell number in which the particle is
 			if ((p<nCell)&&(p>=0)) {
 				Vector3r liftForce = Vector3r::Zero();
 				Vector3r dragForce = Vector3r::Zero();
@@ -40,10 +42,10 @@ void HydroForceEngine::action(){
 					dragForce = 0.5*densFluid*Mathr::PI*pow(sphere->radius,2.0)*(0.44*vRel.norm()+24.4*viscoDyn/(densFluid*sphere->radius*2))*pow(1-phiPart[p],-expoRZ)*vRel;
 				}
 				//lift force calculation due to difference of fluid pressure between top and bottom of the particle
-				int intRadius = floor(sphere->radius/deltaZ);
+				int intRadius = int(std::floor(sphere->radius/deltaZ));
 				if ((p+intRadius<nCell)&&(p-intRadius>0)&&(lift==true)) {
-					double vRelTop = vxFluid[p+1+intRadius] -  b->state->vel[0]; // relative velocity of the fluid wrt the particle at the top of the particle
-					double vRelBottom = vxFluid[p+1-intRadius] -  b->state->vel[0]; // same at the bottom
+					Real vRelTop = vxFluid[p+1+intRadius] -  b->state->vel[0]; // relative velocity of the fluid wrt the particle at the top of the particle
+					Real vRelBottom = vxFluid[p+1-intRadius] -  b->state->vel[0]; // same at the bottom
 					liftForce[2] = 0.5*densFluid*Mathr::PI*pow(sphere->radius,2.0)*Cl*(vRelTop*vRelTop-vRelBottom*vRelBottom);
 				}
 				//buoyant weight force calculation
@@ -61,35 +63,35 @@ void HydroForceEngine::averageProfile(){
 	int minZ;
 	int maxZ;
 	int numLayer;
-	double deltaCenter;
-	double zInf;
-	double zSup;
-	double volPart;
+	Real deltaCenter;
+	Real zInf;
+	Real zSup;
+	Real volPart;
 	Vector3r uRel = Vector3r::Zero();
 	Vector3r fDrag  = Vector3r::Zero();
 
 	int nMax = nCell;
-	vector<double> velAverageX(nMax,0.0);
-        vector<double> velAverageY(nMax,0.0);
-        vector<double> velAverageZ(nMax,0.0);
-	vector<double> phiAverage(nMax,0.0);
-	vector<double> dragAverage(nMax,0.0);
-	vector<double> phiAverage1(nMax,0.0);
-	vector<double> dragAverage1(nMax,0.0);
-	vector<double> velAverageX1(nMax,0.0);
-        vector<double> velAverageY1(nMax,0.0);
-        vector<double> velAverageZ1(nMax,0.0);
-	vector<double> phiAverage2(nMax,0.0);
-	vector<double> dragAverage2(nMax,0.0);
-	vector<double> velAverageX2(nMax,0.0);
-        vector<double> velAverageY2(nMax,0.0);
-        vector<double> velAverageZ2(nMax,0.0);
+	vector<Real> velAverageX(nMax,0.0);
+        vector<Real> velAverageY(nMax,0.0);
+        vector<Real> velAverageZ(nMax,0.0);
+	vector<Real> phiAverage(nMax,0.0);
+	vector<Real> dragAverage(nMax,0.0);
+	vector<Real> phiAverage1(nMax,0.0);
+	vector<Real> dragAverage1(nMax,0.0);
+	vector<Real> velAverageX1(nMax,0.0);
+        vector<Real> velAverageY1(nMax,0.0);
+        vector<Real> velAverageZ1(nMax,0.0);
+	vector<Real> phiAverage2(nMax,0.0);
+	vector<Real> dragAverage2(nMax,0.0);
+	vector<Real> velAverageX2(nMax,0.0);
+        vector<Real> velAverageY2(nMax,0.0);
+        vector<Real> velAverageZ2(nMax,0.0);
 
 	//Loop over the particles
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
-		const double zPos = b->state->pos[2]-zRef;
-		int Np = floor(zPos/deltaZ);	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
+		const Real zPos = b->state->pos[2]-zRef;
+		int Np = int(std::floor(zPos/deltaZ));	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
 //		if ((b->state->blockedDOFs==State::DOF_ALL)&&(zPos > s->radius)) continue;// to remove contribution from the fixed particles on the sidewalls.
 
 		// Relative fluid/particle velocity using also the associated fluid vel. fluct. 
@@ -100,8 +102,8 @@ void HydroForceEngine::averageProfile(){
 		}
 		else fDrag = Vector3r::Zero();
 
-		minZ= floor((zPos-s->radius)/deltaZ);
-		maxZ= floor((zPos+s->radius)/deltaZ);
+		minZ= int(std::floor((zPos-s->radius)/deltaZ));
+		maxZ= int(std::floor((zPos+s->radius)/deltaZ));
 		deltaCenter = zPos - Np*deltaZ;
 	
 		// Loop over the cell in which the particle is contained
@@ -220,23 +222,22 @@ void HydroForceEngine::averageProfilePP(){
 	//Initialization
 	// I had a warning ‘volPart’ may be used uninitialized in this function [-Wmaybe-uninitialized], but I don't know what should be the initialization value
 	// so instead I use optional which remembers when it is not initialized. // Janek
-	// BTW, you should better use Real instead of double.
-	boost::optional<double> volPart = boost::make_optional<double>(false,-10);
+	boost::optional<Real> volPart = boost::make_optional<Real>(false,-10);
 	Vector3r uRel = Vector3r::Zero();
 	Vector3r fDrag  = Vector3r::Zero();
 
 	int nMax = nCell;
-	vector<double> velAverageX(nMax,0.0);
-        vector<double> velAverageY(nMax,0.0);
-        vector<double> velAverageZ(nMax,0.0);
-	vector<double> phiAverage(nMax,0.0);
-	vector<double> dragAverage(nMax,0.0);
+	vector<Real> velAverageX(nMax,0.0);
+        vector<Real> velAverageY(nMax,0.0);
+        vector<Real> velAverageZ(nMax,0.0);
+	vector<Real> phiAverage(nMax,0.0);
+	vector<Real> dragAverage(nMax,0.0);
 
 	//Loop over the particles
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
-		const double zPos = b->state->pos[2]-zRef;
-		int Np = floor(zPos/deltaZ);	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. 
+		const Real zPos = b->state->pos[2]-zRef;
+		int Np = int(std::floor(zPos/deltaZ));	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. 
 		// Relative fluid/particle velocity using also the associated fluid vel. fluct. 
 		if ((Np>=0)&&(Np<nCell)){
 			uRel = Vector3r(vxFluid[Np+1]+vFluctX[b->id], vFluctY[b->id],vFluctZ[b->id]) - b->state->vel;
@@ -298,12 +299,12 @@ void HydroForceEngine::turbulentFluctuation(){
 	/* Create a random number generator rnd() with a gaussian distribution of mean 0 and stdev 1.0 */
 	/* see http://www.boost.org/doc/libs/1_55_0/doc/html/boost_random/reference.html and the chapter 7 of Numerical Recipes in C, second edition (1992) for more details */
 	static boost::minstd_rand0 randGen((int)TimingInfo::getNow(true));
-	static boost::normal_distribution<double> dist(0.0, 1.0);
-	static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<double> > rnd(randGen,dist);
+	static boost::normal_distribution<Real> dist(0.0, 1.0);
+	static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<Real> > rnd(randGen,dist);
 
-	double rand1 = 0.0;
-	double rand2 = 0.0;
-	double rand3 = 0.0;
+	Real rand1 = 0.0;
+	Real rand2 = 0.0;
+	Real rand3 = 0.0;
 	/* Attribute a fluid velocity fluctuation to each body above the bed elevation */
 	FOREACH(Body::id_t id, ids){
 		Body* b=Body::byId(id,scene).get();
@@ -312,15 +313,15 @@ void HydroForceEngine::turbulentFluctuation(){
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere){
 			Vector3r posSphere = b->state->pos;//position vector of the sphere
-			int p = floor((posSphere[2]-zRef)/deltaZ); //cell number in which the particle is
+			int p = int(std::floor((posSphere[2]-zRef)/deltaZ)); //cell number in which the particle is
 			// If the particle is inside the water and above the bed elevation, so inside the turbulent flow, evaluate a turbulent fluid velocity fluctuation which will be used to apply the drag.
 			// The fluctuation magnitude is linked to the value of the Reynolds stress tensor at the given position, a kind of local friction velocity ustar
 			// The fluctuations along wall-normal and streamwise directions are correlated in order to be consistent with the formulation of the Reynolds stress tensor and to recover the result
 			// that the magnitude of the fluctuation along streamwise = 2*along wall normal
 			if ((p<nCell)&&(posSphere[2]-zRef>bedElevation)) {  // Remove the particles outside of the flow and inside the granular bed, they are not submitted to turbulent fluctuations. 
-				double uStar2 = ReynoldStresses[p]/densFluid;
+				Real uStar2 = ReynoldStresses[p]/densFluid;
 				if (uStar2>0.0){
-					double uStar = sqrt(uStar2);
+					Real uStar = sqrt(uStar2);
 					rand1 = rnd();
 					rand2 = rnd();
 					rand3 = -rand1 + rnd();// x and z fluctuation are correlated as measured by Nezu 1977 and as expected from the formulation of the Reynolds stress tensor. 
@@ -344,14 +345,14 @@ void HydroForceEngine::turbulentFluctuation(){
 /* Should be initialized before running HydroForceEngine */
 void HydroForceEngine::turbulentFluctuationBIS(){
         int idPartMax = vFluctX.size();
-        double rand1 = 0.0;
-        double rand2 = 0.0;
-        double rand3 = 0.0;
+        Real rand1 = 0.0;
+        Real rand2 = 0.0;
+        Real rand3 = 0.0;
         /* Create a random number generator rnd() with a gaussian distribution of mean 0 and stdev 1.0 */
         /* see http://www.boost.org/doc/libs/1_55_0/doc/html/boost_random/reference.html and the chapter 7 of Numerical Recipes in C, second edition (1992) for more details */
         static boost::minstd_rand0 randGen((int)TimingInfo::getNow(true));
-        static boost::normal_distribution<double> dist(0.0, 1.0);
-        static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<double> > rnd(randGen,dist);
+        static boost::normal_distribution<Real> dist(0.0, 1.0);
+        static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<Real> > rnd(randGen,dist);
 
 	//Loop on the particles
         for(int idPart=0;idPart<idPartMax;idPart++){
@@ -364,10 +365,10 @@ void HydroForceEngine::turbulentFluctuationBIS(){
                         if (!b) continue;
                         if (!(scene->bodies->exists(idPart))) continue;
                         const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
-                        double uStar = 0.0;
+                        Real uStar = 0.0;
                         if (sphere){
                                 Vector3r posSphere = b->state->pos;//position vector of the sphere
-                                int p = floor((posSphere[2]-zRef)/deltaZ); //cell number in which the particle is
+                                int p = int(std::floor((posSphere[2]-zRef)/deltaZ)); //cell number in which the particle is
                                 if (ReynoldStresses[p]>0.0) uStar = sqrt(ReynoldStresses[p]/densFluid);
                                 // Remove the particles outside of the flow and inside the granular bed, they are not submitted to turbulent fluctuations. 
                                 if ((p<nCell)&&(posSphere[2]-zRef>bedElevation)) {
@@ -378,7 +379,7 @@ void HydroForceEngine::turbulentFluctuationBIS(){
                                         vFluctY[idPart] = rand2*uStar;
                                         vFluctX[idPart] = rand3*uStar;
 					// Limit the value to avoid the application of fluctuations in the viscous sublayer
-                                        const double zPos = max(b->state->pos[2]-zRef-bedElevation,11.6*viscoDyn/densFluid/uStar);
+                                        const Real zPos = max(b->state->pos[2]-zRef-bedElevation,11.6*viscoDyn/densFluid/uStar);
 					// Time of application of the fluctuation as a function of depth from kepsilon model
                                         if (uStar>0.0) fluctTime[idPart]=min(0.33*0.41*zPos/uStar,10.);
                                         }
@@ -413,12 +414,12 @@ void HydroForceEngine::turbulentFluctuationFluidizedBed(){
 	/* Create a random number generator rnd() with a gaussian distribution of mean 0 and stdev 1.0 */
 	/* see http://www.boost.org/doc/libs/1_55_0/doc/html/boost_random/reference.html and the chapter 7 of Numerical Recipes in C, second edition (1992) for more details */
 	static boost::minstd_rand0 randGen((int)TimingInfo::getNow(true));
-	static boost::normal_distribution<double> dist(0.0, 1.0);
-	static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<double> > rnd(randGen,dist);
+	static boost::normal_distribution<Real> dist(0.0, 1.0);
+	static boost::variate_generator<boost::minstd_rand0&,boost::normal_distribution<Real> > rnd(randGen,dist);
 
-	double rand1 = 0.0;
-	double rand2 = 0.0;
-	double rand3 = 0.0;
+	Real rand1 = 0.0;
+	Real rand2 = 0.0;
+	Real rand3 = 0.0;
 	/* Attribute a fluid velocity fluctuation to each body above the bed elevation */
 	FOREACH(Body::id_t id, ids){
 		Body* b=Body::byId(id,scene).get();
@@ -427,13 +428,13 @@ void HydroForceEngine::turbulentFluctuationFluidizedBed(){
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere){
 			Vector3r posSphere = b->state->pos;//position vector of the sphere
-			int p = floor((posSphere[2]-zRef)/deltaZ); //cell number in which the particle is
+			int p = int(std::floor((posSphere[2]-zRef)/deltaZ)); //cell number in which the particle is
 			// If the particle is inside the water and above the bed elevation, so inside the turbulent flow, evaluate a turbulent fluid velocity fluctuation which will be used to apply the drag.
 			// The fluctuation magnitude is linked to the value of the Reynolds stress tensor at the given position, a kind of local friction velocity ustar
 			if ((p<nCell)&&(posSphere[2]-zRef>0.)) {  // Remove the particles outside of the flow
-				double uStar2 = ReynoldStresses[p]/densFluid;
+				Real uStar2 = ReynoldStresses[p]/densFluid;
 				if (uStar2>0.0){
-					double uStar = sqrt(uStar2);
+					Real uStar = sqrt(uStar2);
 					rand1 = rnd();
 					rand2 = rnd();
 					rand3 = rnd();
@@ -458,19 +459,19 @@ void HydroForceEngine::turbulentFluctuationFluidizedBed(){
 /* Fluid Resolution */
 ///////////////////////
 // Fluid resolution routine: 1D vertical volume-averaged fluid momentum balance resolution
-void HydroForceEngine::fluidResolution(double tfin,double dt)
+void HydroForceEngine::fluidResolution(Real tfin,Real dt)
 {
 	//Variables declaration
 	int i,j,maxiter,q,ii;
-	double phi_nodej,termeVisco_j, termeVisco_jp1,termeTurb_j,termeTurb_jp1,viscof,dz,sum,phi_lim,dudz,ustar,fluidHeight,urel,urel_bound,Re,eps,ff,ffold,delta,dddiv,ejm1,phijm1,upjm1,ejp1,phijp1,upjp1,secondMemberPart;
-	vector<double> sig(nCell,0.0), dsig(nCell-1,0.), viscoeff(nCell,0.), ufn(nCell+1,0.), wallFriction(nCell-1,0.),viscoft(nCell,0.),ufnp(nCell+1,0.),a(nCell+1,0.),b(nCell+1,0.),c(nCell+1,0.),s(nCell+1,0.),lm(nCell,0.),ddem(nCell+1,0.),ddfm(nCell+1,0.),deltaz(nCell,0.),epsilon_node(nCell,0.),epsilon(nCell,0.);
+	Real phi_nodej,termeVisco_j, termeVisco_jp1,termeTurb_j,termeTurb_jp1,viscof,dz,sum,phi_lim,dudz,ustar,fluidHeight,urel,urel_bound,Re,eps,ff,ffold,delta,dddiv,ejm1,phijm1,upjm1,ejp1,phijp1,upjp1,secondMemberPart;
+	vector<Real> sig(nCell,0.0), dsig(nCell-1,0.), viscoeff(nCell,0.), ufn(nCell+1,0.), wallFriction(nCell-1,0.),viscoft(nCell,0.),ufnp(nCell+1,0.),a(nCell+1,0.),b(nCell+1,0.),c(nCell+1,0.),s(nCell+1,0.),lm(nCell,0.),ddem(nCell+1,0.),ddfm(nCell+1,0.),deltaz(nCell,0.),epsilon_node(nCell,0.),epsilon(nCell,0.);
 
 	//Initialisation
-	double time=0;
+	Real time=0;
 	ufn = vxFluid;	//Assign the global variable vxFluid to ufn, i.e. the last fluid velocity profile evaluated
 	viscof = viscoDyn/densFluid;  // compute the kinematic viscosity
 	dz = deltaZ;
-	double imp=0.5;  // Implicitation factor of the lateral sink term due to wall friction
+	Real imp=0.5;  // Implicitation factor of the lateral sink term due to wall friction
 	for (j=0;j<nCell;j++){
 		epsilon[j]=1.-phiPart[j];  // compute fluid phase volume fraction or porosity
 	}
@@ -507,7 +508,7 @@ void HydroForceEngine::fluidResolution(double tfin,double dt)
 
 	//Initialization
 	taufsi.resize(nCell);  memset(& taufsi[0],0,nCell);  //Resize and initialize taufsi
-	double lim = 1e-5, dragTerm=0., partVolume=1., partVolume1=1., partVolume2=1.;
+	Real lim = 1e-5, dragTerm=0., partVolume=1., partVolume1=1., partVolume2=1.;
 	// Evaluate particles volume
 	if (twoSize==true){
 		partVolume1 = 4./3.*Mathr::PI*pow(radiusPart1,3);
@@ -657,7 +658,7 @@ void HydroForceEngine::fluidResolution(double tfin,double dt)
 
 
 		//////////////////////////////////// 
-		// Solve the matricial tridiagonal system using double-sweep algorithm
+		// Solve the matricial tridiagonal system using Real-sweep algorithm
 
 		// downward sweep
 		dddiv=b[0];
@@ -695,3 +696,6 @@ void HydroForceEngine::fluidResolution(double tfin,double dt)
 	vxFluid[nCell] = ufn[nCell];
 }
 ///////////////////////////////////////////////////////////////////////// END OF HydroForceEngine::fluidResolution
+
+} // namespace yade
+

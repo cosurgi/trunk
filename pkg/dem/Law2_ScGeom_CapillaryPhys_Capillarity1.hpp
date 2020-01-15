@@ -22,6 +22,8 @@
 #include <iostream>
 #include <fstream>
 
+namespace yade { // Cannot have #include directive inside.
+
 /**
 This law allows one to take into account capillary forces/effects between spheres coming from the presence of interparticular liquid bridges (menisci).
 refs:
@@ -92,6 +94,7 @@ public :
      void solver(Real suction, bool reset);
      void triangulateData();
 
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(Law2_ScGeom_CapillaryPhys_Capillarity1,GlobalEngine,"This law allows one to take into account capillary forces/effects between spheres coming from the presence of interparticular liquid bridges (menisci).\n\nThe control parameter is the capillary pressure (or suction) Uc = ugas - Uliquid. Liquid bridges properties (volume V, extent over interacting grains delta1 and delta2) are computed as a result of the defined capillary pressure and of the interacting geometry (spheres radii and interparticular distance).\n\nReferences: in english [Scholtes2009b]_; more detailed, but in french [Scholtes2009d]_.\n\nThe law needs ascii files M(r=i) with i=R1/R2 to work (see https://yade-dem.org/wiki/CapillaryTriaxialTest). These ASCII files contain a set of results from the resolution of the Laplace-Young equation for different configurations of the interacting geometry."
     "\n\nIn order to allow capillary forces between distant spheres, it is necessary to enlarge the bounding boxes using :yref:`Bo1_Sphere_Aabb::aabbEnlargeFactor` and make the Ig2 define define distant interactions via:yref:`interactionDetectionFactor<Ig2_Sphere_Sphere_ScGeom::interactionDetectionFactor>`. It is also necessary to disable interactions removal by the constitutive law (:yref:`Law2<Law2_ScGeom_FrictPhys_CundallStrack::neverErase>=True`). The only combinations of laws supported are currently capillary law + :yref:`Law2_ScGeom_FrictPhys_CundallStrack` and capillary law + :yref:`Law2_ScGeom_MindlinPhys_Mindlin` (and the other variants of Hertz-Mindlin).\n\nSee CapillaryPhys-example.py for an example script.",
                    ((Real,capillaryPressure,0.,,"Value of the capillary pressure Uc defines as Uc=Ugas-Uliquid"))
@@ -115,9 +118,12 @@ public :
 		  .def("wnInterface",&Law2_ScGeom_CapillaryPhys_Capillarity1::wnInterface,"define the amount of wetting-non-wetiing interfaces in unsaturated pendular state")
 		  .def("waterVolume",&Law2_ScGeom_CapillaryPhys_Capillarity1::waterVolume,"return the total value of water in the sample")
      );
+	// clang-format on
 };
 
 
 
 REGISTER_SERIALIZABLE(Law2_ScGeom_CapillaryPhys_Capillarity1);
+
+} // namespace yade
 

@@ -5,7 +5,6 @@
 #pragma once
 
 #include<lib/serialization/Serializable.hpp>
-#include<boost/thread/mutex.hpp>
 
 #ifdef YADE_OPENMP
 	#include<omp.h>
@@ -13,6 +12,8 @@
 
 #include<core/Interaction.hpp>
 #include<core/BodyContainer.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 /* This InteractionContainer implementation has reference to the body container and
 stores interactions in 2 places:
@@ -42,6 +43,10 @@ class InteractionContainer: public Serializable{
 		typedef vector<shared_ptr<Interaction> > ContainerT;
 		// linear array of container interactions
 		ContainerT linIntrs;
+		// same array that can be sorted with updateSortedIntrs()
+		ContainerT sortedIntrs;
+		// allow interaction loop to directly access the above vectors
+		friend class InteractionLoop;
 		// pointer to body container, since each body holds (some) interactions
 		// this must always point to scene->bodies->body
 		const BodyContainer::ContainerT* bodies;
@@ -69,8 +74,8 @@ class InteractionContainer: public Serializable{
 		bool insert(Body::id_t id1,Body::id_t id2);
 		bool insert(const shared_ptr<Interaction>& i);
 		//3rd parameter is used to remove I from linIntrs (in conditionalyEraseNonReal()) when body b1 has been removed
-		bool erase(Body::id_t id1,Body::id_t id2,int linPos);
-		
+		bool erase(Body::id_t id1,Body::id_t id2,int linPos=-1);
+		bool insertInteractionMPI(shared_ptr<Interaction>& ); 
 		const shared_ptr<Interaction>& find(Body::id_t id1,Body::id_t id2);
 		inline bool found(const Body::id_t& id1,const Body::id_t& id2){
 			assert(bodies);
@@ -94,7 +99,7 @@ class InteractionContainer: public Serializable{
 		void eraseNonReal();
 
 		// mutual exclusion to avoid crashes in the rendering loop
-		boost::mutex drawloopmutex;
+		std::mutex drawloopmutex;
 		// sort interactions before serializations; useful if comparing XML files from different runs (false by default)
 		bool serializeSorted;
 		// iteration number when the collider was last run; set by the collider, if it wants interactions that were not encoutered in that step to be deleted by InteractionLoop (such as SpatialQuickSortCollider). Other colliders (such as InsertionSortCollider) set it it -1, which is the default
@@ -138,17 +143,33 @@ class InteractionContainer: public Serializable{
 						erase(toErase[kk][ii][0],toErase[kk][ii][1],toErase[kk][ii][2]);
 				return initSize-currSize;
 			}
-		#endif
+			#endif
 		}
-	// we must call Scene's ctor (and from Scene::postLoad), since we depend on the existing BodyContainer at that point.
-	void postLoad__calledFromScene(const shared_ptr<BodyContainer>&);
-	void preLoad(InteractionContainer&);
-	void preSave(InteractionContainer&);
-	void postSave(InteractionContainer&);
+		
+		void updateSortedIntrs();
+		static bool compareTwoInteractions(shared_ptr<Interaction> inter1, shared_ptr<Interaction> inter2){
+			Body::id_t min1,max1,min2,max2;
+			if(inter1->id1<inter1->id2){ min1=inter1->id1; max1=inter1->id2; }
+			else { min1=inter1->id2; max1=inter1->id1; }
+			if(inter2->id1<inter2->id2){ min2=inter2->id1; max2=inter2->id2; }
+			else { min2=inter2->id2; max2=inter2->id1; }
+			if(min1<min2) return true ;
+			else if(min1>min2) return false ;
+			else return max1<max2; //min1==min2
+		}
+		
+		// we must call Scene's ctor (and from Scene::postLoad), since we depend on the existing BodyContainer at that point.
+		void postLoad__calledFromScene(const shared_ptr<BodyContainer>&);
+		void preLoad(InteractionContainer&);
+		void preSave(InteractionContainer&);
+		void postSave(InteractionContainer&);
 
 
-	REGISTER_ATTRIBUTES(Serializable,(interaction)(serializeSorted)(dirty));
-	REGISTER_CLASS_AND_BASE(InteractionContainer,Serializable);
-	DECLARE_LOGGER;
+		REGISTER_ATTRIBUTES(Serializable,(interaction)(serializeSorted)(dirty));
+		REGISTER_CLASS_AND_BASE(InteractionContainer,Serializable);
+		DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(InteractionContainer);
+
+} // namespace yade
+

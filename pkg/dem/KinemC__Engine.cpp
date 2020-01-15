@@ -8,6 +8,8 @@
 
 #include<pkg/dem/KinemC__Engine.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((KinemCTDEngine)(KinemCNDEngine)(KinemCNLEngine)(KinemCNSEngine));
 
 void KinemCTDEngine::action()
@@ -158,3 +160,6 @@ void KinemCNSEngine::action()
 		Omega::instance().pause();
 	}
 }
+
+} // namespace yade
+

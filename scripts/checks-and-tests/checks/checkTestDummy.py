@@ -1,5 +1,5 @@
 # encoding: utf-8
-# 2011 © Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+# 2011 © Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 # A dummy test, just to give an example, and detect possible path problems
 from __future__ import print_function
 from yade import pack,export,plot

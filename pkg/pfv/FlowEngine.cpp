@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2009 by Emanuele Catalano <catalano@grenoble-inp.fr>    *
-*  Copyright (C) 2009 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2009 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -13,6 +13,9 @@
 // To register properly, we need to first instantiate an intermediate class, then inherit from it with correct class names in YADE_CLASS macro
 // The intermediate one would be seen with the name "TemplateFlowEngine" by python, thus it would not work when more than one class are derived, they would all
 // be named "TemplateFlowEngine" ...
+
+namespace yade { // Cannot have #include directive inside.
+
 typedef TemplateFlowEngine_FlowEngineT<FlowCellInfo_FlowEngineT,FlowVertexInfo_FlowEngineT> FlowEngineT;
 REGISTER_SERIALIZABLE(FlowEngineT);
 
@@ -32,6 +35,8 @@ REGISTER_SERIALIZABLE(FlowEngine);
 YADE_PLUGIN((FlowEngineT));
 CREATE_LOGGER(FlowEngine );
 YADE_PLUGIN((FlowEngine));
+
+} // namespace yade
 
 #endif //FLOW_ENGINE
 

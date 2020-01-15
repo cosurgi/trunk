@@ -7,41 +7,61 @@
 #ifdef YADE_OPENMP
 	#include<omp.h>
 #endif
+
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(InteractionContainer);
 // begin internal functions
 
+
 bool InteractionContainer::insert(const shared_ptr<Interaction>& i){
 	assert(bodies);
-	boost::mutex::scoped_lock lock(drawloopmutex);
-	
+	const std::lock_guard<std::mutex> lock(drawloopmutex);
+
 	Body::id_t id1=i->getId1();
 	Body::id_t id2=i->getId2();
-	
-	if (id1>id2) swap(id1,id2); 
-	
+
+	if (id1>id2) swap(id1,id2);
+
 	assert((Body::id_t)bodies->size()>id1); // the bodies must exist already
-	assert((Body::id_t)bodies->size()>id2); 
-	
+	assert((Body::id_t)bodies->size()>id2);
+
 	const shared_ptr<Body>& b1=(*bodies)[id1];
 	const shared_ptr<Body>& b2=(*bodies)[id2];
-	
+
 	if(!b1->intrs.insert(Body::MapId2IntrT::value_type(id2,i)).second) return false; // already exists
-	if(!b2->intrs.insert(Body::MapId2IntrT::value_type(id1,i)).second) return false; 
-	
+	if(!b2->intrs.insert(Body::MapId2IntrT::value_type(id1,i)).second) return false;
+
 	linIntrs.resize(++currSize); // currSize updated
 	linIntrs[currSize-1]=i; // assign last element
 	i->linIx=currSize-1; // store the index back-reference in the interaction (so that it knows how to erase/move itself)
-	
-	const shared_ptr<Scene>& scene=Omega::instance().getScene(); 
+
+	const shared_ptr<Scene>& scene=Omega::instance().getScene();
 	i->iterBorn=scene->iter;
-	
+
 	return true;
+}
+
+bool InteractionContainer::insertInteractionMPI(shared_ptr<Interaction>& i){
+	bool res=true;
+	const shared_ptr<Interaction>& iOld =  find(Body::id_t(i->id1),Body::id_t(i->id2));
+	if (not iOld) {
+		int iterBorn = i->iterBorn;
+		res = insert(i);// if it doesn't exist, insert it
+		i->iterBorn = iterBorn;
+	} else /*if (i->isReal())*/ {
+		i->linIx=iOld->linIx; // else replace existing one (with special care to linIx, only valid locally)
+		(*this)[i->linIx] = i;
+		(*bodies)[i->id1]->intrs[i->id2]=i;
+		(*bodies)[i->id2]->intrs[i->id1]=i;
+	}	
+	return res;
 }
 
 void InteractionContainer::clear(){
 	assert(bodies);
-	boost::mutex::scoped_lock lock(drawloopmutex);
-	FOREACH(const shared_ptr<Body>& b, *bodies) {
+	const std::lock_guard<std::mutex> lock(drawloopmutex);
+	for (const auto & b : *bodies) {
 		if (b) b->intrs.clear();
 	}
 	linIntrs.clear();
@@ -51,10 +71,11 @@ void InteractionContainer::clear(){
 
 bool InteractionContainer::erase(Body::id_t id1,Body::id_t id2, int linPos){
 	assert(bodies);
-	boost::mutex::scoped_lock lock(drawloopmutex);
+	#warning("is cpu cost of this mutex known?")
+	const std::lock_guard<std::mutex> lock(drawloopmutex);
 	if (id1>id2) swap(id1,id2);
 	if(id2>=(Body::id_t)bodies->size()) return false;
-	
+
 	const shared_ptr<Body>& b1((*bodies)[id1]);
 	const shared_ptr<Body>& b2((*bodies)[id2]);
 	int linIx=-1;
@@ -90,7 +111,7 @@ bool InteractionContainer::erase(Body::id_t id1,Body::id_t id2, int linPos){
 
 const shared_ptr<Interaction>& InteractionContainer::find(Body::id_t id1,Body::id_t id2){
 	assert(bodies);
-	if (id1>id2) swap(id1,id2); 
+	if (id1>id2) swap(id1,id2);
 	// those checks could be perhaps asserts, but pyInteractionContainer has no access to the body container...
 	if(id2>=(Body::id_t)bodies->size()){ empty=shared_ptr<Interaction>(); return empty; }
 	const shared_ptr<Body>& b1((*bodies)[id1]);
@@ -103,7 +124,7 @@ const shared_ptr<Interaction>& InteractionContainer::find(Body::id_t id1,Body::i
 bool InteractionContainer::insert(Body::id_t id1,Body::id_t id2)
 {
 	shared_ptr<Interaction> i(new Interaction(id1,id2) );
-	return insert(i);	
+	return insert(i);
 }
 
 void InteractionContainer::requestErase(Body::id_t id1, Body::id_t id2){
@@ -120,7 +141,7 @@ void InteractionContainer::requestErase(Interaction* I){
 }
 
 void InteractionContainer::eraseNonReal(){
-	FOREACH(const shared_ptr<Interaction>& i, *this) if(!i->isReal()) this->erase(i->getId1(),i->getId2(),i->linIx);
+	for(const auto & i : *this) if(!i->isReal()) this->erase(i->getId1(),i->getId2(),i->linIx);
 }
 
 // compare interaction based on their first id
@@ -129,6 +150,12 @@ struct compPtrInteraction{
 		return (*i1)<(*i2);
 	}
 };
+
+void InteractionContainer::updateSortedIntrs(){
+	this->sortedIntrs.resize(this->linIntrs.size());
+	this->sortedIntrs = this->linIntrs;
+	sort(this->sortedIntrs.begin(), this->sortedIntrs.end(), this->compareTwoInteractions);
+}
 
 void InteractionContainer::preSave(InteractionContainer&){
 	for(const shared_ptr<Interaction>& I : *this) {
@@ -144,7 +171,7 @@ void InteractionContainer::preLoad(InteractionContainer&){ interaction.clear(); 
 void InteractionContainer::postLoad__calledFromScene(const shared_ptr<BodyContainer>& bb){
 	bodies=&bb->body;
 	clear();
-	FOREACH(const shared_ptr<Interaction>& I, interaction){ 
+	for(const auto & I : interaction){
 		Body::id_t id1=I->getId1(), id2=I->getId2();
 		if (!(*bodies)[id1] || !(*bodies)[id2]) {
 			return;
@@ -154,3 +181,6 @@ void InteractionContainer::postLoad__calledFromScene(const shared_ptr<BodyContai
 	}
 	interaction.clear();
 }
+
+} // namespace yade
+

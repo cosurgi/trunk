@@ -9,35 +9,39 @@
 #include <Eigen/LU>
 #include <Eigen/QR>
 #include <lib/base/openmp-accu.hpp>
-namespace yade {
-class PotentialParticle : public Shape {
+//#include <lib/base/openmp-accu.hpp>
 
+
+namespace yade { // Cannot have #include directive inside.
+
+class PotentialParticle : public Shape {
 	public:
 		virtual ~PotentialParticle ();
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(PotentialParticle,Shape,"EXPERIMENTAL. Geometry of PotentialParticle.",
-			((int, id, 1,, "idNo"))
-			((bool, isBoundary, false,, "boundary"))
-			((bool, fixedNormal, false,, "use fixed normal at boundary"))
-			((Vector3r, boundaryNormal, Vector3r::Zero(),,"normal direction of boundary"))
-			((bool, AabbMinMax, false,, "aabb"))
-			((Vector3r, minAabb, Vector3r::Zero(),,"min from box centre"))
-			((Vector3r, maxAabb, Vector3r::Zero(),,"max from box centre"))
-			((Vector3r, minAabbRotated, Vector3r::Zero(),,"updated min from box centre"))
-			((Vector3r, maxAabbRotated, Vector3r::Zero(),,"updated max from box centre"))
-			((Vector3r, halfSize, Vector3r::Zero(),,"max from box centre"))
-			((Quaternionr , oriAabb, Quaternionr::Identity(),, "r "))
-			((Real , r, 0.1,, "r "))
-			((Real , R, 1.0,, "R "))
-			((Real , k, 0.1,, "k "))
-			((vector<Vector3r>, vertices,,,"vertices"))
-			((vector<bool> , isBoundaryPlane, ,, "whether it is a boundaryPlane "))
-			((vector<Real> , a, ,, "a "))
-			((vector<Real> , b, ,, "b "))
-			((vector<Real> , c, ,, "c "))
-			((vector<Real> , d, ,, "d "))
-			,
-			createIndex(); /*ctor*/
+			((int, id, 1,, "Particle id (for graphics in vtk output)")) //TODO: Check if we can use the body id instead in all instances and delete this attribute
+			((bool, isBoundary, false,, "Whether the particle is part of a boundary particle"))
+			((bool, fixedNormal, false,, "Whether to fix the contact normal at a boundary, using boundaryNormal"))
+			((Vector3r, boundaryNormal, Vector3r::Zero(),,"Normal direction of boundary if fixedNormal=True"))
+			((bool, AabbMinMax, false,, "Whether the exact Aabb should be calculated. If false, an approximate cubic Aabb is defined with edges of ``2R``"))
+			((Vector3r, minAabb, Vector3r::Zero(),,"Min from box centre: Used for visualisation in vtk and qt"))
+			((Vector3r, maxAabb, Vector3r::Zero(),,"Max from box centre: Used for visualisation in vtk and qt"))
+			((Vector3r, minAabbRotated, Vector3r::Zero(),,"Min from box centre: Used for primary contact detection"))
+			((Vector3r, maxAabbRotated, Vector3r::Zero(),,"Max from box centre: Used for primary contact detection"))
+//			((Vector3r, halfSize, Vector3r::Zero(),,"max from box centre"))
+//			((Quaternionr , oriAabb, Quaternionr::Identity(),, "r "))
+			((Real , r, 0.1,, "r in Potential Particles"))
+			((Real , R, 1.0,, "R in Potential Particles"))
+			((Real , k, 0.1,, "k in Potential Particles"))
+			((vector<Vector3r>, vertices,,,"Vertices"))
+//			((vector<bool> , isBoundaryPlane, ,, "whether it is a boundaryPlane "))
+			((vector<Real> , a, ,, "List of a coefficients of plane normals"))
+			((vector<Real> , b, ,, "List of b coefficients of plane normals"))
+			((vector<Real> , c, ,, "List of c coefficients of plane normals"))
+			((vector<Real> , d, ,, "List of d coefficients of plane normals"))
+			, /*ctor*/
+			createIndex();
 #if 0
 		for (int i=0; i<a.size(); i++) {
 		Amatrix(i,0) = a[i];
@@ -46,17 +50,15 @@ class PotentialParticle : public Shape {
 			Dmatrix(i,0) = d[i] + r;
 		}
 #endif
-
 		);
+	// clang-format on
 		//#endif
-
 		REGISTER_CLASS_INDEX(PotentialParticle,Shape);
-
 };
-}
-using namespace yade;
 
 REGISTER_SERIALIZABLE(PotentialParticle);
+
+}; // namespace yade
 
 #ifdef __cplusplus
 extern "C" {

@@ -10,6 +10,7 @@
 
 #include<core/FileGenerator.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 typedef pair<Vector3r, Real> BasicSphere;
 //! make a list of spheres non-overlapping sphere
@@ -30,6 +31,7 @@ class SimpleShear : public FileGenerator
 		bool generate(std::string& message);
 
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(SimpleShear,FileGenerator,"Preprocessor for a simple shear box model. The packing initially conforms a gas-like, very loose, state (see utils.makeCloud function), but importing some existing packing from a text file can be also performed after little change in the source code. In its current state, the preprocessor carries out an oedometric compression, until a value of normal stress equal to 2 MPa (and a stable mechanical state). Others Engines such as :yref:`KinemCNDEngine`, :yref:`KinemCNSEngine` and :yref:`KinemCNLEngine`, could be used to apply resp. constant normal displacement, constant normal rigidity and constant normal stress paths using such a simple shear box.",
 /*				  ((string,filename,"../porosite0_44.txt",,"file with the list of spheres centers and radii"))*/
 				  ((Real,thickness,0.001,,"thickness of the boxes constituting the shear box [$m$]"))
@@ -44,10 +46,11 @@ class SimpleShear : public FileGenerator
 				  ((Vector3r,gravity,Vector3r(0,-9.81,0),,"vector corresponding to used gravity (if :yref:`gravApplied<SimpleShear.gravApplied>`) [$m/s^2$]"))
 				  ((int,timeStepUpdateInterval,50,,"value of :yref:`TimeStepper::timeStepUpdateInterval` for the :yref:`TimeStepper` used here"))
 				  );
+	// clang-format on
 	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(SimpleShear);
 
-
+} // namespace yade
 

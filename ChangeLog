@@ -1,4 +1,1884 @@
 ==================================================
+yade-2020.01a
+Sun, Jan 12 09:36:24 2020 +0100
+
+Anton Gladky (113):
+      Remove RELEASE file
+      Do not genereate moc-files globally.
+      Add DEB-packages to the build process
+      Make pring python3-conform
+      Use master
+      Add pipeline ID into the deb-version
+      Check, whether CI_PIPELINE_IID is set
+      Remove python-bibtex from dependencies
+      Compile only deb
+      Deb-only
+      Build packagew for 16.04
+      Do not install more packages in CI
+      use 16.04
+      Minor fix
+      Recover the gitlab-ci.yml
+      Merge remote-tracking branch 'origin/master' into feature/add_xenial
+      Add xenial into the aptly-scripts
+      Use ipython3 for xenial instead of python3-ipython
+      Change the dependencies on ipython3 in xenial
+      Add packages for bullseye (next Debian version)
+      Try to build with clang
+      Fix compilation with gcc
+      Use CMAKE_CXX_COMPILER_LAUNCHER for ccache
+      Merge remote-tracking branch 'origin/master' into add/enable_clang-build
+      Respect the previous EXTRA_CMAKE_FLAGS
+      Try to build with clang
+      Fix compilation with gcc
+      Use CMAKE_CXX_COMPILER_LAUNCHER for ccache
+      Respect the previous EXTRA_CMAKE_FLAGS
+      Disable some more features for the clang-build
+      Merge remote-tracking branch 'origin/add/enable_clang-build' into add/enable_clang-build
+      Merge remote-tracking branch 'origin/master' into add/enable_clang-build
+      Merge remote-tracking branch 'origin/add/enable_clang-build' into add/enable_clang-build
+      Fix git-merge mess
+      Use clang-10 instead of clang-9
+      Add scripts, specific for the yade-dem server
+      Update information about yadedaily
+      Improve yadedaily documentation
+      Minor fix in installation.rst
+      Let CI build dbgsym-packages
+      Do not build dbgsym for the moment.
+      Make C++14 mandatory and set minimal cmake version 3.5.0
+      Use C++ standard for-range loop instead of BOOST_FOREACH
+      Simplify for-range loops in the code
+      Use reference instead of value in some for-loops
+      Fix some more references
+      Use std::thread instead of boost::thread
+      Start to remove FOREACH
+      core/ is mostly freed from FOREACH macro
+      Remove boost/thread from ThreadRunner
+      Return boost/thread into the cmake, because of mustex
+      Remove some unused headers
+      Revert "Remove boost/thread from ThreadRunner"
+      Revert boost::thread -> std::thread changes. Topic for the next iterations
+      Merge remote-tracking branch 'origin/feature/cpp14_cleanup' into feature/cpp14_cleanup
+      Fix copmilation
+      Fix one more foreach
+      Check nullptr in BodyContainer. #119
+      Add .clang-format
+      Update .clang-format
+      Use the boost::filter_iterator for BodyContainer instead of home-backed. #122
+      Update copyright
+      Merge remote-tracking branch 'origin/master' into feature/update_bodycontainer_iterator
+      Merge remote-tracking branch 'origin/master' into feature/update_bodycontainer_iterator
+      Merge branch 'feature/update_bodycontainer_iterator'
+      Fix wrong last element access in PSDcum. #129
+      Reformat pkg/dem/SpheresFactory*
+      Add energy control in checkSaveLoadClumps.py
+      Fix wrong maxID for the clumps in the makeClumpCloud. Fixes #126
+      Reformat pkg/dem/SpherePack
+      Drop FOREACH and some minor changes in SpherePack
+      Use std::random instead of boost for SpherePack.
+      Move implementation of all functions out of header to keep it as clean as possible
+      Use C++11 enum class instead of plain enum
+      Revert changes in BlockGen.cpp
+      Revert changes in BlockGen.cpp
+      Revert wrongly commited changes in checkList.py
+      Merge remote-tracking branch 'origin/master' into fix/spherePack_refactoring
+      Fix explicitAction if force==true. #133
+      Fix compilation
+      Do not set the optimization flags explicitely.
+      Fix test in the testlibversion with clang
+      Try to copmile the full Yade with clang
+      Reformat
+      Compilation with ubsan.
+      Put implementation of operator () into the cpp-file
+      Drop tensor_anti3. Not used in the code
+      Remove not used "usings"
+      Some clean up in tenseur
+      Reformat tenseur
+      Use Eigen for tenseur
+      Some more cleanup in tenseur-class
+      Start to refactor thread-classes
+      Merge remote-tracking branch 'origin/master' into update/boost-threads
+      Merge remote-tracking branch 'origin/master' into update/boost-threads
+      Merge remote-tracking branch 'origin/master' into update/boost-threads
+      Fix compilation errors on some non-standard platforms
+      Simplify FindCGAL
+      Merge remote-tracking branch 'origin/master' into fix/debian_archs
+      Revert "Simplify FindCGAL"
+      Merge remote-tracking branch 'origin/master' into update/boost-threads
+      Replace all mutexes byt std
+      Cleanup in core/ThreadWorker*
+      Switch some bosst:mutex to std::mutex
+      Some more replacements for boost::mutex
+      Merge remote-tracking branch 'origin/master' into update/boost-threads
+      Remove unneeded include
+      Revert "Remove unneeded include"
+      Revert "Set debhelper to min version 11"
+      Revert "Use native cmake's CGAL detection instead of cMake/FindCGAL.cmake file."
+      Try to use the common FindCGAL for older and newer (header-only) CGAL versions
+      Remove CGAL_LIBRARIES from advanced parameters
+      Add RELEASE file
+
+Boon Chiaweng (2):
+      improving qt Display for free fall examples
+      fix visualisation in qt for free fall examples
+
+Bruno Chareyre (330):
+      Update github.rst: explain why pushing to yade-dev branch is mandatory, improve formating
+      Update github.rst: remove deprecated parts and explain how to pull --rebase from upstream and sync personal repo.
+      "In case if" replaced by "If". :)  https://forum.wordreference.com/threads/in-case-if.3160517/
+      \renewcommand{\vec}{\boldsymbol}
+      '$' guards for two maths
+      fix https://bugs.launchpad.net/yade/+bug/1175574 -> issue #17 on gitlab
+      Fix yade's url in first paragraph of first web page!
+      clarify the push + MR sequence, with push to yade-dev the no.1 option.
+      getCellFlux for arbitrary cell Id (by Katia Boschi) + python wrapper for updateLinearSystem
+      upload pages from master only (merge requests excluded)
+      fix paths in gitlab-ci stage
+      Wrap FlowEngine's resetLinearSystem() rather than updateLinearSystem() - thanks Robert
+      fix distcc and ccache export commands
+      Fix compile warning in FlowEngine.hpp.in
+      remove irrelevant comment about amplification of error by Cundall's damping
+      fix reference AboulHosn2016
+      Remove CGAL warning from Tesselation.ipp
+      add python-pil and qt5-default to install instruction for ubuntu18.04
+      use yade-runner-01 for everything but make -jN
+      fix "V." interpreted as numbering by Sphinx
+      same equation with a different writing for clump inertia (move bracket to have mass multiplying all geometrical quantities).
+      Reorder index-toc in a more consistent way
+      follow suggested TOC logic more strictly (https://gitlab.com/yade-dev/trunk/merge_requests/98#note_162575306)
+      FlowEngine a getter for hydraulic conductivity
+      Re-use cholmod factor multiple times in PhaseCluster + apply the capillary forces optionaly in computeCapillaryForces()
+      testing "apt-get install python3-numpy"
+      apt update
+      use docker image from yade-dev/docker-yade
+      back to apt-get
+      apt-get -y
+      Update .gitlab-ci.yml
+      [Python-3] install python-vtk6
+      [python-3] apt-get install python-future
+      [Python-3] apt-get install python3-future
+      Revert "[Python3] Fix import for python2"
+      Revert "[Python3] Fixes to pass checks (import errors and fix _packPredicates to fit new pygts)"
+      Revert "[Python-3] apt-get install python3-future"
+      Revert "Revert "[Python-3] apt-get install python3-future""
+      Revert "Revert "[Python3] Fixes to pass checks (import errors and fix _packPredicates to fit new pygts)""
+      Revert "Revert "[Python3] Fix import for python2""
+      add python-future to dependencies in README, and some replacements for some package names
+      change python-future to python3-future dependency, and move it to ubuntu 16.04 section (also needed for 18.04?) remember to add python-future to python2.7 dependencies
+      Try building latex first (a mess due to previous build?)
+      maximize sphinx verbosity and debug info (see https://www.sphinx-doc.org/en/master/man/sphinx-build.html)
+      build on 22 cores
+      build on 18 cores (not enough memory for 22)
+      build on 12 cores - memory limit
+      decrease sphinx verbosity by 2 levels (too much logs breaks compilation...)
+      yadeSphinx: rm /html/_static/jquery.js only after html build
+      Sphinx wants 'epub' writer, not 'ebook'
+      fix doc building with "make -i" (the build seems correct)
+      Keep compile dependencies for Python 2.7, with addition of qt5-default for 18.04 (needed?) + python-future
+      Revert "Keep compile dependencies for Python 2.7, with addition of qt5-default for..."
+      Revert "use yade-runner-01 for everything but make -jN"
+      read the correct cellHandles after remeshing
+      remove some debug message
+      remove a debug message in DomainLimiter
+      remove non-necessary imports and 'utils' prefix
+      injection checkScripts added to skipScripts - waiting for fixed indentation
+      Revert "Revert "trigger this bug in the pipeline.""
+      remove third parameter in calls to clusterOutvadePore
+      Revert "Revert "Revert "trigger this bug in the pipeline."""
+      activate injection checkScripts again after fix in 13c8f5c0
+      remove unused variables and unused code
+      Mention stable packages before daily packages.
+      doc: fix english
+      fix inconsistency between the bibtex and the rst references for yade chapters
+      fix indentation in checkScript
+      label engines in exemple script for clearer timing.stats()
+      PhaseCluster.getInterfaces returns also index of each interface in 4th position
+      restore original example TwoPhaseFlowInjection.py
+      Revert "deleting of cellId in c0.getInterfaces(cellId=ll)"
+      Revert "Revert "trigger this bug in the pipeline.""
+      Revert "Revert "Revert "trigger this bug in the pipeline."""
+      more accurate description of useSolver, mark 1-2 undefined
+      define FLOW_ENGINE only if PFVFLOW is enabled
+      building TWOPHASEFLOW depends on PFVFLOW
+      fix #81 (again)
+      declare BodyContainer using YADE_CLASS macro, and grant python user read/write access to the underlying (yet serialized) vector<Body*> with O.bodies.rawBodies
+      bodies and scenes are granted 'int subdomain', Newton integrates only if scene and bodies have the same subdomain index
+      remove double declaration (compile error)
+      fix a docstring
+      improved use of verletDist at iteration 0
+      grant more user access to O._sceneObj (still not enough to pass it through mpi messages)
+      Introduce the shape 'Subdomain' to be used for mpi parallelization
+      continue grant more user access to O._sceneObj (see 5868f3c)
+      add to bodies subdomain index and 'isSubdomain' attribute
+      Collider::mayCollide takes scene->subdomain as additional argument, adapt all colliders
+      example scripts for subdomains + MPI
+      skip subdomains in Newton integration (else junk displacement will trigger the collider at every iteration)
+      avoid excessive call to collider in first 3 iterations
+      some renaming and little changes
+      renaming (continued) + slightly different initialization of bounds
+      add first concrete N-threads example for MPI decomposition, update monolithic script to have same scene than testMPIxN by default
+      added comments in preamble of testMPIxN.py
+      remove ZECollider
+      initialize maxVelocitySq=0 instead of infinity (by definition the initial displacement is null)
+      make 'newton' a registered attribute of ISCollider
+      more getter/setters to Subdomain
+      functions returning Pfacet nodes and connections
+      ENABLE_PFVFLOW no longer has priority over ENABLE_CGAL (disabling CGAL will now disable PFV)
+      MPI mode: interactionLoop erases interactions not participating in current subdomain
+      give Subdomain some abilities to handle mpi
+      preliminary mpi module
+      remove dependency on numpy_boost.hpp (some compile errors in debug build)
+      escape weird segfault with auto pointer (when YADE_OPENMP=OFF)
+      make timing conditional in mpy module
+      fix intersections and various bugfix
+      simple example of importing mpy
+      replace O.step() by O.run() in mpirun()
+      code cleanup
+      determine mpi rank consistently from argv + minor improvements
+      opts.mpi_mode defined at startup and conditioning the start of ipshell()
+      fix mpi force accumulation, and make sure communicating PyRunners start at iter 0 (initRun=True)
+      a function returning total cpu time in yade.timing, used in testMPI_2D.py
+      clean mpi examples and add timing report for mpirun
+      update preamble of testMPI_2D.py
+      update docstring in mpy.py
+      BodyContainer can insert body with user-defined id
+      fix inspector crash and compile warnings
+      fix usage of collider's 'doSort' and add wrapper for isActivated()
+      don't use displacement for collider's striding in case of multiple collision detection in one iteration (can happen with mpi)
+      mpirun includes checking collider activation to interupt and/or merge subdomains
+      example mpi script with merge/split upon collision detection
+      define verletDist in mpi test script
+      replace yadeimport.py by a normal yade import in mpy module
+      body can be inserted with prescribed id
+      mpi example with merge/split at each collision detection
+      fix contact detection - fixing 'withMerge' script
+      compliment to 3f4349 contributed by Jean Pourroy and Thomas Guntz
+      erase remotes only if they are no longer intersecting (FIX deadlock)
+      insert interactions more selectively + simplify mpi imports
+      fix InteractionContainer::erase (suspected memory leak if b2 exists with b1 erased) + handle linIx in insertInteractionMPI
+      insertInteractionMPI: avoid overwriting a real interaction by it's virtual version
+      let linIx be handled by the insertion function
+      Revert "erase remotes only if they are no longer intersecting (FIX deadlock)"
+      code cleaning
+      delete interactions immediatly after erasing body + revert change in InteractionContainer::erase (now useless)
+      never re-use an erased iterator...
+      faster implementation of interaction container's withBody() and withBodyAll()
+      do not use ISCollider::targetInterv if =0
+      insert updateMirrorIntersections in a PyRunner + non-blocking send force + avoid useless collision detection by setting maxVelocitySq=0.5
+      add a MPI communicator to Subdomain, assignable from python
+      add missing MPI_Comm declaration
+      Subdomain::selfComm as a generic comm getter
+      fix some communications which were buggy on ubuntu 16.04 (L132+L567) + keep runners listening after executing one command from master
+      assign merged communicator to subdomains and use it everywhere
+      USE_CPP in interactive case
+      MPI.Finalize after script execution
+      mpy.initialize() takes no argument and is no longer mandatory for interactive execution
+      a simple script which runs interactively or not without calling the initialize()
+      remove irrelevant comment in mpi example scripts
+      demonstrate getting stuff from workers interactively
+      a function sending commands to mpi workers and getting returned values
+      increase frequency of Iprobe and time the sendCommand() function
+      O.sceneToString() returns python bytestring with python3 (fixes #87)
+      conclude mpi->master merge
+      checkScript for mpi (currently failing for lack of default engines most probably)
+      apt install python3-mpi4py
+      add mpi4py to installation.rst
+      workaround mpi issue with checkList.py (and other cases where a mpi script would be execfile'd)
+      insert the default engines in mpiCheck.py
+      skip checkMPI.py for the moment
+      rename Correctness->Constantness for the original collider checkScript
+      new collider corectness script
+      no need to 'apt install mpi4py' now, it's in the docker image
+      fix compile warning (and possibly wrong behaviour?)
+      add reference data (from yadedaily 2018.02b-290bf6a54e~xenial) for new colliderCorrectness.py + make it a functionnal checkScript
+      move checkColliderConstantness.py to skipped checks (because we don't want to freeze algorithms, we want correct results)
+      why is mpi4py not in the docker image after https://gitlab.com/yade-dev/docker-yade/commit/644ffdad0feba9c625cb7ba7e741445ad8737c81 ?
+      compile everything for this MR
+      "apt install python3-mpi4py"  not needed now (hopefully)
+      disable 'Giula' test
+      last argument of interaction erase() is optional
+      fix compilation without MPI
+      MPI: make COPY_MIRROR_BODIES_WHEN_COLLIDE = True the default
+      add path where mpi.h actually is on ubuntu 16.04
+      try MPI_CXX_INCLUDE_PATH pathname
+      remove trailing spaces in compile/link flags (policy CMP0004)
+      fix trailing spaces inserted in flags by FIND_PACKAGE(MPI) (breaks policy CMP0004 only with openmpi v1 on ubuntu16.04 build)
+      final (?) fix of CMakeList's ENABLE_MPI
+      disable suse15 build
+      enable all first 3 stages for all distros but suse15
+      checkList.py: test checkMPI.py on multiple platforms
+      try fixing mpi in docker
+      gitlab-ci.yml:  OMPI_MCA_rmaps_base_oversubscribe=yes
+      Revert "gitlab-ci.yml:  OMPI_MCA_rmaps_base_oversubscribe=yes"
+      Revert "try fixing mpi in docker"
+      Revert "checkList.py: test checkMPI.py on multiple platforms"
+      fix checkMPI.py (locally)
+      checkMPI.py on ubuntu16.04 only, else in skipScripts
+      a more robust test for linux version == ubuntu 16
+      redirect exception info from worker to master prompt + fix sendCommand() with single executor
+      try mpicxx without gold linker
+      Revert "try mpicxx without gold linker"
+      Update .gitlab-ci.yml: replace mpi4py deb package by pip install
+      Update checkList.py: check mpi for all versions
+      Update .gitlab-ci.yml: experiment mpi4py install
+      Update .gitlab-ci.yml: apt update before install
+      Update .gitlab-ci.yml: workaround interactive pip install
+      Update .gitlab-ci.yml
+      Update .gitlab-ci.yml
+      Update .gitlab-ci.yml
+      revert previous experiments with pip install
+      Update .gitlab-ci.yml: use pip install selectively for 18.04
+      A note on mpicxx vs ld.gold conflict
+      before mpi spawn, os.environ['OMPI_MCA_rmaps_base_oversubscribe'] = "yes"
+      fix indent
+      fix indent (2)
+      fix tab(3) - note: typing tabulations in gitlab GUI is a pain
+      revert 7846dacdc
+      Update mpy.py (yes->true)
+      export OMPI_MCA_rmaps_base_oversubscribe on Buster and 18.04
+      export OMPI_MCA_btl_vader_single_copy_mechanism=none (https://github.com/open-mpi/ompi/issues/4948)
+      check mpi script only, with more verbose output
+      os.environ['OMPI_MCA_rmaps_base_oversubscribe'] = "1" (seems to be not exactly equivalent to 'export' in bash based on local failure statistics)
+      checkMPI.py: consistent use of numThreads
+      run mpi check in degraded mode
+      Add yade.timing.runtime() which was lost in the merge somehow.
+      checkMPI.py: change normalized error definition
+      run all checks, mpi check only on 16.04 and buster
+      decrease checkMPI.py verbosity
+      Update checkMPI.py: fix displayed mismatch on Ek
+      Update .gitlab-ci.yml: try the OMPI exports again
+      include master in body-copy, else master bodies will never be visible to initially remote subdomains
+      remove debug messages and decrease verbosity of mpi
+      simplify and improve mpy.updateMirrorIntersections by handling master inside the same loops
+      use default mpi settings in 3D_bissection example, and tune gravity and verletDist
+      fix #92
+      mpi: more tunning of verbosity and code cleaning
+      checkSpawn.py will fail on same distros where checkMPI.py will fail, add it to skipList
+      skip checkSpawn.py always for the moment
+      Update checkMPI.py: less empty lines
+      make the FEM code optional (why is it in /DEM btw??)
+      more #ifdef MPI for mayCollide()
+      no YADE_PLUGIN for BodyContainer (fix #93)
+      boost exports BodyContainer
+      try fixing #94
+      code cleaning
+      export OMPI_MCA_btl_vader_single_copy_mechanism=none for openFoam test
+      do not use colorsys in checkMPI.py
+      fix checkMPI.py
+      two smallfix's in documentation
+      a more robust cmake when cgal or pfvflow are disabled and dependent modules are enabled (2PFV, Thermal, PotentialParticles)
+      proper detection of mpi4py by cmake (fix failed #include mpi4py.h on cluster)
+      use 'python' as a possible component name for detecting libboost_python37 (case of Boost1.71 on Gricad clusters)
+      fix cmake warning
+      remove inconsistent findNumpy and fix finding boost_python version for boost>1.67
+      fix cmake sequence (USE_WARNING_ERRORS modified after being passed to cmake)
+      make sure boost_python will be linked
+      avoid dual linkage against 2.7 and 3 versions of boost_python
+      manual linkage of boost_python since boost1.71 will not link it apparently
+      fix boost version check
+      include *.nix scripts in trunk (derived from https://github.com/williamchevremont/nix-yade)
+      smarter setting of vertexHandles size
+      code cleaning (unused attributes and functions in Tesselation)
+      continue cleaning (inefficient + untested + probably broken collider)
+      remove unused #include
+      fix compilation without ALPHASHAPE
+      cmake accepts pre-defined PYTHON_EXECUTABLE
+      add missing python dependencies to nix scripts
+      fix finding python
+      robust way of accepting user-defined PYTHON_EXECUTABLE
+      dimentionless -> dimensionless
+      +1 journal paper
+      Fix ISCollider crash after reset()
+      fix typo in InsertionSortCollider.cpp
+      fix checkScript checkAvoidSelfInteractionMask.py
+      make Collider::avoidSelfInteractionMask a non-static attribute (makes more sense)
+      Better handling of sparsity in BodyContainer-ISCollider-ForceContainer + improvements of MPI parallelisation
+      fix ENABLE_MPI=OFF compilation
+      fix compilation with OPENMP and MPI=OFF
+      relevant printed output in checkScript
+      fix bracket
+      fix unused variable with ENABLE_OPENMP=OFF
+      recommit 56f68b7
+      remove features addMove() and addRot() (it fixes #120)
+      MPI: preliminary body reallocation functions and example
+      MPI: some functions to migrate bodies between subdomains + concrete example
+      MPI: insert re-allocation of bodies in the parallel colliding
+      improvement of reallocation mechanism with a synchronous pairing system, concrete example in a 3D script
+      MPI: comment out vtk section is example script
+      fix no-MPI compilation
+      fix false-positive runtime error with O.dynDt=False (raised by 'make doc')
+      Fix O.dynDt=False again
+      Revert "Make sure that pyInteractionContainer is not accessing a body with id==-1, which caused crash in GUI Inspect."
+      fix inspector querying interactions with body -1
+      install 'yade.py', a symlink to yade used for python imports
+      fix copyrights (deprecated email adress + some new occurences)
+      remove remaining FOREACH loops on bodies
+      fix attribute name
+      MPI: preliminary body reallocation functions and example
+      remove features addMove() and addRot() (it fixes #120)
+      fix minor merge conflict
+      add files for mpy doc
+      some more mpy doc (1)
+      Update mpy.rst
+      enable MPI initialization with empty scene and no script
+      MPI: new example script
+      MPI doc (2) + minor improvements
+      mpi doc (3)
+      MPI: fix QGL view of bounds (class index of Bound is -1 -> GL dispatching crashes)
+      switch between intital and modified list of engines upon split/merge
+      MPI: make an example script more fun
+      smallfix for DISTRIBUTED_INSERT + inline doc
+      MPI: new example script
+      mpi doc (4)
+      MPI: mp.initialize() enables a primitive python shell after mpiexec + code refactoring
+      MPI: make mp.initialize(n) compatible with mpiexec + improve bodies coloring
+      with DISTRIBUTED_INSERT detect maxId before inserting subdomains
+      MPI: improved example script
+      MPI: revert automatic setting of numThreads in example script (doesn't work yet with spawn)
+      MPI: mpy provides colorScale for bodies
+      MPI: remove 'mit' option, avoid crash on exit, no need to initialize() in user scripts
+      clean exit of all possible executions (see preamble of the test script)
+      code cleaning
+      rename exemple script and add new ones for perf measurement
+      MPI: fix default numThreads in mpirun (was blocked at initial value=1...)
+      MPI: some helper function
+      use minimal intersections (dirty code to clean)
+      clean minimal intersection code (see 6df516dcc) + mpiStats for timings
+      MPI: use timing_comm more systematicaly
+      do not include mpy.rst in toctree yet
+      smallfix
+      fix usage of make_shared
+      OMPI exports for all distros
+      checkMPI on all distros
+      no #include in yade namespace
+      apply remesh interval properly (after N intead of N+1); fix hyperlinks in FlowEngine's doc
+      remove debug message
+
+Deepak Kunhappan (262):
+      short note on the coupling
+      Engine for openfoam coupling
+      example script of foam coupling engine
+      option for compiling foamcoupling engine
+      Update CMakeLists.txt
+      Fix a small bug
+      fix a small bug
+      Added mpilibs in the prerequisites and installation section.
+      Fix references
+      fix OpenMPI link
+      Move the initMPI() function from FoamCoupling.cpp to _utils.hpp.
+      Remove MPI_C_LIBS from CMakeLists.txt
+      remove openmpi-common and libopenmpi1.10 from prerequisites, file: installation.rst
+      fix isGaussian varible.
+      add comments in the example script.
+      Added "ENABLE_FOAMCOUPLING" detail in the installation.rst file.
+      reset hydroforce before summation
+      include the openfoam config files in the example dir, added comments in the example script
+      Delete scriptYade.py : Deleting because, the file exists in example_icoFoamYade dir
+      yimport.py to yadeimport.py
+      correction in comments (line numbers)
+      include description for ENABLE_FOAMCOUPLING flag
+      ENABLE_FOAMCOUPLING to ENABLE_MPI
+      change from ENABLE_FOAMCOUPLING to ENABLE_MPI in the optional packages section.
+      Add details about the hydrodynamic forces and interpolation
+      ENABLE_FOAMCOUPLING to ENABLE_MPI
+      add openfoam coupling example
+      test example
+      remove empty lines
+      reduce timestep for stability
+      change dimensions to match low Re requirements
+      maske example following low Reynolds number validity
+      example for pimpleFoamYade solver (high Re)
+      correct comment in example L64 : pointing to pimpleFoamYade solver.
+      insertBodyAtId function, put body to container
+      a fake bodycontainer to put bodies, serialize and send in messages
+      expose insertAtId function to python
+      serialize and deserialize container
+      move from mpi_dpk to mpi branch
+      function to insert interactions from recieved bodies.
+      set interactions in master proc during the merge operation
+      remove mpf.py from local branch
+      cleanup : remove displaying of interaction sizes (std::cout)
+      example for testing merge : based on sending bodies + setting interactions in master proc.
+      comment on std::cout parts and add some comments for description
+      change passing of shared_ptr<Interaction> by value to reference
+      merge with interactions-> add flag : MERGE_W_INTERACTIONS
+      add comment on subD.getRankSize()
+      correct interactions: WIP
+      correct interactions --> intrs insertion during merge : WIP
+      fix compilation errors -> function prototypes for setBodiestoContainer and setBodyIntrsMerge in Subdomain.hpp
+      set the subdomain for the newly inserted body.
+      move interactionContainer->dirty from global merge to the point when new bodies/new interactions are set.
+      bodies are now assigned--> 1. interactions & materials are first strored tmp, 2. oldbody=recvdbody, 3. set material and interactions ->(dealt by interactioncontainer)
+      correct some issues with MERGE_W_INTERACTIONS, use the forceRunner as usual
+      correct example--> shows the num interactions, forces and details
+      correct merging operation and clearing of interactions in the master proc
+      flag to count number of merges
+      merge test example
+      add param ranksSet
+      remove std::cout
+      print info on num real interactions
+      WIP:bisection decomposition, serial and parallel
+      minor fixes : Call MPI_Wait to complete and make sends safe, deallocate memory of send buffers after send completion for BodyCopy algorithm.
+      revert change in L324: b->material
+      revert change in L324: b->material
+      Issue in global merge with interactions : segfault 11 in ERASE_REMOTE appears after random number of merge/splits
+      Fix error : RuntimeError: vector::_M_default_append and some aesthetic code clean up.
+      send bodies after 1st mergesplit : (sending bodies from master are optional), avoids scene broadcast for each split and prevents memory leak, thanks to copyBodyalgorithm.
+      fix my mistake (accidental erase of reqs=[[req[0]] for req in reqs] in copybody algorithm -->
+      recv bytearrays using comm.Send & comm.Recv from workers, message size is determined by probing (just for demo and test)
+      change print statements to python3 syntax in example/test scripts.
+      remove old bisection decomposition
+      bisection domain decomposition
+      bisection example
+      two fixes : issue ERROR when body is not present in subdomain to avoid potential crash, delete char buff in receiveBodies function (this was leading to memory leaks)
+      run for short duration
+      run for short duration
+      import from __future__
+      import __future__
+      python to python3 testOpenFoam.sh
+      __builtin__ to builtins
+      python to python3 in instructions
+      throw exception if max vel of body exceeds imposed shear vel. python to python3 in instructions
+      python to python3 in instructions
+      try fixing issue #96
+      fluidCoupling = yade.FoamCoupling() --> pipeline jobs fail with error "NameError: name 'FoamCoupling' is not defined"
+      fluidCoupling = yade.FoamCoupling() --> pipeline jobs fail with error "NameError: name 'FoamCoupling' is not defined" (example pimpleFoamYade)
+      options to insert/delete particles in coupling
+      fix deadlock in broadcast, resize arrays before broadcast
+      clean previous compilation files : ./Allclean.
+      remove existing source for coupling (test on runner)
+      fix merge operation with body reallocation
+      hard code colours, removes dependency of colorsys, webcolors
+      rebase from master
+      fake subdomain to represent fluid grid bounds, use this to simplify locate particles in fluid grid and fluid proc
+      option to split mpi communicator
+      working comm split
+      rebase from master, fix mpy.py
+      correct indentation error at L877
+      remove print statements.
+      fix castTerminate
+      set indentation
+      suppress readding of mpi engines after loading simulation
+      get subdomain ids from scene, and id of the subdomain of the current subdomain from scene
+      set the subdomain ids to O.subdomainIds, and O.thisSubdomainId
+      get fluid domain min and max bounds
+      domain intersections, send intersections, check body type, send body data
+      todo : verify particle detection in fluid solver
+      method to detect if all particles are located v1
+      add force/torque
+      fibers in MPI example
+      decompose fiber type bodies
+      attribute fibreList for fibre bodies (gridNode+girdConnection)
+      remove unsused function warning error in Bo1 functor for FluidDomainBbox_Aabb
+      fibers decomposition modification in driver function
+      fix some bugs/errors foamcoupling
+      driver fucntion and fixes
+      option to use GlobalStiffnessTimeStepper in parallel
+      expose subdomain body id and mpi communicator to scene
+      use GlobalStiffnessTimeStepper in parallel mode, (to fix doesn't work with set updateinterval)
+      get communicator directly
+      functions to set subdomain body ids to scene
+      enable use of GlobalStifnessTimeStepper in mpi simulations
+      function to run parallel coupling + flag for serial coupling
+      flag to enable/disable parallel timestepper
+      some fixes and additions : get dt from fluid procs, build local list of ids from global input of ids list
+      add flag for fluid coupling, body ids for fluid coupling.
+      update the serial version of coupling, option to insert/erase bodies from coupling : global list of ids and a list local to each proc.
+      scene->mpiComm doesn't work, needs fix
+      flag for parallel coupling mode
+      option to set a global list coupling body ids
+      check ranks, commsize to debug
+      scene->mpiComm
+      mpi communicator handle (pointer) in scene,getter and setter , (from Subdomain)
+      pass communicator to scene
+      use scene->mpiComm() communicator for all_reduce min operation on timestep
+      in testing, to fix verify tracking method and communication of forces
+      add flag for  parallel fluid coupling, set communicator to fluid coupling engine, bound functor for fluid grid bounding boxes, introduce a global list of bodies in coupling
+      fix verifyParticleDetection
+      remove std::couts
+      small fixes, to fix intermittent crashes
+      try fixing collider trigger every timesterp, fluidDomain bodies are not erased
+      remove std::cout
+      fix adding force and other minor fixes
+      exclude fluidDomain body from unbond
+      add flags for fluidDomainBbox shape, getters and setters
+      skip fluidDomainBbox from integration
+      setIsFluidDomainBbox parameter for fluidDomainBounding boxes
+      some minor fixes
+      scene has access to the subdomain (shape) and functions
+      list of subdomain ids body id (subdomains) is a member of Subdomain class
+      getters and setters for scene->subD
+      add vtkIOParallelXML  to CMakeLists, in FIND_PACKAGE VTK
+      vtkrecorder for mpi cases, to fix seg faults and data writing (experimental)
+      almost working but loading .pvtu files fail
+      parallel reader .pvtu ready, to fix seg fault in REC_INTR
+      fix rec_intrs
+      working interaction recorders.
+      expose setIDstoSubdomain function to python
+      use setIDstoSubdomain function to set the bodies owned by the master into its subdomain
+      working VTKRecorder for yade-mpi, add comment on implementation.
+      example demonstrating use of VTKRecorderParallel engine, GlobalStiffnessTimeStepper
+      remove cout
+      less number of fibers, reduce file size of fibnodes.dat
+      fix rebase mistake on FoamCoupling
+      fix rebase mistake on FoamCoupling
+      remove large file, amend example
+      amend file name fn to pfn
+      small fix in filename
+      with namespace yade
+      with namespace yade on VTKRecorderParallel
+      fix getComm
+      set subD shape in scene via O._sceneObj
+      add label to engine : InsertionSortCollider
+      get collider from utils_typedEngine
+      labels need to be set in userscript
+      labels need to be set in userscript
+      use double quotes for InsertionSortCollider, when getting collider using typedEngine
+      forward declaration of class Shape, subD shared_ptr instantiated by boost::make_shared
+      remove empty line
+      use master's gitlab config gile (.gitlab-ci.yml)
+      rename fbtest.py to exampleFibresMPI.py
+      add comment in the coloring module
+      fix comment quote
+      projected bounds and median filter in CPP
+      flag to use medianfilter and projectedbounds from cpp : USE_CPP_MEDIAN
+      fix stupid mistake of index
+      migrateBodiesSend in CPP, update of local ids.
+      migrateBodies send
+      fix bug when ERASE_REMOTE_MASTER=False
+      update of intersections and mirrorInters in cpp
+      rename checkNeedCollide to checkAndCollide, (fix rebase mistake)
+      skip deleted bodies
+      skip deleted body in computeTimeStep
+      minor fix
+      calculate cm just once, rewrite of while loop
+      chane in medianFilterCPP function
+      add timings, fix minor issues in body realloc fucntions
+      rename USE_CPP_MEDIAN to USE_CPP_REALLOC
+      remove redundant communicator in scene
+      remove getters and setters for scene->subdomain, (redundant now.)
+      fix on getting subdomain, ensure coupling works with body realloc.
+      comment printing timings in body realloc
+      parallel openfoam coupling example
+      handle periodicity in subdomains, wip
+      rewrite subdomain bounds for periodic case
+      fix meanPos and bounds for periodic case
+      remove calling of setPos function, as it is useless for calculating subdomain bounds for periodic boundaries
+      remove updateDomainPos, useless
+      explicitly add body ids for master subdomain
+      remove previous testing functions
+      remove previous test/toy and useless functions, correct bound calculation for perioidic cases
+      minor fix loop through bounds with actual number of bodies in periodic case
+      remove useless call to MPI_comm_rank
+      cast double to unsigned int (for size of VecBound member)
+      remove duplicate include for subdomain
+      use master bracnch's gitlab config and checkList.py
+      skip subdomain overlap from allowBiggerThanPeriod test, loop using vcBound size in perioidic case
+      single VTKRecorder class for serial and non parallel case : wip
+      working vtkRecorder excep multiblock(mpi)
+      replace typedef with using keyword
+      replace functor with lambda expression for sorting projectedBounds
+      activate REC_SUBDOMAIN in parallel runs by default
+      remove VTKRecorderParallel class (duplicate)
+      remove subDoverlap from assertion (subdomains can have one or two dimensions larger than half the cell size)
+      change branch for serial openfoam test
+      modifications for serial case
+      fluid bodies(fluid mesh bounding box) can have bounds larger than half of the cell size, skip them from testing allowBiggerThanPeriod condition
+      skip collision between fluid mesh bounds and subdomains,
+      skip adding sweep length to fluid mesh bounds
+      do not avoid collision between fluid mesh bounds and subdomains
+      some improvements
+      mirrorIntersections can be updated in cpp, use in case of issues with mpi4py (haven't fully comfirmed yet)
+      few fixes
+      insert fluid domain mesh bounds before subdomains, option to use getMirrorIntersections from cpp, skip adding forces for fluid mesh bounds in master, (ACCUMULATE_FORCES)
+      use non blocking sends in updateLocalIds
+      comment on std::cout, and remove unused function
+      flag and comment got cpp_inters
+      move shape checking to seperate function
+      rename function, fix typo
+      small fix in recording peri cell
+      remove std::cout
+      minor fixes
+      correct vtkrec example
+      fix bounds setting in subdomain periodic case
+      set correct preiod in spatial overlap peri for subdomain interaction, still needs fix
+      fix rebase errors
+      use body pos to get periodic shift
+      revert previous setting of period
+      remove duplicate line
+      remove openfoam trademarks
+      small fix to terminate
+      parallel run example script
+      parallel run example script
+      parallel coupling test
+      add spheres dir and scriptMPI to test
+      change function signature to void
+      remove useless vector of mpiStatus
+      change prototype in header file
+      correct eraseId function
+      fix typo
+
+François Kneib (104):
+      [CMake] minimal changes to FORCE python 3.
+      [Doc] Write small README.rst
+      Update todo list in readme
+      Update readme with status
+      [Futurize] Pre-futurize changes: in python3, "raise" statement must be succeded by a standard error.
+      [Futurize] A bit of cleaning before apply.
+      [Futurize] APPLY FUTURIZE STAGE 1
+      [Futurize] fixes after stage 1 (still running with python2.7 for now)
+      Update readme and force python2 for now in cmake.
+      Test changing string to wstring in materials
+      Revert changes to reach the state before futurize --stage1.
+      Revert changes to reach the state before futurize --stage1.
+      Revert changes to reach the state before futurize --stage1.
+      Revert changes to reach the state before futurize --stage1.
+      Apply futurize stage1 without unicode_literals
+      [Python3] Futurize --stage2 with default opts.
+      [Python3] Replace pygts by Vaclav (woodem) one.
+      [Python3] fixes after futurize stage 2. Mostly import syntax and indent.
+      [Python3] Fix embeded PyInt no longer exist in python3.
+      [Python3]Fixed an error at launch.
+      [Python3] Say hello to Python3 !
+      [Python3] Some "raise" and indent fixes.
+      [Python3] Rename iterators "next()" python binding to "__next__()". Also assure python2 compatibility with bindings.
+      [Python3] Fix direct import of some modules/packages (like geom) in scripts.
+      [Python3] Update readme.
+      [Python3] Drop old version of pygts.
+      [Python3] Remove the "old_div" from the futurize --stage2 as it is buggy.
+      [Python3] Fix pickling to Omega().tags and saveVars to zip. yade tests now pass 100% !
+      [Python3] Fix GUI.
+      [Python3] Update README, yade tests are now working.
+      [Python3] Add a cmake option USE_PYTHON3 which is OFF by default for now.
+      [Python3] Start to fix python2 with: builtins import, XMLRSPServer import, ld/DLFCN import
+      Update .gitlab-ci.yml: install python3 required packages.
+      [Python3] Removed "from builtins import str" which makes no difference in python3 but fixes things in python2.
+      [Python3] This should fix python version selection for cmake<=3.7
+      [Python3] Fixes to pass checks (import errors and fix _packPredicates to fit new pygts)
+      [Python3] Fix import for python2
+      [Python3] Clean examples as python3 doesn't deal with mix between spaces and tabs in indent lines.
+      [Python3] Change pickle protocol to 0 in saveVars.
+      [Python3] Update README.
+      [Python3] Fix collider check (python3 and python2 do not loop over dicts in the same order).
+      [Python3] Update .gitlab-ci.yml to do apt install at each step. Update README.
+      [Python3] Add python3-ipython in packages install.
+      [Python3] Replace `print ...` by `print(...)` in all rst files.
+      [Python3] Fix doc, with references (bib2rst) disabled for now. Love to fix things before weekend :-D
+      [Python3] Should fix doc compilation on gitlab.
+      [Python3] Enable references again, replace python-bibtex by python3-bibtexparser.
+      [Doc] Fix 2 references.
+      [Python3] Add python3-bibtexparser to gitlab pipeline installation script.
+      Update .gitlab-ci.yml, remove python3 installation packages now embedded in docker image.
+      [Python3] Try to fix doc encoding error.
+      [Python3] Try (again) to fix doc encoding error.
+      [Python3] Further investigations on doc compilation error on gitlab pipeline.
+      [Python3] Fix doc encoding, story continues...
+      [Python3] Fix doc encoding, next episode...
+      [Python3] Investigate sphinx latex not running (remove try...except).
+      [Python3]Fix packings save/load in sqlite, thus fixing tunnel-pack.py example.
+      [Python3] Digging a little bit more for latex-doc not working.
+      [Python3] Try to make sphinx print the error msg.
+      [Python3] Try to fix make doc with threads. This results in an error at the very end that can be ignored as doc is fully compiled.
+      [Python3]Trigger gitlab build
+      [Python3] Remove checkPolyhedraCrush.py from checks until it is fixed.
+      [Python3] This should (may?) fix doc compilation on docker image.
+      [Python3] Last try of the day to fix doc on docker.
+      [Python3] Forgot something.
+      [Python3] Fix boost search for all python/debian/ubuntu versions.
+      [Python3] Doc: add a fourth pass for workarounds, remove -i option to cmake.
+      [Python3] Doc: force utf8 while opening files to avoid encoding errors.
+      [Python3] Fix backslashes in Yade.pdf on ipython outs.
+      [Python3] Doc: fix class diagrams sizes in pdf.
+      [Python3] Fix doc inheritance diagrams. Champaign, this should be the last commit to fix doc with python3 !
+      [Python3] Fix python2 checks.
+      [Python3] Change cmake behavior for python version:
+      [Python3] Update doc.
+      [Python3] Doc: add a comment in code to explain gitlab/docker bug (python exits).
+      [Python3] Write doc for python3.
+      [Python3] Fix yade-batch, http server, plot.saveDataTxt()
+      [Python3] Fix 4 last examples.
+      [Cmake] Automatically fallback to an older version of python if all packages and libs were not found.
+      Fix CMakeLists.txt to find libboost_python on opensuze (hopefully)
+      Allow simulations to be reproductible regardless of verletDist or serial/mpi implementation
+      Fix periodic collider (issue due to ids swap) and use scene.doReproducibleComputation instead of InteractionLoop.loopOnSortedInteractions.
+      Rename doReproducibleComputations by loopOnSortedInteractions.
+      Fix last commit, forgot one occurence of "doReproducibleComputations"
+      Revert "Fix last commit, forgot one occurence of "doReproducibleComputations""
+      Revert "Rename doReproducibleComputations by loopOnSortedInteractions."
+      Revert "Fix periodic collider (issue due to ids swap)"
+      In collider, force interactions to be instanciated such as id1<id2.
+      Merge mpf.py to mpy.py, tiny fix to make both produce the exact same simulation (wasn't the case).
+      Removed testMPI_2D_withMerge.py, use testMPI_2D.py -ms instead.
+      Start cleaning operation: make a clean communication timing class over mpi4py
+      Update testMPI_2D.py to speed-up tests (6 mergeSplit within 1000 iters).
+      Add mergeScene() comms to timing_comm (Gather and Gatherv).
+      mpy.py cleanup, plus:
+      Just a small goodie: master prints are now in bold.
+      [mpy.py] Simplify updateDomainBounds() logic with using Allgather instead of a set of send/irecv.
+      New MPI feature: copy mirror bodies when collide is needed.
+      Copy mirror bodies improvements
+      Allow simulations to be reproductible regardless of verletDist or serial/mpi implementation
+      Replace InteractionLoop.doReproducibleComputations by Scene.loopOnSortedInteractions. Make code fit to master.
+      Put eraseRemote in a function, call it before copy mirror bodies to avoid copying interactions of erased bodies.
+      Revert some changes, force collider to create intrs with id1<id2 in all cases. To do reproducible sims, please use interactionLoop.loopOnSortedInteractions=True as before.
+      Add an init method to Subdomain class that sets the rank, the commSize, and set a buffer size.
+      Add MPI interactive mode (yade -mit X).
+
+Jan Stránský (10):
+      fixed some examples
+      corrected parameter type in pyOmega::stopAtTime_set
+      added MatchMaker for kn and ks of Ip2_FrictMat_FrictMat_FrictPhys
+      fixed Py2/3 code if ENABLE_MASK_ARBITRARY=ON
+      deleted unreachable and wrong code from export.textExt
+      what argument of export.VTKExporter.exportXYZ is now dict
+      improved docstrings of export.VTKExporter
+      user's manual, fixed phys.normalForce() -> without ()
+      fixed typo in Polyhedra.hpp docstring
+      fixed python3 print in doneHook in peri3dController examples
+
+Janek Kozicki (699):
+      re-checked the examples. Needs clarification about helix.py and pv_section.py
+      with cmake -DDEBUG=0 there is less spamming. I marked 4 four examples as fully working thanks to that.
+      Fix OpenGL compilation problem in Gl1_PotentialBlock
+      Note about the "Assertion '!swap' failed" message.
+      PotentialPartcile examples: BlockGen is no longer creating empty files "BlkGen" and "BlockGenFindExtreme.txt"
+      PotentialParticles & PotentialBlocks examples work nicely now.
+      Amend github.rst doc with information how to pull a branch after it was rebased on the gitlab server.
+      Fix examples/test/helix.py, add note ragarding paraview versions inside pv_section.py
+      Remove last compilation warnings from Gl1_PotentialBlock.cpp and BlockGen.cpp
+      I think I found a way to fix the ipython keybindings F12, F11, etc.
+      Fix the banner, so that key name F12, etc are shown in bold using standard terminal ansi codes, and word help is underlined.
+      Catch exception in case when there is nothing to plot
+      Depending on ipython version the keybindigs registry sits in different places.
+      getattr → hasattr, for greater compatibility.
+      For even greater compatibility check this hasattr all the way down.
+      Add note in docs about enabling ptrace in newer linux kernels; Fixed execution of an example inside documentation.
+      Replace the "No help available" helpString() with something meaningful. We coud add there some more useful stuff.
+      Fix numerous bugs in introduction.rst: not working examples, broken links, etc.
+      Improve GLViewer::helpString() a little.
+      Explain in documentation how BoundFunctor works.
+      Explain in documentation how interaction geometry functor works - add missing picture.
+      Better ScGeom docstring formatting, now it almost looks like the .rst file. Easy to read and write :)
+      Add a litte longer explanation about what happens when collision does not exist, mention isReal.
+      Improve existing image of dispatch loop (it wan invisible in html, in .pdf it worked), add example phys-functors and aw-functors.
+      Added examples of concrete classes in Body and in Interaction, to give a borader view.
+      Remove older image of dispatch loop, fix some typos.
+      Fix typo in yade-iter-loop.svg
+      Due to rendering problems in chromium and firefox I change the name of the source yade-iter-loop.svg file, so that sphinx will use .pdf and .png instead.
+      Fix some typos found by Vasileios Angelidakis
+      Fix typo in the picture showing in LawFunctor and LawDispatcher
+      Add :caption: Inheritance graph of %s ; Fix graphs sizes in .pdf file.
+      Fix bugs in tutorial-hands-on.rst - not working inline scrips, typos, links, etc.
+      Fix crash (RuntimeError: Secondary views not supported) when trying to open a secondary View (F10,F11)
+      Add :ref: to inheritance graphs, they can be now referenced from other parts of documentation. Add links to gitlab.com/yade-dev/trunk/issues/29 in list_of_examples.txt, fix some of tutorial-data-mining.rst
+      Add extra info on qt-gui.png
+      Add links to inheritance graphs in introduction.rst
+      fix more broken links and typos in tutorial-data-mining.rst
+      fix https://gitlab.com/yade-dev/trunk/issues/25
+      fix :yref: to all _utils in tutorial-data-mining.rst
+      fix examples in tutorial-data-mining.rst
+      found a bug in PyRunner, needs discussion see: https://gitlab.com/yade-dev/trunk/issues/53
+      small fixes in tutorial-data-mining.rst
+      rename label newton to newtonCustomLabel so that the tutorial is more obvious for readers.
+      Improve section Keeping history in tutorial-data-mining.rst
+      Add example section to tutorial-data-mining.rst
+      fix links to gravity deposition script
+      Small fixes in tutorial-geo.rst about running example yade-batch
+      Add figure with better explanation how yade-batch works.
+      Small fix in defaultMaterial() docstring about correct invocation of .. code-block:: python
+      Small fixes in periodic description, smaller radius to avoid "Body larger than half of the cell size encountered" message
+      fix broken links in tutorial-advanced.rst
+      Larger rMean so that tutorial-geo.html will not be flooded after  sp.toSimulation()
+      Add :ysrc:`doc/sphinx/tutorial/05-3d-postprocessing.py` references to files, add one video
+      Start work on more examples (maybe 215 of them?). Just introduce new almost empty chapter.
+      Update list_of_examples.txt with information about whether a video of this example is uploaded.
+      Write a script which automates creating videos of examples.
+      uploaded some videos.
+      Uploaded remaining videos
+      Add some explanation inside an example script.
+      Write script that will automatically add videos to doc/sphinx/tutorial-more-examples.rst
+      First version of automatically generated tutorial-more-examples.rst with links to videos
+      Mark with 'YES' which examples were added to tutorial-more-examples.rst, so that they won't be added again by this script.
+      Fix :ysrc: link
+      A little better list_of_examples_append_to_rst.sh, now it can regenerate entire tutorial-more-examples.rst
+      Better automatically generated tutorial-more-examples.rst
+      Fix hyperlinks in .pdf file
+      More readable .pdf file
+      Add tutorial-more-examples-fast.rst without embedded videos
+      Add links back and forth between fast and slow page with videos.
+      Add section in tutorial about using multiple plot windows
+      Fix #12 - add to do documentation info about how to use multiple plots, add a video.
+      Add the new video about multiple plots to tutorial-more-examples.rst
+      Small fix: replace underscore '_' with space ' ' tutorial-data-mining.html#using-multiple-plots
+      Remove Using multiple plots section from tutorial. Sorry about mixing it with the 129 videos merge request anyway.
+      Revert "Remove Using multiple plots section from tutorial"
+      Move the helper scripts to proper directory: scripts.
+      Change path to ../examples/list_of_examples.txt from new place where scripts are located.
+      Small fixes in first two sections of Programmer's manual: source tree and #include
+      Replace tabs by spaces in table, becasue they did not align correctly on gitlab's 'Changes' info.
+      Update Hosting and versioning section in Programmer's manual.
+      Since last 3SR build was on 1st February I think it is time to Fix issue #49. Build robot info now points to gitlab pipelines.
+      Fix some typos in Regression tests section.
+      fix few typos in Conventions
+      Mention of GlobalEngines and PartialEngines links to inheritance graphs
+      Explain in caption of inheritance graphs what are those gray dashed boxes, e.g. in GlobalEngine. Make those gray boxes to link to their respective inheritance graphs instead of classnames below.
+      Fix typos and non-working snippets in user.rst
+      Fix name 'damping' is not defined
+      Add .png versions of images yade-multi-gnuplot*.svg, because *svg is often badly displayed in a browser.
+      Add link in example to user manual
+      Fix link to iphyton website
+      Fix link to inheritanceGraphMaterial
+      Fix links to inheritance graphs in user manual, fix some inline code examples.
+      Update info about returnSpherePack=True and spheres.toSimulation() instead of obsolete method O.bodies.append(spheres)
+      Update link to esys-particle documentation. Comment out obsolete and false information about using GenGeo (but I don't know what to put there instead).
+      Fix numerous links (also to inheritance graphs) and typos in user's manual
+      More of typos and links in user's manual.
+      Add links to secondary mailing list archive. Emphasize 'How to ask questions'.
+      Change long nBodies into const size_t nBodies to avoid type conversion. And protect nBodies from changing by accident.
+      I guess I have found the cause of the problem #55
+      Fix issue #55
+      Small fix in checkList.py: print the exception, count it as failure. Fixed #45, but checkPolyhedraCrush.py fails now.
+      An older version of checkPolyhedraCrush.py passes tests with success! Fixed #45
+      Change long VecBounds::size into size_t VecBounds::size();
+      Remove obsolete assert( v.size()==v.vec.size() ); because it's the same thing.
+      Remove size_t casts, which are no longer necessary.
+      Make VecBounds::vec private, add necessary inline member functions, so that encapsulation of caching will be possible.
+      Move all methods which will take part in ecapsuation of caching into single place
+      Now it is possible to encapsulate caching, and that's what I did in this commit. We can toggle it on/off.
+      Add some extra comments
+      Enable VEC_BOUND_CACHING, so that I'll have a different yade version. This will simplyfy testing between 5f855ed80 and this one.
+      cMake will correctly detect yade version when .git is a submodule.
+      Attempt to fix multi-line comment warning when compiilng yade
+      But this doesn't work, because of a bug in g++
+      Fix #18
+      Debugging why yade -Lscipy.interpolate is not working, no success.
+      Create nearly empty checkColliderCorrectness.py script.
+      Small fixes in the dispatcher table generator
+      First seemingly reasonable version of checkColliderCorrectness.py
+      checkColliderCorrectness.py: prepare to save 'reference' results from Collider 2bc5ac90b before fixing #55. So this will be from the version of collider tested for many years.
+      Add 'reference' results, from git revision 2bc5ac90b before fixing #55, from the version of collider tested for many years.
+      The checks/checkColliderCorrectness.py is ready!
+      Remove #define VEC_BOUND_CACHING and finish work on #55. Now Collider is a little bit better :)
+      Caption under inheritance graph will have links to classes that wil be discussed in other sections.
+      Add note about packages esys-particle and python-demgengeo
+      Move childSet(…) upwards, because I'll need it soon.
+      Links in caption of inheritance graphs point to inheritance graph if it exists, otherwise they point to the class descrition.
+      Add separate sections to manual about dispatchers, functors and internal forces, so that they are not in 'Other classes' anymore. And can be linked from Programmer's manual
+      Fix link from yade.wikia.com to yade-dem.org
+      Replace http://bugs.launchpad.net/yade with https://gitlab.com/yade-dev/trunk/issues, if issue does not exist on gitlab then mention that it's a bugreport on previous launchpad site.
+      Small fixes in Programmer's manual up to 'Class naming' section.
+      Small fix in comments regarding https://gitlab.com/yade-dev/trunk/merge_requests/73
+      Add link to https://gitlab.com/yade-dev/trunk/issues/18 in comments.
+      Fix sphinx syntax errors in HydroForceEngine.rst
+      Fix link in --help
+      More links to inheritance graphs.
+      Fix some more links
+      Remove obsolete info from tutorial. Other small improvements in documentation.
+      Fix #56 mathjax does not support \multicolumn so I used \hspace{12mm} instead, and mathjax does not render to html \texttt inside \mbox, so I moved it outside \mbox.
+      Add more links in tutorial-advanced.rst about creating videos
+      Add a link to example tutorial videos online, that would work when clicked in .pdf file.
+      Add a hint about reading documentation in the .pdf format.
+      fix numerous links in .hpp files to documentation. Please remember to always use :yref:`ClassName::variable` or :ref:`section name <SectionNameAnchor>` and add an anchor in .rst file with .. _SectionNameAnchor
+      A bit smaller picture size for TesselationWrapper
+      Workaroud the bug in sphinx which cannot have clickable links in inheritance graphs in .pdf file, because sphinx cannot work with .ps files generated from graphviz. Instead I added the missing links into the figure caption.
+      The extra links in caption to other classes is sorted now.
+      Improve docstring for GlobalEngine & PartialEngine
+      This diff will adapt number of jobs depending on the $CI_RUNNER_DESCRIPTION
+      Update .gitlab-ci.yml, we can be more specific actually.
+      Update .gitlab-ci.yml, and yade-runner-01 gets -j 1
+      Update .gitlab-ci.yml. I've set concurrency=3 on 4pak. Let's see how long it is compiling with -j24
+      Update .gitlab-ci.yml. OK, I think that 30cores is a reasonable maximum for concurrency=3. There is enough RAM. Just in some rare situations when 3 jobs run simultaneously on 64cores they will be slower, not a big deal.
+      Update .gitlab-ci.yml. Added 6pak to yade runners. It's a little bit faster than 4pak. But can have only concurrency=1, because others use it too.
+      Update .gitlab-ci.yml
+      Looks like 6pak cannot handle -j 48. Not sure, I suspect problems with CPU temperature.
+      Update .gitlab-ci.yml, fortunately yesterday's problem with 6pak was unrelated to gitlab-runner. We can use more cores.
+      Merge branch 'adaptNumberOfJobs'
+      Fix typos in FoamCoupling.rst, add :ysrc:`…` to example.
+      Rename #ifdef YADE_FOAM → #ifdef YADE_MPI
+      Fix some typos in documentation and examples. Fixed #60
+      A little better titles of some chapters, propose a little different ordering.
+      Add super-chapters in TOC to make the proposed logic clearly visible.
+      Put CFD-DEM and FEM-DEM next to each other in physical-laws.rst
+      Try different sectioning in TOC, maybe this will look better?
+      Remove files which attempted to make super-chapter sectioning.
+      Fix capitalization in section titles. Physical laws→Theoretical background, Miscellaneous→Performance enhancements
+      FEMxDEM uses title more closer to original title, but a bit shorter.
+      Restore previous tocdepth in .pdf after introducing new sections in .html
+      Whoops, yade-runner is outdated. We must use 4pak, 6pak. I hope this will work!
+      Revert prev.commit which added tag 'fast' everywhere. Instead I disable group runners fr now.
+      Add extra anchor dem-background to not break older links.
+      Add some rudimentary mathematical background in FEMxDEM description from [Guo2014]_.
+      mathjax fix: \renewcommand{\mat}{\boldsymbol} - show matrix properly in FEMxDEM and other places.
+      Try different TOC section names :)
+      back to Performance enhancements?
+      README.rst: Remove broken link to buildbot, add link to debian science team (salsa)
+      fix broken link to beta.arcig.cz/~eudoxos/dresden2011/pres-3s.pdf, I uploaded newer (2011) presentation to our wiki, with updated class names.
+      update .mailmap
+      Remove execution bit from some *.cpp files.
+      Add some extra explanations about rebasing and fixing the conflicts
+      Add a bit more info in tutorial-introduction.rst
+      Since ENABLE_PFVFLOW=ON by default I move the requisites into default apt-get install command, otherwise someone might have problems with compiling yade.
+      Fix link to 'Getting help' section.
+      apt install …… command tested on: 16.04, 18.04, 18.10, debian9, debian10. Assume that new users will install on 18.04, 18.10 or a new debian. So the 'extra' instructions are now for older 16.04 ← the inverse of what was before this commit.
+      Add locales-all to 'make doc' dependencies otherwise 18.04, 18.10, debian10 can produce error: 'Building format(s) --all. …… fmtutil failed.'
+      mathjax does not understand :math:`\textgreater`
+      Small fixes and comment, link to cgal, put → instead of ->
+      Again fix link to 'Getting help' section. Remove link to wiki/Contact, also I changed the link on wiki front page and added redirect in the wiki Contact page.
+      Fix rebase conflict in .gitlab-ci.yml
+      Fix rebase conflict in CMakeLists.txt
+      README.rst: put 'good' readme on top, 'python-3 status' below. This will make it easier to merge later.
+      Start fixing conflicts in installation.rst. I need to pull in 7 chroots for testing, so I push this now.
+      [python3] apt install …… command tested on: 16.04, 18.04, 18.10, debian9, debian10. [python2] apt install not tested here, but was tested recently in 4d61e363b
+      Add some note about python2→3 script migration.
+      Add first column in examples/list_of_examples.txt to mark if example works with python3
+      Fix "Jun" in references.bib, #pragma GCC diagnostic pop - to find bugs early we need all the warnings!
+      Make base classes clickable by fixing makeBaseClassesClickable(…); Use dpi=300; for .pdf to fix pixelated/unreadable inheritance diagrams.
+      print what scripts have failed.
+      Try vim command ':retab' in an attempt to fix indentation in scripts.
+      quick-fix until 7pak gets added to this file: set default JOBSNUM=40
+      Temporarily add checkDEM-PFVPressureInjection.py to ignored scripts.
+      Turns out that dpi=400 does not work on ubuntu 18.04. But works in all 6 other chroots! While clikable base classes work only on stretch
+      [python3] Fix issue #70 - turns out it was python3 migration problem after all
+      makeBaseClassesClickable(…); works on 16.04, 18.04, 18.10, debian9, debian10
+      Small cleanup, remove dpi_fix.
+      [python] checked 182 examples, had to fix 10 of them.
+      [python3] fix vtk export.py and deformableelementsutils.py
+      [python3] small update in script used for testing examples. Still 4 examples are not working in python3.
+      small update in examples/list_of_examples.txt
+      small note in list_of_examples.txt
+      [python3 and python2] apt install …… command tested on: 16.04, 18.04, 18.10, debian9, debian10.
+      Now README.rst is ready for merging. Everything works in python2 (excluding make doc) & python3 (excluding 4 examples).
+      [Python3] Fix mpi openafoam examples.
+      Fix OpenGLRenderer crash which happened when body was deleted at the same time when the interaction was being drawn.
+      Fixed #48. Also added a note which should help in debugging requestErase(I);
+      Add barebones for yade.libVersions module. This commit may later be useful for tutorial about adding yade modules.
+      The .hpp file isn't necessary in this simple case, after all.
+      Library version detection starts to work.
+      Added compiler version detection and boost version detection.
+      printAllVersions() starts to work with nicely formatted table
+      Add some comments
+      core/main/main.py.in: from yade.libVersions import printAllVersions
+      Small fixes.
+      Fix rst formatting printed by printAllVersions(True)
+      Some small fixes in comments.
+      yade --test ; --check now writes messages in colors.
+      Add utilsModule to py/tests/__init__.py allTests[…]. It was never tested before!
+      Add detailed info in documentation about how to add ne yade --tests
+      Add libVersions to 'yade --test'
+      Add detection of versions for qt, freeglut, gl, qglviewer, python
+      Check what pipeline says about versions for python2.
+      Improve qt and python detection.
+      Add detection of eigen, sqlite, suitesparse.
+      (switch pipeline to python3) Revert "Check what pipeline says about versions for python2."
+      Added detection of openblas, metis. Now C++ detects all lib versions.
+      Added versions detected by cmake.
+      Small fix in eigen and mpi. Detection is good in C++, in cmake part it can be improved in some cases.
+      Let cmake find #include path for openblas.
+      Small fix with ${BLAS_INCLUDE_DIR}
+      yade --test verifies that library versions from cmake and C++ agree with each other.
+      yade.libVersions has complete documentation in docstrings.
+      Fix issue #45, add warning to PolyhedraSplitter::action() and documentation about cgal versions.
+      Few more small improvements. Add exception for cmake mpi detection because I don't know how to get correctly mpi version from cmake.
+      Add extra note about problems with detecting mpi version by cmake.
+      small fix
+      Add a note about #include for openblas_config.h
+      Rename allVersionsCmake() → getAllVersionsCmake(); allVersionsCpp() → getAllVersionsCpp(); for consitency with naming conventions.
+      fix typo
+      Use more cores.
+      Add tags: fast for build. So that compilation will only use fast gitlab-runners.
+      Try if yade-runner can handle -DCHUNKSIZE=4 to speed up compilation from 13m30sec to …?
+      Use -DCHUNKSIZE=1 for master and -DCHUNKSIZE=4 for merge_request to make compilation faster by 3 minutes.
+      Mention Gdańsk in 'Building, regression tests'
+      Add 7pak to runners, make case statement to be multiline.
+      Add stage for 'only: branches' so that pipeline will recompile outside a merge request (we can afford this now). Add extra comments.
+      Add 'tags: workingrunner' so that 'brokenrunner' not activated. So you can test yade-runner-01 by replacing 'brokenrunner' with 'workingrunner' or putting 'tags: brokenrunner' in cmake stage
+      Hm, I could not separate merge_request from branches.
+      Remove 'only: branches' to avoid triggering two pipelines on each push.
+      Fix issue #64
+      Enable by default OpenFOAM & potential particles, as suggested in https://gitlab.com/yade-dev/docker-yade/merge_requests/4#note_165851503 and https://gitlab.com/yade-dev/trunk/issues/64#note_156328333
+      Remove tags: workingrunner, it's too many tags, see https://gitlab.com/yade-dev/trunk/merge_requests/100#note_165850147
+      Use separate names for cmake stages on master and merge request.
+      [python3 and python2] [PotentialBlocks update] apt install …… command tested on: 16.04, 18.04, 18.10, debian9, debian10.
+      printAllVersions(…) will sort alphabetically before printing.
+      Fix issue #73, ccache now works on 16.04, 18.04, 18.10, debian9, debian10
+      Add extra comment.
+      Remove note from installation.rst about problems with ccache.
+      Start fixing #63, maybe needs more investigation. Or maybe removing these INCLUDEs is just enough.
+      Rearrange and add INCLUDE(GetVersion)
+      rebase on !111
+      merge_request: use 2 minutes faster linker; master: use regular linker.
+      Add 'onlyOneScript = []' for easier debugging of scripts.
+      checkList.py prints to stderr.
+      trigger this bug in the pipeline.
+      Revert "trigger this bug in the pipeline."
+      Use ccache directory mounted from the host of the gitlab runner.
+      Small fix.
+      test ubuntu 16.04
+      ccache is so fast that gitlab-runners build on four linux distros: ubuntu 16.04, 18.04, debian 9 stretch, debian 10 buster.
+      set expiration date on artifacts, save on storage.
+      Add cat /etc/issue after test.
+      master also uses ccache. Increase JOBSNUM a bit.
+      To make pipelines faster put doc generation into test stage.
+      Since everything is ccached now, I can increase JOBSNUM a bit more.
+      Bring back previous concurrency setting and high -j.
+      Do full four distro checks only on master.
+      Remove -DCHUNKSIZE=1
+      (Fix #75) check*PressureInjection.py no longer leave some files after running.
+      Fix warning: warning ‘volPart’ may be used uninitialized in this function
+      Ah, no reason to throw myself, when I can use .value() to throw for me.
+      Remove unnecessary import in dummyTest.py
+      Add testColliderByGiulia.py to yade --test
+      Note important when writing more docs: test scripts must be fully initialized in setUp(self)
+      Remove unnecessary comments, add skip_4200_iterations=True so that this test is faster (and tests the same thing).
+      Add bordercase test for a little different cellsize it must be OK.
+      Small cleanup, keep only 'from yade.utils import *'
+      Not sure what happened to deploy stage in master. Maybe renaming 'pages' stage will bring it back.
+      Fix some warnings
+      Introduce YadeCheckError Exception, make sure it works properly, I tested this on checkColliderCorrectness.py
+      Use raise YadeCheckError(message) instead of resultStatus+=1; --checks are simpler to write now.
+      Update documentation about simpler writing of yade --checks
+      Remove printing output to stderr output.
+      Small fix.
+      Make Injection simpler: remove errors,errMsg; keep only YadeCheckError
+      printAllVersions(): print yade config dir relative to ${HOME}
+      Print linux version.
+      Improve gitlab formatting used for pasting.
+      Detect numpy version.
+      Detect numpy and ipython versions.
+      Better linux version formatting.
+      Improve linux version detection.
+      small fix
+      Improve docstring for getLinuxVersion()
+      Try cmake stage using first version of opensuse15 image.
+      Try searching /usr/lib64/libboost_python-py3.so.1.66.0
+      remove libboost python hack
+      remove symlink
+      Add more paths to find QGLViewer
+      Enable more stages in .gitlab-ci.yml
+      Quick install binutils-gold, later this should go to docker image
+      Fix issue #77 and fix #39. ‘updateGL’ not declared
+      Fix compatibility vtk7↔vtk8 name change of InsertNextTupleValue → InsertNextTuple; Remove mess introduced by prefious #ifdef YADE_VTK8
+      Revert "Quick install binutils-gold, later this should go to docker image" This reverts commit 6f9fdd9120615cac3b9239ddb27c2f7365e41db8.
+      fix vtk7↔vtk8: InsertNextTypedTuple↔InsertNextTupleValue
+      Check if opensuse15 fixes work on all 5 distros.
+      Go back to default testing on ubuntu 18.04
+      opensuse: cat /etc/issue → cat /etc/*elease (show release version properly)
+      Use shorter name suse15, so that pipeline view on gitlab looks good.
+      Start writing a template in .gitlab-ci.yml
+      Test cmake template.
+      Use templates for all stages
+      Small fix
+      Compile on all 5 distros, to verify.
+      Move only: master & merge_request to a template too!
+      Disable compiling ALL on merge_request. MR uses now only ubuntu 18.04
+      Small fix: the section 'only:' overwrites the template, not adds to it.
+      [libVersions] detect sphinx doc version, update links to some libraries: numpy, ipython, gcc, suitesparse
+      add citation
+      Small fix in docstring
+      Update yade link to debian package tracking system
+      'Speed-up compilation': add section about 2minutes faster linking.
+      Add binutils-gold note for opensuse15
+      Add links to dockerfiles of supported linux distributions.
+      Add more explanations about gitlab continuous integration
+      Add warning that yade-daily packages are currently out of date
+      Fix permissions (remove exec bit) on FindCLP.cmake, FindCuBlas.cmake
+      Add note about printAllVersions()
+      Small note
+      Make this commit history a bit shorter with 'git pull --rebase upstream master' & 'git rebase -i master' & 'fixup' during rebase & git rerere
+      Fine grained detection of MPI & metis libs. Re: https://answers.launchpad.net/yade/+question/680867 , https://answers.launchpad.net/yade/+question/681091
+      small fix
+      Make sure that #include <mpi.h> will work.
+      Rename gitlab-runners so that they don't have _ or - in their name.
+      Add link to optional prerequisite python3-mpi4py
+      libVersions detect mpi4py version.
+      Restore .gitlab-ci.yml from master except (1) new gitlab-runner names (2) keep a commented out command for oversubscribe etc. (3) still check MR on all distros.
+      Enable checkColliderConstantness.py with new test data (interesting: changes are around 3rd decimal place.)
+      In this commit I compared mpiArcheologists+rebase master+mpi-master-merge with current mpi-master-merge. And they were the same, except those few whitespaces+typo which I cleanup in this commit. This is good.
+      Move files before they were deleted.
+      Moved files before they are deleted (2)
+      Restore both copies.
+      Merge branch 'copied-files' into 'try-to-restore'
+      Finally the history is restored!
+      Add missing space (copy-paste didn't work).
+      Move deformable elements to pkg/fem: 'git mv pkg/dem/deformablecohesive/* ./pkg/fem'
+      Correct #include paths.
+      Add note in examples that yade should be compiled with -DENABLE_FEMLIKE=1
+      Fix https://gitlab.com/yade-dev/docker-yade/issues/1
+      Make Gl1_Sphere::go(…) more readable.
+      Add debug TRACE() into Gl1_Sphere::initStripedGlList()
+      Revert "Add debug TRACE() into Gl1_Sphere::initStripedGlList()"
+      Fix #89
+      checkVersions() is called on startup to check yade compatibility tests with other libraries
+      Remove leftover file cracks_.txt
+      Debug #95 - print #warning message with info before compilation sometimes fails on ubuntu 18.04
+      Remove duplicate 'only:' keyword, because we are compiling on all 5 distros anyway.
+      Revert "Debug #95 - print #warning message with info before compilation sometimes fails on ubuntu 18.04"
+      Add OpenFOAM test.
+      Add mpiexec test script for pythoon3 testing.
+      Move OpenFOAM test to separate script.
+      set executable bit on testOpenFoam.sh
+      python2 installation instructions: add python-mpi4py.
+      Try fixing #95 by merging prebuild(cmake) + make into single step.
+      Building documentation requiries carrying build/ directory as an artifact.
+      Fix most of the new warnings in g++ version 8.3.
+      Wunknown-pragmas → Wpragmas
+      Add warning & error colors in the pipeline.
+      Pass extra fdiagnostics-color=always argument
+      Don't overwrite CXXFLAGS.
+      Remove hundreds of warnings in OpenSuse 15 g++ 7.4 (only .gitlab-ci.yml pipeline), also ignore multi-line comment warning.
+      Use local ccache directory.
+      Test changes only on xenial
+      Add export CCACHE_DIR=/root/.ccache
+      Revert "Test changes only on xenial", because ccache now works.
+      Fix #101, replace TeX command \leqslant with \leq (former is not recognized on xenial).
+      building packages will not download all dependencies.
+      test this change in MR.
+      Restore old config: build debs on master only.
+      Change docker image docker-yade:ubuntu16.04-py3 → docker-yade:ubuntu16.04
+      Fix broken link to article about fixing git conflicts.
+      Add links to COIN-OR Linear Programming Solver
+      Set ENABLE_FEMLIKE=ON by default.
+      Fix usage of CREATE_LOGGER macros. In some places the macro 'degraded' and produced some compilation errors.
+      Add missing CREATE_LOGGER; Add macro CREATE_LOCAL_LOGGER(fileName.cpp); when logging filters are needed outside classes.
+      CREATE_LOCAL_LOGGER should use the "filename.cpp"
+      Rename to CREATE_CPP_LOCAL_LOGGER("filename.cpp"); Add a bunch of missing CREATE_LOGGER(ClassName);
+      small cleanup
+      Add TRVAR5, TRVAR6 to Logging.hpp
+      Faster debugging: add -DTRACEONLY cmake option.
+      Remove some old debug code in Clump.cpp and WirePM.cpp
+      Enable boost::log - currently only super-trivial implementation.
+      rename BOOSTLOG → BOOST_LOGGER
+      Revert "Remove some old debug code in Clump.cpp and WirePM.cpp"
+      Start writing specification for yade logging framework.
+      Better formatting of the table with logging verbosity levels
+      Use fewer columns, looks like .rst :widths: directive is not working.
+      Update table a bit, add links with log levels used by other people.
+      First careful revert of 014b11496. boost::log not working yet. But it is getting closer.
+      Add nearly empty yade.log module: py/log.py & py/_log.cpp
+      Write a little more in docstrings
+      Add rudimentary testAllLevels() function.
+      [log] Add empty functions addSink, clearSink, resetAllSinks (api design stage)
+      A todo note.
+      Remove all traces of TRACEONLY
+      logger aliases, clean whitespace.
+      Remove superfluous endl.
+      Add rudimentary container for setting log levels per class.
+      First version of DECLARE_LOGGER, CREATE_LOGGER that use boost::log
+      Fix inline std::ostream& operator<< for logger.
+      some small fixes and typos.
+      Logging.hpp now has macros that use boost::log when enabled with -DBOOST_LOGGER=ON.
+      Create Logging singleton to store log filtering data.
+      Rename to CREATE_CPP_LOCAL_LOGGER("filename.cpp");
+      Start implementation of filtration of logs depending on logger name
+      More verbose messages in cmake
+      improve testAllLevels()
+      Remove LOG_THROW, LOG_MORE; add LOG_NOFILTER
+      Small note about possible extension of py/log.py
+      Store log sink pointer for later use and reconfiguration. Add (unused) option to enable colors in logs.
+      Improve documentation.
+      Small fix.
+      Add -DBOOST_LOGGER=ON to cmake invocation, for testing.
+      Fix initialization of Matrix3r
+      Set table column widths to reasonable size: no test breaks in the column.
+      Add MAX_LOG_LEVEL to CMakeLists.txt
+      Use MAX_LOG_LEVEL to disable selected macros: for production builds it is faster to skip integer comparison for filters.
+      first version of log.setLevel(…) which actually does something.
+      Write in documentation about log.setLevel(NewtonIntegrator,log.TRACE) and MAX_LOG_LEVEL
+      Small fix in CMakeLists.txt, use MAX_LOG_LEVEL properly.
+      Print warning when -DBOOST_LOGGER=OFF, but someone tries to use it.
+      small fix
+      Improve documentation.
+      Change signed char → short int; for filter level
+      Set default log level to yade.log.WARN
+      Print MAX_LOG_LEVEL along with other features.
+      Improve docstring.
+      fix typo
+      Improve documentation.
+      Change command line option for setting "Default"  filter level to -f
+      Revert "Add -DBOOST_LOGGER=ON to cmake invocation, for testing."
+      Better CMakeLists.txt verbosity about BOOST_LOGGER
+      fix compilation when -DBOOST_LOGGER=OFF
+      Allow selecting target output stream: std::cout, std::cerr, std::clog or some "filename.log"
+      Add more user accessible functions to LOGGER api, and improve docs.
+      Add log.setDefaultLogLevel(int)
+      small fix
+      Logging redirected to file is flushed immediately. No need to wait.
+      Remove from comments the features of log4cxx which have been implemented using boost::log, so far.
+      Remove throw std::runtime_error(…) from printNoBoostLogWarning()
+      whitespace
+      Enable log filtering
+      Add file header.
+      Improve documentation, small fix in CMakeLists.txt regarding detection of MAX_LOG_LEVEL
+      Using LOG_NOFILTER will not produce warning message. Add a note about #97
+      small fixes in docs
+      improve colors in CMakeLists.txt
+      Add function yade.log.setUseColors(bool) to toggle colors, small fix.
+      Enable colors by default.
+      Add color logging support.
+      small cleanup
+      Add screenshot to documentation, small update in header file.
+      small improvements
+      Add Logging config file support, readConfigFile(…), saveConfigFile(…); load default config on startup.
+      Change falirs: FATAL_1 → FATAL ERROR; WARN__3 → WARNING; etc. Use different default colors.
+      Improve documentation, fix links, mention saving config file.
+      Improve documentation.
+      rename BOOST_LOGGER → ENABLE_LOGGER
+      ENABLE_LOGGER ON by default.
+      Make setDefaultLogLevel(…) private to avoid duplicate messages
+      small fix
+      Add missing logger macros in Finite Element code.
+      Small fix in documentation.
+      whitespace
+      fix doc
+      small update in documentation
+      Simpler function testAllLevels()
+      Use default MAX_LOG_LEVEL=5, so that users who install yade from .deb package can provide us with LOG_DEBUG info when necessary.
+      Add yade.log.getMaxLevel()
+      Small fixes in docs
+      Again small fixes in docs
+      Add commented out section about measuring performance effect of MAX_LOG_LEVEL. When macros are more widely used it will be possible to measure the effect. Right now it is impossible to measure
+      Remove the (empty) performance table for now. I might become useful later.
+      Add some comments.
+      Update comments & docs in places where recommended is MAX_LOG_LEVEL<=5 for production builds
+      Small improvements in documentation.
+      Some final touches in the yade.log documentation
+      Fix https://gitlab.com/yade-dev/trunk/issues/102
+      Add debian bullseye to build+test+check gitlab ci pipeline.
+      Add compiler flag -Wextra so that compiler will print extra warnings.
+      Fix 'unused parameter' and 'ignored "const" qualifier' and few other warnings.
+      Use newer C++ standard from year 2014, to use new language features and possibly better compiler optimizations (latest available is 2017, would be great to use this one).
+      Note in comments what would be the best target flags to find all warnings
+      Add -Wshadow=compatible-local -Werror=narrowing -Werror=return-type -Werror=uninitialized -Wno-error=maybe-uninitialized (warn about shadowing (but only compatibile types), mark some warnings as errors)
+      Fix some of -Wshadow=compatible-local warnings. (plenty)
+      Fix some more of -Wshadow=compatible-local warnings.
+      Fix all -Wshadow=compatible-local warnings.
+      Since every possible warning is fixed, turn them all into errors. Except those impossible to fix: eigen (multi line comment, maybe uninitilized), OMPI (cast between incompatible function types). They will remain as warnings.
+      Update target flags, to reflect that some are now marked as errors.
+      Script list_of_examples_make_videos.sh will now go through only working examples - quicker to launch it and test all examples if they still work.
+      Add small note in gravityBis.py (checked all examples)
+      Use -Werror to turn all warnings into errors. (shorter version, same meaning)
+      Tailor available warnings to what a given compiler version can offer.
+      small fix
+      Fix -Wempty-body warnings.
+      Fix unused-variable warnings when LOG_* macros are not used and variable is not printed (not used at all).
+      fix typo
+      Add ENABLE_USEFUL_ERRORS=ON. Using =OFF will result in using flags from before this work: without -Wextra, -Wshadow and more. This is for people who try to compile yade on untested/unsupported linux distributions.
+      Fix -Werror compatible-local for ubuntu 18.10 which has a combination of eigen 3.3.4 and g++ 8.2.
+      small fix
+      Use previous fix also for ubuntu 18.04
+      numpy 1.11.0 has unused-function, 1.13 does not. So we have to print warning when it appears.
+      Detect earlier numpy version.
+      Improve comments
+      Don't overwrite data/checkColliderCorrect.txt on each yade --check (small mistake, git diff would have spotted this anyway in case of problems)
+      Rename github.rst→gitlab.rst; ln -s gitlab.rst github.rst ← create symlink to not break all old references.
+      Change in *.rst file from github.rst → gitlab.rst
+      Rename rst label: _yade-github-label → _yade-gitlab-label
+      Rename gitlab.rst → gitrepo.rst
+      Change in *.rst file from gitlab.rst → gitrepo.rst
+      Rename rst label: _yade-gitlab-label → _yade-gitrepo-label
+      Compile and yade --test without OpenGL.
+      Use image yade:ubuntu18.04_nogui for this test
+      Fix #108
+      Add extra warning in the comments, to avoid such mistake in the future.
+      Add :ysrccommit: to link specific commit from gitlab repository
+      Use :ysrccommit: to link in places where line numbers were used.
+      Trying to link to a line number with :ysrc: will produce an error.
+      Add :ysrccommit: description to manual prog.rst
+      Improve documentation abuot :ref: and Linking to `inheritanceGraph`
+      Fix link to example figure :width:
+      small fix
+      ENABLE_MPI=0 until we find out how to use MPI in clang.
+      Remove -fdce from clang compiler flags.
+      Remove duplicate ENABLE_USEFUL_ERRORS section.
+      Fix #113, compile without warnings with -DENABLE_LOGGER=OFF
+      Workaround libeigen bug with g++ 9: enable warning deprecated-copy
+      Workaround issue 115: allow 26 or 27 acoustic events. Results vary depending on some library versions. Probably due to floating point numerical error. See https://gitlab.com/yade-dev/trunk/issues/115 for the list of suspects.
+      Add tags: fast to package building. So that 7pak can safely run 15 concurrent jobs.
+      More readable 'useful errors' section. Reaname USE_WARNING_ERRORS→WORKAROUND_LIBRARY_WARNINGS, use ALL_ENABLED_USEFUL_ERRORS.
+      Prepare code to enable float-conversion warning, never use abs(…) without std:: due to this mess: https://stackoverflow.com/questions/21392627/abs-vs-stdabs-what-does-the-reference-say
+      Fix bug found by float-conversion warning: the x,y,z were converted to Eigen::Index and they were interpreted as column numbers in the matrix: 0,1 or 2. (note: in ubuntu 16.04, we have to calculate this with some extra routine, I've put an assert to make sure that any potential problem is caught early).
+      Use -Wfloat-conversion -Wcast-align warnings, make sure that older cmake versions do not switch back to C++11, use C++14 instead.
+      Add -Wformat-nonliteral -Wdisabled-optimization -Wtrampolines -Wpointer-arith -Wswitch-bool -Wwrite-strings
+      Add -Wnon-virtual-dtor warning.
+      Note what warnings were not fixed (some are in external libraries, some are not worth it).
+      Add more comments.
+      Don't print warnings that are not errors. Except for 'maybe-uninitialized' and '#warning' pragama. These are always printed, beacuse they are very useful even when some libraries trigger it.
+      Now gitlab will start checks/tests as soon as the previous make_* is finished. This will be a bit faster.
+      Add 15 minute timeout for test and check jobs in gitlab CI
+      Mention link to documentation of :ysrccommit: when :ysrc: tried to link to specific line number.
+      Mention R"""(raw text)""" docstring style in the documentation.
+      Try different JOBSNUM setting trying to maximize gitlab runners efficiency.
+      Adjust JOBSNUM setting in order to maximize gitlab runners efficiency. Now a fully ccached gitlab-ci job is 10 minutes, while a non-ccached (recompilation) job is 34 minutes.
+      The check scripts are testing whether the tested feature is present in yade.config.features (sometims the tests were failing)
+      OpenFOAM test uses relative paths, so that it will work in other places too.
+      Fix compilation with -DENABLE_OPENMP=OFF cmake parameter.
+      Fix compilation with -DUSE_QT5=OFF, yade --test and --check are OK. But py/yade/remote.py fails with No module named 'PyQt4' (maybe it's time to remove QT4 support completely?)
+      Fix yade --test with PotentialBlock debug build
+      Add -DENABLE_MPI=OFF test to .gitlab-ci.yml
+      Add more gitlab-ci tests: (1) debug build (2) minimal build (3) other settings are set different than the default values.
+      Rename _other → _opposite, add comment explaining that this gitlab-CI job is meant to try cmake settings opposite to the default values. But don't touch these that turn off compilation of significant amount of code.
+      Disable some gitlab-CI jobs depending on whether it is a Work In Progress merge request or not.
+      Increase CI test timeout to 25 minutes.
+      Add check test of avoidSelfInteractionMask based on https://answers.launchpad.net/yade/+question/682290
+      Fix #118 fix #106, .add_property(mask, … ) was ignored without MPI.
+      Add 'make doc' for debug build, only master and non-WIP merge requests.
+      Improve comments in Logging.hpp.
+      Update .mailmap
+      Use std::is_same to check if CGAL's Traits::RT == Real
+      Add file with commonly used namespace aliases: lib/base/Namespaces.hpp
+      start journey towards `long double`, `float128` and `multiprecision::mpfr` as Real, by working on issue #57: add namespace yade (this commit has "simple files" only)
+      Add namespace yade (simple files only)
+      Add namespace yade (more simple files) - fix https://gitlab.com/yade-dev/trunk/issues/57
+      Make sure there is no #include inside namespace. Mostly OPENGL related.
+      Let all python modules (files with macro BOOST_PYTHON_MODULE) use correctly namespace yade
+      Clean namespace pollution: remove useless 'using …' directives.
+      ctags cannot sometimes detect class names, when they are inside macros, etc. So create anchors inside forCtags{};
+      Change Math.hpp to use namespace yade. Minimal changes only. No cleanup yet for boost::multiprecision or float128.
+      ClassFactory and Serializable use yade namespace. Update documentation respectively.
+      Update customConverters.cpp respectively.
+      Extract duplicate CGAL 'using … = ' directives into single file lib/base/AliasCGAL.hpp
+      Explain a bit more in the docs how namespace collisions can be dangerous.
+      Fix clang compilation
+      Improve script for automated testing of all yade examples (copy example directory to /tmp with auxiliary files together)
+      Add counter that prints progress when testing all examples. Improve instructions.
+      Fix debug mode compilation.
+      small fix
+      Improve code readibility.
+      Write documentation section about adding new python / C++ modules.
+      Remove duplicates of declaring std=c++14. with set(CMAKE_CXX_STANDARD_REQUIRED ON) cmake adds 'std=gnu++14' by itself. So it is configurable in single place.
+      Note in documentation that FOREACH is deprecated.
+      Remove few more FOREACH. Now all are removed from core/ and lib/
+      One more example in documentation.
+      Start work on test_GUI for gitlab pipeline.
+      don't call thread info in gdb (on some gdb versions it doesn't work), add tag for ctags.
+      Make sure that pyInteractionContainer is not accessing a body with id==-1, which caused crash in GUI Inspect.
+      testGui.py can now switch the GUI Inspector tabs, makes screenshots and exits correctly
+      Add extra check in testGui.sh (bash) if screenshots were generated by testGui.py (python)
+      Small cleanup, add some comments.
+      Move GUI test into test_definition, but add guard called NO_GUI to skip this testing when required.
+      Make screenshot after yade finishes.
+      Enable gui test for opensuse
+      Revert "Enable gui test for opensuse" (GUI does not work with freeglut 3.0, so OpenSuse default install is not going to work until freeglut fixes their bug)
+      Move test scripts into gui direcotry.
+      Move screenshot routine to another file.
+      Make the test a bit more interesting by manipulating yade.qt.Renderer() parametrs ('display' GUI tab)
+      Move makeScreenshot.py file.
+      Install the GUI test helper, so that import will find it.
+      some small fixes
+      Create a test loop, in case if we wanted more GUI tests.
+      Add testGuiEmpty.py for testing a totally empty simulation.
+      Small fix of bash loop
+      Use a different name for screenshots, better sorts alphabetically.
+      use full xterm path
+      make test more realistic by simulating clicks on screen.
+      Tell xterm to pass everything to gitlab-CI
+      Some xterms do not support output to stdout. So let's use tail.
+      Make sure we have necessary tools.
+      Add notes how to run testGui.sh script locally.
+      Make sure there is no tail command left running in the background
+      Do all GUI testing via mouse clicks.
+      Improve comments in testGui.sh, better checks if needed tools are present.
+      Add note that testGui.sh should find files automatically just like checkList.py
+      Shorter sleeps, draw bounding volume.
+      Place clang-format off/on guards before/after every YADE_CLASS_BASE_DOC_* macro.
+      Try to find some nice .clang-format. However YADE_CLASS_BASE_DOC_* macros need // clang-format off, // clang-format on, before and after
+      Change ColumnLimit to 140 and sort the keywords (easier to compare with documentation).
+      Use glBegin, glEnd blocks with indentation, like they were indented before. Allow MaxEmptyLinesToKeep: 2.
+      Some small adjustments trying to reduce total number of changes.
+      Note in documentation about reformatting.
+      Fix the includes that will be missing after a 'full reformat' is performed.
+      Fix comiplation problem due to ordering of includes after 'full reformat', now they are in this order: lib, core, pkg, gui
+      Add clang-formatter.sh script, tested on ubuntu 18.04 18.10 19.04, buster, bullseye, sid suse15.1. It accepts (1) dir (2) file (3) checks for uncommitted changes (4) prints stats afterwards.
+      Make sure that .clang-format works on older linux distributions (xenial, stretch)
+      Make sure that successive reformats do not change code again and again.
+      temporarily don't reformat OpenGLWrapper.hpp (float128 changes are coming soon)
+      Longer wait after self.clickOnScreen(…) in case if build servers are very slow.
+      Wait max 5 seconds for Inspector window to appear, check every 0.25sec. (in case if build servers are very slow).
+      Include boost/python/…/wrap_python.hpp instead of Python.h. Always as first one. See https://www.boost.org/doc/libs/1_71_0/libs/python/doc/html/building/include_issues.html
+      A little more detailed energy check in checkSaveLoadClumps.py
+      Fix broken static_assert in OpenGLWrapper, now we can be 100% sure that primary templates are never called. This is going to be very useful for high precision calculations.
+      Add small note
+      Change some forgotten `double` → `Real`
+      Switch HydroForceEngine into using `Real`.
+      Move debug test, check and doc into make_tmplate; Enable it like ASAN. Hopefully will not waste time on upload/download of huge debug artifacts.
+      Remove excessive compiler identification checks. Leave only rudimentary one.
+      Add clang test & check
+      clang-format will align comments at end of the successive lines. Use empty line to start comments at different indentation.
+      Detect intel compiler version.
+      Add -Wreturn-local-addr to ALL_ENABLED_USEFUL_ERRORS
+      Don't preemptively block float128 support (1.2f is float, 1.2L is long double, 1.2Q is quad; https://en.cppreference.com/w/cpp/language/floating_literal ; https://www.boost. org/doc/libs/1_71_0/libs/multiprecision/doc/html/boost_multiprecision/tut/floats/float128.html)
+      small cleanup, add links to yade-dem.org/doc/prog.html#sphinx-documentation in few places.
+      Use PyErr_Print(); in case when importing python module 'raised unreported exception', to make python/C++ boundary easier to debug.
+      Explain in documentation how to handle python/C++ exceptions and transfer them upwards to python.
+      small clarification in documentation.
+      extra newline is necessary for correct .. ipython:: parsing in .rst
+      More clarification in documentation.
+      Fix typo: alogrithms ↔ algorithms
+      Auto retry gitlab-runner failed jobs.
+      Remove unused mutex
+      Make sure ThreadRunner isn't destructed while ThreadRunner::run() is running, which would result in a crash. Allow the running thread to finish early if it decided to check the shouldTerminate();
+      testLibVersions only warns about non-matching version numbers. Does not fail the tests. Although these non-matching version numbers might have bad consequences later.
+      Use native cmake's CGAL detection instead of cMake/FindCGAL.cmake file.
+      Link conditionally with CGAL libraries
+      Remove debug info
+      Fix flags in make_opposite pipeline.
+      Fix ENABLE_DEFORM compilation.
+      Add test -DENABLE_VTK=OFF to the pipeline.
+      reinstate pragma ignored "-Wcomment"
+      Make sure that read-only attributes are shown in gray color (inactive) in  GUI Inspector.
+      Update documentation about how to expose in GUI non-attributes, e.g. Interaction::isReal()
+      Remove duplicate attribute registration in Body.hpp
+      YADE_SPH : Remove duplicate attribute registration in State.hpp (not sure if they should be readonly, because that was the side effect of duplicate registration).
+      Expose isReal() in GUI by adding a virtual py::dict pyDictCustom() const { … } function.
+      Merge hint into main text.
+      A more direct link to example of new function pyDictCustom()
+      Add extra newline, to workaround gitlab from always showing this last line as changed.
+      Mark suspicious line of code in core/Subdomain.cpp
+      Propose a fix for Subdomain::probeIncoming
+      Mark line with missing return.
+
+Jean Pourroy (2):
+      Update setStateBoundsValuesFromIds
+      Update mpf.py
+
+Jerome Duriez (16):
+      Removing useless InteractionLoop.eraseIntsInLoop
+      Polyhedra: doc and removing useless (unused) dynamic attribute in utils functions for creating related bodies
+      Python docstrings
+      JCFpmPhys: making some recent attributes hidden to Python. They are anyway not convertible at the moment
+      JCFpmPhys: changing AE attributes from hidden to visible and convertible (C++->Python only atm)
+      Removing inconsistent const keywords in function definition
+      A more minimal version of changes, thanks to Bruno s MR 174 for inspiration
+      Minus empty lines, plus two-way Python-C++ conversion of shared_ptr<Interaction>
+      Doc (and default values for 2 args, as in C++) for utils.scalarOnColorScale()
+      Doc typos (and little rewording in Intro)
+      Periodic Engine doc: with mention of realPeriod units (seconds)
+      Engine doc: typos and unit of timing info (nanoseconds here !)
+      VTKRecorder: including for good bstresses in recorders = all, as for any generic recorder
+      Cell.velGrad (nextVelGrad) doc
+      Removing redundant yade-docref.bib
+      Adding commas at the end of year line in bibtex entries. Trying to solve https://gitlab.com/yade-dev/trunk/-/jobs/361431525 failure
+
+Jérôme Duriez (2):
+      Typo in installation.rst
+      Update citing_yade.bib: uppercase "DEM" instead of "Dem" when output by BibTex.
+
+Kneib Francois (1):
+      Add my contributions :
+
+Robert Caulk (66):
+      reduce unnecessary copies of factor
+      use imgmath
+      try newcommand with mathjax on buildbot
+      try editing layout to fix symbols
+      Remove possible comment starters for now in layout.html
+      Add pound signs back back
+      try delimiting with raw
+      add remainder of preamble
+      fix sort pics et al in formulation
+      gpu doc update
+      fix gpu doc figure on HTML
+      Update GPUacceleration.rst
+      add comsol instructional guide to yta
+      add link to helper files
+      fix broken doc link in cohfrict mat
+      fix intertia calc in clump, thanks Bokkisa Vivek https://answers.launchpad.net/yade/+question/680398
+      add hackathon doc to YTA
+      Fix radius correction error in weibulldistribution (thanks Klaus Theoni)
+      change default solver and update accuracy of useSolver documentation
+      [WIP] Replacing unnecessary CHOLMOD_LIBS flag with cmake-step-defined and already CHOLMOD dependent LINSOLV flag (cleans the code and fixes launchpad 681146, where solvers >0 where not compiled since CHOLMOD_LIBS flag was not explctly defined)
+      Add 3D domain decomposition tools and example script
+      fix bound arguments
+      add scripts for running parametric sweeps to test strong scalability and pyrunner timing comparisons
+      prepare strong and weak scalability test scripts, to work with our parameter tables
+      fix typos
+      add walltime check
+      fix errors
+      fix typo
+      add sub objectives list
+      remove aligned box from strong scalability script
+      add check test for JCFpm acoustic emissions module, add seed functionality to TriaxialTest and randomDensePack, update author list in JCFpm source
+      Check JCFpm cracks file
+      Add ThermalEngine features such as cavity model, parallelization, heat transfer coefficient based on RE, fluid conduction, air compressibility etc.
+      checkpoint for parallelization tweaks, velocity controlled reynolds numbers, and more
+      add citation to DEM8 conference paper
+      dont modify unrelated example scripts
+      pass two phase flow tests
+      activate thermalEngine by default
+      fix 16.04 compiler error, add engine description for documentation
+      add DEM8 papers to yade-conferences.rst
+      collect and use return value in pyboot.cpp
+      Add error message instead of silently allowing zero volume pores to interrupt velocity calc
+      Revert !149
+      adding alphashape based boundary conditions for flowengine
+      working checkpoint for alphashape boundary with constant value, without fictious bounding vertices
+      fix compiler error for 16.04
+      clarify alphashape documentation
+      protect against rare null vertices and throw error to warn user
+      add example script for alphashape in flowengine
+      removing couts
+      improve cavity logic, revert distance estimate in circumcenter()
+      Remove unnecessary definitions
+      reformat doc so that future devs can easily add their recorders to it, protect against adding junk SPH and DEFORM values in recorders=all
+      remove commented out historic string
+      plug flowengine leaks, increase code flexibility for GPU usage and linking to custom suitesparse libraries
+      remove cout
+      update doc
+      remove potential blocks from cgal message
+      avoid losing control of vector memory consumption
+      reformat doc so that future devs can easily add their recorders to it, protect against adding junk SPH and DEFORM values in recorders=all
+      Ensure conduction without advection if desired
+      add minimumPorosity attribute to flowengine
+      Update yade-articles.bib
+      Clarify compilation instructions
+      increase clarity of PSD doc
+      slim down thermalengine requirements and apply clangformater
+
+Vasileios Angelidakis (147):
+      Debug PB
+      Correction (more precisely, rearrangement) of Inertia Tensor values.
+      Include the ENABLE_POTENTIAL_BLOCKS option in the comments. Enable the MarchingCube.cpp when the POTENTIAL_BLOCKS are enabled.
+      Include potentialparticles.rst in the documentation.
+      Include the ENABLE_POTENTIAL_BLOCKS option in the comments.
+      Include/Amend references: Houlsby2009, Boon2012, Boon2013, Boon2015.
+      Include Boon’s thesis (Boon2013b).
+      Remove “dynamic=True” statements and other redundant parts.
+      Remove “dynamic=True” statements and other redundant parts.
+      Remove “dynamic=True” statements and other redundant parts.
+      New visualisation code using CGAL. Creation of wireframe view for PB s. Assignment of color to PB s.
+      New visualisation code using CGAL. Creation of wireframe view for PB s. Assignment of color to PB s.
+      Creation of wireframe view for PP s. Assignment of color to PP s.
+      Creation of wireframe view for PP s.
+      New option to assign uniform color to the particles generated by the BlockGen algorithm, otherwise select random colors. Removal of default Aabb enlargement factors (1.02).
+      New option to assign uniform color to the particles generated by the BlockGen algorithm, otherwise select random colors.
+      Remove unused function invoking MOSEK.
+      Remove unused function invoking MOSEK.
+      Remove unused function invoking MOSEK.
+      Remove unused function invoking MOSEK.
+      Remove default values of variables.
+      Isolate potentially redundant parameters to be removed in the future.
+      Normalise normal vectors of faces. Store vertices. Check for duplicate vertices.
+      Improve variable descriptions. Hide redundant parameters with Attr::hidden.
+      Stop writing the vertices of the Aabb in the PB shape class. Removal of default Aabb enlargement factors (1.05).
+      Removal of default Aabb enlargement factors (1.05).
+      Removal of unused #include statement.
+      Removal of duplicate #include statement.
+      Removal of unused #include statement.
+      Removal of duplicate #include statements.
+      Include PB image in the documentation
+      Include PB image in the documentation
+      Include PP image in the documentation
+      Documentation on how to use the Potential Particles and the Potential Blocks
+      Add CLP to libVersions
+      Add CLP to libVersions
+      Update CMakeLists.txt
+      Resolve OpenGL conflict when YADE is compilled without gui
+      Fixed typo. CLP is used only for the Potential Blocks.
+      Update PBs doc for automatic volume-inertia calculation
+      Update example for automatic volume-inertia calculation
+      Update example for automatic volume-inertia calculation
+      Change of VTK iterPeriod
+      Update BlockGen for automatic volume-inertia. Boolean whether to output BlockGen data in a file or on the terminal. Comment out unused functions
+      Boolean whether to output BlockGen data in a file or on the terminal. Comment out unused functions
+      Automatic calculation of volume-inertia-distance R. Centering of the particle to its centroid
+      Comment out unused structs
+      Remove comments and halfSize attr
+      Remove comments and halfSize attr
+      Check example for BlockGen
+      Check example for Potential Blocks
+      Data for checkBlockGen. Rock joint-set properties
+      Automatic calculation of volume-inertia-R. Centering of the particle to its centroid.
+      Enable PBs even if CGAL is not enabled
+      Skip Gl1_PotentialBlock functor if CGAL is not enabled
+      Skip Gl1_PotentialBlock functor if CGAL is not enabled
+      Replace some C arrays with vector. Use .empty(). Add comments as reminders
+      Use .empty()
+      Replace some C arrays with vector. Use .empty().
+      enable PBs for compilation with clang
+      Add RockLiningGlobal reference
+      Include allowViscousAttraction, traceEnergy flags. Replace Knormal_area/Kshear_area with kn/ks
+      Include allowViscousAttraction, traceEnergy flags. Move twoDimension, unitWidth2D to IGeom functor
+      Move twoDimension, unitWidth2D to IGeom functor. Correct volume and inertia values
+      Initialize variables outside of loop
+      Remove whitespaces. Update attrs docstrings
+      Update attrs docstrings
+      Remove whitespaces. Fix indentations. Use Mathr::PI. Remove duplicate code
+      Remove redundant parameters. Update attrs docstrings
+      Create compliance with periodic boundaries for PBs. Comment redundant parameters. Fix indendations. Add TIMING_DELTAS macros. Move unitWidth2D from KnKsPBPhys. Restore functionality of evaluatePhys. Replace getPtOnParticleArea with getPtOnParticle2. Declare variables outside of loops
+      Include shift2 parameter in functions, to comply with periodic boundaries. New variable unitWidth2D, moved from KnKsPBPhys
+      Create compliance with periodic boundaries for PPs.
+      Include shift2 parameter in functions, to comply with periodic boundaries. New variables twoDimension, unitWidth2D, moved from KnKsPhys
+      Create compliance with periodic boundaries for PPs. Move unitWidth2D to IGeom functor. Replace Knormal_area/Kshear_area with kn/ks. Use Mathr::PI
+      Comment out redundant parameters. Update attrs docstrings
+      Create traceEnergy feature. Create individual functions: elasticEnergy, normDampDissip, shearDampDissip, plasticDissipation, initPlasticDissipation, ratioSlidingContacts. Add TIMING_DELTAS macros. Control whether to allow attractive viscous forces. Reduce if statements. Replace Knormal_area/Kshear_area with kn/ks. Use Mathr::PI. Calculate shift2, shiftVel for periodic boundaries.
+      Comment out redundant parameters. Update attrs docstrings. Introduce energy-related functions
+      Declare variables outside of loops
+      Comment out redundant parameters. Update attrs docstrings
+      Declare variables outside of loops
+      Comment out redundant parameters. Update attrs docstrings
+      Minimise script. Introduce aabbEnlargeFactor
+      Remove unused parameter halfSize
+      Remove trailing whitespaces
+      Remove trailing whitespaces
+      Remove trailing whitespaces
+      Remove trailing whitespaces
+      Comment unused parameters for 2D
+      Include allowViscousAttraction, traceEnergy flags. Replace Knormal_area/Kshear_area with kn/ks. Move twoDimension, unitWidth2D to IGeom functor
+      Introduce new check-script for the Potential Particles
+      Remove whitespaces. Fix indentations. Use Mathr::PI. Remove duplicate code
+      Remove whitespaces. Fix indentations. Use Mathr::PI. Remove duplicate code
+      Fix typo
+      Remove duplicated problematic code to calculate centroid, volume inertia. Calculate these invoking PotentialBlock::postLoad
+      Comment out the removed methods
+      Write (ordered) vertices of each plane in the planeStructs, removing duplicate ones. New parameter to record connectivity of vertices. Remove redundant planes associated with less than 2 vertices. If a PB is not defined centred to its centroid, record the distance in an attr: position. Rename iterators -k- to -kk- to avoid conflicts.
+      New parameters: connectivity, position
+      Correct number of total faces, after removing the redundant ones in the shape class
+      Reinstate clang-format guards
+      Reinstate clang-format guards
+      Remove unused #include statements. Remove comment
+      New visualisation code without CGAL, using in-house triangulation. Cull back faces to improve efficiency. Use GL_TRIANGLE_FAN to reduce invocations of OpenGL primitives
+      Remove unused variables with the new visualisation code
+      Amend lighting: Reverse front/back faces, since till now the front faces were treated as back faces and were rendered as darker. Choose shading per vertex, to achieve smoother rendering.
+      Remove unused parameters with new shading per vertex
+      Comment out possible sign reverse for d[i] after centering the particle
+      Introduce traceEnergy, isSliding, ratioSlidingContacts, allowViscousAttraction features. Add FIXME comments in places that need to be revised
+      Introduce traceEnergy, isSliding, ratioSlidingContacts, allowViscousAttraction features
+      Deleted outdated installation instructions. Updated syntax of functors. Included info on the contact law and the contact area.
+      Replaced calJointLength attr with calContactArea
+      Replaced calJointLength attr with calContactArea
+      Replaced calJointLength attr with calContactArea. Added attr areaStep.
+      Replaced calJointLength attr with calContactArea
+      Replaced calJointLength attr with calContactArea
+      contactArea related improvements. Added FIXME comments where appropriate
+      Replaced calJointLength attr with calContactArea
+      Developed calculation of contactArea for the PPs
+      Developed calculation of contactArea for the PPs
+      Deleted calJointLength attr
+      Deleted calJointLength attr
+      Deleted calJointLength attr
+      Deleted calJointLength attr
+      Replaced calJointLength attr with calContactArea. Stricter tolerance in checks
+      Replaced calJointLength attr with calContactArea
+      Replaced calJointLength attr with calContactArea. Added attr areaStep. Created check for the contactArea
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      double to Real conversion
+      Update tolerance for duplicate vertices check
+      Assign b.aspherical=True
+      'Compile PPs and PBs when YADE_VTK is off'
+      PPs_PBs: fix typo on default choices
+      Remove outdated comment. Fix broken link
+      Assign avoidSelfInteractionMask=2
+
+William Chèvremont (50):
+      Add Contact Prediction resolution
+      Fix lubrication bug
+      Remove VdW attraction
+      Add adhesion on solver 3. Fix some little bugs.
+      Add adhesion forces on lubrication
+      Fix yade-batch plots and script HTTP sending
+      Interaction length is user-definable
+      use precomputation more widely
+      Fix warning
+      Add citation to Chevremont2019
+      Interaction length is user-definable
+      Fix precomputed constants
+      Add time to PDF data
+      Reduce PDF data due to symmetry
+      Correct orientation and position of integration cell
+      Correct PDFEngine angles calculations
+      Fix Unused variable warning Now Error
+      Interaction length is user-definable
+      use precomputation more widely
+      Fix normal viscosity coefficient
+      Allow long range interactions for boxes.
+      Add lubrication stresses to vtk recordables
+      Take care of cell deformation for drag engine
+      Take care of periodicity when saving velocities in vtk files
+      Add lubrication stresses to vtk recordables
+      Add lubrication stresses to vtk recordables
+      Fix python2->python3 bug on TCP connections
+      Remove adhesion from lubrication
+      Remove Electrostatic law. Will be replaced by general lubrication+potential law.
+      Use new log system. Remove variable controlling the output.
+      Start Lubrication with potential implementation. Group shared function into virtual class
+      Fix favicon send method
+      remove normal trigger (normal part will always be computed)
+      Start implementation of Potential resolution
+      Implementation of potential set from python side
+      Try to inherit Potential from python
+      add virtual keyword
+      Add Lock before calling python code
+      Add some tracing messages
+      Add mean sphere radius as a parameter
+      Update documentation about c++ subclassing in python
+      Add potentials forms
+      Update doc
+      Fix serialization
+      Fix bug
+      Add checks for lubrication law
+      Add exemples
+      Fix slipping equation
+      Revert "Fix slipping equation" No error on this equation This reverts commit 588e60baf1fc8e6f9961adbfa2ebdd4d0e8f6f87.
+      Fix Vtk potential recorder
+
+bchareyre (1):
+      fix find python again (sorry), hard to make it work in local+gitlab+gricad...
+
+clang-formatter (3):
+      clang-format python modules
+      Clang-format InsertionSortCollider
+      clang-format Potential* and Rock* files.
+
+kboschi (34):
+      dumb test
+      is CellNeighbor introduction
+      added getNeighbors to FlowEngine
+      voidvolume in periodicflowengine
+      validation test PFV
+      small changes in comments
+      regression test
+      introduction of getConductivity
+      change of Boundary conditions for comparison with the new regression test
+      introduction of getBoundaryVolume and getCellInVolumeFromId
+      updateCapVolList introduction
+      more efficient script
+      validation test PFV
+      regression test
+      introduction of getConductivity
+      updateCapVolList introduction
+      more efficient script
+      useless functions
+      make consInfCell a parameter of the function where it's used + rename it for clarity by Bruno
+      getInterfaces optionally return only interfaces from a specific cell by Bruno
+      fix compile error plus c++ true is lower-cased... by Bruno
+      new script
+      getNeighbors(ll,True) and newton in right position
+      validation test PFV
+      deletion of outvade warning and of useless functions to get water volumes
+      updateCapVolList introduction
+      make consInfCell a parameter of the function where it's used + rename it for clarity by Bruno
+      fixing indentation
+      only optimized version
+      changes by Katia in pressureImbibition mainly
+      c0.getInterfaces(cellId=ll)+ii[3]
+      deleting of cellId in c0.getInterfaces(cellId=ll)
+      introduction of break when detected an unsaturated cell in flowtest()
+      changing in initial condition script (more efficient)
+
+==================================================
 yade-2019.02a
 Tue, Jan 29 19:59:30 2019 +0100
 

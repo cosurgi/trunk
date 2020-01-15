@@ -14,6 +14,8 @@
 	#include<pkg/common/GLDrawFunctors.hpp>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 /*
 
 L3Geom Ig2 functor cooperation:
@@ -45,6 +47,7 @@ struct L3Geom: public GenericSpheresContact{
 
 	Vector3r relU() const{ return u-u0; }
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(L3Geom,GenericSpheresContact,"Geometry of contact given in local coordinates with 3 degress of freedom: normal and two in shear plane. [experimental]",
 		((Vector3r,u,Vector3r::Zero(),,"Displacement components, in local coordinates. |yupdate|"))
 		((Vector3r,u0,Vector3r::Zero(),,"Zero displacement value; u0 should be always subtracted from the *geometrical* displacement *u* computed by appropriate :yref:`IGeomFunctor`, resulting in *u*. This value can be changed for instance\n\n#. by :yref:`IGeomFunctor`, e.g. to take in account large shear displacement value unrepresentable by underlying geomeric algorithm based on quaternions)\n#. by :yref:`LawFunctor`, to account for normal equilibrium position different from zero geometric overlap (set once, just after the interaction is created)\n#. by :yref:`LawFunctor` to account for plastic slip.\n\n.. note:: Never set an absolute value of *u0*, only increment, since both :yref:`IGeomFunctor` and :yref:`LawFunctor` use it. If you need to keep track of plastic deformation, store it in :yref:`IPhys` isntead (this might be changed: have *u0* for :yref:`LawFunctor` exclusively, and a separate value stored (when that is needed) inside classes deriving from :yref:`L3Geom`."))
@@ -62,6 +65,7 @@ struct L3Geom: public GenericSpheresContact{
 		/*ctor*/ createIndex();
 		, /*py*/
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(L3Geom,GenericSpheresContact);
 };
 REGISTER_SERIALIZABLE(L3Geom);
@@ -69,12 +73,14 @@ REGISTER_SERIALIZABLE(L3Geom);
 struct L6Geom: public L3Geom{
 	virtual ~L6Geom();
 	Vector3r relPhi() const{ return phi-phi0; }
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(L6Geom,L3Geom,"Geometric of contact in local coordinates with 6 degrees of freedom. [experimental]",
 		((Vector3r,phi,Vector3r::Zero(),,"Rotation components, in local coordinates. |yupdate|"))
 		((Vector3r,phi0,Vector3r::Zero(),,"Zero rotation, should be always subtracted from *phi* to get the value. See :yref:`L3Geom.u0`."))
 		,
 		/* ctor */ createIndex();
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(L6Geom,L3Geom);
 };
 REGISTER_SERIALIZABLE(L6Geom);
@@ -84,6 +90,7 @@ struct Gl1_L3Geom: public GlIGeomFunctor{
 	RENDERS(L3Geom);
 	void go(const shared_ptr<IGeom>&, const shared_ptr<Interaction>&, const shared_ptr<Body>&, const shared_ptr<Body>&, bool);
 	void draw(const shared_ptr<IGeom>&, bool isL6Geom=false, const Real& phiScale=0);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_L3Geom,GlIGeomFunctor,"Render :yref:`L3Geom` geometry.",
 		((bool,axesLabels,false,,"Whether to display labels for local axes (x,y,z)"))
 		((Real,axesScale,1.,,"Scale local axes, their reference length being half of the minimum radius."))
@@ -91,15 +98,18 @@ struct Gl1_L3Geom: public GlIGeomFunctor{
 		((Real,uPhiWd,2.,,"Width of lines for drawing displacements (and rotations for :yref:`L6Geom`); not drawn if non-positive."))
 		((Real,uScale,1.,,"Scale local displacements (:yref:`u<L3Geom.u>` - :yref:`u0<L3Geom.u0>`); 1 means the true scale, 0 disables drawing local displacements; negative values are permissible."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Gl1_L3Geom);
 
 struct Gl1_L6Geom: public Gl1_L3Geom{
 	RENDERS(L6Geom);
 	void go(const shared_ptr<IGeom>&, const shared_ptr<Interaction>&, const shared_ptr<Body>&, const shared_ptr<Body>&, bool);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_L6Geom,Gl1_L3Geom,"Render :yref:`L6Geom` geometry.",
 		((Real,phiScale,1.,,"Scale local rotations (:yref:`phi<L6Geom.phi>` - :yref:`phi0<L6Geom.phi0>`). The default scale is to draw $\\pi$ rotation with length equal to minimum radius."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Gl1_L6Geom);
 #endif
@@ -113,6 +123,7 @@ struct Ig2_Sphere_Sphere_L3Geom: public IGeomFunctor{
 
 	enum { APPROX_NO_MID_TRSF=1, APPROX_NO_MID_NORMAL=2, APPROX_NO_RENORM_MID_NORMAL=4 };
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Ig2_Sphere_Sphere_L3Geom,IGeomFunctor,"Incrementally compute :yref:`L3Geom` for contact of 2 spheres. Detailed documentation in py/\\_extraDocs.py",
 		((bool,noRatch,true,,"See :yref:`Ig2_Sphere_Sphere_ScGeom.avoidGranularRatcheting`."))
 		((Real,distFactor,1,,"Create interaction if spheres are not futher than *distFactor* \\*(r1+r2). If negative, zero normal deformation will be set to be the initial value (otherwise, the geometrical distance is the \'\'zero'' one)."))
@@ -126,6 +137,7 @@ struct Ig2_Sphere_Sphere_L3Geom: public IGeomFunctor{
 		"By default, the mask is zero, wherefore none of these approximations is used.\n"
 		))
 	);
+	// clang-format on
 	FUNCTOR2D(Sphere,Sphere);
 	DEFINE_FUNCTOR_ORDER_2D(Sphere,Sphere);
 	DECLARE_LOGGER;
@@ -135,7 +147,9 @@ REGISTER_SERIALIZABLE(Ig2_Sphere_Sphere_L3Geom);
 struct Ig2_Wall_Sphere_L3Geom: public Ig2_Sphere_Sphere_L3Geom{
 	virtual bool go(const shared_ptr<Shape>& s1, const shared_ptr<Shape>& s2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& I);
 	//virtual bool genericGo(bool is6Dof, const shared_ptr<Shape>& s1, const shared_ptr<Shape>& s2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& I);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Ig2_Wall_Sphere_L3Geom,Ig2_Sphere_Sphere_L3Geom,"Incrementally compute :yref:`L3Geom` for contact between :yref:`Wall` and :yref:`Sphere`. Uses attributes of :yref:`Ig2_Sphere_Sphere_L3Geom`.");
+	// clang-format on
 	FUNCTOR2D(Wall,Sphere);
 	DEFINE_FUNCTOR_ORDER_2D(Wall,Sphere);
 	DECLARE_LOGGER;
@@ -147,7 +161,9 @@ struct Ig2_Facet_Sphere_L3Geom: public Ig2_Sphere_Sphere_L3Geom{
 	// get point on segment A..B closest to P; algo: http://local.wasp.uwa.edu.au/~pbourke/geometry/pointline/
 	static Vector3r getClosestSegmentPt(const Vector3r& P, const Vector3r& A, const Vector3r& B){ Vector3r BA=B-A; Real u=(P.dot(BA)-A.dot(BA))/(BA.squaredNorm()); return A+min((Real)1.,max((Real)0.,u))*BA; }
 	virtual bool go(const shared_ptr<Shape>& s1, const shared_ptr<Shape>& s2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& I);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Ig2_Facet_Sphere_L3Geom,Ig2_Sphere_Sphere_L3Geom,"Incrementally compute :yref:`L3Geom` for contact between :yref:`Facet` and :yref:`Sphere`. Uses attributes of :yref:`Ig2_Sphere_Sphere_L3Geom`.");
+	// clang-format on
 	FUNCTOR2D(Facet,Sphere);
 	DEFINE_FUNCTOR_ORDER_2D(Facet,Sphere);
 	DECLARE_LOGGER;
@@ -157,7 +173,9 @@ REGISTER_SERIALIZABLE(Ig2_Facet_Sphere_L3Geom);
 
 struct Ig2_Sphere_Sphere_L6Geom: public Ig2_Sphere_Sphere_L3Geom{
 	virtual bool go(const shared_ptr<Shape>& s1, const shared_ptr<Shape>& s2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& I);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Ig2_Sphere_Sphere_L6Geom,Ig2_Sphere_Sphere_L3Geom,"Incrementally compute :yref:`L6Geom` for contact of 2 spheres.");
+	// clang-format on
 	FUNCTOR2D(Sphere,Sphere);
 	DEFINE_FUNCTOR_ORDER_2D(Sphere,Sphere);
 };
@@ -167,21 +185,27 @@ REGISTER_SERIALIZABLE(Ig2_Sphere_Sphere_L6Geom);
 struct Law2_L3Geom_FrictPhys_ElPerfPl: public LawFunctor{
 	virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
 	FUNCTOR2D(L3Geom,FrictPhys);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Law2_L3Geom_FrictPhys_ElPerfPl,LawFunctor,"Basic law for testing :yref:`L3Geom`; it bears no cohesion (unless *noBreak* is ``True``), and plastic slip obeys the Mohr-Coulomb criterion (unless *noSlip* is ``True``).",
 		((bool,noBreak,false,,"Do not break contacts when particles separate."))
 		((bool,noSlip,false,,"No plastic slipping."))
 		((int,plastDissipIx,-1,(Attr::noSave|Attr::hidden),"Index of plastically dissipated energy"))
 		((int,elastPotentialIx,-1,(Attr::hidden|Attr::noSave),"Index for elastic potential energy (with O.trackEnergy)"))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Law2_L3Geom_FrictPhys_ElPerfPl);
 
 struct Law2_L6Geom_FrictPhys_Linear: public Law2_L3Geom_FrictPhys_ElPerfPl{
 	virtual bool go(shared_ptr<IGeom>&, shared_ptr<IPhys>&, Interaction*);
 	FUNCTOR2D(L6Geom,FrictPhys);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS(Law2_L6Geom_FrictPhys_Linear,Law2_L3Geom_FrictPhys_ElPerfPl,"Basic law for testing :yref:`L6Geom` -- linear in both normal and shear sense, without slip or breakage.",
 		((Real,charLen,1,,"Characteristic length with the meaning of the stiffness ratios bending/shear and torsion/normal."))
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Law2_L6Geom_FrictPhys_Linear);
+
+} // namespace yade
 

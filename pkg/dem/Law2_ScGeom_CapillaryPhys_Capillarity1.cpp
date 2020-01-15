@@ -25,6 +25,7 @@
 #include <iostream>
 #include <fstream>
 
+namespace yade { // Cannot have #include directive inside.
 
 DT Law2_ScGeom_CapillaryPhys_Capillarity1::dtVbased;
 DT Law2_ScGeom_CapillaryPhys_Capillarity1::dtPbased;
@@ -603,5 +604,7 @@ void Law2_ScGeom_CapillaryPhys_Capillarity1::solver(Real suction,bool reset)
     if (fusionDetection) checkFusion();
 
 }
+
+} // namespace yade
 
 #endif //LAW2_SCGEOM_CAPILLARYPHYS_Capillarity1

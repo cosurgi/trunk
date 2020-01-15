@@ -15,6 +15,8 @@
 
 #include <boost/filesystem.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Disp2DPropLoadEngine));
 
 void Disp2DPropLoadEngine::postLoad(Disp2DPropLoadEngine&)
@@ -217,5 +219,5 @@ void Disp2DPropLoadEngine::saveData()
 		<< boost::lexical_cast<string> (coordSs) << " " << boost::lexical_cast<string> (coordTot) <<endl;
 }
 
-
+} // namespace yade
 

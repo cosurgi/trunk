@@ -12,6 +12,8 @@
 #include<lib/serialization/Serializable.hpp>
 #include<lib/multimethods/Indexable.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class LBMlink: public Serializable{
     public:
         void ReinitDynamicalProperties() {
@@ -24,6 +26,7 @@ class LBMlink: public Serializable{
                 };
         virtual ~LBMlink() {};
 
+	// clang-format off
     YADE_CLASS_BASE_DOC_ATTRS_CTOR(LBMlink,Serializable,
         "Link class for Lattice Boltzmann Method ",
         ((int,sid,-1,,"Solid node identifier "))
@@ -38,7 +41,10 @@ class LBMlink: public Serializable{
         ((Vector3r,DistMid,Vector3r::Zero(),,"Distance between middle of the link and mass center of body"))
         ((Real,ct,0.,,"Coupling term in modified bounce back rule")),
         );
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(LBMlink);
+
+} // namespace yade
 
 #endif //LBM_ENGINE

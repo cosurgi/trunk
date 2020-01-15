@@ -55,6 +55,8 @@ par.add_argument('--cores',help='Set number of OpenMP threads (as \-\-threads) a
 par.add_argument('--update',help='Update deprecated class names in given script(s) using text search & replace. Changed files will be backed up with ~ suffix. Exit when done without running any simulation.',dest='updateScripts',nargs='+')
 par.add_argument('--nice',help='Increase nice level (i.e. decrease priority) by given number.',dest='nice',type=int)
 par.add_argument('-x',help='Exit when the script finishes',dest='exitAfter',action='store_true')
+par.add_argument('-f',help=('Set "Default" filter for logging https://yade-dem.org/doc/prog.html#logging, default is -f3 for all classes.'+
+                ('' if 'BoostLog' in features else " (Since this build doesn't use boost::log this option is unavailable, use cmake option -DENABLE_LOGGER=ON to enable)")),dest='verbosity',type=int)
 par.add_argument('-n',help="Run without graphical interface (equivalent to unsetting the DISPLAY environment variable)",dest='nogui',action='store_true')
 par.add_argument('--test',help="Run regression test suite and exit; the exists status is 0 if all tests pass, 1 if a test fails and 2 for an unspecified exception.",dest="test",action='store_true')
 par.add_argument('--checks',help='Run a series of user-defined check tests as described in /yade/scripts/checks-and-tests/checks/README and https://yade-dem.org/doc/prog.html#regression-tests',dest='checks',action='store_true')
@@ -82,6 +84,10 @@ if opts.version:
 if opts.script:
 	args.insert(0,opts.script) # for compatibility with userSession(), could be modified in the future
 
+## Check if this script is exec'd or imported as part of a mpi process
+# If yade is run with mpiexec prefix all processes will be in mpi_mode.
+# If non-mpiexec'd yade spawns workers only workers will be in mpi_mode
+opts.mpi_mode = os.getenv('OMPI_COMM_WORLD_RANK')!=None
 
 ## remove later
 ## python2.5 relative module imports workaround
@@ -131,7 +137,7 @@ if opts.cores:
 elif opts.threads: os.environ['OMP_NUM_THREADS']=str(opts.threads)
 else: os.environ['OMP_NUM_THREADS']='1'
 
-if __name__ == "__main__": # do not print this while importing yade in other python application
+if __name__ == "__main__" and not opts.mpi_mode: # do not print this while importing yade in other python application
 	sys.stdout.write('Welcome to Yade '+version+debugbuild+'\n')
 
 # initialization and c++ plugins import
@@ -139,6 +145,7 @@ import yade
 # other parts we will need soon
 import yade.config
 import yade.wrapper
+import yade.log
 import yade.system
 import yade.runtime
 # import to have quick access to function printAllVersions()
@@ -150,7 +157,23 @@ if opts.updateScripts:
 	yade.system.updateScripts(args)
 	sys.exit(0)
 
+if 'BoostLog' in yade.config.features:
+	# by default use colors, but reading config file will override that
+	yade.log.setUseColors(True)
+	# set default filter level. This level is mentioned in documentation as the starting default level.
+	yade.log.setLevel("Default",yade.log.WARN)
+	# make sure verbosity filter is set correctly during loading the config file
+	if opts.verbosity: yade.log.setLevel("Default",opts.verbosity)
+	# read config file if it exists
+	import os
+	if(os.path.isfile( yade.log.defaultConfigFileName() )):
+		yade.log.readConfigFile( yade.log.defaultConfigFileName() )
+	# setting filter level from command line will override config file
+	if opts.verbosity: yade.log.setLevel("Default",opts.verbosity)
+
+
 # modify sys.argv in-place so that it can be handled by userSession
+sys.yade_argv=sys.argv
 sys.argv=yade.runtime.argv=args
 yade.runtime.opts=opts
 
@@ -169,13 +192,22 @@ if opts.performance:
 	checksPath=libDir+'/py/yade/tests/checks/performance'
 	execfile(checksPath+'/checkPerf.py')
 
+def checkVersions():
+	# put here all yade compatibility tests with other libraries
+	import yade.libVersions
+	# Remember that libVersions always can return None, when library does not exist. Make sure this will not lead to a crash.
+	glutVer = yade.libVersions.getVersion('freeglut')
+	if((glutVer != None) and (glutVer > (2,8,1) or glutVer == (-1,-1,-1))):
+		print("\033[93mWarning: freeglut versions higher than 2.8.1 are known to crash\033[0m, see https://gitlab.com/yade-dev/trunk/merge_requests/160")
+
 def userSession(gui='none',qapp=None):
 	# prepare nice namespace for users
 	import yade.runtime
 	import sys
 	if __name__ != "__main__": # for importing as python module
 		return
-	
+
+	checkVersions()
 	# common ipython configuration
 	# use standard terminal color codes to make F12, F11 bold, and underline the word "help", see https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 	banner='[[ ^L clears screen, ^U kills line. '+', '.join((['\033[1mF12\033[0m controller','\033[1mF11\033[0m 3D view (press \033[4m"h"\033[0m in 3D view for \033[4mhelp\033[0m)','\033[1mF10\033[0m both','\033[1mF9\033[0m generator'] if (gui!='none') else [])+['\033[1mF8\033[0m plot'])+'. ]]'
@@ -194,7 +226,7 @@ def userSession(gui='none',qapp=None):
 				'"\e[A": history-search-backward', '"\e[B": history-search-forward', # incremental history forward/backward
 		]
 	)
-
+	
 	# show python console
 	# handle ipython version (version 10 nost tested after some changes here)
 	if yade.runtime.ipython_version==10:
@@ -230,7 +262,12 @@ def userSession(gui='none',qapp=None):
 		for k in ipconfig['readline_parse_and_bind']: readline.parse_and_bind(k)
 		InteractiveShellEmbed.config=cfg
 		InteractiveShellEmbed.banner1=banner+'\n'
-		ipshell=InteractiveShellEmbed()
+		while True:
+			try:	#simultaneous calls to InteractiveShellEmbed() sometimes lead to race condition for /root/.ipython/* in mpi spawn (https://gitlab.com/yade-dev/trunk/issues/94)
+				ipshell=InteractiveShellEmbed()
+				break
+			except:
+				continue
 
 		# ipython since version 5.0 stopped using libreadline, now we must make the bindings in another way
 		# see: https://python-prompt-toolkit.readthedocs.io/en/1.0.14/pages/full_screen_apps.html?highlight=add_binding
@@ -294,7 +331,7 @@ def userSession(gui='none',qapp=None):
 			sys.stderr.write("Running simulation "+arg0+'\n')
 		if arg0.endswith('.py'):
 			def runScript(script):
-				sys.stderr.write("Running script "+arg0+'\n')
+				if not opts.mpi_mode: sys.stderr.write("Running script "+arg0+'\n')
 				try:
 					execfile(script,globals())
 				except SystemExit: raise
@@ -302,18 +339,34 @@ def userSession(gui='none',qapp=None):
 					import traceback
 					traceback.print_exc()
 					if yade.runtime.opts.exitAfter: sys.exit(1)
-				if yade.runtime.opts.exitAfter: sys.exit(0)
 			runScript(arg0)
-		if yade.runtime.opts.exitAfter: sys.exit(0)
 	## start interpreter
-	ipshell()
+	if not opts.mpi_mode:
+		if yade.runtime.opts.exitAfter: sys.exit(0)
+		else: ipshell()
+	else: # if mpi_mode start shell on master, waiting loops on workers, and exit mpi properly
+		from yade import mpy as mp
+		if mp.rank==0:
+			if not yade.runtime.opts.exitAfter:
+				mp.waitingCommands=True
+				ipshell()
+			mp.wprint("sending exit command to workers", mp.numThreads)
+			res=mp.sendCommand(list(range(1,mp.numThreads)),"exit",wait=True) # a blocking call to workers, we only finalize after letting them now
+			mp.MPI.Finalize()
+		else:
+			# after the script execution, never exit directly. Instead, wait a command from master to do so.
+			# We do this even in non-interactive mode since that's the only way found to exit without various openmpi warnings.
+			# In that case the wait process is spawned just long enough to receive the 'exit' command
+			mp.spawnedProcessWaitCommand()
+			mp.wprint("received and exit command, finalizing")
+			mp.MPI.Finalize()
 
 ## run userSession in a way corresponding to the features we use:
 gui=None
 yade.runtime.hasDisplay=False # this is the default initialized in the module, anyway
 if 'GUI' in features: gui='qt4'
 if 'GUI-Qt5' in features: gui='qt5'
-if opts.nogui: gui=None
+if opts.nogui or opts.mpi_mode: gui=None
 if gui:
 	import Xlib.display
 	# PyQt4's QApplication does exit(1) if it is unable to connect to the display
@@ -330,12 +383,13 @@ if gui:
 		print('Warning: no X rendering available (see https://bbs.archlinux.org/viewtopic.php?id=13189)')
 
 # run remote access things, before actually starting the user session (not while imported by other python application)
-if __name__ == "__main__":
+if __name__ == "__main__" and not opts.mpi_mode:
 	from yade import remote
 	if (gui=='qt4' or gui=='qt5'):
 		yade.remote.useQThread=True
 		yade.remote.gui=gui
 	yade.remote.runServers()
+
 
 if gui==None:
 	userSession()

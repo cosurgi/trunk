@@ -7,6 +7,11 @@
 	#undef NDEBUG
 #endif
 #include "Polyhedra.hpp"
+#ifdef YADE_OPENGL
+	#include <lib/opengl/OpenGLWrapper.hpp>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN(/* self-contained in hpp: */ (Polyhedra) (PolyhedraGeom) (Bo1_Polyhedra_Aabb) (PolyhedraPhys) (PolyhedraMat) (Ip2_PolyhedraMat_PolyhedraMat_PolyhedraPhys) (Ip2_FrictMat_PolyhedraMat_FrictPhys) (Law2_PolyhedraGeom_PolyhedraPhys_Volumetric)
 	/* some code in cpp (this file): */ 
@@ -14,6 +19,8 @@ YADE_PLUGIN(/* self-contained in hpp: */ (Polyhedra) (PolyhedraGeom) (Bo1_Polyhe
 		(Gl1_Polyhedra) (Gl1_PolyhedraGeom) (Gl1_PolyhedraPhys)
 	#endif
 	);
+
+CREATE_LOGGER(Law2_PolyhedraGeom_PolyhedraPhys_Volumetric);
 
 //*********************************************************************************
 /* Polyhedra Constructor */
@@ -58,9 +65,9 @@ void Polyhedra::Initialize(){
 	P = Simplify(P, 1E-9);
 
 	//modify order of v according to CGAl polyhedron 
-	int i = 0;
+	//int i = 0;
 	v.clear();
-	for (Polyhedron::Vertex_iterator vIter = P.vertices_begin(); vIter != P.vertices_end(); ++vIter, i++){
+	for (Polyhedron::Vertex_iterator vIter = P.vertices_begin(); vIter != P.vertices_end(); ++vIter /*, i++*/){
 		v.push_back(Vector3r(vIter->point().x(),vIter->point().y(),vIter->point().z()));
 	}
 
@@ -343,7 +350,6 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 /* Plotting */
 
 #ifdef YADE_OPENGL
-	#include <lib/opengl/OpenGLWrapper.hpp>
 	bool Gl1_Polyhedra::wire;
 	
 	void Gl1_Polyhedra::go(const shared_ptr<Shape>& cm, const shared_ptr<State>&,bool wire2,const GLViewInfo&)
@@ -390,7 +396,7 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 	void Gl1_PolyhedraGeom::go(const shared_ptr<IGeom>& ig, const shared_ptr<Interaction>&,
 		const shared_ptr<Body>&, const shared_ptr<Body>&, bool) {draw(ig);}
 
-	void Gl1_PolyhedraGeom::draw(const shared_ptr<IGeom>& ig){};
+	void Gl1_PolyhedraGeom::draw(const shared_ptr<IGeom>& /*ig*/){};
 
 	GLUquadric* Gl1_PolyhedraPhys::gluQuadric=NULL;
 	Real Gl1_PolyhedraPhys::maxFn;
@@ -401,7 +407,7 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 	int Gl1_PolyhedraPhys::stacks;
 
 	void Gl1_PolyhedraPhys::go(const shared_ptr<IPhys>& ip, const shared_ptr<Interaction>& i,
-		const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool wireFrame){
+		const shared_ptr<Body>& b1, const shared_ptr<Body>& b2, bool /*wireFrame*/){
 		if(!gluQuadric){
 			gluQuadric=gluNewQuadric();
 			if(!gluQuadric) throw runtime_error("Gl1_PolyhedraPhys::go unable to allocate new GLUquadric object (out of memory?).");
@@ -432,7 +438,7 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 		
 		glDisable(GL_CULL_FACE); 
 		glPushMatrix();
-			glTranslatef(p1[0],p1[1],p1[2]);
+			glTranslate(p1[0],p1[1],p1[2]);
 			Quaternionr q(Quaternionr().setFromTwoVectors(Vector3r(0,0,1),relPos/dist /* normalized */));
 			// using Transform with OpenGL: http://eigen.tuxfamily.org/dox/TutorialGeometry.html
 			//glMultMatrixd(Eigen::Affine3d(q).data());
@@ -447,7 +453,7 @@ void Bo1_Polyhedra_Aabb::go(const shared_ptr<Shape>& ig, shared_ptr<Bound>& bv, 
 //!Precompute data needed for rotating tangent vectors attached to the interaction
 
 void PolyhedraGeom::precompute(const State& rbp1, const State& rbp2, const Scene* scene,
-	const shared_ptr<Interaction>& c, const Vector3r& currentNormal, bool isNew, const Vector3r& shift2) {
+	const shared_ptr<Interaction>& /*c*/, const Vector3r& currentNormal, bool isNew, const Vector3r& shift2) {
 	
 	if(!isNew) {
 		orthonormal_axis = normal.cross(currentNormal);
@@ -519,7 +525,7 @@ Real Law2_PolyhedraGeom_PolyhedraPhys_Volumetric::elasticEnergy()
 
 //**************************************************************************************
 // Apply forces on polyhedrons in collision based on geometric configuration
-bool Law2_PolyhedraGeom_PolyhedraPhys_Volumetric::go(shared_ptr<IGeom>& ig, shared_ptr<IPhys>& ip, Interaction* I){
+bool Law2_PolyhedraGeom_PolyhedraPhys_Volumetric::go(shared_ptr<IGeom>& /*ig*/, shared_ptr<IPhys>& /*ip*/, Interaction* I){
 		if (!I->geom) {return true;} 
 		const shared_ptr<PolyhedraGeom>& contactGeom(YADE_PTR_DYN_CAST<PolyhedraGeom>(I->geom));
 		if(!contactGeom) {return true;} 
@@ -614,5 +620,7 @@ bool Law2_PolyhedraGeom_PolyhedraPhys_Volumetric::go(shared_ptr<IGeom>& ig, shar
 		phys->shearForce = shearForce;
 		return true;
 }
+
+} // namespace yade
 
 #endif // YADE_CGAL

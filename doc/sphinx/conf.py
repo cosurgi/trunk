@@ -66,16 +66,35 @@ def yadesrc_role(role,rawtext,lineno,inliner,options={},content=[]):
 	"Handle the :ysrc:`` role, making hyperlink to git repository webpage with that path. Supports :ysrc:`Link text<file/name>` syntax, like usual hyperlinking roles. If target ends with ``/``, it is assumed to be a directory."
 	id=rawtext.split(':',2)[2][1:-1]
 	txt=id
+	if( "#L" in id):
+		msg = "\n\n\033[93m"+(80*'=')+"\nYADE :ysrc: ERROR processing: '"+id+"'\033[0m\n\033[92mIf you want to link to a line number in source, you should use :ysrccommit:\ninstead of :ysrc: otherwise the link will break when someone changes the file.\nThe :ysrccommit: allows to link to a specific git commit hash and a line number.\033[0m\n\033[93mSee https://yade-dem.org/doc/prog.html#sphinx-documentation for details\n"+(80*'=')+"\033[0m\n\n"
+		import sys
+		sys.__stderr__.write(msg)
+		sys.__stderr__.flush()
+		# unfortunately sphinx ignores this one
+		#raise RuntimeError(":ysrc: error, doc/sphinx/conf.py")
+		sys.exit(1)
 	m=re.match('(.*)\s*<(.*)>\s*',id)
 	if m:
 		txt,id=m.group(1),m.group(2)
 	return [nodes.reference(rawtext,docutils.utils.unescape(txt),refuri='https://gitlab.com/yade-dev/trunk/blob/master/%s'%id)],[] ### **options should be passed to nodes.reference as well
 
+def yadesrccommit_role(role,rawtext,lineno,inliner,options={},content=[]):
+	"Handle the :ysrccommit:`` role, making hyperlink to git repository webpage with that path. Supports :ysrc:`Link text<commithash/file/name>` syntax, like usual hyperlinking roles. If target ends with ``/``, it is assumed to be a directory."
+	id=rawtext.split(':',2)[2][1:-1]
+	txt=id
+	m=re.match('(.*)\s*<(.*)>\s*',id)
+	if m:
+		txt,id=m.group(1),m.group(2)
+	return [nodes.reference(rawtext,docutils.utils.unescape(txt),refuri='https://gitlab.com/yade-dev/trunk/blob/%s'%id)],[] ### **options should be passed to nodes.reference as well
+
 # map modules to their html (rst) filenames. Used for sub-modules, where e.g. SpherePack is yade._packSphere.SpherePack, but is documented from yade.pack.rst
 #
 # NOTE: in file doc/sphinx/yadeSphinx.py there is a mods={……} variable which must reflect what is written below.
+# hint: follow changes in d067b0696a8 to add new modules.
 moduleMap={
 	  'yade._libVersions'       :'yade.libVersions'
+	, 'yade._log'               :'yade.log'
 	, 'yade._packPredicates'    :'yade.pack'
 	, 'yade._packSpheres'       :'yade.pack'
 	, 'yade._packObb'           :'yade.pack'
@@ -131,6 +150,7 @@ from docutils.parsers.rst import roles
 def yaderef_role_2(type,rawtext,text,lineno,inliner,options={},content=[]): return YadeXRefRole()('yref',rawtext,text,lineno,inliner,options,content)
 roles.register_canonical_role('yref', yaderef_role)
 roles.register_canonical_role('ysrc', yadesrc_role)
+roles.register_canonical_role('ysrccommit', yadesrccommit_role)
 roles.register_canonical_role('ydefault', ydefault_role)
 roles.register_canonical_role('yattrtype', yattrtype_role)
 roles.register_canonical_role('yattrflags', yattrflags_role)

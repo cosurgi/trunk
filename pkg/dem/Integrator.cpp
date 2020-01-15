@@ -6,9 +6,9 @@
   #include<omp.h>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((Integrator));
-
-
 
 void observer::operator()( const stateVector&  x , Real  t ) const
 {
@@ -347,4 +347,5 @@ boost::python::list Integrator::slaves_get(){
 	return ret;
 }
 
+} // namespace yade
 

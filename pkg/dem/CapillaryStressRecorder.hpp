@@ -12,6 +12,8 @@
 #include <string>
 #include <fstream>
 
+namespace yade { // Cannot have #include directive inside.
+
 class TriaxialCompressionEngine;
 
 class CapillaryStressRecorder : public Recorder
@@ -22,8 +24,13 @@ class CapillaryStressRecorder : public Recorder
 	public :
 		virtual void action();
 		
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(CapillaryStressRecorder,Recorder,"Records information from capillary meniscii on samples submitted to triaxial compressions. Classical sign convention (tension positiv) is used for capillary stresses. -> New formalism needs to be tested!!!",,initRun=true;);
+	// clang-format on
 	DECLARE_LOGGER;
 
 };
 REGISTER_SERIALIZABLE(CapillaryStressRecorder);
+
+} // namespace yade
+

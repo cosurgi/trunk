@@ -4,7 +4,7 @@
 *  Copyright (C) 2004 by Janek Kozicki                                   *
 *  cosurgi@berlios.de                                                    *
 *  Copyright (C) 2006 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -17,7 +17,7 @@
 #include<core/Scene.hpp>
 #include<lib/base/Math.hpp>
 
-
+namespace yade { // Cannot have #include directive inside.
 
 bool Ig2_Box_Sphere_ScGeom::go(const shared_ptr<Shape>& cm1, const shared_ptr<Shape>& cm2, const State& state1, const State& state2, const Vector3r& shift2, const bool& force, const shared_ptr<Interaction>& c)
 {
@@ -83,25 +83,25 @@ bool Ig2_Box_Sphere_ScGeom::go(const shared_ptr<Shape>& cm1, const shared_ptr<Sh
 		 */
 		pt1 = se32.position+normal*minCBoxDist;
 		pt2 = se32.position-normal*s->radius;
-		Vector3r normal = pt1-pt2; normal.normalize();
+		Vector3r normal2 = pt1-pt2; normal2.normalize();
 		bool isNew=!c->geom;
 		if (isNew) scm = shared_ptr<ScGeom>(new ScGeom());
 		else scm = YADE_PTR_CAST<ScGeom>(c->geom);
 
 		// contact point is in the middle of overlapping volumes
-		//(in the direction of penetration, which is normal to the box surface closest to sphere center) of overlapping volumes
+		//(in the direction of penetration, which is normal2 to the box surface closest to sphere center) of overlapping volumes
 		scm->contactPoint = 0.5*(pt1+pt2);
-// 		scm->normal = normal;
+// 		scm->normal2 = normal2;
 		scm->penetrationDepth = (pt1-pt2).norm();
 		scm->radius1 = s->radius;
 		scm->radius2 = s->radius;
 		c->geom = scm;
-		scm->precompute(state1,state2,scene,c,normal,isNew,shift2,true);
+		scm->precompute(state1,state2,scene,c,normal2,isNew,shift2,true);
 	} else { // outside
 		Vector3r cOnBox_box = boxAxisT*cOnBox_boxLocal; // projection of sphere's center on closest box surface - relative to box's origin, but GLOBAL orientation!
 		Vector3r cOnBox_sphere = cOnBox_box-relPos21; // same, but origin in sphere's center
 		depth=s->radius-cOnBox_sphere.norm();
-		if (depth<0 && !c->isReal() && !force) return false;
+		if (-depth>s->radius*(interactionDetectionFactor-1.) && !c->isReal() && !force) return false;
 
 		/*
 		 *  +-----------------------------------+
@@ -176,3 +176,6 @@ bool Ig2_Box_Sphere_ScGeom6D::goReverse(const shared_ptr<Shape>& cm1, const shar
 }
 
 YADE_PLUGIN((Ig2_Box_Sphere_ScGeom6D));
+
+} // namespace yade
+

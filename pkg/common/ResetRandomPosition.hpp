@@ -14,6 +14,8 @@
 #include <vector>
 #include <string>
 
+namespace yade { // Cannot have #include directive inside.
+
 /// @brief Produces spheres over the course of a simulation. 
 class ResetRandomPosition : public PeriodicEngine {
 public:
@@ -43,6 +45,7 @@ private:
 		randomSymmetricUnit;
 
 	DECLARE_LOGGER;
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(ResetRandomPosition,PeriodicEngine,"Creates spheres during simulation, placing them at random positions. Every time called, one new sphere will be created and inserted in the simulation.",
 		((vector<Body::id_t>,factoryFacets,,,"The geometry of the section where spheres will be placed; they will be placed on facets or in volume between them depending on *volumeSection* flag."))
 		((std::vector<int>,subscribedBodies,,,"Affected bodies."))
@@ -56,7 +59,9 @@ private:
 		((Vector3r,angularVelocityRange,Vector3r::Zero(),,"Half size of a angularVelocity distribution interval. New sphere will have random angularVelocity within the range angularVelocity±angularVelocityRange.")),
 		first_run=true;
 	);
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(ResetRandomPosition);
 
+} // namespace yade
 

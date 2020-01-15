@@ -29,6 +29,7 @@
 #include<pkg/lbm/LBMbody.hpp>
 #include<core/GlobalEngine.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 class HydrodynamicsLawLBM : public GlobalEngine
 {
@@ -165,6 +166,7 @@ class HydrodynamicsLawLBM : public GlobalEngine
         void LbmEnd();
         void CalculateAndApplyForcesAndTorquesOnBodies(bool mean,bool apply);
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR(HydrodynamicsLawLBM,GlobalEngine,"Engine to simulate fluid flow (with the lattice Boltzmann method) with a coupling with the discrete element method.\n If you use this Engine, please cite and refer to F. Lominé et al. International Journal For Numerical and Analytical Method in Geomechanics, 2012, doi: 10.1002/nag.1109",
 
 				((int,WallYm_id,0,,"Identifier of the Y- wall"))
@@ -292,11 +294,14 @@ class HydrodynamicsLawLBM : public GlobalEngine
                 timingDeltas=shared_ptr<TimingDeltas>(new TimingDeltas);
 
 				);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 
 
 REGISTER_SERIALIZABLE(HydrodynamicsLawLBM);
+
+} // namespace yade
 
 #endif //LBM_ENGINE
 

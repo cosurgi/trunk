@@ -1,19 +1,17 @@
 #pragma once
 #include <fstream>
 #include <iostream>
+#include <boost/lexical_cast.hpp>
 
 enum DataPosition {POINT_DATA,CELL_DATA};
 enum DataName     {SCALARS,VECTORS,TENSORS};
 enum DataType     {INT,FLOAT};
 
-using std::ios_base;
-using std::endl;
-using std::cout;
-using std::cerr;
-
 // Really simplistic struct for vtk file creation
 struct basicVTKwritter
 {
+	typedef double WriteType; // maybe later turn this class into a template class
+
 	std::ofstream file;
 	unsigned int nbVertices, nbCells;
 	bool hasPointData;
@@ -26,7 +24,8 @@ struct basicVTKwritter
 	bool close();
 	
 	void begin_vertices();
-	void write_point(float x, float y, float z);
+	void write_point(const WriteType& x, const WriteType& y, const WriteType& z);
+
 	void end_vertices();
 
 	void begin_cells();
@@ -34,15 +33,17 @@ struct basicVTKwritter
 	void end_cells();
 
 	void begin_data(const char * dataname, DataPosition pos, DataName name, DataType type);
-    	void write_data(float value);
-	void write_data(float x, float y, float z);
-	void write_data(float t11, float t12, float t13,
-					float t21, float t22, float t23,
-					float t31, float t32, float t33);
+	void write_data(const WriteType& value);
+	void write_data(const WriteType& x, const WriteType& y, const WriteType& z);
+	void write_data(const WriteType& t11, const WriteType& t12, const WriteType& t13,
+			const WriteType& t21, const WriteType& t22, const WriteType& t23,
+			const WriteType& t31, const WriteType& t32, const WriteType& t33);
 	void end_data();
+
+	private:
+		std::string conv(const WriteType& v) {
+			return boost::lexical_cast<std::string>(v);
+		}
 };
-
-
-
 
 

@@ -14,7 +14,7 @@
 #include <sys/types.h>
 
 
-#define FAST
+namespace yade { // Cannot have #include directive inside.
 
 namespace CGT {
 	
@@ -59,6 +59,7 @@ double Network<Tesselation>::volumePoreVoronoiFraction (CellHandle& cell, int& j
   Point& p1 = cell->info();
   Point& p2 = cell->neighbor(j)->info();
   if (!reuseFacetData) facetNFictious = detectFacetFictiousVertices (cell,j);
+  //cout << "getting volume pore voronoi fraction for alpha ? "<< cell->info().isAlpha << " fictiousN " << facetNFictious << endl;
   Sphere v [3];
   VertexHandle W [3];
   for (int kk=0; kk<3; kk++) {W[kk] = cell->vertex(facetVertices[j][kk]);v[kk] = cell->vertex(facetVertices[j][kk])->point();}
@@ -109,8 +110,7 @@ template<class Tesselation>
 double Network<Tesselation>::volumeSingleFictiousPore(const VertexHandle& SV1, const VertexHandle& SV2, const VertexHandle& SV3, const Point& PV1,  const Point& PV2, CVector& facetSurface)
 {
         double A [3], B[3];
-
-        Boundary &bi1 =  boundary(SV1->info().id());
+	Boundary &bi1 = boundary(SV1->info().id());
 	
         for (int m=0;m<3;m++) {A[m]= (SV2->point())[m];}
         for (int m=0;m<3;m++) {B[m]= (SV3->point())[m];}
@@ -143,7 +143,6 @@ template<class Tesselation>
 double Network<Tesselation>::volumeDoubleFictiousPore(const VertexHandle& SV1, const VertexHandle& SV2, const VertexHandle& SV3, const Point& PV1, const Point& PV2, CVector& facetSurface)
 {
         double A [3], B[3];
-
 	Boundary &bi1 =  boundary(SV1->info().id());
         Boundary &bi2 =  boundary(SV2->info().id());
         for (int m=0;m<3;m++) {A[m]=B[m]= SV3->point()[m];}
@@ -291,7 +290,7 @@ double Network<Tesselation>::surfaceSolidThroat(CellHandle cell, int j, bool sli
 		VertexHandle SV2 = cell->vertex(facetVertices[j][facetRe1]);
 		VertexHandle SV3 = cell->vertex(facetVertices[j][facetRe2]);
 
-		Boundary &bi1 =  boundary(SV1->info().id());
+		Boundary &bi1 = boundary(SV1->info().id());
                 Ssolid1 = 0;
 		if (bi1.flowCondition && ! slipBoundary) {
                         Ssolid1 = abs(0.5*CGAL::cross_product(p1-p2, SV2->point().point()-SV3->point().point())[bi1.coordinate]);
@@ -312,8 +311,8 @@ double Network<Tesselation>::surfaceSolidThroat(CellHandle cell, int j, bool sli
 		VertexHandle SV2 = cell->vertex(facetVertices[j][facetF2]);
 		VertexHandle SV3 = cell->vertex(facetVertices[j][facetRe1]);
 
-		Boundary &bi1 =  boundary(SV1->info().id());
-                Boundary &bi2 =  boundary(SV2->info().id());
+		Boundary &bi1 = boundary(SV1->info().id());
+		Boundary &bi2 = boundary(SV2->info().id());
                 for (int m=0;m<3;m++) {
                         A[m]=B[m]=C[m]= (SV3->point())[m];
                 }
@@ -388,7 +387,7 @@ double Network<Tesselation>::surfaceSolidThroatInPore(CellHandle cell, int j, bo
 		VertexHandle SV2 = cell->vertex(facetVertices[j][facetRe1]);
 		VertexHandle SV3 = cell->vertex(facetVertices[j][facetRe2]);
 
-		Boundary &bi1 =  boundary(SV1->info().id());
+		Boundary &bi1 = boundary(SV1->info().id());
                 Ssolid1 = 0;
 		if (bi1.flowCondition && ! slipBoundary) Ssolid1 = abs(0.5*CGAL::cross_product(p1-SV2->point().point(), SV2->point().point()-SV3->point().point())[bi1.coordinate]);
                 Ssolid2 = fastSphericalTriangleArea(SV2->point(),SV3->point().point(),p1, SV2->point().point()+bi1.normal);
@@ -399,8 +398,9 @@ double Network<Tesselation>::surfaceSolidThroatInPore(CellHandle cell, int j, bo
 		VertexHandle SV1 = cell->vertex(facetVertices[j][facetF1]);
 		VertexHandle SV2 = cell->vertex(facetVertices[j][facetF2]);
 		VertexHandle SV3 = cell->vertex(facetVertices[j][facetRe1]);
-		Boundary &bi1 =  boundary(SV1->info().id());
-                Boundary &bi2 =  boundary(SV2->info().id());
+		Boundary &bi1 = boundary(SV1->info().id());
+		Boundary &bi2 = boundary(SV2->info().id());
+
                 for (int m=0;m<3;m++) {A[m]=B[m]=C[m]= (SV3->point())[m];}
                 A[bi1.coordinate]=bi1.p[bi1.coordinate];
                 B[bi2.coordinate]=bi2.p[bi2.coordinate];
@@ -426,9 +426,10 @@ double Network<Tesselation>::surfaceSolidThroatInPore(CellHandle cell, int j, bo
 template<class Tesselation>
 CVector Network<Tesselation>::surfaceDoubleFictiousFacet(VertexHandle fSV1, VertexHandle fSV2, VertexHandle SV3)
 {
-        //This function is correct only with axis-aligned boundaries
-        const Boundary &bi1 = boundary(fSV1->info().id());
-        const Boundary &bi2 = boundary(fSV2->info().id());
+        //This function is correct only with axis-aligned boundaries FIXME: alpha is not axis aligned, is there a problem?
+	const Boundary &bi1 = boundary(fSV1->info().id());
+	const Boundary &bi2 = boundary(fSV2->info().id());
+
         double area=(bi1.p[bi1.coordinate]-SV3->point()[bi1.coordinate])*(bi2.p[bi2.coordinate]-SV3->point()[bi2.coordinate]);
         double surf [3] = {1,1,1};
         surf[bi1.coordinate]=0;
@@ -440,7 +441,7 @@ template<class Tesselation>
 CVector Network<Tesselation>::surfaceSingleFictiousFacet(VertexHandle fSV1, VertexHandle SV2, VertexHandle SV3)
 {
         //This function is correct only with axis-aligned boundaries
-        const Boundary &bi1 =  boundary(fSV1->info().id());
+        const Boundary &bi1 = boundary(fSV1->info().id());
 //  const Boundary &bi2 = boundary ( fSV2->info().id() );
         CVector mean_height = (bi1.p[bi1.coordinate]-0.5*(SV3->point()[bi1.coordinate]+SV2->point()[bi1.coordinate]))*bi1.normal;
 
@@ -456,8 +457,8 @@ double Network<Tesselation>::surfaceSolidDoubleFictiousFacet(VertexHandle SV1, V
                 A[m]=B[m]= (SV3->point())[m];
         }
 
-        const Boundary &bi1 = boundary(SV1->info().id());
-        const Boundary &bi2 = boundary(SV2->info().id());
+	const Boundary &bi1 = boundary(SV1->info().id());
+	const Boundary &bi2 = boundary(SV2->info().id());
 
         A[bi1.coordinate]=bi1.p[bi1.coordinate];
         B[bi2.coordinate]=bi2.p[bi2.coordinate];
@@ -532,7 +533,7 @@ void Network<Tesselation>::addBoundingPlane (CVector Normal, int id_wall)
 {
 // 	  Tesselation& Tes = T[currentTes];
 	  //FIXME: pre-condition: the normal is axis-aligned
-	  int Coordinate = abs(Normal[0])*0 + abs(Normal[1])*1 + abs(Normal[2])*2;
+	  int Coordinate = int(std::round(std::abs(Normal[0])))*0 + int(std::round(std::abs(Normal[1])))*1 + int(std::round(std::abs(Normal[2])))*2;
 	  
 	  double pivot = Normal[Coordinate]<0 ? 
 	  cornerMax.x()*abs(Normal[0])+cornerMax.y()*abs(Normal[1])+cornerMax.z()*abs(Normal[2]) : cornerMin.x()*abs(Normal[0])+cornerMin.y()*abs(Normal[1])+cornerMin.z()*abs(Normal[2]);
@@ -549,7 +550,7 @@ void Network<Tesselation>::addBoundingPlane (Real center[3], double thickness, C
 {
 	  Tesselation& Tes = T[currentTes];
 	  
-	  int Coordinate = abs(Normal[0])*0 + abs(Normal[1])*1 + abs(Normal[2])*2;
+	  int Coordinate = int(std::round(std::abs(Normal[0])))*0 + int(std::round(std::abs(Normal[1])))*1 + int(std::round(std::abs(Normal[2])))*2;
 	  
 	  Tes.insert((center[0]+Normal[0]*thickness/2)*(1-abs(Normal[0])) + (center[0]+Normal[0]*thickness/2-Normal[0]*FAR*(cornerMax.y()-cornerMin.y()))*abs(Normal[0]),
 		     (center[1]+Normal[1]*thickness/2)*(1-abs(Normal[1])) + (center[1]+Normal[1]*thickness/2-Normal[1]*FAR*(cornerMax.y()-cornerMin.y()))*abs(Normal[1]),
@@ -571,18 +572,16 @@ template<class Tesselation>
 void Network<Tesselation>::defineFictiousCells()
 {
 	RTriangulation& Tri = T[currentTes].Triangulation();
-
 	FiniteCellsIterator cellEnd = Tri.finite_cells_end();
-	for (FiniteCellsIterator cell = Tri.finite_cells_begin(); cell != cellEnd; cell++) {
-	  cell->info().fictious()=0;}
-
+	for (FiniteCellsIterator cell = Tri.finite_cells_begin(); cell != cellEnd; cell++) {cell->info().fictious()=0;}
 	for (int bound=0; bound<6;bound++) {
                 int& id = *boundsIds[bound];
                 if (id<0) continue;
+		T[currentTes].vertexHandles[id];
                 VectorCell tmpCells;
-                tmpCells.resize(10000);
+                tmpCells.resize(10000); // limiting if we have >10000 fictitious cells?
                 VCellIterator cells_it = tmpCells.begin();
-                VCellIterator cells_end = Tri.incident_cells(T[currentTes].vertexHandles[id],cells_it);
+                VCellIterator cells_end = Tri.incident_cells(T[currentTes].vertexHandles[id],cells_it);  //
                 for (VCellIterator it = tmpCells.begin(); it != cells_end; it++)
 		{
 		  CellHandle& cell = *it;
@@ -590,7 +589,6 @@ void Network<Tesselation>::defineFictiousCells()
 		  cell->info().isFictious=true;
 		}
 	}
-	
 	if(debugOut) cout << "Fictious cell defined" << endl;
 }
 
@@ -656,7 +654,7 @@ void Network<Tesselation>::lineSolidPore(CellHandle cell, int j)
 		cell->info().solidLine[j][facetRe1]=lineSolidFacet(SV1->point(), SV2->point(), SV3->point());
 		cell->info().solidLine[j][facetRe2]=lineSolidFacet(SV2->point(), SV1->point(), SV3->point());
 
-		Boundary &bi =  boundary(SV3->info().id());
+		Boundary &bi = boundary(SV3->info().id());
 		double A [3], B[3];
 		for (int m=0;m<3;m++) {A[m]=SV1->point()[m];B[m]= SV2->point()[m];}
 		A[bi.coordinate]=bi.p[bi.coordinate];
@@ -673,9 +671,9 @@ void Network<Tesselation>::lineSolidPore(CellHandle cell, int j)
 		
 		cell->info().solidLine[j][facetRe1]=0.5*M_PI*sqrt(SV3->point().weight());
 		
-		Boundary &bi1 =  boundary(SV1->info().id());
-		Boundary &bi2 =  boundary(SV2->info().id());
-		
+		Boundary &bi1 = boundary(SV1->info().id());
+		Boundary &bi2 = boundary(SV2->info().id());
+
 		double d13 = bi1.p[bi1.coordinate] - (SV3->point())[bi1.coordinate];
 		double d23 = bi2.p[bi2.coordinate] - (SV3->point())[bi2.coordinate];
 		cell->info().solidLine[j][facetF1]= abs(d23); 
@@ -704,6 +702,58 @@ double Network<Tesselation>::lineSolidFacet(Sphere ST1, Sphere ST2, Sphere ST3)
         return line;
 }
 
+template<class Tesselation>
+void Network<Tesselation>::setAlphaBoundary(double alpha,bool fixed)
+{
+	std::vector<Vector3r> vSegments;
+	RTriangulation temp ( T[currentTes].Triangulation() );
+	AlphaShape as ( temp );
+	alphaIdOffset = T[currentTes].vertexHandles.size()-1;
+	double minAlpha = as.find_alpha_solid();
+
+	if (alpha==0) {
+		alpha = minAlpha;
+		as.set_alpha ( alpha );
+	} else {
+		if (alpha<minAlpha){cerr<<"Using alpha<minAlpha will not work. Using minimum alpha"<<endl; alpha=minAlpha;}
+		as.set_alpha ( alpha );
+	}
+	std::list<Facet> facets;
+	as.get_alpha_shape_facets(std::back_inserter(facets), AlphaShape::REGULAR);
+	for ( auto fp=facets.begin(); fp!=facets.end(); fp++ ) {
+		Facet f = *fp;    
+		if (as.classify(f.first)!=AlphaShape::INTERIOR) {
+			f=as.mirror_facet(f);
+			const CellHandle& outerCell = f.first->neighbor(f.second);
+			if (as.is_infinite(outerCell) or fixed) {
+				Sphere sph; bool b; CVector n;
+				T[currentTes].circumCenter(f.first,f.second,alpha,b,sph,n);
+				if (std::isnan(sph.point().x()) or std::isnan(sph.point().y()) or std::isnan(sph.point().z())){ cerr << "skipping isnan point" <<endl; continue;}
+				unsigned int id = T[currentTes].vertexHandles.size();
+				VertexHandle Vh = T[currentTes].Triangulation().insert(Sphere(sph.point(), alpha)); //, pow(2*alphaRad-deltaAlpha,2)));
+				if ( Vh!=NULL ) {Vh->info().isAlpha=true; Vh->info().setId(id);Vh->info().isFictious = false;
+					T[currentTes].vertexHandles.push_back(Vh);
+					T[currentTes].maxId = std::max ( T[currentTes].maxId, (int) id );
+				} else  { cerr << " : __Vh==NULL, convex__ :(" << endl;}
+			} else {
+				if(!outerCell->info().isAlpha){
+					outerCell->info().isAlpha=true;
+					Point p = T[currentTes].setCircumCenter(outerCell);
+					double weight = (p-outerCell->vertex(0)->point().point()).squared_length() - outerCell->vertex(0)->point().weight();
+					unsigned int id = T[currentTes].vertexHandles.size();
+					VertexHandle Vh = T[currentTes].Triangulation().insert(Sphere(p, weight) ); //pow(sqrt(weight)-deltaAlpha,2) ));
+					if ( Vh!=NULL ) {Vh->info().isAlpha=true; Vh->info().setId(id);Vh->info().isFictious = false;}
+					else { cerr << " : __Vh==NULL, concave__ :(" << endl;}
+					T[currentTes].vertexHandles.push_back(Vh);
+					T[currentTes].maxId = std::max ( T[currentTes].maxId, (int) id );
+				}
+			}
+		}
+	}
+}
+
 } //namespace CGT
+
+}; // namespace yade
 
 #endif //FLOW_ENGINE

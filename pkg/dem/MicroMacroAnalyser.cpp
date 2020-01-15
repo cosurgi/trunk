@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2008 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -22,6 +22,8 @@
 #include <boost/filesystem.hpp>
 #include <pkg/dem/TriaxialCompressionEngine.hpp>
 #include "MicroMacroAnalyser.hpp"
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((MicroMacroAnalyser));
 CREATE_LOGGER(MicroMacroAnalyser);
@@ -107,27 +109,24 @@ CGT::TriaxialState& MicroMacroAnalyser::makeState(unsigned int state, const char
 	long Ng = bodies->size();
 	TS.mean_radius=0;
 	TS.grains.resize(Ng);
-	BodyContainer::iterator biBegin    = bodies->begin();
-	BodyContainer::iterator biEnd = bodies->end();
-	BodyContainer::iterator bi = biBegin;
 	Ng = 0;
 	vector<Body::id_t> fictiousVtx;
-	for (; bi!=biEnd ; ++bi) {
-		const Body::id_t Idg = (*bi)->getId();
+	for ( const auto & bi : *bodies) {
+		const Body::id_t Idg = bi->getId();
 		TS.grains[Idg].id = Idg;
-		if (!(*bi)->isDynamic()) {
+		if (!bi->isDynamic()) {
 			if (!nonSphereAsFictious) continue;
 			TS.grains[Idg].isSphere = false; fictiousVtx.push_back(Idg);}
 		else {//then it is a sphere (not a wall)
 			++Ng;
-			const Sphere* s = YADE_CAST<Sphere*> ((*bi)->shape.get());
-			//const GranularMat* p = YADE_CAST<GranularMat*> ( ( *bi )->material.get() );
-			const Vector3r& pos = (*bi)->state->pos;
+			const Sphere* s = YADE_CAST<Sphere*> (bi->shape.get());
+			//const GranularMat* p = YADE_CAST<GranularMat*> ( (bi)->material.get() );
+			const Vector3r& pos = bi->state->pos;
 			Real rad = s->radius;
 
 			TS.grains[Idg].sphere = CGT::Sphere(CGT::Point(pos[0],pos[1],pos[2]),rad);
 			//    TS.grains[Idg].translation = trans;
-			AngleAxisr aa((*bi)->state->ori);
+			AngleAxisr aa(bi->state->ori);
 			Vector3r rotVec=aa.axis()*aa.angle();
 			TS.grains[Idg].rotation = CGT::CVector(rotVec[0],rotVec[1],rotVec[2]);
 			TS.box.base = CGT::Point(min(TS.box.base.x(), pos.x()-rad),
@@ -224,5 +223,7 @@ CGT::TriaxialState& MicroMacroAnalyser::makeState(unsigned int state, const char
 // {
 // 	return analyser->computeParticlesDeformation(state_file1, state_file0);
 // }
+
+} // namespace yade
 
 #endif /* YADE_CGAL */

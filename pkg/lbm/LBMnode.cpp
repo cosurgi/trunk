@@ -12,6 +12,8 @@
 #include "LBMlink.hpp"
 #include "LBMbody.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((LBMnode)(LBMlink)(LBMbody));
 LBMnode::~LBMnode(){};
 
@@ -91,7 +93,7 @@ bool LBMnode::checkIsNewFluid(){
     } else return(false);
 }
 
-void LBMnode::DispatchBoundaryConditions(int SizeNx,int SizeNy,int SizeNz){
+void LBMnode::DispatchBoundaryConditions(int SizeNx,int SizeNy,int /*SizeNz*/){
     applyBC                  =false;
     applyXmBC                =false;
     applyYmXmBC              =false;
@@ -120,5 +122,7 @@ void LBMnode::SetCellIndexesAndPosition(int indI, int indJ, int indK){
     posb=Vector3r((Real) indI,(Real) indJ,(Real) indK);
     return;
 }
+
+} // namespace yade
 
 #endif //LBM_ENGINE

@@ -1,5 +1,5 @@
 /*************************************************************************
-*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2014 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>     *
 *  Copyright (C) 2013 by T. Sweijen (T.sweijen@uu.nl)                    *
 *  Copyright (C) 2012 by Chao Yuan <chao.yuan@3sr-grenoble.fr>           *
 *                                                                        *
@@ -11,12 +11,15 @@
 #include "TwoPhaseFlowEngine.hpp"
 #include <boost/range/algorithm_ext/erase.hpp>
 
-YADE_PLUGIN((TwoPhaseFlowEngineT));
-YADE_PLUGIN((TwoPhaseFlowEngine));
-YADE_PLUGIN((PhaseCluster));
+namespace yade { // Cannot have #include directive inside.
+
+YADE_PLUGIN((TwoPhaseFlowEngineT)(TwoPhaseFlowEngine)(PhaseCluster));
+
+CREATE_LOGGER(TwoPhaseFlowEngine);
+CREATE_LOGGER(PhaseCluster);
 
 PhaseCluster::~PhaseCluster(){
-	#ifdef CHOLMOD_LIBS
+	#ifdef LINSOLV
 	resetSolver();
 	#endif
 }
@@ -35,7 +38,7 @@ void PhaseCluster::solvePressure()
 		vector<double> RHSvol;
 		
 		vector<CellHandle> pCells;//the pores in which pressure will be solved
-#ifdef CHOLMOD_LIBS
+#ifdef LINSOLV
 		for (vector<CellHandle>::iterator cellIt =  pores.begin(); cellIt!=pores.end(); cellIt++) {
 			CellHandle cell = *cellIt;
 			if ((!cell->info().Pcondition) && !cell->info().blocked) {cell->info().index= ncols++; pCells.push_back(cell);}
@@ -834,7 +837,7 @@ double TwoPhaseFlowEngine::poreSaturationFromPcS(CellHandle cell,double pw)
 }
 
 
-double TwoPhaseFlowEngine::porePressureFromPcS(CellHandle cell,double saturation)
+double TwoPhaseFlowEngine::porePressureFromPcS(CellHandle cell,double /*saturation*/)
 {
    
   double pw = -1.0 * cell->info().thresholdPressure / (1.0 - std::exp(-1*getKappa(cell->info().numberFacets) * cell->info().saturation));
@@ -988,7 +991,7 @@ void TwoPhaseFlowEngine::computeMergedVolumes()
 	    if(Mergecell->info().mergedID == mergeID && Mergecell->info().isFictious == false && Mergecell->info().isGhost == false && Mergecell->info().id < solver->T[solver->currentTes].cellHandles.size()){
 	      Mergecell->info().poreBodyRadius = getChi(Mergecell->info().numberFacets)*std::pow(volume,(1./3.));
 	      Mergecell->info().mergedVolume = volume;
-      	      Mergecell->info().mergednr = summ;
+      	      Mergecell->info().mergednr = int(std::round(summ));
 	      }
 	    }
 	  }
@@ -2647,7 +2650,7 @@ void TwoPhaseFlowEngine::clusterGetPore(PhaseCluster* cluster, CellHandle cell) 
 	cluster->pores.push_back(cell);
 }
 
-vector<int> TwoPhaseFlowEngine::clusterOutvadePore(unsigned startingId, unsigned imbibedId, int index) {
+vector<int> TwoPhaseFlowEngine::clusterOutvadePore(unsigned startingId, unsigned imbibedId, int /*index*/) {
 	CellHandle& origin = solver->tesselation().cellHandles[startingId];
 	CellHandle& newPore = solver->tesselation().cellHandles[imbibedId];
 	PhaseCluster* cluster = clusters[origin->info().label].get();
@@ -2714,7 +2717,7 @@ vector<int> TwoPhaseFlowEngine::clusterInvadePore(PhaseCluster* cluster, CellHan
 	vector<int> newClusters; //for returning the list of possible sub-clusters, empty if we are removing the last pore of the base cluster
 	if (nPores==0) {LOG_WARN("Invading the empty cluster id="<<label); }
 	if (nPores==1) {cluster->reset(); cluster->label = label; return  newClusters;}
-	FOREACH(CellHandle& cell, cluster->pores) {cell->info().label=-1;} //mark all pores, and get them back in again below
+	FOREACH(CellHandle& cell2, cluster->pores) {cell2->info().label=-1;} //mark all pores, and get them back in again below
 	cell->info().label=0;//mark the invaded one
 	
 	//find a remaining pore	
@@ -2733,13 +2736,13 @@ vector<int> TwoPhaseFlowEngine::clusterInvadePore(PhaseCluster* cluster, CellHan
  	
 	// gen new clusters on the fly from the other neighbors of the invaded pore (for disconnected subclusters)
 	for (int neighborId=neighborStart+1 ; neighborId<=3; neighborId++) {//should be =1 if the cluster remain the same -1 removed pore
-		const CellHandle& nCell = cell->neighbor(neighborId);
-		if (nCell->info().label != -1 or solver->T[solver->currentTes].Triangulation().is_infinite(nCell)) continue; //already reached from another neighbour (connected domain): skip, else this is a new cluster
+		const CellHandle& nCell2 = cell->neighbor(neighborId);
+		if (nCell2->info().label != -1 or solver->T[solver->currentTes].Triangulation().is_infinite(nCell2)) continue; //already reached from another neighbour (connected domain): skip, else this is a new cluster
 		shared_ptr<PhaseCluster> clst (new PhaseCluster(solver->tesselation()));
 		clst->label=clusters.size();
 		newClusters.push_back(clst->label);
 		clusters.push_back(clst);
-		updateSingleCellLabelRecursion(nCell,clusters.back().get());
+		updateSingleCellLabelRecursion(nCell2,clusters.back().get());
 	}
 	return newClusters;// return list of created clusters
 }
@@ -2761,7 +2764,7 @@ vector<int> TwoPhaseFlowEngine::clusterInvadePoreFast(PhaseCluster* cluster, Cel
 	if (label!=cluster->label) LOG_WARN("wrong label");
 	if (cell->info().Pcondition) {if (solver->debugOut) LOG_WARN("invading a Pcondition pore (ignored)"); return vector<int>(1,label);}
 	const RTriangulation& Tri = solver->T[solver->currentTes].Triangulation();
-#ifdef CHOLMOD_LIBS
+#ifdef LINSOLV
 	cluster->resetSolver();
 #endif
 	unsigned id = cell->info().id;
@@ -3386,6 +3389,8 @@ double TwoPhaseFlowEngine::getPoreThroatRadius(unsigned int cell1, unsigned int 
     }
     return r;
 }
+
+} // namespace yade
 
 #endif //TwoPhaseFLOW
 

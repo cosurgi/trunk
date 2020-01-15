@@ -16,6 +16,8 @@
 #include <core/Omega.hpp>
 #include <core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((CapillaryStressRecorder));
 CREATE_LOGGER(CapillaryStressRecorder);
 
@@ -108,11 +110,7 @@ void CapillaryStressRecorder::action()
 	/// Solid volume
 	Real Vs = 0, Rbody = 0, SR = 0;
 
-	BodyContainer::iterator bi = bodies->begin();
-	BodyContainer::iterator biEnd = bodies->end();
-	for ( ; bi!=biEnd; ++bi) {
-	  
-	  shared_ptr<Body> b = *bi;
+	for (const auto & b : *bodies) {
 	  if (b->shape->getClassIndex()!=Sphere::getClassIndexStatic()) continue;
 	  Sphere* sphere = static_cast<Sphere*>(b->shape.get());
 
@@ -153,4 +151,6 @@ void CapillaryStressRecorder::action()
 		<< endl;
 	
 }
+
+} // namespace yade
 

@@ -11,6 +11,8 @@
 #include<core/Omega.hpp>
 #include<core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((FrictViscoMat)(FrictViscoPhys)(Ip2_FrictViscoMat_FrictViscoMat_FrictViscoPhys)(Ip2_FrictMat_FrictViscoMat_FrictViscoPhys)(Law2_ScGeom_FrictViscoPhys_CundallStrackVisco));
 
 FrictViscoMat::~FrictViscoMat(){}
@@ -225,4 +227,6 @@ bool Law2_ScGeom_FrictViscoPhys_CundallStrackVisco::go(shared_ptr<IGeom>& ig, sh
 	}
 	return true;
 }
+
+} // namespace yade
 

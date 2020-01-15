@@ -28,6 +28,9 @@
 #include <string>
 #include <ostream>
 
+namespace yade { // Cannot have #include directive inside.
+
+
 struct DynLibDispatcher_Item2D {
 	int ix1, ix2;
 	std::string functorName;
@@ -408,3 +411,6 @@ class DynLibDispatcher
 			else	return ResultType();
 		}
 };
+
+}; // namespace yade
+

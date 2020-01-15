@@ -1,6 +1,9 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz> 
 
-#include <cmath>
+#include<lib/base/Math.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 
 /*! Computing convex hull of a 2d cloud of points passed to the constructor,
 	using Graham scan algorithm.
@@ -24,7 +27,7 @@ class ConvexHull2d{
 		raw_points.sort(Vector2r_xComparator());
 		left=raw_points.front(); raw_points.pop_front();
 		right=raw_points.back(); raw_points.pop_back();
-		FOREACH(const Vector2r& p, raw_points){
+		for(const Vector2r& p : raw_points){
 			if(direction(left,right,p)<0) upper_partition_points.push_back(p);
 			else lower_partition_points.push_back(p);
 		}
@@ -69,4 +72,5 @@ Real simplePolygonArea2d(vector<Vector2r> P){
 	return std::abs(ret/2.);
 }
 
+}; // namespace yade
 

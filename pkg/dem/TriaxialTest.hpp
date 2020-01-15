@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre		                         *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -9,6 +9,8 @@
 #pragma once
 
 #include<core/FileGenerator.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 class ForceRecorder;
 class AveragePositionRecorder;
@@ -61,6 +63,7 @@ class TriaxialTest : public FileGenerator
 		~TriaxialTest ();
 		bool generate(string& message);
 		
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(
 		TriaxialTest,FileGenerator,"Prepare a scene for triaxial tests. Full documentation in py/_extraDocs.py."
 		,
@@ -83,6 +86,7 @@ class TriaxialTest : public FileGenerator
 		((Real,maxMultiplier,1.01,,"max multiplier of diameters during internal compaction (initial fast increase)"))
 		((Real,finalMaxMultiplier,1.001,,"max multiplier of diameters during internal compaction (secondary precise adjustment)"))
 		((Real,radiusStdDev,0.3,,"Normalized standard deviation of generated sizes."))
+		((int, seed, 0,,"Seed used for the call to makeCloud"))
 		((Real,radiusMean,-1,,"Mean radius. If negative (default), autocomputed to as a function of box size and :yref:`TriaxialTest::numberOfGrains`"))
 		((Real,sphereYoungModulus,15000000.0,,"Stiffness of spheres."))
 		((Real,sphereKsDivKn,0.5,,"Ratio of shear vs. normal contact stiffness for spheres."))
@@ -118,7 +122,11 @@ class TriaxialTest : public FileGenerator
 		,
 		//.def("setContactProperties",&TriaxialCompressionEngine::setContactProperties,"Assign a new friction angle (degrees) to dynamic bodies and relative interactions")
 		 );
+	// clang-format on
 	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(TriaxialTest);
+
+} // namespace yade
+

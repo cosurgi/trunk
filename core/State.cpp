@@ -1,6 +1,8 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
 #include<core/State.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(State);
 
 void State::setDOFfromVector3r(Vector3r disp,Vector3r rot){
@@ -39,3 +41,6 @@ void State::blockedDOFs_vec_set(const std::string& dofs){
     #undef _GET_DOF
   }
 }
+
+} // namespace yade
+

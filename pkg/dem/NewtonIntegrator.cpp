@@ -1,6 +1,6 @@
 /*************************************************************************
  Copyright (C) 2008 by Bruno Chareyre		                         *
-*  bruno.chareyre@hmg.inpg.fr      					 *
+*  bruno.chareyre@grenoble-inp.fr      					 *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -11,6 +11,8 @@
 #include<core/Clump.hpp>
 #include<lib/base/Math.hpp>
 
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((NewtonIntegrator));
 CREATE_LOGGER(NewtonIntegrator);
@@ -60,7 +62,7 @@ void NewtonIntegrator::updateEnergy(const shared_ptr<Body>& b, const State* stat
 	scene->energy->add(-gravity.dot(b->state->vel)*b->state->mass*scene->dt,"gravWork",fieldWorkIx,/*non-incremental*/false);
 }
 
-void NewtonIntegrator::saveMaximaVelocity(const Body::id_t& id, State* state){
+void NewtonIntegrator::saveMaximaVelocity(const Body::id_t& /*id*/, State* state){
 	#ifdef YADE_OPENMP
 		Real& thrMaxVSq=threadMaxVelocitySq[omp_get_thread_num()]; thrMaxVSq=max(thrMaxVSq,state->vel.squaredNorm());
 	#else
@@ -86,7 +88,9 @@ void NewtonIntegrator::saveMaximaDisplacement(const shared_ptr<Body>& b){
 
 void NewtonIntegrator::action()
 {
+	timingDeltas->start();
 	scene->forces.sync();
+	timingDeltas->checkpoint("forces sync");
 	bodySelected=(scene->selectedBody>=0);
 	if(warnNoForceReset && scene->forces.lastReset<scene->iter) LOG_WARN("O.forces last reset in step "<<scene->forces.lastReset<<", while the current step is "<<scene->iter<<". Did you forget to include ForceResetter in O.engines?");
 	const Real& dt=scene->dt;
@@ -119,13 +123,17 @@ void NewtonIntegrator::action()
 
 	const bool trackEnergy(scene->trackEnergy);
 	const bool isPeriodic(scene->isPeriodic);
-
+	
 	#ifdef YADE_OPENMP
 		FOREACH(Real& thrMaxVSq, threadMaxVelocitySq) { thrMaxVSq=0; }
 	#endif
 	YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
 			// clump members are handled inside clumps
 			if(b->isClumpMember()) continue;
+			if ((mask>0) and not b->maskCompatible(mask))  continue;
+	#ifdef YADE_MPI
+			if(scene->subdomain!=b->subdomain or (b->getIsSubdomain() or b->getIsFluidDomainBbox())) continue;//this thread will not move bodies from other subdomains
+	#endif
 			State* state=b->state.get(); const Body::id_t& id=b->getId();
 			Vector3r f=Vector3r::Zero(); 
 			Vector3r m=Vector3r::Zero();
@@ -185,9 +193,9 @@ void NewtonIntegrator::action()
 			} else if (isPeriodic && homoDeform>1) state->vel+=dt*prevVelGrad*state->vel;
 
 			// update positions from velocities (or torque, for the aspherical integrator)
-			leapfrogTranslate(state,id,dt);
-			if(!useAspherical) leapfrogSphericalRotate(state,id,dt);
-			else leapfrogAsphericalRotate(state,id,dt,m);
+			leapfrogTranslate(state,dt);
+			if(!useAspherical) leapfrogSphericalRotate(state,dt);
+			else leapfrogAsphericalRotate(state,dt,m);
 			
 			saveMaximaDisplacement(b);
 			// move individual members of the clump, save maxima velocity (for collider stride)
@@ -201,45 +209,37 @@ void NewtonIntegrator::action()
 				}
 			#endif
 	} YADE_PARALLEL_FOREACH_BODY_END();
+	timingDeltas->checkpoint("motion integration");
 	#ifdef YADE_OPENMP
 		FOREACH(const Real& thrMaxVSq, threadMaxVelocitySq) { maxVelocitySq=max(maxVelocitySq,thrMaxVSq); }
-	#endif
+	#endif	
+	timingDeltas->checkpoint("sync max vel");
 	if(scene->isPeriodic) { prevCellSize=scene->cell->getSize(); prevVelGrad=scene->cell->prevVelGrad=scene->cell->velGrad; }
+	timingDeltas->checkpoint("terminate");
 }
 
-void NewtonIntegrator::leapfrogTranslate(State* state, const Body::id_t& id, const Real& dt){
-	if (scene->forces.getMoveRotUsed()) state->pos+=scene->forces.getMove(id);
+void NewtonIntegrator::leapfrogTranslate(State* state, const Real& dt){
 	// update velocity reflecting changes in the macroscopic velocity field, making the problem homothetic.
 	//NOTE : if the velocity is updated before moving the body, it means the current velGrad (i.e. before integration in cell->integrateAndUpdate) will be effective for the current time-step. Is it correct? If not, this velocity update can be moved just after "state->pos += state->vel*dt", meaning the current velocity impulse will be applied at next iteration, after the contact law. (All this assuming the ordering is resetForces->integrateAndUpdate->contactLaw->PeriCompressor->NewtonsLaw. Any other might fool us.)
 	//NOTE : dVel defined without wraping the coordinates means bodies out of the (0,0,0) period can move realy fast. It has to be compensated properly in the definition of relative velocities (see Ig2 functors and contact laws).
 		//Reflect mean-field (periodic cell) acceleration in the velocity
 	if(scene->isPeriodic && homoDeform) {Vector3r dVel=dVelGrad*state->pos; state->vel+=dVel;}
-	
-	if ( (mask<=0) or ((mask>0) and (Body::byId(id)->maskCompatible(mask))) ) {
-		state->pos+=state->vel*dt;
-	}
+	state->pos+=state->vel*dt;
 }
 
-void NewtonIntegrator::leapfrogSphericalRotate(State* state, const Body::id_t& id, const Real& dt )
+void NewtonIntegrator::leapfrogSphericalRotate(State* state, const Real& dt )
 {
  	if(scene->isPeriodic && homoDeform) {state->angVel+=dSpin;}
 	Real angle2=state->angVel.squaredNorm();
-	if (angle2!=0 and ( (mask<=0) or ((mask>0) and (Body::byId(id)->maskCompatible(mask))) )) {//If we have an angular velocity, we make a rotation
+	if (angle2!=0) {//If we have an angular velocity, we make a rotation
 		Real angle=sqrt(angle2);
 		Quaternionr q(AngleAxisr(angle*dt,state->angVel/angle));
 		state->ori = q*state->ori;
 	}
-	if(scene->forces.getMoveRotUsed() && scene->forces.getRot(id)!=Vector3r::Zero() 
-		and ( (mask<=0) or ((mask>0) and (Body::byId(id)->maskCompatible(mask))) )) {
-		Vector3r r(scene->forces.getRot(id));
-		Real norm=r.norm(); r/=norm;
-		Quaternionr q(AngleAxisr(norm,r));
-		state->ori=q*state->ori;
-	}
 	state->ori.normalize();
 }
 
-void NewtonIntegrator::leapfrogAsphericalRotate(State* state, const Body::id_t& id, const Real& dt, const Vector3r& M){
+void NewtonIntegrator::leapfrogAsphericalRotate(State* state, const Real& dt, const Vector3r& M){
 	//FIXME: where to increment angular velocity like this? Only done for spherical rotations at the moment
 	//if(scene->isPeriodic && homoDeform) {state->angVel+=dSpin;}
 	Matrix3r A=state->ori.conjugate().toRotationMatrix(); // rotation matrix from global to local r.f.
@@ -256,13 +256,6 @@ void NewtonIntegrator::leapfrogAsphericalRotate(State* state, const Body::id_t& 
 	const Quaternionr dotQ_half=DotQ(angVel_b_half,Q_half); // dQ/dt at time n+1/2
 	state->ori=Quaternionr(state->ori.coeffs()+dt*dotQ_half.coeffs()); // Q at time n+1
 	state->angVel=state->ori*angVel_b_half; // global angular velocity at time n+1/2
-
-	if(scene->forces.getMoveRotUsed() && scene->forces.getRot(id)!=Vector3r::Zero()) {
-		Vector3r r(scene->forces.getRot(id));
-		Real norm=r.norm(); r/=norm;
-		Quaternionr q(AngleAxisr(norm,r));
-		state->ori=q*state->ori;
-	}
 	state->ori.normalize();
 }
 
@@ -296,3 +289,6 @@ Quaternionr NewtonIntegrator::DotQ(const Vector3r& angVel, const Quaternionr& Q)
 	dotQ.z() = (-Q.y()*angVel[0]+Q.x()*angVel[1]+Q.w()*angVel[2])/2;
 	return dotQ;
 }
+
+} // namespace yade
+

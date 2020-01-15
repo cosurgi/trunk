@@ -42,7 +42,8 @@
 	#include<pkg/common/Gl1_NormPhys.hpp>
 #endif
 
-CREATE_LOGGER(Shop);
+
+namespace yade { // Cannot have #include directive inside.
 
 /*! Flip periodic cell by given number of cells.
 
@@ -53,7 +54,7 @@ Still broken, some interactions are missed. Should be checked.
 Real Shop::RayleighWaveTimeStep(const shared_ptr<Scene> _rb){
 	shared_ptr<Scene> rb=(_rb?_rb:Omega::instance().getScene());
 	Real dt=std::numeric_limits<Real>::infinity();
-	FOREACH(const shared_ptr<Body>& b, *rb->bodies){
+	for(const auto & b :  *rb->bodies){
 		if(!b || !b->material || !b->shape) continue;
 		
 		shared_ptr<ElastMat> ebp=YADE_PTR_DYN_CAST<ElastMat>(b->material);
@@ -100,7 +101,7 @@ boost::tuple<Real,Real,Real> Shop::spiralProject(const Vector3r& pt, Real dH_dTh
 	}
 }
 
-shared_ptr<Interaction> Shop::createExplicitInteraction(Body::id_t id1, Body::id_t id2, bool force){
+shared_ptr<Interaction> Shop::createExplicitInteraction(Body::id_t id1, Body::id_t id2, bool force, bool virtualI){
 	IGeomDispatcher* geomMeta=NULL;
 	IPhysDispatcher* physMeta=NULL;
 	shared_ptr<Scene> rb=Omega::instance().getScene();
@@ -108,24 +109,28 @@ shared_ptr<Interaction> Shop::createExplicitInteraction(Body::id_t id1, Body::id
 	if(i) {
 		if (i->isReal()) throw runtime_error(string("Interaction #")+ boost::lexical_cast<string>(id1)+ "+#"+boost::lexical_cast<string>(id2)+" already exists.");
 		else rb->interactions->erase(id1,id2,i->linIx);
-	} 
-	FOREACH(const shared_ptr<Engine>& e, rb->engines){
-		if(!geomMeta) { geomMeta=dynamic_cast<IGeomDispatcher*>(e.get()); if(geomMeta) continue; }
-		if(!physMeta) { physMeta=dynamic_cast<IPhysDispatcher*>(e.get()); if(physMeta) continue; }
-		InteractionLoop* id(dynamic_cast<InteractionLoop*>(e.get()));
-		if(id){ geomMeta=id->geomDispatcher.get(); physMeta=id->physDispatcher.get(); }
-		if(geomMeta&&physMeta){break;}
 	}
-	if(!geomMeta) throw runtime_error("No IGeomDispatcher in engines or inside InteractionLoop.");
-	if(!physMeta) throw runtime_error("No IPhysDispatcher in engines or inside InteractionLoop.");
 	shared_ptr<Body> b1=Body::byId(id1,rb), b2=Body::byId(id2,rb);
 	if(!b1) throw runtime_error(("No body #"+boost::lexical_cast<string>(id1)).c_str());
 	if(!b2) throw runtime_error(("No body #"+boost::lexical_cast<string>(id2)).c_str());
-	i=geomMeta->explicitAction(b1,b2,/*force*/force);
-	assert(force && i);
-	if(!i) return i;
-	physMeta->explicitAction(b1->material,b2->material,i);
-	i->iterMadeReal=rb->iter;
+	
+	if (not virtualI) {// normal case, create a statefull interaction or nothing
+		FOREACH(const shared_ptr<Engine>& e, rb->engines){
+			if(!geomMeta) { geomMeta=dynamic_cast<IGeomDispatcher*>(e.get()); if(geomMeta) continue; }
+			if(!physMeta) { physMeta=dynamic_cast<IPhysDispatcher*>(e.get()); if(physMeta) continue; }
+			InteractionLoop* id(dynamic_cast<InteractionLoop*>(e.get()));
+			if(id){ geomMeta=id->geomDispatcher.get(); physMeta=id->physDispatcher.get(); }
+			if(geomMeta&&physMeta){break;}
+		}
+		if(!geomMeta) throw runtime_error("No IGeomDispatcher in engines or inside InteractionLoop.");
+		if(!physMeta) throw runtime_error("No IPhysDispatcher in engines or inside InteractionLoop.");		
+		i=geomMeta->explicitAction(b1,b2,/*force*/force);
+		assert(force && i);
+		if(!i) return i;
+		physMeta->explicitAction(b1->material,b2->material,i);
+		i->iterMadeReal=rb->iter;
+	} 
+	else	i=shared_ptr<Interaction>(new Interaction(id1,id2));
 	rb->interactions->insert(i);
 	return i;
 }
@@ -135,7 +140,7 @@ Vector3r Shop::inscribedCircleCenter(const Vector3r& v0, const Vector3r& v1, con
 	return v0+((v2-v0)*(v1-v0).norm()+(v1-v0)*(v2-v0).norm())/((v1-v0).norm()+(v2-v1).norm()+(v0-v2).norm());
 }
 
-void Shop::getViscoelasticFromSpheresInteraction( Real tc, Real en, Real es, shared_ptr<ViscElMat> b)
+void Shop::getViscoelasticFromSpheresInteraction( Real /*tc*/, Real /*en*/, Real /*es*/, shared_ptr<ViscElMat> /*b*/)
 {
     throw runtime_error("Setting parameters in ViscoElastic model is changed. You do not need to use getViscoelasticFromSpheresInteraction function any more, because this functino is deprecated. You need to set the parameters tc, en and es directly in material properties. Please, update your scripts. How to do it you can see in the following commit https://gitlab.com/yade-dev/trunk/commit/1987c2febdb8a6ce2d27f2dc1bb29df0dc5f686e");
 }
@@ -336,7 +341,7 @@ void Shop::fabricTensor(Real& Fmean, Matrix3r& fabric, Matrix3r& fabricStrong, M
 	Matrix3r fabricTot(Matrix3r::Zero()); 
 	int q(0);
 	if(!count){ // compute only if there are some interactions
-		q=nStrong*1./count; 
+		q=int(std::round(nStrong*1./count));
 		fabricTot=(1-q)*fabricWeak+q*fabricStrong;
 	}
 }
@@ -441,8 +446,8 @@ py::tuple Shop::getStressProfile(Real volume, int nCell, Real dz, Real zRef, vec
 	//
 	//Dynamic contribution to the stress tensor
 	//
-	FOREACH(const shared_ptr<Body>& b,*Omega::instance().getScene()->bodies){
-		int Np = floor((b->state->pos[2]-zRef)/dz);	//Define the layer number with 0 corresponding to zRef
+	for(const auto & b : *Omega::instance().getScene()->bodies){
+		int Np = int(std::floor((b->state->pos[2]-zRef)/dz));	//Define the layer number with 0 corresponding to zRef
 		if ((Np>=0)&&(Np<nCell)){	//To avoid non defined vPartAverage
 			//Velocity fluctuation wrt the average field
 			Vector3r vFluct = b->state->vel - Vector3r(vPartAverageX[Np],vPartAverageY[Np],vPartAverageZ[Np]); 
@@ -467,8 +472,8 @@ py::tuple Shop::getStressProfile(Real volume, int nCell, Real dz, Real zRef, vec
 
 		if ((b1->state->blockedDOFs!=State::DOF_ALL)||(b2->state->blockedDOFs!=State::DOF_ALL)){// to remove annoying contribution from the fixed particles
 			//Layers in which the particle center is contained
-			int Np1 = floor((b1->state->pos[2] - zRef)/dz);
-			int Np2 = floor((b2->state->pos[2] - zRef)/dz);
+			int Np1 = int(std::floor((b1->state->pos[2] - zRef)/dz));
+			int Np2 = int(std::floor((b2->state->pos[2] - zRef)/dz));
 			//Vector between the two centers, from 2 to 1
 			Vector3r branch = b1->state->pos -b2->state->pos;
 			if (isPeriodic) branch -= scene->cell->hSize*I->cellDist.cast<Real>();//to handle periodicity
@@ -551,8 +556,8 @@ py::tuple Shop::getStressProfile_contact(Real volume, int nCell, Real dz, Real z
 
 		if ((b1->state->blockedDOFs!=State::DOF_ALL)||(b2->state->blockedDOFs!=State::DOF_ALL)){// to remove annoying contribution from the fixed particles
 			//Layers in which the particle center is contained
-			int Np1 = floor((b1->state->pos[2] - zRef)/dz);
-			int Np2 = floor((b2->state->pos[2] - zRef)/dz);
+			int Np1 = int(std::floor((b1->state->pos[2] - zRef)/dz));
+			int Np2 = int(std::floor((b2->state->pos[2] - zRef)/dz));
 			//Vector between the two centers, from 2 to 1
 			Vector3r branch = b1->state->pos -b2->state->pos;
 			if (isPeriodic) branch -= scene->cell->hSize*I->cellDist.cast<Real>();//to handle periodicity
@@ -631,17 +636,17 @@ py::tuple Shop::getDepthProfiles(Real vCell, int nCell, Real dz, Real zRef,bool 
 	vector<Real> phiAverage(nCell,0.0);
 
 	//Loop over the particles
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
 		if (activateCond==true){
 			const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 			if (sphere->radius!=radiusPy) continue;
 		} //select diameters asked
                 const Real zPos = b->state->pos[dir]-zRef;
-		int Np = floor(zPos/dz);	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
+		int Np = int(std::floor(zPos/dz));	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
 
-		minZ= floor((zPos-s->radius)/dz);
-		maxZ= floor((zPos+s->radius)/dz);
+		minZ= int(std::floor((zPos-s->radius)/dz));
+		maxZ= int(std::floor((zPos+s->radius)/dz));
 		deltaCenter = zPos - Np*dz;
 	
 		// Loop over the cell in which the particle is contained
@@ -695,14 +700,14 @@ py::tuple Shop::getDepthProfiles_center(Real vCell, int nCell, Real dz, Real zRe
 	vector<Real> Npart(nCell,0.0);
 
 	//Loop over the particles
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
 		if (activateCond==true){
 			const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 			if (sphere->radius!=radiusPy) continue;
 		} //select diameters asked
 		const Real zPos = b->state->pos[2]-zRef;
-		int Np = floor(zPos/dz);	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
+		int Np = int(std::floor(zPos/dz));	//Define the layer number with 0 corresponding to zRef. Let the z position wrt to zero, that way all z altitude are positive. (otherwise problem with volPart evaluation)
 
 		if ((Np>=0)&&(Np<nCell)){
 			volPart =4./3.* Mathr::PI*pow(s->radius,3);
@@ -803,7 +808,7 @@ py::list Shop::getBodyIdsContacts(Body::id_t bodyID) {
 void Shop::setContactFriction(Real angleRad){
 	Scene* scene = Omega::instance().getScene().get();
 	shared_ptr<BodyContainer>& bodies = scene->bodies;
-	FOREACH(const shared_ptr<Body>& b,*scene->bodies){
+	for(const auto & b : *scene->bodies){
 		if(b->isClump()) continue;
 		if (b->isDynamic())
 		YADE_PTR_CAST<FrictMat> (b->material)->frictionAngle = angleRad;
@@ -824,7 +829,7 @@ void Shop::growParticles(Real multiplier, bool updateMass, bool dynamicOnly)
 {
 	Scene* scene = Omega::instance().getScene().get();
 	const int sphereIdx = Sphere::getClassIndexStatic();
-	FOREACH(const shared_ptr<Body>& b,*scene->bodies){
+	for(const auto & b : *scene->bodies){
 		if (dynamicOnly && !b->isDynamic()) continue;
 		//We grow only spheres and clumps 
 		if(b->isClump() or sphereIdx == b->shape->getClassIndex()){			
@@ -879,7 +884,7 @@ py::tuple Shop::aabbExtrema(Real cutoff, bool centers){
 	if(cutoff<0. || cutoff>1.) throw invalid_argument("Cutoff must be >=0 and <=1.");
 	Real inf=std::numeric_limits<Real>::infinity();
 	Vector3r minimum(inf,inf,inf),maximum(-inf,-inf,-inf);
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
 		Vector3r rrr(s->radius,s->radius,s->radius);
 		minimum=minimum.cwiseMin(b->state->pos-(centers?Vector3r::Zero():rrr));
@@ -916,7 +921,7 @@ Real Shop::getVoidRatio2D(const shared_ptr<Scene>& _scene, Real _zlen){
 }
 
 /*! Added function to get stress tensor and tangent operator tensor. By Ning Guo */
-py::tuple Shop::getStressAndTangent(Real volume, bool symmetry){
+py::tuple Shop::getStressAndTangent(Real volume, bool /*symmetry*/){
 	Scene* scene=Omega::instance().getScene().get();
 	if (volume==0) volume = scene->isPeriodic?scene->cell->hSize.determinant():1;
 	Matrix3r stress = Matrix3r::Zero();
@@ -980,4 +985,6 @@ py::tuple Shop::getStressAndTangent(Real volume, bool symmetry){
 }
 
 bool Shop::isInBB(Vector3r p, Vector3r bbMin, Vector3r bbMax){return p[0]>bbMin[0] && p[0]<bbMax[0] && p[1]>bbMin[1] && p[1]<bbMax[1] && p[2]>bbMin[2] && p[2]<bbMax[2];}
+
+} // namespace yade
 

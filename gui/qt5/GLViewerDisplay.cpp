@@ -30,6 +30,8 @@
 	#include<gl2ps.h>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 void GLViewer::useDisplayParameters(size_t n){
 	LOG_DEBUG("Loading display parameters from #"<<n);
 	vector<shared_ptr<DisplayParameters> >& dispParams=Omega::instance().getScene()->dispParams;
@@ -112,7 +114,7 @@ void GLViewer::draw()
 			double q0,q1,q2,q3; manipulatedFrame()->getOrientation(q0,q1,q2,q3);
 			Se3r newSe3(Vector3r(v0,v1,v2),Quaternionr(q0,q1,q2,q3)); newSe3.orientation.normalize();
 			const Se3r& oldSe3=renderer->clipPlaneSe3[manipulatedClipPlane];
-			FOREACH(int planeId, boundClipPlanes){
+			for (const auto & planeId : boundClipPlanes){
 				if(planeId>=renderer->numClipPlanes || !renderer->clipPlaneActive[planeId] || planeId==manipulatedClipPlane) continue;
 				Se3r& boundSe3=renderer->clipPlaneSe3[planeId];
 				Quaternionr relOrient=oldSe3.orientation.conjugate()*boundSe3.orientation; relOrient.normalize();
@@ -141,7 +143,7 @@ qglviewer::Vec GLViewer::displayedSceneCenter(){
 	return camera()->unprojectedCoordinatesOf(qglviewer::Vec(width()/2 /* pixels */ ,height()/2 /* pixels */, /*middle between near plane and far plane*/ .5));
 }
 
-float GLViewer::displayedSceneRadius(){
+double GLViewer::displayedSceneRadius(){
 	return (camera()->unprojectedCoordinatesOf(qglviewer::Vec(width()/2,height()/2,.5))-camera()->unprojectedCoordinatesOf(qglviewer::Vec(0,0,.5))).norm();
 }
 
@@ -164,13 +166,13 @@ void GLViewer::postDraw(){
 	nSegments *= 2; // there's an error in QGLViewer::drawGrid(), so we need to mitigate it by '* 2'
 	// XYZ grids
 	glLineWidth(.5);
-	if(drawGrid & 1) {glColor3f(0.6,0.3,0.3); glPushMatrix(); glRotated(90.,0.,1.,0.); QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
-	if(drawGrid & 2) {glColor3f(0.3,0.6,0.3); glPushMatrix(); glRotated(90.,1.,0.,0.); QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
-	if(drawGrid & 4) {glColor3f(0.3,0.3,0.6); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
+	if(drawGrid & 1) {glColor3(0.6,0.3,0.3); glPushMatrix(); glRotated(90.,0.,1.,0.); QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
+	if(drawGrid & 2) {glColor3(0.3,0.6,0.3); glPushMatrix(); glRotated(90.,1.,0.,0.); QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
+	if(drawGrid & 4) {glColor3(0.3,0.3,0.6); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments); glPopMatrix();}
 	if(gridSubdivide){
-		if(drawGrid & 1) {glColor3f(0.4,0.1,0.1); glPushMatrix(); glRotated(90.,0.,1.,0.); QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
-		if(drawGrid & 2) {glColor3f(0.1,0.4,0.1); glPushMatrix(); glRotated(90.,1.,0.,0.); QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
-		if(drawGrid & 4) {glColor3f(0.1,0.1,0.4); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
+		if(drawGrid & 1) {glColor3(0.4,0.1,0.1); glPushMatrix(); glRotated(90.,0.,1.,0.); QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
+		if(drawGrid & 2) {glColor3(0.1,0.4,0.1); glPushMatrix(); glRotated(90.,1.,0.,0.); QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
+		if(drawGrid & 4) {glColor3(0.1,0.1,0.4); glPushMatrix(); /*glRotated(90.,0.,1.,0.);*/ QGLViewer::drawGrid(realSize,nSegments*10); glPopMatrix();}
 	}
 	
 	// scale
@@ -182,7 +184,7 @@ void GLViewer::postDraw(){
 			qglviewer::Vec delta(0,0,0); delta[axis]=segmentSize;
 			qglviewer::Vec center=displayedSceneCenter();
 			screenDxDy[axis]=camera()->projectedCoordinatesOf(center+delta)-camera()->projectedCoordinatesOf(center);
-			for(int xy=0;xy<2;xy++)extremalDxDy[xy]=(axis>0 ? min(extremalDxDy[xy],(int)screenDxDy[axis][xy]) : screenDxDy[axis][xy]);
+			for(int xy=0;xy<2;xy++)extremalDxDy[xy]=int(std::round(axis>0 ? std::min(extremalDxDy[xy],int(std::round(screenDxDy[axis][xy]))) : screenDxDy[axis][xy]));
 		}
 		//LOG_DEBUG("Screen offsets for axes: "<<" x("<<screenDxDy[0][0]<<","<<screenDxDy[0][1]<<") y("<<screenDxDy[1][0]<<","<<screenDxDy[1][1]<<") z("<<screenDxDy[2][0]<<","<<screenDxDy[2][1]<<")");
 		int margin=10; // screen pixels
@@ -198,7 +200,7 @@ void GLViewer::postDraw(){
 				glColor3v(color);
 				glBegin(GL_LINES);
 				glVertex2f(scaleCenter[0],scaleCenter[1]);
-				glVertex2f(scaleCenter[0]+screenDxDy[axis][0],scaleCenter[1]+screenDxDy[axis][1]);
+				glVertex2(scaleCenter[0]+screenDxDy[axis][0],scaleCenter[1]+screenDxDy[axis][1]);
 				glEnd();
 			}
 			glLineWidth(1.);
@@ -215,11 +217,11 @@ void GLViewer::postDraw(){
 			glPushMatrix();
 				const Se3r& se3=renderer->clipPlaneSe3[planeId];
 				AngleAxisr aa(se3.orientation);	
-				glTranslatef(se3.position[0],se3.position[1],se3.position[2]);
+				glTranslate(se3.position[0],se3.position[1],se3.position[2]);
 				glRotated(aa.angle()*Mathr::RAD_TO_DEG,aa.axis()[0],aa.axis()[1],aa.axis()[2]);
 				Real cff=1;
 				if(!renderer->clipPlaneActive[planeId]) cff=.4;
-				glColor3f(max((Real)0.,cff*cos(planeId)),max((Real)0.,cff*sin(planeId)),planeId==manipulatedClipPlane); // variable colors
+				glColor3(max((Real)0.,cff*cos(planeId)),max((Real)0.,cff*sin(planeId)),Real(planeId==manipulatedClipPlane)); // variable colors
 				QGLViewer::drawGrid(realSize,2*nSegments);
 				drawArrow(wholeDiameter/6);
 			glPopMatrix();
@@ -283,5 +285,7 @@ void GLViewer::postDraw(){
 		nextFrameSnapshotFilename.clear();
 	}
 }
+
+} // namespace yade
 
 

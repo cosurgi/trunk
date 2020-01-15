@@ -46,6 +46,8 @@
 #include "py/_utils.hpp"
 
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(Shop);
 
 /*! Flip periodic cell for shearing indefinitely.*/
@@ -57,12 +59,12 @@ Matrix3r Shop::flipCell(const Matrix3r& _flip){
 		bool hasNonzero=false;
 		for(int i=0; i<3; i++) for(int j=0; j<3; j++) {
 			if(i==j){ flip(i,j)=0; continue; }
-			flip(i,j)=-floor(hSize.col(j).dot(hSize.col(i))/hSize.col(i).dot(hSize.col(i)));
+			flip(i,j)=-int(std::floor(hSize.col(j).dot(hSize.col(i))/hSize.col(i).dot(hSize.col(i))));
 			if(flip(i,j)!=0) hasNonzero=true;
 		}
 		if(!hasNonzero) {LOG_TRACE("No flip necessary."); return Matrix3r::Zero();}
 	} else {
-		if (_flip.determinant()!=1) LOG_WARN("Flipping cell needs det(Id+flip)=1, check your input.");
+		if ((_flip+Matrix3r::Identity()).determinant()!=1) LOG_WARN("Flipping cell needs det(Id+flip)=1, check your input.");
 		flip=_flip.cast<int>();
 	}
 	cell->hSize+=cell->hSize*flip.cast<Real>();
@@ -126,7 +128,7 @@ Real Shop::unbalancedForce(bool useMaxForce, Scene* _rb){
 	FOREACH(shared_ptr<Engine>& e, rb->engines){ newton=YADE_PTR_DYN_CAST<NewtonIntegrator>(e); if(newton) {gravity=newton->gravity; break;} }
 	// get maximum force on a body and sum of all forces (for averaging)
 	Real sumF=0,maxF=0,currF; int nb=0;
-	FOREACH(const shared_ptr<Body>& b, *rb->bodies){
+	for(const auto & b :  *rb->bodies){
 		if(!b || b->isClumpMember() || !b->isDynamic()) continue;
 		currF=(rb->forces.getForce(b->id)+b->state->mass*gravity).norm();
 		if(b->isClump() && currF==0){ // this should not happen unless the function is called by an engine whose position in the loop is before Newton (with the exception of bodies which really have null force), because clumps forces are updated in Newton. Typical triaxial loops are using such ordering unfortunately (triaxEngine before Newton). So, here we make sure that they will get correct unbalance. In the future, it is better for optimality to check unbalancedF inside scripts at the end of loops, so that this "if" is never active.
@@ -153,7 +155,7 @@ Real Shop::kineticEnergy(Scene* _scene, Body::id_t* maxId){
 	Real ret=0.;
 	Real maxE=0; if(maxId) *maxId=Body::ID_NONE;
 	Vector3r spin = scene->cell->getSpin();
-	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		if(!b || !b->isDynamic() || b->isClumpMember()) continue;
 		const State* state(b->state.get());
 		// ½(mv²+ωIω)
@@ -317,7 +319,7 @@ Real Shop::getPorosityAlt(){
 	Real V;
 	Real inf=std::numeric_limits<Real>::infinity();
 	Vector3r minimum(inf,inf,inf),maximum(-inf,-inf,-inf);
-	FOREACH(const shared_ptr<Body>& b, *Omega::instance().getScene()->bodies){
+	for(const auto & b :  *Omega::instance().getScene()->bodies){
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape); if(!s) continue;
 		Vector3r rrr(s->radius,s->radius,s->radius);
 		minimum=minimum.cwiseMin(b->state->pos-(rrr));
@@ -432,7 +434,7 @@ vector<boost::tuple<Vector3r,Real,int> > Shop::loadSpheresFromFile(const string&
 Real Shop::PWaveTimeStep(const shared_ptr<Scene> _rb){
 	shared_ptr<Scene> rb=(_rb?_rb:Omega::instance().getScene());
 	Real dt=std::numeric_limits<Real>::infinity();
-	FOREACH(const shared_ptr<Body>& b, *rb->bodies){
+	for(const auto & b :  *rb->bodies){
 		if(!b || !b->material || !b->shape) continue;
 		shared_ptr<ElastMat> ebp=YADE_PTR_DYN_CAST<ElastMat>(b->material);
 		shared_ptr<Sphere> s=YADE_PTR_DYN_CAST<Sphere>(b->shape);
@@ -446,3 +448,6 @@ Real Shop::PWaveTimeStep(const shared_ptr<Scene> _rb){
 	}
 	return dt;
 }
+
+} // namespace yade
+

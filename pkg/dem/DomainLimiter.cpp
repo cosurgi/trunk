@@ -2,6 +2,23 @@
 #include<pkg/dem/DemXDofGeom.hpp>
 #include<pkg/dem/Shop.hpp>
 
+#include<pkg/dem/DemXDofGeom.hpp>
+#include<pkg/dem/ScGeom.hpp>
+#include<pkg/dem/L3Geom.hpp>
+#include<pkg/common/NormShearPhys.hpp>
+#include<lib/smoothing/LinearInterpolate.hpp>
+#include<lib/pyutil/gil.hpp>
+
+#ifdef YADE_OPENGL
+#include<lib/opengl/OpenGLWrapper.hpp>
+#include<lib/opengl/GLUtils.hpp>
+#include<pkg/common/GLDrawFunctors.hpp>
+#include<pkg/common/OpenGLRenderer.hpp>
+#include<GL/glu.h>
+#endif
+
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((DomainLimiter)(LawTester)
 	#ifdef YADE_OPENGL
 		(GlExtra_LawTester)(GlExtra_OctreeCubes)
@@ -10,7 +27,7 @@ YADE_PLUGIN((DomainLimiter)(LawTester)
 
 void DomainLimiter::action(){
 	std::list<Body::id_t> out;
-	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		if((!b) or ((mask>0) and ((b->groupMask & mask)==0)) or b->isClumpMember()) continue;
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere or b->isClump()){ //Delete only spheres and clumps
@@ -27,13 +44,6 @@ void DomainLimiter::action(){
 		scene->bodies->erase(id,true /*delete clump members*/);
 	}
 }
-
-#include<pkg/dem/DemXDofGeom.hpp>
-#include<pkg/dem/ScGeom.hpp>
-#include<pkg/dem/L3Geom.hpp>
-#include<pkg/common/NormShearPhys.hpp>
-#include<lib/smoothing/LinearInterpolate.hpp>
-#include<lib/pyutil/gil.hpp>
 
 CREATE_LOGGER(LawTester);
 
@@ -226,11 +236,6 @@ void LawTester::action(){
 }
 
 #ifdef YADE_OPENGL
-#include<lib/opengl/OpenGLWrapper.hpp>
-#include<lib/opengl/GLUtils.hpp>
-#include<pkg/common/GLDrawFunctors.hpp>
-#include<pkg/common/OpenGLRenderer.hpp>
-#include<GL/glu.h>
 
 CREATE_LOGGER(GlExtra_LawTester);
 
@@ -334,7 +339,7 @@ void GlExtra_OctreeCubes::render(){
 		glColor3v(color);
 		glPushMatrix();
 			glTranslatev(ob.center);
-			glScalef(2*ob.extents[0],2*ob.extents[1],2*ob.extents[2]);
+			glScale(2*ob.extents[0],2*ob.extents[1],2*ob.extents[2]);
 		 	if (doFill) glutSolidCube(1);
 			else glutWireCube(1);
 		glPopMatrix();
@@ -342,3 +347,6 @@ void GlExtra_OctreeCubes::render(){
 }
 
 #endif /* YADE_OPENGL */
+
+} // namespace yade
+

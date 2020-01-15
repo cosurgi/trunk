@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -11,6 +11,8 @@
 #include<core/PartialEngine.hpp>
 #include<lib/base/Math.hpp>
 #include<pkg/dem/TriaxialStressController.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 /** \brief Class for controlling optional initial isotropic compaction and subsequent triaxial test with constant lateral stress and constant axial strain rate. The algorithms used have been developed initialy for simulations reported in [Chareyre2002a] and [Chareyre2005]. They have been ported to Yade in a second step and used in e.g. [Kozicki2008],[Scholtes2009b],[Jerier2010b].
  *
@@ -75,6 +77,7 @@ class TriaxialCompressionEngine : public TriaxialStressController
 		///Change physical properties of interactions and/or bodies in the middle of a simulation (change only friction for the moment, complete this function to set cohesion and others before compression test)
 		void setContactProperties(Real frictionDegree);
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(
 		TriaxialCompressionEngine,TriaxialStressController,
 		"The engine is a state machine with the following states; transitions my be automatic, see below.\n\n"
@@ -128,7 +131,11 @@ class TriaxialCompressionEngine : public TriaxialStressController
 		,
 	 	.def("setContactProperties",&TriaxialCompressionEngine::setContactProperties,"Assign a new friction angle (degrees) to dynamic bodies and relative interactions")
 		)
+	// clang-format on
 	DECLARE_LOGGER;
 };
 
 REGISTER_SERIALIZABLE(TriaxialCompressionEngine);
+
+} // namespace yade
+

@@ -7,6 +7,8 @@
 *************************************************************************/
 #include "Facet.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(Facet);
 
 Facet::~Facet()
@@ -38,3 +40,6 @@ void Facet::postLoad(Facet&)
 }
 
 YADE_PLUGIN((Facet));
+
+} // namespace yade
+

@@ -14,6 +14,8 @@
 #include "Scene.hpp"
 #include "ThreadWorker.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 class FileGenerator: public Serializable
 {
 	protected:
@@ -27,6 +29,7 @@ class FileGenerator: public Serializable
 	void pyGenerate(const string& out);
 	void pyLoad();
 
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(FileGenerator,Serializable,"Base class for scene generators, preprocessors.",
 		/*attrs*/,
 		/*ctor*/
@@ -34,8 +37,10 @@ class FileGenerator: public Serializable
 		.def("generate",&FileGenerator::pyGenerate,(boost::python::arg("out")),"Generate scene, save to given file")
 		.def("load",&FileGenerator::pyLoad,"Generate scene, save to temporary file and load immediately");
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(FileGenerator);
 
+} // namespace yade
 

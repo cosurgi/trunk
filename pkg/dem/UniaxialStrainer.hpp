@@ -4,6 +4,8 @@
 #include<pkg/dem/Shop.hpp>
 #include<pkg/common/BoundaryController.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 /*! Axial displacing two groups of bodies in the opposite direction with given strain rate.
  *
  * Takes two groups of body IDs (in posIds and negIds) and displaces them at each timestep in the direction given by axis∈{0,1,2} (for axes x,y,z respectively). These bodies automatically have Body::isDynamic==false.
@@ -25,6 +27,7 @@ class UniaxialStrainer: public BoundaryController {
 		vector<Real> posCoords,negCoords;
 
 		virtual void action();
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_CTOR(UniaxialStrainer,BoundaryController,"Axial displacing two groups of bodies in the opposite direction with given strain rate.",
 			((Real,strainRate,NaN,,"Rate of strain, starting at 0, linearly raising to strainRate. [-]"))
 			((Real,absSpeed,NaN,,"alternatively, absolute speed of boundary motion can be specified; this is effective only at the beginning and if strainRate is not set; changing absSpeed directly during simulation wil have no effect. [ms⁻¹]"))
@@ -49,8 +52,10 @@ class UniaxialStrainer: public BoundaryController {
 			((int,stressUpdateInterval,10,,"How often to recompute stress on supports.")),
 			/*ctor*/ needsInit=true;
 		);
+	// clang-format on
 	DECLARE_LOGGER;
 };
 REGISTER_SERIALIZABLE(UniaxialStrainer);
 
+} // namespace yade
 

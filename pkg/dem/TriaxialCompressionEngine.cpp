@@ -1,6 +1,6 @@
 /*************************************************************************
 *  Copyright (C) 2006 by Bruno Chareyre                                  *
-*  bruno.chareyre@hmg.inpg.fr                                            *
+*  bruno.chareyre@grenoble-inp.fr                                            *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -16,6 +16,8 @@
 #include<pkg/common/Sphere.hpp>
 #include<pkg/dem/FrictPhys.hpp>
 #include<pkg/common/ElastMat.hpp>
+
+namespace yade { // Cannot have #include directive inside.
 
 class Ip2_CohFrictMat_CohFrictMat_CohFrictPhys;
 
@@ -197,4 +199,6 @@ void TriaxialCompressionEngine::setContactProperties(Real frictionDegree)
 {
 	Shop::setContactFriction(frictionDegree*Mathr::PI/180.0);
 }
+
+} // namespace yade
 

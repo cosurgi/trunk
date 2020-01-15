@@ -23,9 +23,14 @@
 
 // these two are not accessible from python directly (though they should be in the future, perhaps)
 
-BOOST_CLASS_EXPORT_IMPLEMENT(BodyContainer);
-BOOST_CLASS_EXPORT_IMPLEMENT(InteractionContainer);
+BOOST_CLASS_EXPORT_IMPLEMENT(yade::BodyContainer);
+BOOST_CLASS_EXPORT_IMPLEMENT(yade::InteractionContainer);
+
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((Body)(Bound)(Cell)(Dispatcher)(EnergyTracker)(Engine)(FileGenerator)(Functor)(GlobalEngine)(Interaction)(IGeom)(IPhys)(Material)(PartialEngine)(Shape)(State)(TimeStepper));
 
 EnergyTracker::~EnergyTracker(){}
+
+} // namespace yade
+

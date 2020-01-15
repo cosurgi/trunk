@@ -1,5 +1,5 @@
 /*************************************************************************
-*  Copyright (C) 2010 by Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>     *
+*  Copyright (C) 2010 by Bruno Chareyre <bruno.chareyre@grenoble-inp.fr> *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -8,10 +8,11 @@
 #ifdef FLOW_ENGINE
 #pragma once
 
-#define CHOLMOD_LIBS //comment this if CHOLMOD is not available
+
+//#define LINSOLV // should be defined at cmake step
 // #define TAUCS_LIB //comment this if TAUCS lib is not available, it will disable PARDISO lib as well
 
-#ifdef CHOLMOD_LIBS
+#ifdef LINSOLV
 	#include <Eigen/Sparse>
 	#include <Eigen/SparseCore>
 	#include <Eigen/CholmodSupport>
@@ -33,6 +34,8 @@ extern "C" {
 
 ///_____ Declaration ____
 
+namespace yade { // Cannot have #include directive inside.
+
 namespace CGT {
 
 template<class _Tesselation, class FlowType=FlowBoundingSphere<_Tesselation> >
@@ -52,7 +55,9 @@ public:
 	using FlowType::tolerance;
 	using FlowType::relax;
 	using FlowType::fluidBulkModulus;
+	using FlowType::equivalentCompressibility;
 	using FlowType::reApplyBoundaryConditions;
+	using FlowType::phiZero;
 	using FlowType::pressureChanged;
 	using FlowType::computedOnce;
 	using FlowType::resetNetwork;
@@ -66,6 +71,10 @@ public:
 	using FlowType::fluidRho;
 	using FlowType::fluidCp;
 	using FlowType::thermalEngine;
+	using FlowType::controlCavityPressure;
+	using FlowType::controlCavityVolumeChange;
+	using FlowType::cavityDV;
+	using FlowType::thermalPorosity;
 
 	//! TAUCS DECs
 	vector<FiniteCellsIterator> orderedCells;
@@ -74,8 +83,8 @@ public:
 	bool areCellsOrdered;//true when orderedCells is filled, turn it false after retriangulation
 	bool updatedRHS;
 	struct timeval start, end;
-	
-	#ifdef CHOLMOD_LIBS
+
+	#ifdef LINSOLV
 	//Eigen's sparse matrix and solver
 	Eigen::SparseMatrix<double> A;
 	//Eigen::SparseMatrix<std::complex<double>,RowMajor> Ga; for row major stuff?
@@ -96,20 +105,34 @@ public:
 	// cholmod direct solver (useSolver=4)
 
 	cholmod_triplet* cholT;
-	cholmod_factor* L; 
-	cholmod_factor* M; 
+	cholmod_factor* L;
+	cholmod_factor* M;
 	cholmod_factor* N;
 	cholmod_sparse* Achol;
 	cholmod_common com;
 	bool factorExists;
-	void add_T_entry(cholmod_triplet* T, long r, long c, double x)
-	{
-		size_t k = T->nnz;
-		((long*)T->i)[k] = r;
-		((long*)T->j)[k] = c;
-		((double*)T->x)[k] = x;
-		T->nnz++;
-	}
+	#ifdef PFV_GPU
+		#define CHOLMOD(name) cholmod_l_ ## name
+		void add_T_entry(cholmod_triplet* T, long r, long c, double x)
+		{
+			size_t k = T->nnz;
+			((long*)T->i)[k] = r;
+			((long*)T->j)[k] = c;
+			((double*)T->x)[k] = x;
+			T->nnz++;
+		}
+	#else
+		#define CHOLMOD(name) cholmod_ ## name
+		void add_T_entry(cholmod_triplet* T, int r, int c, double x)
+		{
+			size_t k = T->nnz;
+			((int*)T->i)[k] = r;
+			((int*)T->j)[k] = c;
+			((double*)T->x)[k] = x;
+			T->nnz++;
+		}
+	#endif
+	void CHOLMOD(wildcard)() {cout << "using cholmod in form of " << __func__ << endl;};
 	#endif
 
 	#ifdef TAUCS_LIB
@@ -119,7 +142,7 @@ public:
 	void* F;//The taucs factor
 	#endif
 
-	
+
 	int T_nnz;
 	int ncols;
 	int T_size;
@@ -182,21 +205,21 @@ public:
 	void vectorizedGaussSeidel(Real dt);
 	virtual int setLinearSystemFullGS(Real dt);
 	void augmentConductivityMatrix(Real dt);
-	void setNewCellTemps();
+	void setNewCellTemps(bool addToDeltaTemp);
 	void initializeInternalEnergy();
-	
+
 	int taucsSolveTest();
 	int taucsSolve(Real dt);
 	int pardisoSolveTest();
 	int pardisoSolve(Real dt);
 	int eigenSolve(Real dt);
 	int cholmodSolve(Real dt);
-	
+
 	void copyGsToCells();
 	void copyCellsToGs(Real dt);
-	
+
 	void copyLinToCells();
-	void copyCellsToLin(Real dt);
+	virtual void copyCellsToLin(Real dt);
 	void swapFwd (double* v, int i);
 	void swapFwd (int* v, int i);
 	void sortV(int k1, int k2, int* is, double* ds);
@@ -226,6 +249,8 @@ public:
 };
 
 } //namespace CGT
+
+} // namespace yade
 
 
 ///_____ Implementation ____

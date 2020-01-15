@@ -7,7 +7,7 @@
 *                                                                        *
 *  © 2008 Václav Šmilauer <eudoxos@arcig.cz>                             *
 *                                                                        *
-*  © 2008 Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>                    *
+*  © 2008 Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>                *
 *                                                                        *
 *  This program is free software; it is licensed under the terms of the  *
 *  GNU General Public License v2 or later. See file LICENSE for details. *
@@ -21,11 +21,15 @@
 #include<pkg/common/Facet.hpp>
 #include<pkg/common/Sphere.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 class Gl1_Aabb: public GlBoundFunctor{
 	public:
 		virtual void go(const shared_ptr<Bound>&, Scene*);
 	RENDERS(Aabb);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Gl1_Aabb,GlBoundFunctor,"Render Axis-aligned bounding box (:yref:`Aabb`).");
+	// clang-format on
 };
 REGISTER_SERIALIZABLE(Gl1_Aabb);
 
@@ -34,7 +38,9 @@ class Gl1_Box : public GlShapeFunctor{
 	public :
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
 	RENDERS(Box);
+	// clang-format off
 	YADE_CLASS_BASE_DOC(Gl1_Box,GlShapeFunctor,"Renders :yref:`Box` object");
+	// clang-format on
 };
 
 REGISTER_SERIALIZABLE(Gl1_Box);
@@ -44,9 +50,11 @@ class Gl1_Facet : public GlShapeFunctor
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
 	RENDERS(Facet);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_Facet,GlShapeFunctor,"Renders :yref:`Facet` object",
 		((bool,normals,false,,"In wire mode, render normals of facets and edges; facet's :yref:`colors<Shape::color>` are disregarded in that case."))
 	);
+	// clang-format on
 };
 
 REGISTER_SERIALIZABLE(Gl1_Facet);
@@ -71,6 +79,7 @@ class Gl1_Sphere : public GlShapeFunctor{
 		static char prevCircleAllowedRotationAxis;
 	public:
 		virtual void go(const shared_ptr<Shape>&, const shared_ptr<State>&,bool,const GLViewInfo&);
+	// clang-format off
 	YADE_CLASS_BASE_DOC_STATICATTRS(Gl1_Sphere,GlShapeFunctor,"Renders :yref:`Sphere` object",
 		((Real,quality,1.0,,"Change discretization level of spheres. quality>1  for better image quality, at the price of more cpu/gpu usage, 0<quality<1 for faster rendering. If mono-color spheres are displayed (:yref:`Gl1_Sphere::stripes` = False), quality mutiplies :yref:`Gl1_Sphere::glutSlices` and :yref:`Gl1_Sphere::glutStacks`. If striped spheres are displayed (:yref:`Gl1_Sphere::stripes` = True), only integer increments are meaningfull : quality=1 and quality=1.9 will give the same result, quality=2 will give finer result."))
 		((bool,wire,false,,"Only show wireframe (controlled by ``glutSlices`` and ``glutStacks``."))
@@ -82,7 +91,11 @@ class Gl1_Sphere : public GlShapeFunctor{
 		((Real,circleRelThickness,0.2,,"If :yref:`Gl1_Sphere::circleView` is enabled, this is the torus diameter relative to the sphere radius (i.e. the circle relative thickness)."))
 		((char,circleAllowedRotationAxis,'z',,"If :yref:`Gl1_Sphere::circleView` is enabled, this is the only axis ('x', 'y' or 'z') along which rotation is allowed for the 2D simulation. It allows right orientation of the tori to appear like circles in the viewer. For example, if circleAllowedRotationAxis='x' is set, blockedDOFs=\"YZ\" should also be set for all your particles."))
 	);
+	// clang-format on
 	RENDERS(Sphere);
 };
 
 REGISTER_SERIALIZABLE(Gl1_Sphere);
+
+} // namespace yade
+

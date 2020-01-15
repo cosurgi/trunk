@@ -1,6 +1,6 @@
 // © 2004 Olivier Galizzi <olivier.galizzi@imag.fr>
 // © 2008 Václav Šmilauer <eudoxos@arcig.cz>
-// © 2006 Bruno Chareyre <bruno.chareyre@hmg.inpg.fr>
+// © 2006 Bruno Chareyre <bruno.chareyre@grenoble-inp.fr>
 
 #pragma once
 #include<core/Interaction.hpp>
@@ -8,6 +8,9 @@
 #include<core/State.hpp>
 #include<lib/base/Math.hpp>
 #include<pkg/dem/DemXDofGeom.hpp>
+
+namespace yade { // Cannot have #include directive inside.
+
 /*! Class representing geometry of two bodies in contact.
  *
  * The code under SCG_SHEAR is experimental and is used only if ElasticContactLaw::useShear is explicitly true
@@ -51,6 +54,7 @@ class ScGeom: public GenericSpheresContact {
 		Vector3r getIncidentVel_py(shared_ptr<Interaction> i, bool avoidGranularRatcheting);
 		Vector3r getRelAngVel_py(shared_ptr<Interaction> i);
 
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(ScGeom,GenericSpheresContact,
 "Class representing :yref:`geometry<IGeom>` of a contact point between two :yref:`bodies<Body>`. It is more general than sphere-sphere contact even though it \
 is primarily focused on spheres contact interactions (reason for the 'Sc' naming); it is also used for representing contacts of a :yref:`Sphere` with non-spherical \
@@ -90,6 +94,7 @@ Tangential displacement increment over last step then reads\n\
 		/* py */ .def("incidentVel",&ScGeom::getIncidentVel_py,(boost::python::arg("i"),boost::python::arg("avoidGranularRatcheting")=true),"Return incident velocity of the interaction (see also :yref:`Ig2_Sphere_Sphere_ScGeom.avoidGranularRatcheting` for explanation of the ratcheting argument).")
 		.def("relAngVel",&ScGeom::getRelAngVel_py,(boost::python::arg("i")),"Return relative angular velocity of the interaction.")
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ScGeom,GenericSpheresContact);
 };
 REGISTER_SERIALIZABLE(ScGeom);
@@ -101,6 +106,7 @@ class ScGeom6D: public ScGeom {
 		const Vector3r& getBending() const {return bending;}
 		void precomputeRotations(const State& rbp1, const State& rbp2, bool isNew, bool creep=false);
 		void initRotations(const State& rbp1, const State& rbp2);
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(ScGeom6D,ScGeom,"Class representing :yref:`geometry<IGeom>` of two :yref:`bodies<Body>` in contact. The contact has 6 DOFs (normal, 2×shear, twist, 2xbending) and uses :yref:`ScGeom` incremental algorithm for updating shear.",
 		((Quaternionr,initialOrientation1,Quaternionr(1.0,0.0,0.0,0.0),(Attr::readonly),"Orientation of body 1 one at initialisation time |yupdate|"))
 		((Quaternionr,initialOrientation2,Quaternionr(1.0,0.0,0.0,0.0),(Attr::readonly),"Orientation of body 2 one at initialisation time |yupdate|"))
@@ -112,6 +118,7 @@ class ScGeom6D: public ScGeom {
 		/* ctor */ createIndex();,
  		/* py */
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ScGeom6D,ScGeom);
 };
 REGISTER_SERIALIZABLE(ScGeom6D);
@@ -123,6 +130,7 @@ class ChCylGeom6D: public ScGeom6D {
 		State fictiousState1;
 		State fictiousState2;
 		Real relPos1, relPos2;
+	// clang-format off
 		YADE_CLASS_BASE_DOC_ATTRS_INIT_CTOR_PY(ChCylGeom6D,ScGeom6D,"Test",
 		/*attributes*/
 		,
@@ -130,29 +138,10 @@ class ChCylGeom6D: public ScGeom6D {
 		/* ctor */ createIndex();,
 		/* py */
 	);
+	// clang-format on
 	REGISTER_CLASS_INDEX(ChCylGeom6D,ScGeom6D);
 };
 REGISTER_SERIALIZABLE(ChCylGeom6D);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // namespace yade
 

@@ -15,11 +15,10 @@
 #include "TriaxialState.h"
 #include "Tenseur3.h"
 
+namespace yade { // Cannot have #include directive inside.
+
 namespace CGT {
   
-using std::pair;
-using std::ofstream;
-
 #define SPHERE_DISCRETISATION 20; //number of "teta" intervals on the unit sphere
 #define LINEAR_DISCRETISATION 200; //number of intervals on segments like [UNmin,UNmax]
 	
@@ -124,3 +123,6 @@ class KinematicLocalisationAnalyser
 };
 
 } // namespace CGT
+
+} // namespace yade
+

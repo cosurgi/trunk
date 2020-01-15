@@ -8,6 +8,8 @@
 #include"STLImporter.hpp"
 #include<pkg/dem/Shop.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 CREATE_LOGGER(STLImporter);
 
 vector<shared_ptr<Body> > STLImporter::import(const char* filename)
@@ -17,7 +19,7 @@ vector<shared_ptr<Body> > STLImporter::import(const char* filename)
 
 	// Load geometry
     vector<double> vtmp, ntmp; vector<int>  etmp, ftmp;
-    STLReader reader; reader.tolerance=Mathr::ZERO_TOLERANCE;
+    STLReader reader; reader.tolerance=float(Mathr::ZERO_TOLERANCE); // XXX: suspicious conversion, but changing whole STLImporter from float to double is a bit far fetched now.
     if(!reader.open(filename, back_inserter(vtmp), back_inserter(etmp), back_inserter(ftmp), back_inserter(ntmp))) 
 	{
 		LOG_ERROR("Can't open file: " << filename);
@@ -46,4 +48,6 @@ vector<shared_ptr<Body> > STLImporter::import(const char* filename)
 	}
 	return imported;
 }
+
+} // namespace yade
 

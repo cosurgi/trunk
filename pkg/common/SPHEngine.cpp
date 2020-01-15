@@ -7,6 +7,8 @@
 #include<core/State.hpp>
 #include<core/Omega.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 void SPHEngine::action(){
   {
     YADE_PARALLEL_FOREACH_BODY_BEGIN(const shared_ptr<Body>& b, scene->bodies){
@@ -289,5 +291,8 @@ bool computeForceSPH(shared_ptr<IGeom>& _geom, shared_ptr<IPhys>& _phys, Interac
   }
 }
 YADE_PLUGIN((SPHEngine));
+
+} // namespace yade
+
 #endif
 

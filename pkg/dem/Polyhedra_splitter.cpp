@@ -11,8 +11,13 @@
 #include <pkg/dem/Polyhedra_splitter.hpp>
 #include <sys/stat.h>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((PolyhedraSplitter)(SplitPolyTauMax)(SplitPolyMohrCoulomb));
+
 CREATE_LOGGER(PolyhedraSplitter);
+CREATE_LOGGER(SplitPolyTauMax);
+CREATE_LOGGER(SplitPolyMohrCoulomb);
 
 using PSplitTwo = std::tuple<const shared_ptr<Body>, Vector3r, Vector3r>;
 using PSplitOne = std::tuple<const shared_ptr<Body>, Vector3r>;
@@ -91,7 +96,7 @@ void PolyhedraSplitter::action()
 	vector<Matrix3r> bStresses (scene->bodies->size(), Matrix3r::Zero());
 	getStressForEachBody(bStresses);
 
-	for(const auto b : *(rb->bodies)) {
+	for(const auto & b : *(rb->bodies)) {
 		if(!b || !b->material || !b->shape) continue;
 		shared_ptr<Polyhedra> p=YADE_PTR_DYN_CAST<Polyhedra>(b->shape);
 		shared_ptr<PolyhedraMat> m=YADE_PTR_DYN_CAST<PolyhedraMat>(b->material);
@@ -139,7 +144,7 @@ void SplitPolyTauMax::action()
 	vector<Matrix3r> bStresses (scene->bodies->size(), Matrix3r::Zero());
 	getStressForEachBody(bStresses);
 
-	FOREACH(const shared_ptr<Body>& b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		if(!b || !b->material || !b->shape) continue;
 		shared_ptr<Polyhedra> p=YADE_PTR_DYN_CAST<Polyhedra>(b->shape);
 		shared_ptr<PolyhedraMat> m=YADE_PTR_DYN_CAST<PolyhedraMat>(b->material);
@@ -232,7 +237,7 @@ void SplitPolyMohrCoulomb::action() {
 
 	fileS.open (fileName, ios::out | ios::app);
 
-	for(const auto b : *(scene->bodies)) {
+	for(const auto & b : *(scene->bodies)) {
 		if(!b || !b->material || !b->shape) continue;
 		shared_ptr<Polyhedra> p=YADE_PTR_DYN_CAST<Polyhedra>(b->shape);
 		shared_ptr<PolyhedraMat> m=YADE_PTR_DYN_CAST<PolyhedraMat>(b->material);
@@ -336,5 +341,7 @@ void SplitPolyMohrCoulomb::action() {
 		shared_ptr<Body> B2 = SplitPolyhedra(b, vec, b->state->pos);
 	}
 }
+
+} // namespace yade
 
 #endif // YADE_CGAL

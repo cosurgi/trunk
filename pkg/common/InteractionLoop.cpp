@@ -1,9 +1,11 @@
 #include"InteractionLoop.hpp"
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN((InteractionLoop));
 CREATE_LOGGER(InteractionLoop);
 
-void InteractionLoop::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& d){
+void InteractionLoop::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::python::dict& /*d*/){
 	if(boost::python::len(t)==0) return; // nothing to do
 	if(boost::python::len(t)!=3) throw invalid_argument("Exactly 3 lists of functors must be given");
 	// parse custom arguments (3 lists) and do in-place modification of args
@@ -19,9 +21,7 @@ void InteractionLoop::pyHandleCustomCtorArgs(boost::python::tuple& t, boost::pyt
 	t=boost::python::tuple(); // empty the args; not sure if this is OK, as there is some refcounting in raw_constructor code
 }
 
-// first appeared in commit 590964e  >>>>>>> Fix serialization problems in core/ (can be done better, see Scene.hpp)
-void InteractionLoop::updateScenePtrInteractionLoop()
-{
+void InteractionLoop::action(){
 	// update Scene* of the dispatchers
 	lawDispatcher->scene=scene;
 	physDispatcher->scene=scene;
@@ -31,15 +31,10 @@ void InteractionLoop::updateScenePtrInteractionLoop()
 	geomDispatcher->updateScenePtr();
 	physDispatcher->updateScenePtr();
 	lawDispatcher->updateScenePtr();
-};
-
-void InteractionLoop::action(){
-	updateScenePtrInteractionLoop();
-
-	// call Ig2Functor::preStep
-	//FOREACH(const shared_ptr<IGeomFunctor>& ig2, geomDispatcher->functors) ig2->preStep(); // this arrived here from QM merge. Was it removed in original branch?
-	// call LawFunctor::preStep
-	//FOREACH(const shared_ptr<LawFunctor>& law2, lawDispatcher->functors) law2->preStep();  // this arrived here from QM merge. Was it removed in original branch?
+	
+	#ifdef YADE_MPI
+	const Body::id_t& subDIdx = scene->subdomain;
+	#endif
 
 	/*
 		initialize callbacks; they return pointer (used only in this timestep) to the function to be called
@@ -63,31 +58,39 @@ void InteractionLoop::action(){
 	// force removal of interactions that were not encountered by the collider
 	// (only for some kinds of colliders; see comment for InteractionContainer::iterColliderLastRun)
 	const bool removeUnseenIntrs=(scene->interactions->iterColliderLastRun>=0 && scene->interactions->iterColliderLastRun==scene->iter);
-
-	#ifdef YADE_OPENMP
+	
 	const long size=scene->interactions->size();
+	
+	vector<shared_ptr<Interaction>> * interactions; //a pointer to an interaction vector.
+	if(loopOnSortedInteractions){
+		scene->interactions->updateSortedIntrs();			//sort sortedIntrs, this is VERY SLOW !
+		interactions = &(scene->interactions->sortedIntrs);	//set the pointer to the address of the sorted version of the vector
+	}
+	else interactions = &(scene->interactions->linIntrs);	//set the pointer to the address of the unsorted version of the vector (original version, normal behavior)
+	#ifdef YADE_OPENMP
 	#pragma omp parallel for schedule(guided) num_threads(ompThreads>0 ? min(ompThreads,omp_get_max_threads()) : omp_get_max_threads())
-	for(long i=0; i<size; i++){
-		const shared_ptr<Interaction>& I=(*scene->interactions)[i];
-	#else
-	for (const auto & I : *scene->interactions){
 	#endif
+	for(long i=0; i<size; i++){
+		const shared_ptr<Interaction>& I=(*interactions)[i];
 		if(removeUnseenIntrs && !I->isReal() && I->iterLastSeen<scene->iter) {
 			eraseAfterLoop(I->getId1(),I->getId2());
 			continue;
 		}
-
 		const shared_ptr<Body>& b1_=Body::byId(I->getId1(),scene);
 		const shared_ptr<Body>& b2_=Body::byId(I->getId2(),scene);
-
+		
 		if(!b1_ || !b2_){
-			// This code is duplicated in Dispatching.cpp:123 and InteractionLoop.cpp:73
-			// FIXME - interesting! This message appears multiple time for the same         I->getId1()        I->getId2()   !! Almost as if it never gets deleted!
-			//         I saw this when running examples/PotentialBlocks/WedgeYADE.py, after iter 5200 some bodies are deleted. And this loop tries to delete the same interactions over and over again.
-			LOG_DEBUG("Body #"<<(b1_?I->getId2():I->getId1())<<" vanished, erasing intr #"<<I->getId1()<<"+#"<<I->getId2()<<"!");
+// 			LOG_DEBUG("Body #"<<(b1_?I->getId2():I->getId1())<<" vanished, erasing intr #"<<I->getId1()<<"+#"<<I->getId2()<<"!");
 			scene->interactions->requestErase(I);
 			continue;
 		}
+		
+		#ifdef YADE_MPI
+		//FIXME: can be removed if scene splitting takes care of it
+		if (subDIdx!=b1_->subdomain and subDIdx!=b2_->subdomain) {
+			scene->interactions->erase(I->getId1(),I->getId2()); continue;
+		}
+		#endif
     
 		// Skip interaction with clumps
 		if (b1_->isClump() || b2_->isClump()) { continue; }
@@ -138,10 +141,6 @@ void InteractionLoop::action(){
 		if(!I->functorCache.phys){
 			I->functorCache.phys=physDispatcher->getFunctor2D(b1->material,b2->material,swap);
 			assert(!swap); // InteractionPhysicsEngineUnits are symmetric
-			// this arrived here from QM merge. Was it removed in original branch?
-			// FIXME - a wcale, że nie! elektron+potencjał
-			// ciekawe po zakomentowaniu tego asserta, się rozwala kompletnie, może dlatego, że ten swap nie został wykonany?
-			// a nie ma segfaulta, bo jest static_cast....
 		}
 		
 		if(!I->functorCache.phys){
@@ -171,8 +170,11 @@ void InteractionLoop::action(){
 		// process callbacks for this interaction
 // 		Note: the following condition is algorithmicaly safe, however a possible use of callbacks is to do something special when interactions are deleted, which is impossible if we skip them. The test should be commented out
  		if(!I->isReal()) continue; // it is possible that Law2_ functor called requestErase, hence this check
-		for(size_t i=0; i<callbacksSize; i++){
-			if(callbackPtrs[i]!=NULL) (*(callbackPtrs[i]))(callbacks[i].get(),I.get());
+		for(size_t j=0; j<callbacksSize; j++){
+			if(callbackPtrs[j]!=NULL) (*(callbackPtrs[j]))(callbacks[j].get(),I.get());
 		}
 	}
 }
+
+} // namespace yade
+

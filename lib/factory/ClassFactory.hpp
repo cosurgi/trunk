@@ -35,6 +35,7 @@
 #include<boost/serialization/complex.hpp>
 #include<boost/serialization/set.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 #define REGISTER_FACTORABLE(name) 						\
 	inline shared_ptr< Factorable > CreateShared##name()			\
@@ -159,12 +160,17 @@ class ClassFactory : public Singleton<ClassFactory>
  * be unique and avoids use of __COUNTER__ which didn't appear in gcc until 4.3.
  */
 
-#define _YADE_PLUGIN_BOOST_REGISTER(x,y,z) BOOST_CLASS_EXPORT_IMPLEMENT(z); BOOST_SERIALIZATION_FACTORY_0(z);
+#define _YADE_PLUGIN_BOOST_REGISTER(x,y,z) BOOST_CLASS_EXPORT_IMPLEMENT(yade::z); BOOST_SERIALIZATION_FACTORY_0(yade::z);
 
 
 #define _YADE_PLUGIN_REPEAT(x,y,z) BOOST_PP_STRINGIZE(z),
 
-// priority 500 is greater than priority for log4cxx initialization (in core/main/pyboot.cpp); therefore lo5cxx will be initialized before plugins are registered
-#define YADE_PLUGIN(plugins) namespace{ __attribute__((constructor)) void BOOST_PP_CAT(registerThisPluginClasses_,BOOST_PP_SEQ_HEAD(plugins)) (void){ const char* info[]={__FILE__ , BOOST_PP_SEQ_FOR_EACH(_YADE_PLUGIN_REPEAT,~,plugins) NULL}; ClassFactory::instance().registerPluginClasses(info);} } BOOST_PP_SEQ_FOR_EACH(_YADE_PLUGIN_BOOST_REGISTER,~,plugins)
+// If you get error "expected declaration before ‘}’ token" it means that you forgot put this macro inside yade namespace.
+// To keep things consistent with REGISTER_SERIALIZABLE the YADE_PLUGIN is assumed to be inside yade namespace.
+// However maco BOOST_SERIALIZATION_FACTORY_0 must be outside yade namespace, see also comment above REGISTER_SERIALIZABLE in lib/serialization/Serializable.hpp line 256
+// https://github.com/boostorg/serialization/blob/develop/include/boost/serialization/factory.hpp#L91
+// so here also to keep things inside single macro, there is closing and opening bracket for yade namespace.
+#define YADE_PLUGIN(plugins) } namespace{ __attribute__((constructor)) void BOOST_PP_CAT(registerThisPluginClasses_,BOOST_PP_SEQ_HEAD(plugins)) (void){ const char* info[]={__FILE__ , BOOST_PP_SEQ_FOR_EACH(_YADE_PLUGIN_REPEAT,~,plugins) NULL}; ::yade::ClassFactory::instance().registerPluginClasses(info);} } BOOST_PP_SEQ_FOR_EACH(_YADE_PLUGIN_BOOST_REGISTER,~,plugins) namespace yade {
 
+} // namespace yade
 

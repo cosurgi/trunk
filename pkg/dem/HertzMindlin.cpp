@@ -5,6 +5,8 @@
 #include<core/Omega.hpp>
 #include<core/Scene.hpp>
 
+namespace yade { // Cannot have #include directive inside.
+
 YADE_PLUGIN(
 	(MindlinPhys)
 	(Ip2_FrictMat_FrictMat_MindlinPhys)
@@ -595,4 +597,5 @@ void Ip2_FrictMat_FrictMat_MindlinCapillaryPhys::go( const shared_ptr<Material>&
 	}
 };
 
+} // namespace yade
 

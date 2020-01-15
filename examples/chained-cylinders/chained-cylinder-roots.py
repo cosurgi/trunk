@@ -1,5 +1,5 @@
 from __future__ import print_function
-#--- bruno.chareyre@hmg.inpg.fr ---
+#--- bruno.chareyre@grenoble-inp.fr ---
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

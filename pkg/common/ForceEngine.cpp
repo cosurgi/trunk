@@ -10,9 +10,7 @@
 #include<core/IGeom.hpp>
 #include<core/IPhys.hpp>
 
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
+namespace yade { // Cannot have #include directive inside.
 
 YADE_PLUGIN((ForceEngine)(InterpolatingDirectedForceEngine)(RadialForceEngine)(DragEngine)(LinearDragEngine));
 
@@ -50,8 +48,14 @@ void DragEngine::action(){
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere){
 			Real A = sphere->radius*sphere->radius*Mathr::PI;	//Crossection of the sphere
-			Vector3r velSphTemp = b->state->vel;
+			Vector3r velSphTemp = Vector3r::Zero();
 			Vector3r dragForce = Vector3r::Zero();
+            
+            if(scene->isPeriodic) {
+                velSphTemp = scene->cell->bodyFluctuationVel(b->state->pos, b->state->vel, scene->cell->prevVelGrad);
+            } else {
+                velSphTemp = b->state->vel;
+            }
 			
 			if (velSphTemp != Vector3r::Zero()) {
 				dragForce = -0.5*Rho*A*Cd*velSphTemp.squaredNorm()*velSphTemp.normalized();
@@ -68,10 +72,17 @@ void LinearDragEngine::action(){
 		if (!(scene->bodies->exists(id))) continue;
 		const Sphere* sphere = dynamic_cast<Sphere*>(b->shape.get());
 		if (sphere){
-			Vector3r velSphTemp = b->state->vel;
+			Vector3r velSphTemp = Vector3r::Zero();
+            
+            if(scene->isPeriodic) {
+                velSphTemp = scene->cell->bodyFluctuationVel(b->state->pos, b->state->vel, scene->cell->prevVelGrad);
+            } else {
+                velSphTemp = b->state->vel;
+            }
+            
 			Vector3r dragForce = Vector3r::Zero();
 			
-			Real b = 6*Mathr::PI*nu*sphere->radius;
+			Real b = 6.*Mathr::PI*nu*sphere->radius;
 			
 			if (velSphTemp != Vector3r::Zero()) {
 				dragForce = -b*velSphTemp;
@@ -80,3 +91,6 @@ void LinearDragEngine::action(){
 		}
 	}
 }
+
+} // namespace yade
+

@@ -7,6 +7,7 @@
 #include <pkg/common/PeriodicEngines.hpp>
 #include <pkg/common/NormShearPhys.hpp>
 
+namespace yade { // Cannot have #include directive inside.
 
 class PDFEngine : public PeriodicEngine {
 
@@ -19,7 +20,7 @@ public:
 		virtual vector<string> getSuffixes() const { return vector<string>({""}); }
 		virtual vector<string> getDatas() const = 0;
 		virtual void cleanData() = 0;
-		virtual bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N) = 0;
+		virtual bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N, bool inversed) = 0;
 		
 		string name;
 	};
@@ -29,10 +30,11 @@ public:
 	static void getSpectrums(vector<PDF> &);
 	virtual void action();
 	
+	// clang-format off
 	YADE_CLASS_BASE_DOC_ATTRS_CTOR_PY(PDFEngine, PeriodicEngine,
 		"Base class for spectrums calculations. Compute Probability Density Functions of normalStress, shearStress, distance, velocity and interactions in spherical coordinates and write result to a file. Column name format is: Data(theta, phi). Convention used: x: phi = 0, y: theta = 0, z: phi = pi/2",
 		((uint, numDiscretizeAngleTheta, 20,,"Number of sector for theta-angle"))
-		((uint, numDiscretizeAnglePhi, 40,,"Number of sector for phi-angle"))
+		((uint, numDiscretizeAnglePhi, 20,,"Number of sector for phi-angle"))
 		//((Real, discretizeRadius, 0.1,,"d/a interval size"))
 		((string, filename, "PDF.txt", , "Filename"))
 		((bool, firstRun, true, (Attr::hidden | Attr::readonly), ""))
@@ -40,6 +42,7 @@ public:
 		,,
 		//.def("getSpectrums", &LubricationDPFEngine::PyGetSpectrums,(py::arg("nPhi")=40, py::arg("nTheta")=20), "Get Stress spectrums").staticmethod("getSpectrums")
 	);
+	// clang-format on
 	DECLARE_LOGGER;
 	
 	protected:
@@ -59,7 +62,7 @@ public:
 		return out;
 	}
 	void cleanData() { m_stress = Matrix3r::Zero(); }
-	bool addData(const shared_ptr<Interaction>& I, Real const& dS, Real const& V, int const& N) {
+	bool addData(const shared_ptr<Interaction>& I, Real const& dS, Real const& V, int const&, bool) {
 		if(!I->isReal()) return false;
 	ScGeom* geom=dynamic_cast<ScGeom*>(I->geom.get());
 	Phys* phys=dynamic_cast<Phys*>(I->phys.get());
@@ -84,7 +87,7 @@ public:
 	PDFSpheresDistanceCalculator(string name);
 	vector<string> getDatas() const;
 	void cleanData();
-	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N);
+	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N, bool inversed);
 	
 private:
 	Real m_h;
@@ -97,7 +100,7 @@ public:
 	vector<string> getSuffixes() const;
 	vector<string> getDatas() const;
 	void cleanData();
-	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N);
+	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N, bool inversed);
 	
 private:
 	Vector3r m_vel;
@@ -106,11 +109,15 @@ private:
 
 class PDFSpheresIntrsCalculator : public PDFEngine::PDFCalculator {
 public:
-	PDFSpheresIntrsCalculator(string name);
+	PDFSpheresIntrsCalculator(string name, bool (*)(shared_ptr<Interaction> const&) = [](shared_ptr<Interaction> const&){ return true; });
 	vector<string> getDatas() const;
 	void cleanData();
-	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N);
+	bool addData(const shared_ptr<Interaction>&, Real const& dS ,Real const& V, int const& N, bool inversed);
 	
 private:
 	Real m_P;
+    bool (*m_accepter)(shared_ptr<Interaction> const&);
 };
+
+} // namespace yade
+

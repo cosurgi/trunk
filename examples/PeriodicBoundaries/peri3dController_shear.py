@@ -14,7 +14,7 @@ O.materials.append(CpmMat(young=25e9,poisson=.2,sigmaT=3e6,epsCrackOnset=1e-4,re
 initSize=1.2
 sp=pack.randomPeriPack(radius=.05,initSize=Vector3(initSize,initSize,initSize),memoizeDb='/tmp/packDb.sqlite')
 angle=0.
-#angle=pi/4
+angle=pi/4
 rot=Matrix3(cos(angle),-sin(angle),0, sin(angle),cos(angle),0, 0,0,1)
 sp.toSimulation(rot=rot)
 
@@ -44,7 +44,7 @@ O.engines=[
 	Peri3dController(	goal=(0,0,0, 0,0,5e-3), # Vector6 of prescribed final values
 							stressMask=0b011111,
 							nSteps=2000,
-							doneHook='print "Simulation with Peri3dController finished."; O.pause()',
+							doneHook='print("Simulation with Peri3dController finished."); O.pause()',
 							maxStrain=.5,
 							label='p3d'
 							),

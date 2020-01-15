@@ -30,6 +30,8 @@
 	#include<gl2ps.h>
 #endif
 
+namespace yade { // Cannot have #include directive inside.
+
 static unsigned initBlocked(State::DOF_NONE);
 
 CREATE_LOGGER(GLViewer);
@@ -63,9 +65,6 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	if(viewId==0) setWindowTitle("Primary view");
 	else setWindowTitle(("Secondary view #"+boost::lexical_cast<string>(viewId)).c_str());
 
-	show();
-	
-	mouseMovesCamera();
 	manipulatedClipPlane=-1;
 
 	if(manipulatedFrame()==0) setManipulatedFrame(new qglviewer::ManipulatedFrame());
@@ -109,7 +108,9 @@ GLViewer::GLViewer(int _viewId, const shared_ptr<OpenGLRenderer>& _renderer, QGL
 	setKeyDescription(Qt::Key_9,"Load [Alt: save] view configuration #2");
 	setKeyDescription(Qt::Key_Space,"Center scene (same as Alt-C); clip plane: activate/deactivate");
 
+	mouseMovesCamera();
 	centerScene();
+	show();
 }
 
 bool GLViewer::isManipulating(){
@@ -249,7 +250,7 @@ void GLViewer::keyPressEvent(QKeyEvent *e)
 		int axisIdx=(e->key()==Qt::Key_X?0:(e->key()==Qt::Key_Y?1:2));
 		if(manipulatedClipPlane<0){
 			qglviewer::Vec up(0,0,0), vDir(0,0,0);
-			bool alt=(e->modifiers() && Qt::ShiftModifier);
+			bool alt=(e->modifiers() & Qt::ShiftModifier);
 			up[axisIdx]=1; vDir[(axisIdx+(alt?2:1))%3]=alt?1:-1;
 			camera()->setViewDirection(vDir);
 			camera()->setUpVector(up);
@@ -303,7 +304,7 @@ void GLViewer::centerPeriodic(){
 	assert(scene->isPeriodic);
 	Vector3r center=.5*scene->cell->getSize();
 	Vector3r halfSize=.5*scene->cell->getSize();
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2]));
+	Real radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2]));
 	LOG_DEBUG("Periodic scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	setSceneRadius(radius*1.5);
@@ -327,7 +328,7 @@ void GLViewer::centerMedianQuartile(){
 	}
 	std::vector<Real> coords[3];
 	for(int i=0;i<3;i++)coords[i].reserve(nBodies);
-	FOREACH(shared_ptr<Body> b, *scene->bodies){
+	for(const auto & b :  *scene->bodies){
 		if(!b) continue;
 		for(int i=0; i<3; i++) coords[i].push_back(b->state->pos[i]);
 	}
@@ -359,7 +360,7 @@ void GLViewer::centerScene(){
 		LOG_DEBUG("scene's bound not yet calculated or has zero or nan dimension(s), attempt get that from bodies' positions.");
 		Real inf=std::numeric_limits<Real>::infinity();
 		min=Vector3r(inf,inf,inf); max=Vector3r(-inf,-inf,-inf);
-		FOREACH(const shared_ptr<Body>& b, *rb->bodies){
+		for(const auto & b :  *rb->bodies){
 			if(!b) continue;
 			max=max.cwiseMax(b->state->pos);
 			min=min.cwiseMin(b->state->pos);
@@ -370,7 +371,7 @@ void GLViewer::centerScene(){
 	LOG_DEBUG("Got scene box min="<<min<<" and max="<<max);
 	Vector3r center = (max+min)*0.5;
 	Vector3r halfSize = (max-min)*0.5;
-	float radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=1;
+	Real radius=std::max(halfSize[0],std::max(halfSize[1],halfSize[2])); if(radius<=0) radius=1;
 	LOG_DEBUG("Scene center="<<center<<", halfSize="<<halfSize<<", radius="<<radius);
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	setSceneRadius(radius*1.5);
@@ -379,7 +380,7 @@ void GLViewer::centerScene(){
 
 // new object selected.
 // set frame coordinates, and isDynamic=false;
-void GLViewer::postSelection(const QPoint& point) 
+void GLViewer::postSelection(const QPoint& /*point*/)
 {
 	LOG_DEBUG("Selection is "<<selectedName());
 	int selection = selectedName();
@@ -474,10 +475,10 @@ qreal YadeCamera::zNear() const
 float YadeCamera::zNear() const
 #endif
 {
-  float z = distanceToSceneCenter() - zClippingCoefficient()*sceneRadius()*(1.f-2*cuttingDistance);
+  Real z = distanceToSceneCenter() - zClippingCoefficient()*sceneRadius()*(1.f-2*cuttingDistance);
 
   // Prevents negative or null zNear values.
-  const float zMin = zNearCoefficient() * zClippingCoefficient() * sceneRadius();
+  const Real zMin = zNearCoefficient() * zClippingCoefficient() * sceneRadius();
   if (z < zMin)
 /*    switch (type())
       {
@@ -496,4 +497,5 @@ QString GLViewer::helpString() const
 	return text;
 }
 
+} // namespace yade
 

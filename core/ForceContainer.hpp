@@ -1,17 +1,21 @@
 // 2009 © Václav Šmilauer <eudoxos@arcig.cz>
+// 2019 © Bruno Chareyre <bruno.chareyre@grenoble-inp.fr> 
 #pragma once
 
 #include <lib/base/Math.hpp>
 #include <core/Body.hpp>
 
 #include <boost/static_assert.hpp>
-// make sure that (void*)&vec[0]==(void*)&vec
-BOOST_STATIC_ASSERT(sizeof(Vector3r)==3*sizeof(Real));
-
 
 #ifdef YADE_OPENMP
 #include <omp.h>
 #endif
+
+namespace yade { // Cannot have #include directive inside.
+
+// make sure that (void*)&vec[0]==(void*)&vec
+BOOST_STATIC_ASSERT(sizeof(Vector3r)==3*sizeof(Real));
+
 
 /*! Container for Body External Variables (forces), typically forces and torques from interactions.
  * Values should be reset at every iteration by calling ForceContainer::reset();
@@ -48,8 +52,6 @@ class ForceContainer {
 #ifdef YADE_OPENMP
 		std::vector<vvector> _forceData;
 		std::vector<vvector> _torqueData;
-		std::vector<vvector> _moveData;
-		std::vector<vvector> _rotData;
 		std::vector<Body::id_t> _maxId;
 		std::vector<size_t> sizeOfThreads;
 		void ensureSize(Body::id_t id, int threadN);
@@ -57,16 +59,13 @@ class ForceContainer {
 		void ensureSize(Body::id_t id);
 		Body::id_t _maxId=0;
 #endif
-		vvector _force, _torque, _move, _rot, _permForce, _permTorque;
+		vvector _force, _torque, _permForce, _permTorque;
 		size_t size = 0;
 		bool syncedSizes = true;
 		int nThreads;
-		bool synced = true;
-		bool moveRotUsed = false;
 		bool permForceUsed = false;
 		boost::mutex globalMutex;
 		const Vector3r _zero = Vector3r::Zero();
-
 		
 		void ensureSynced();
 		
@@ -74,6 +73,7 @@ class ForceContainer {
 		friend class boost::serialization::access;
 		template<class ArchiveT> void serialize(ArchiveT & ar, unsigned int version){}
 	public:
+		bool synced = true;
 		unsigned long syncCount = 0;
 		long lastReset = 0;
 		ForceContainer();
@@ -81,10 +81,6 @@ class ForceContainer {
 		void  addForce(Body::id_t id, const Vector3r& f);
 		const Vector3r& getTorque(Body::id_t id);
 		void  addTorque(Body::id_t id, const Vector3r& t);
-		const Vector3r& getMove(Body::id_t id);
-		void  addMove(Body::id_t id, const Vector3r& m);
-		const Vector3r& getRot(Body::id_t id);
-		void  addRot(Body::id_t id, const Vector3r& r);
 		void  addMaxId(Body::id_t id);
 
 		void  setPermForce(Body::id_t id, const Vector3r& f);
@@ -105,8 +101,6 @@ class ForceContainer {
 		// since Vector3r writes are not atomic, it might (rarely) return wrong value, if the computation is running meanwhile
 		const Vector3r getForceSingle (Body::id_t id);
 		const Vector3r getTorqueSingle(Body::id_t id);
-		const Vector3r getMoveSingle  (Body::id_t id);
-		const Vector3r getRotSingle   (Body::id_t id);
 
 #ifdef YADE_OPENMP
 		void syncSizesOfContainers();
@@ -125,7 +119,11 @@ class ForceContainer {
 		// perhaps should be private and friend Scene or whatever the only caller should be
 		void reset(long iter, bool resetAll=false);
 		//! say for how many threads we have allocated space
-		const int getNumAllocatedThreads() const;
-		const bool getMoveRotUsed() const;
-		const bool getPermForceUsed() const;
+		int getNumAllocatedThreads() const;
+		bool getPermForceUsed() const;
+
+	DECLARE_LOGGER;
 };
+
+} // namespace yade
+
